@@ -1,0 +1,31 @@
+Red: FF231BE5 
+
+Pink: FF8241FF 
+
+Purple: FFB0279C 
+
+DeepPurple: FFBF3966 
+
+Blue: FFC76E00 
+
+LightBlue: FFF29C24 
+
+Cyan: FFCDBE14 
+
+Teal: FF8CA500 
+
+Green: FF3C8E38 
+
+Lime: FF39BF93 
+
+Yellow: FF00C8FF 
+
+Orange: FF00A0FF 
+
+DeepOrange: FF3264F0 
+
+Brown: FF485579 
+
+Gray: FF737373 
+
+BlueGray: FF807359

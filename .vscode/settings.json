@@ -1,0 +1,38 @@
+{
+    "[csharp]": {
+        "editor.defaultFormatter": "csharpier.csharpier-vscode"
+        // "editor.defaultFormatter": "ms-dotnettools.csharp"
+    },
+    "[css]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[html]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "editor.codeLens": false,
+    "editor.formatOnSave": false,
+    "editor.minimap.enabled": false,
+    "git.openRepositoryInParentFolders": "never",
+    "git.path": "/usr/bin/git",
+    "highlight-matching-tag.highlightFromContent": true,
+    "html.format.wrapLineLength": 0,
+    "liveServer.settings.donotShowInfoMsg": true,
+    "omnisharp.useModernNet": false,
+    "postcssSorting.config": {
+        "properties-order": "alphabetical"
+    },
+    "prettier.printWidth": 100,
+    "security.workspace.trust.untrustedFiles": "open",
+    "shellformat.path": "",
+    "workbench.editor.enablePreview": false,
+    "workbench.startupEditor": "none",
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
+}

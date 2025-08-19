@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+  <name>Bookmark Colors</name>
+  <Style id="placemark-red">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-red.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-blue">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-blue.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-purple">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-purple.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-yellow">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-yellow.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-pink">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-pink.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-brown">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-brown.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-green">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-green.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-orange">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-orange.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-deeppurple">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-deeppurple.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-lightblue">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-lightblue.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-cyan">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-cyan.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-teal">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-teal.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-lime">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-lime.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-deeporange">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-deeporange.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-gray">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-gray.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+  <Style id="placemark-bluegray">
+    <IconStyle>
+      <Icon>
+        <href>https://omaps.app/placemarks/placemark-bluegray.png</href>
+      </Icon>
+    </IconStyle>
+  </Style>
+    <Placemark>
+    <name>BlueGray</name>
+    <styleUrl>#placemark-bluegray</styleUrl>
+    <Point><coordinates>5.4038962,49.231597,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Gray</name>
+    <styleUrl>#placemark-gray</styleUrl>
+    <Point><coordinates>5.3680616,48.869952,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Brown</name>
+    <styleUrl>#placemark-brown</styleUrl>
+    <Point><coordinates>5.1324857,49.232887,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>DeepOrange</name>
+    <styleUrl>#placemark-deeporange</styleUrl>
+    <Point><coordinates>5.1841908,49.007855,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Orange</name>
+    <styleUrl>#placemark-orange</styleUrl>
+    <Point><coordinates>5.5275986,49.07285,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Yellow</name>
+    <styleUrl>#placemark-yellow</styleUrl>
+    <Point><coordinates>5.595246,49.284535,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Lime</name>
+    <styleUrl>#placemark-lime</styleUrl>
+    <Point><coordinates>5.3367207,49.425551,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Green</name>
+    <styleUrl>#placemark-green</styleUrl>
+    <Point><coordinates>5.7072737,49.212093,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Teal</name>
+    <styleUrl>#placemark-teal</styleUrl>
+    <Point><coordinates>5.6301469,48.993532,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Cyan</name>
+    <styleUrl>#placemark-cyan</styleUrl>
+    <Point><coordinates>5.553882,48.827333,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>LightBlue</name>
+    <styleUrl>#placemark-lightblue</styleUrl>
+    <Point><coordinates>5.1966862,48.786595,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Blue</name>
+    <styleUrl>#placemark-blue</styleUrl>
+    <Point><coordinates>4.9519489,49.184157,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>DeepPurple</name>
+    <styleUrl>#placemark-deeppurple</styleUrl>
+    <Point><coordinates>5.1135272,49.424959,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Purple</name>
+    <styleUrl>#placemark-purple</styleUrl>
+    <Point><coordinates>5.4263428,48.733227,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Pink</name>
+    <styleUrl>#placemark-pink</styleUrl>
+    <Point><coordinates>5.7680271,48.87402,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Red</name>
+    <styleUrl>#placemark-red</styleUrl>
+    <Point><coordinates>5.7951723,49.09251,0</coordinates></Point>
+  </Placemark>
+  <Placemark>
+    <name>Red</name>
+    <Style>
+      <LineStyle>
+        <color>FF231BE5</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>0.57128906,49.353756,0 4.4384766,49.410973,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>Pink</name>
+    <Style>
+      <LineStyle>
+        <color>FF8241FF</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>0.57128906,48.57479,0 4.4824219,48.57479,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>Purple</name>
+    <Style>
+      <LineStyle>
+        <color>FFB0279C</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>0.61523438,47.842658,0 4.3066406,47.842658,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>DeepPurple</name>
+    <Style>
+      <LineStyle>
+        <color>FFBF3966</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>0.52734375,46.890232,0 4.6582031,46.890232,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>Blue</name>
+    <Style>
+      <LineStyle>
+        <color>FFC76E00</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>0.43945313,46.042736,0 4.4824219,46.042736,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>LightBlue</name>
+    <Style>
+      <LineStyle>
+        <color>FFF29C24</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>0.48339844,45.058001,0 5.0097656,45.089036,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>Cyan</name>
+    <Style>
+      <LineStyle>
+        <color>FFCDBE14</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>0.13183594,44.150681,0 5.2294922,44.150681,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>Teal</name>
+    <Style>
+      <LineStyle>
+        <color>FF8CA500</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>0.13183594,43.100983,0 3.7792969,43.100983,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>Green</name>
+    <Style>
+      <LineStyle>
+        <color>FF3C8E38</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>-0.17578125,42.326062,0 3.6035156,42.261049,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>Lime</name>
+    <Style>
+      <LineStyle>
+        <color>FF39BF93</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>-0.74707031,41.343825,0 4.0429688,40.979898,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>Yellow</name>
+    <Style>
+      <LineStyle>
+        <color>FF00C8FF</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>-1.2744141,40.111689,0 3.6914063,40.010787,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>Orange</name>
+    <Style>
+      <LineStyle>
+        <color>FF00A0FF</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>-1.0107422,38.891033,0 2.0214844,38.891033,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>DeepOrange</name>
+    <Style>
+      <LineStyle>
+        <color>FF3264F0</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>-1.1865234,37.753344,0 2.3730469,38.169114,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>Brown</name>
+    <Style>
+      <LineStyle>
+        <color>FF485579</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>-0.52734375,36.774092,0 3.8671875,37.370157,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>Gray</name>
+    <Style>
+      <LineStyle>
+        <color>FF737373</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>0.30761719,35.88905,0 4.21875,36.173357,0</coordinates></LineString>
+  </Placemark>
+  <Placemark>
+    <name>BlueGray</name>
+    <Style>
+      <LineStyle>
+        <color>FF807359</color>
+        <width>5</width>
+      </LineStyle>
+    </Style>
+    <LineString><coordinates>0.13183594,34.921971,0 5.4931641,34.885931,0</coordinates></LineString>
+  </Placemark>
+</Document>
+</kml>

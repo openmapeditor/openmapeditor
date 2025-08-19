@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+  <name>Map Export 20250729174720</name>
+  <NetworkLink>
+    <name>Bookmark Colors</name>
+    <Link>
+      <href>files/Bookmark Colors.kml</href>
+    </Link>
+  </NetworkLink>
+  <NetworkLink>
+    <name>New list</name>
+    <Link>
+      <href>files/New list.kml</href>
+    </Link>
+  </NetworkLink>
+  <NetworkLink>
+    <name>OrganicMaps_1</name>
+    <Link>
+      <href>files/OrganicMaps_1.kml</href>
+    </Link>
+  </NetworkLink>
+  <NetworkLink>
+    <name>Vogesen</name>
+    <Link>
+      <href>files/Vogesen.kml</href>
+    </Link>
+  </NetworkLink>
+  <NetworkLink>
+    <name>Vogesen Ideen</name>
+    <Link>
+      <href>files/Vogesen Ideen.kml</href>
+    </Link>
+  </NetworkLink>
+</Document>
+</kml>
