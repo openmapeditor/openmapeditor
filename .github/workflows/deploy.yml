@@ -1,0 +1,47 @@
+# In .github/workflows/deploy.yml
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+# Add this permissions block to grant the necessary access
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  # Build job: prepares your site files
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create secrets.js
+        run: |
+          echo "const googleApiKey = '${{ secrets.VITE_GOOGLE_API_KEY }}';" > js/secrets.js
+          echo "const mapboxAccessToken = '${{ secrets.VITE_MAPBOX_ACCESS_TOKEN }}';" >> js/secrets.js
+          echo "const tracetrackApiKey = '${{ secrets.VITE_TRACETRACK_API_KEY }}';" >> js/secrets.js
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload the entire directory
+          path: "."
+
+  # Deploy job: takes the prepared files and deploys them
+  deploy:
+    # Requires the build job to succeed first
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

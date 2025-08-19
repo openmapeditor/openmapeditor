@@ -1,0 +1,1385 @@
+:root {
+  --color-black: #000;
+  --color-white: #fff;
+  --color-grey: #cccccc;
+  --color-grey-dark: #999999;
+  --color-red: #f00;
+  --color-green: #0f0;
+  --color-blue: #006ec7;
+  --color-yellow: #ff0;
+  --color-magenta: #ff00ff;
+  --color-violet: #8a2be2;
+  --color-royal-blue: #4169e1;
+  --color-orange: #ff8c00;
+
+  --routing-color-start: #388e3c;
+  --routing-color-end: #e51b23;
+  --routing-color-via: #006ec7;
+
+  /* Light Theme Variables */
+  --icon-color: black;
+  --border-color: black;
+  --divider-color: black;
+  --background-color: white;
+  --background2-color: #9ba0a4;
+  --text-color: black;
+  --highlight-color: #1f6eeb;
+  --locate-color: #1f6eeb;
+}
+
+body.dark-mode {
+  /* Dark Theme Variables */
+  --icon-color: white;
+  --border-color: white;
+  --divider-color: white;
+  --background-color: #212529;
+  --background2-color: #5e6b81;
+  --text-color: white;
+  color: white;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Roboto", sans-serif !important;
+  /* Forcefully remove blue highlight of button on mobile */
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Also remove the focus outline, which can appear as a blue ring */
+*:focus {
+  outline: none !important;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--highlight-color) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+#map {
+  height: 100vh; /* Fallback for older browsers */
+  height: 100dvh; /* Fix content hidden under Android nav bar */
+  width: 100%;
+  position: relative; /* Needed for absolute positioning of children */
+}
+
+/* --- Unified icon styling --- */
+
+/* 1. Center all icons in their button containers using flexbox */
+.leaflet-control-custom a,
+.leaflet-control-locate a,
+.leaflet-control-layers-toggle,
+.leaflet-control-zoom a,
+.leaflet-draw-toolbar a,
+.tab-button /* NEW: Also apply to tab buttons */ {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 2. Remove default background image from leaflet.draw icons */
+.leaflet-draw-toolbar a {
+  background-image: none !important;
+}
+
+/* Hide layers icon when its menu is open */
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+  display: none !important;
+}
+
+/* Change width when layers menu is open */
+.leaflet-control-layers-expanded {
+  width: 205px;
+}
+
+/* 3. Define size for each svg icon class */
+.icon-locate,
+.icon-elevation,
+.icon-download,
+.icon-layers,
+.icon-fullscreen-enter,
+.icon-fullscreen-exit,
+.icon-delete-circle {
+  width: 22px;
+  height: 22px;
+}
+
+/* NEW: Settings Icon Size */
+.icon-settings {
+  width: 20px;
+  height: 20px;
+}
+
+.icon-import {
+  width: 20px;
+  height: 20px;
+}
+.icon-plus,
+.icon-minus,
+.icon-draw-path,
+.icon-draw-marker,
+.icon-edit,
+.icon-delete {
+  width: 18px;
+  height: 18px;
+}
+
+/* 4. Define the color for all icons */
+.icon-clear-via-stop,
+.icon-locate,
+.icon-elevation,
+.icon-download,
+.icon-import,
+.icon-plus,
+.icon-minus,
+.icon-draw-marker,
+.icon-edit,
+.icon-delete,
+.icon-layers,
+.icon-delete-circle,
+.icon-fullscreen-enter,
+.icon-fullscreen-exit,
+.icon-settings /* NEW: Add settings icon to color rule */ {
+  fill: var(--icon-color);
+}
+
+/* Specific rule for path to use stroke color */
+.icon-draw-path {
+  stroke: var(--icon-color);
+  fill: none;
+}
+
+/* Clear style for disabled draw buttons */
+.leaflet-draw-toolbar a.leaflet-disabled {
+  background-color: var(--background2-color) !important;
+  cursor: not-allowed;
+}
+.leaflet-draw-toolbar a.leaflet-disabled .icon {
+  fill: var(--icon-color); /* Use a faded grey for the icon itself */
+}
+
+/* --- Svg marker icon styling (for map markers, not toolbar) --- */
+.svg-marker-icon .marker-pin-use {
+  fill: var(--marker-color);
+  fill-opacity: var(--marker-opacity);
+}
+
+/* --- Info panel for selected items (MODIFIED) --- */
+#info-panel {
+  position: relative; /* Needed for color picker positioning */
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  text-align: center;
+  width: 100%; /* MODIFIED: Take full width of parent */
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+#info-panel-name {
+  position: relative;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  width: 200px;
+  max-width: 100%;
+  margin-bottom: 5px;
+  background-color: var(--background-color2);
+  border: none;
+  border: 2px dashed var(--text-color);
+  border-radius: 0;
+  color: var(--text-color);
+  padding: 5px;
+}
+
+#info-panel-name:focus {
+  outline: none;
+  border: 2px solid var(--border-color);
+  background-color: var(--highlight-color);
+  color: var(--background-color);
+}
+
+#info-panel-details {
+  font-size: 12px;
+  color: var(--text-color) !important;
+  margin: 0;
+  overflow: hidden;
+  margin-top: 5px;
+  padding: 0 5px; /* Add padding to prevent text touching edges */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#info-panel-details .copy-icon {
+  width: 20px;
+  height: 20px;
+  fill: var(--icon-color);
+  margin-left: 6px;
+  flex-shrink: 0; /* Prevents the icon from shrinking if space is tight */
+}
+
+/* --- Style Row for Color Swatch and Layer Name --- */
+#info-panel-style-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  margin-top: 8px;
+  /* REMOVED: position: relative; */
+  min-height: 22px;
+}
+
+#info-panel-color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: transform 0.1s ease-in-out;
+  position: absolute;
+  /* MODIFIED aLIGNMENT */
+  left: 10px;
+  bottom: 10px;
+}
+
+/* Hide color swatch when picker is open */
+#info-panel:has(#color-picker[style*="display: grid"]) #info-panel-color-swatch {
+  display: none;
+}
+
+#info-panel-layer-name {
+  font-size: 12px;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+/* --- Color Picker Styles --- */
+#color-picker {
+  display: none; /* Hidden by default, JS toggles to 'grid' */
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px;
+  gap: 5px;
+  grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-top: 10px; /* Space it from the info panel content */
+}
+
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  transition: transform 0.1s ease-in-out;
+  box-sizing: border-box;
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.color-swatch.selected {
+  border: 2px solid var(--border-color);
+}
+
+/* --- Overview panel styles (MODIFIED) --- */
+#overview-panel {
+  width: 100%; /* MODIFIED: Take full width */
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 8px 8px;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  /* REMOVED display: flex; to allow tab controller to work */
+}
+
+#overview-panel-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex-grow: 1;
+  max-height: calc(100vh - 400px);
+}
+.overview-list-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--divider-color);
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background-color: var(--background-color);
+  color: var(--text-color) !important;
+}
+.overview-visibility-btn {
+  display: inline-block;
+  padding-right: 8px;
+  color: var(--color-black);
+  cursor: pointer;
+  line-height: 1;
+  user-select: none;
+}
+.overview-visibility-btn .icon {
+  width: 18px;
+  height: 18px;
+  fill: var(--icon-color);
+  vertical-align: middle;
+}
+.overview-delete-btn {
+  display: inline-block;
+  padding-right: 8px;
+  color: var(--color-black);
+  cursor: pointer;
+  line-height: 1;
+  user-select: none;
+}
+.overview-delete-btn .icon {
+  width: 18px;
+  height: 18px;
+  fill: var(--icon-color);
+  vertical-align: middle;
+}
+.overview-item-text {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-color);
+}
+.overview-list-item:last-child {
+  border-bottom: none !important;
+}
+.overview-list-item[data-layer-id]:hover {
+  /* background-color: #006ec7; */
+}
+.overview-list-item.selected {
+  background-color: var(--highlight-color);
+  /* font-weight: bold; */
+}
+
+/* Style for the arrow element (kept for directions panel) */
+.header-arrow {
+  border: solid var(--color-black);
+  border-width: 0 2px 2px 0;
+  display: inline-block;
+  padding: 2.5px;
+  margin-right: 8px;
+  transition: transform 0.2s ease-in-out;
+  /* Default state (expanded): arrow points up */
+  transform: rotate(-135deg);
+}
+
+#directions-panel.collapsed .header-arrow {
+  transform: rotate(45deg);
+}
+
+/* --- Custom Layers Panel Styles (NEW) --- */
+#custom-layers-panel {
+  display: none; /* Hidden by default */
+  position: absolute;
+  top: 10px;
+  left: 51px; /* The toolbar width is ~40px, so 51px provides a 10px gap */
+  z-index: 1003; /* Ensure it's above the map but consistent with other panels */
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Style the form content that we will move into the panel */
+#custom-layers-panel .leaflet-control-layers-form {
+  padding: 8px;
+  background-color: transparent;
+  border-radius: 8px;
+}
+#custom-layers-panel .leaflet-control-layers-separator {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 5px 0;
+}
+#custom-layers-panel label {
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+}
+#custom-layers-panel span {
+  padding-left: 5px;
+}
+
+/* Remove default Leaflet control styling from the content inside our panel */
+#custom-layers-panel .leaflet-control-layers {
+  border: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+/* --- Routing Panel Styles (MODIFIED) --- */
+#routing-panel {
+  width: 100%;
+  box-sizing: border-box;
+  flex-direction: column;
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 8px 8px;
+  padding: 0;
+}
+
+#routing-panel-content {
+  padding: 10px;
+  padding-bottom: 0;
+}
+
+.routing-input-group {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  position: relative; /* Needed for suggestion list positioning */
+}
+
+.routing-input-group input {
+  flex-grow: 1;
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+}
+.routing-input-group input::placeholder {
+  color: var(--text-color) !important;
+}
+
+.routing-input-group input,
+.routing-input-group select {
+  padding: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  height: 30px;
+  box-sizing: border-box;
+}
+
+.routing-input-group button {
+  margin-left: 5px;
+  padding: 5px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--background-color);
+}
+.routing-input-group button.active {
+  background-color: var(--text-color);
+  color: var(--color-white);
+  border-color: var(--border-color);
+}
+
+#routing-panel-content > .routing-input-group:last-child {
+  display: flex;
+  justify-content: center; /* Center items horizontally */
+  align-items: center;
+}
+
+#route-profile {
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 75px;
+  height: 30px;
+  margin: 0;
+  padding: 6px !important;
+  font-size: 14px !important;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+#get-route-btn,
+#save-route-btn {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  margin: 0;
+  padding: 6px !important;
+  font-size: 14px !important;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+#get-route-btn {
+  font-weight: bold;
+  background-color: var(--text-color);
+  color: var(--background-color);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+#save-route-btn {
+  padding: 8px;
+  font-size: 14px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#save-route-btn:not(:disabled) {
+  font-weight: bold;
+  background-color: var(--text-color);
+  color: var(--background-color);
+}
+
+#save-route-btn:disabled {
+  cursor: not-allowed;
+}
+
+/* --- Autocomplete suggestion list styles --- */
+.autocomplete-suggestions {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--background-color);
+  border: 1px solid var(--divider-color);
+  border-top: none;
+  z-index: 1002;
+  border-radius: 0 0 8px 8px;
+  width: 190px;
+  padding-bottom: 5px;
+}
+
+.autocomplete-suggestion-item {
+  padding: 8px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-color);
+}
+
+.autocomplete-suggestion-item:hover,
+.autocomplete-suggestion-item.active {
+  background-color: var(--highlight-color) !important;
+}
+
+/* --- NEW: Seamless Input/Suggestion Box Connection --- */
+/* This is traditionally difficult with CSS alone, but the modern :has() selector makes it possible.
+   We select the parent group if it :has() a visible suggestion list, then style the input inside it. */
+.routing-input-group:has(.autocomplete-suggestions[style*="display: block"]) > input[type="text"] {
+  /* Make the bottom corners sharp to connect to the box below */
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* --- Directions Panel Styles --- */
+#directions-panel {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  overflow: hidden; /* To contain the rounded corners */
+  display: none; /* Hidden by default, shown when a route is found */
+}
+
+#directions-panel-header {
+  padding: 4px 12px;
+  font-weight: normal;
+  background-color: var(--background-color);
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+#directions-panel.collapsed #directions-panel-header {
+  border-bottom: none;
+}
+
+#directions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  max-height: 125px;
+  background-color: var(--background-color);
+}
+
+#directions-panel.collapsed #directions-list {
+  display: none;
+}
+
+.direction-item {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.direction-item:last-child {
+  border-bottom: none;
+}
+
+#directions-panel .header-arrow {
+  transform: rotate(-135deg); /* Expanded state */
+}
+
+#directions-panel.collapsed .header-arrow {
+  transform: rotate(45deg); /* Collapsed state */
+}
+
+/* --- NEW: Tab System Styles --- */
+#tab-container {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#tab-buttons {
+  display: flex;
+  width: 100%;
+}
+
+.tab-button {
+  flex: 1; /* MODIFIED: Let text buttons grow */
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  background-color: var(--background2-color);
+  border-bottom: 1px solid var(--border-color);
+  outline: none;
+  border-bottom: none;
+  color: var(--text-color);
+  min-width: 0;
+}
+.tab-button.active {
+  /* color: var(--text-color); */
+}
+
+#tab-btn-overview {
+  border-radius: 8px 0 0 0;
+  border-right: none;
+}
+
+/* MODIFIED: Routing button is now in the middle */
+#tab-btn-routing {
+  border-radius: 0;
+  border-right: none;
+}
+
+/* NEW: Settings icon button has fixed size */
+#tab-btn-settings {
+  flex: 0 0 40px; /* Don't grow, fixed width */
+  padding: 8px;
+  border-radius: 0 8px 0 0;
+}
+
+.tab-button.active {
+  background-color: var(--background-color);
+}
+
+#tab-content {
+  background-color: transparent;
+  padding: 0;
+}
+
+.tab-panel {
+  display: none; /* Hidden by default */
+}
+
+.tab-panel.active {
+  display: flex; /* MODIFIED: Use flex for both panels */
+  flex-direction: column;
+}
+/* END: Tab System Styles */
+
+/* --- NEW: Settings Panel Style --- */
+#settings-panel {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 8px 8px;
+  background-color: var(--background-color);
+  gap: 10px;
+}
+
+/* --- START: Themed Sweetalert2 Styles --- */
+/* This block styles all SweetAlert2 popups to respect the selected
+   light or dark theme by using the application's CSS variables. */
+
+/* Main popup container */
+.swal2-popup {
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Title text */
+.swal2-title {
+  color: var(--text-color) !important;
+}
+
+/* Content text (main message) */
+.swal2-html-container {
+  color: var(--text-color) !important;
+}
+
+/* Action buttons (Confirm, Cancel, Deny) */
+.swal2-confirm,
+.swal2-cancel,
+.swal2-deny {
+  border-radius: 4px !important;
+  font-weight: bold !important;
+}
+
+/* Confirm button style */
+.swal2-confirm {
+  background-color: var(--text-color) !important;
+  color: var(--background-color) !important;
+}
+
+/* Cancel and Deny button styles */
+.swal2-cancel,
+.swal2-deny {
+  background-color: var(--background2-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Close button (the 'X' in the corner) */
+.swal2-close {
+  color: var(--text-color) !important;
+}
+.swal2-close:hover {
+  color: var(--highlight-color) !important;
+}
+
+/* Icons (Success, Error, Info, etc.) */
+.swal2-icon.swal2-success .swal2-success-line-tip,
+.swal2-icon.swal2-success .swal2-success-line-long {
+  stroke: #22c55e !important; /* A vibrant green */
+}
+
+.swal2-icon.swal2-error [class^="swal2-x-mark-line"] {
+  stroke: #ef4444 !important; /* A vibrant red */
+}
+
+.swal2-icon.swal2-info {
+  border-color: var(--highlight-color) !important;
+  color: var(--highlight-color) !important;
+}
+
+.swal2-icon.swal2-warning {
+  border-color: #f59e0b !important; /* A vibrant amber */
+  color: #f59e0b !important;
+}
+
+/* Progress bar for timers */
+.swal2-timer-progress-bar {
+  background-color: var(--highlight-color) !important;
+}
+
+/* --- END: Themed Sweetalert2 Styles --- */
+
+/* Leaflet control overrides */
+.leaflet-touch .leaflet-control-layers-toggle {
+  background-position: center center;
+  background-size: 22px 22px;
+  height: 30px;
+  width: 30px;
+  z-index: 4000;
+}
+
+/* Style for the elevation chart container */
+#elevation-div {
+  bottom: 0px;
+  height: auto;
+  left: 0px;
+  position: absolute;
+  text-align: center;
+  visibility: hidden;
+  width: 100%;
+  z-index: 500;
+}
+
+.elevation-control .background {
+  height: 200px !important;
+}
+
+.elevation-summary {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  height: auto;
+  margin: 0;
+  padding-top: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 25px;
+}
+
+/* Hide altitude text below the elevation chart  */
+.legend {
+  display: none;
+}
+
+.custom-theme.elevation-control .area path.altitude,
+.custom-theme .legend-altitude rect.area {
+  fill: var(--color-red);
+  fill-opacity: 0.5;
+  stroke: var(--color-red);
+  stroke-width: 1.5;
+}
+.custom-theme.elevation-control .area path.slope,
+.custom-theme .legend-slope rect {
+  fill-opacity: 1;
+  stroke: var(--color-black);
+  stroke-width: 1.5;
+}
+.custom-theme.height-focus.circle-lower {
+  fill: var(--color-white);
+}
+.custom-theme.elevation-polyline {
+  stroke: var(--color-red);
+  stroke-opacity: 1;
+  stroke-width: 2;
+}
+.custom-theme.elevation-polyline--segments {
+  stroke: var(--color-yellow);
+  stroke-dasharray: 4;
+  stroke-width: 2;
+}
+#elevation-div,
+.elevation-control .background {
+  background-color: var(--background-color);
+}
+
+/* Style for the download submenu */
+.leaflet-control-custom .download-submenu {
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: none;
+  left: 35px;
+  position: absolute;
+  top: 0px;
+  white-space: nowrap;
+  z-index: 1000;
+  color: var(--text-color) !important;
+}
+
+.download-submenu button {
+  border-bottom: 1px solid var(--border-color) !important;
+  height: 30px !important;
+}
+
+.download-submenu button:last-child {
+  border: none !important;
+}
+
+.leaflet-control-custom .download-submenu button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: block;
+  font-size: 12px;
+  padding: 5px 10px;
+  text-align: left;
+  width: 100%;
+  color: var(--text-color);
+  overflow: hidden !important;
+}
+
+.download-submenu button:disabled {
+  color: var(--text-color);
+  background-color: var(--background2-color);
+  cursor: not-allowed;
+}
+
+/* Rounds the top corners of the first button */
+.download-submenu button:first-child {
+  border-top-left-radius: 7px;
+  border-top-right-radius: 7px;
+}
+
+/* Rounds the bottom corners of the last button */
+.download-submenu button:last-child {
+  border-bottom-left-radius: 7px;
+  border-bottom-right-radius: 7px;
+}
+
+/* Main ui layout */
+.leaflet-left {
+  left: 10px;
+  margin-top: 10px;
+}
+.leaflet-right .leaflet-control {
+  border: 1px solid var(--border-color) !important;
+  margin-right: 10px !important;
+  margin-top: 10px !important;
+}
+
+/* Geosearch bar styles */
+#map
+  > div.leaflet-control-container
+  > div.leaflet-control-geosearch.leaflet-geosearch-bar
+  > form
+  > input {
+  font-size: 14px;
+}
+.leaflet-control-geosearch {
+  width: 200px;
+  z-index: 1001;
+  right: 90px; /* Adjusted to make space for other controls */
+  position: absolute;
+  overflow: hidden;
+  margin-top: 0 !important; /* Remove default margin-top from Leaflet */
+  padding: 0 !important;
+}
+.leaflet-geosearch-bar {
+  border: 1px solid var(--border-color) !important;
+  margin-top: 10px !important;
+  border-radius: 8px !important; /* Rounded corners for the bar */
+  max-width: calc(100vw - 140px);
+}
+.leaflet-geosearch-bar,
+.leaflet-geosearch-bar form,
+.leaflet-control-geosearch form input,
+.leaflet-touch .leaflet-control-geosearch button.reset,
+.leaflet-control-geosearch .results {
+  background-color: var(--background-color) !important;
+  color: var(--text-color);
+  padding: 0;
+}
+.leaflet-control-geosearch .results > .active,
+.leaflet-control-geosearch .results > *:hover {
+  background-color: var(--highlight-color);
+}
+.leaflet-control-geosearch .results > * {
+  padding: 5px 8px;
+  border: none;
+}
+.leaflet-control-geosearch .results.active {
+  padding-top: 0;
+  border-top: 1px solid var(--text-color);
+}
+.leaflet-geosearch-bar form,
+.leaflet-control-layers {
+  background-color: var(--background-color);
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+.leaflet-control-geosearch .results.active {
+  padding-bottom: 5px;
+}
+.leaflet-geosearch-bar form input::placeholder {
+  color: var(--text-color);
+}
+.leaflet-touch .leaflet-control-geosearch button.reset {
+  margin-right: 10px;
+  display: none;
+}
+
+/* Toolbar styles */
+.leaflet-touch .leaflet-bar,
+.leaflet-draw {
+  border: none;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+}
+.leaflet-bar a,
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+  background-color: var(--background-color);
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* This rule targets the first custom control to round its top corners */
+.leaflet-left > .leaflet-control-custom:first-child a {
+  border-radius: 50px 50px 0 0 !important;
+}
+.leaflet-left > .leaflet-bar:last-child a,
+#map > div.leaflet-control-container > div.leaflet-top.leaflet-left > div:nth-child(6) {
+  border-radius: 0 0 50px 50px !important;
+}
+
+.leaflet-touch .leaflet-draw-actions {
+  left: 35px;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.leaflet-draw-actions a,
+.leaflet-draw-actions a:hover {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Attribution */
+.leaflet-control-attribution {
+  background: var(--background-color) !important;
+  bottom: 0;
+  position: relative;
+  z-index: 3000;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px 8px 0 0 !important;
+}
+.leaflet-container .leaflet-control-attribution {
+  border-bottom: none !important;
+  color: var(--text-color);
+}
+.leaflet-container .leaflet-control-attribution a {
+  color: var(--highlight-color) !important;
+}
+
+.leaflet-marker-shadow {
+  display: none !important;
+}
+
+/* Divider lines for controls */
+/*
+#map
+  > div.leaflet-control-container
+  > div.leaflet-top.leaflet-left
+  > div.leaflet-control-custom:first-child::after,
+#map
+  > div.leaflet-control-container
+  > div.leaflet-top.leaflet-left
+  > div.leaflet-control-locate.leaflet-bar.leaflet-control::after,
+#map
+  > div.leaflet-control-container
+  > div.leaflet-top.leaflet-left
+  > div.leaflet-control-zoom.leaflet-bar.leaflet-control
+  > a.leaflet-control-zoom-out::after,
+#map
+  > div.leaflet-control-container
+  > div.leaflet-top.leaflet-left
+  > div.leaflet-draw.leaflet-control
+  > div:nth-child(1)
+  > div
+  > a.leaflet-draw-draw-marker::after,
+#map > div.leaflet-control-container > div.leaflet-top.leaflet-left > div:nth-child(4)::after,
+#map > div.leaflet-control-container > div.leaflet-top.leaflet-left > div:nth-child(5)::after,
+#map > div.leaflet-control-container > div.leaflet-top.leaflet-left > div:nth-child(6)::after {
+  background-color: var(--divider-color);
+  bottom: 0;
+  content: "";
+  height: 1px;
+  left: 0px;
+  position: absolute;
+  right: 0px;
+}
+#map
+  > div.leaflet-control-container
+  > div.leaflet-top.leaflet-left
+  > div.leaflet-control-zoom.leaflet-bar.leaflet-control
+  > a.leaflet-control-zoom-in::after,
+#map
+  > div.leaflet-control-container
+  > div.leaflet-top.leaflet-left
+  > div.leaflet-draw.leaflet-control
+  > div:nth-child(1)
+  > div
+  > a.leaflet-draw-draw-polyline::after,
+#map
+  > div.leaflet-control-container
+  > div.leaflet-top.leaflet-left
+  > div.leaflet-draw.leaflet-control
+  > div:nth-child(2)
+  > div
+  > a.leaflet-draw-edit-edit::after {
+  background-color: var(--divider-color);
+  bottom: 50%;
+  content: "";
+  height: 1px;
+  left: 0px;
+  position: absolute;
+  right: 0px;
+}
+*/
+
+/* Style for disabled custom buttons */
+.leaflet-control-custom.disabled > a {
+  background-color: var(--background2-color);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.leaflet-control-custom.disabled .icon {
+  fill: var(--icon-color) !important;
+}
+
+/* Border around the toolbar */
+#map > div.leaflet-control-container > div.leaflet-top.leaflet-left {
+  border: 1px solid var(--border-color);
+  border-radius: 50px 50px 50px 50px !important;
+}
+.leaflet-control-locate a .leaflet-control-locate-location-arrow {
+  display: none;
+}
+.locate-active a {
+  background-color: var(--locate-color) !important;
+}
+.locate-active .icon-locate {
+  fill: var(--color-white) !important;
+}
+
+/* Hide routing machine's default itinerary */
+.leaflet-routing-container {
+  display: none;
+}
+
+/* MODIFIED: Settings Control Item Styles are now inside the settings panel */
+#settings-panel .settings-control-item {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 8px;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: auto;
+}
+
+/* Make routing and elevation provider select boxes the same width */
+#settings-panel select {
+  width: 120px;
+}
+
+#settings-panel .settings-control-item label {
+  cursor: pointer;
+  user-select: none; /* Prevent text selection on click */
+}
+#settings-panel .settings-control-item input {
+  vertical-align: middle;
+  margin-right: 8px;
+  transform: scale(1.2);
+}
+
+/* NEW: Styles for the info icon in the settings panel */
+.settings-info-icon {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text-color);
+  cursor: pointer;
+  margin-left: 10px;
+  line-height: 1;
+}
+.settings-info-icon:hover {
+  /* color: var(--color-black); */
+}
+
+/* Hide the default browser cursor and use our custom one during selection mode */
+body.route-point-select-mode,
+body.route-point-select-mode * {
+  cursor: none !important;
+}
+
+/* --- Custom Cursor Styles --- */
+.custom-cursor {
+  position: absolute;
+  display: none;
+  pointer-events: none; /* Make it unclickable */
+  z-index: 2000; /* Ensure it's on top */
+  width: 25px;
+  height: 41px;
+  /* Anchor the cursor so the tip of the pin is at the mouse pointer */
+  transform: translate(-12.5px, -41px);
+}
+.custom-cursor svg {
+  width: 100%;
+  height: 100%;
+}
+#custom-cursor-start svg {
+  fill: var(--routing-color-start);
+}
+#custom-cursor-end svg {
+  fill: var(--routing-color-end);
+}
+#custom-cursor-via svg {
+  fill: var(--routing-color-via);
+}
+/* Change cursor to 'all-scroll' when hovering over draggable markers */
+.leaflet-marker-draggable {
+  cursor: all-scroll !important;
+}
+
+/* Forcefully removes dotted line style ONLY during editing */
+.map-is-editing path.leaflet-interactive {
+  stroke-dasharray: none !important;
+}
+
+/* Main container for all right-side panels (MODIFIED) */
+#main-right-container {
+  position: absolute;
+  top: 50px;
+  right: 10px;
+  width: 280px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Space between panels */
+  max-width: calc(100vw - 60px);
+}
+
+#directions-panel-header {
+  display: flex;
+  align-items: center;
+}
+#directions-panel-header .header-arrow {
+  padding: 2.5px;
+  border-width: 0 1.5px 1.5px 0;
+  border-color: var(--text-color);
+}
+
+/* --- Panels Toggle Button --- */
+.leaflet-control-toggle-panels {
+  position: absolute !important;
+  top: 0px !important;
+  right: 40px !important;
+  border-radius: 8px !important;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1002;
+  margin-top: 0 !important;
+}
+
+.leaflet-control-toggle-panels a {
+  background-color: var(--background-color);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 7px !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-chevron-left,
+.icon-chevron-right {
+  width: 24px;
+  height: 24px;
+  fill: var(--icon-color);
+}
+
+#main-right-container.hidden {
+  display: none;
+}
+
+.leaflet-control-scale {
+  margin-left: 0 !important;
+}
+
+.leaflet-control-scale-line {
+  border: 1px solid var(--border-color);
+  background: var(--background-color);
+  text-shadow: none;
+  color: var(--text-color);
+  border-radius: 8px !important;
+}
+
+.leaflet-control-scale-line:not(:first-child) {
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Hide Leaflet-draw tooltip on mobile to improve drawing UX. */
+@media (max-width: 768px) {
+  .leaflet-draw-tooltip {
+    display: none !important;
+  }
+}
+
+/* Change the square edit handles to circles */
+.leaflet-editing-icon,
+.leaflet-middle-icon {
+  border-radius: 50%;
+}
+
+/* --- Fullscreen Toggle Control (NEW) --- */
+.leaflet-control-fullscreen-toggle {
+  position: absolute !important;
+  top: 0px !important;
+  right: 0px !important;
+  border-radius: 8px !important;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1003;
+  margin-top: 0 !important;
+}
+
+.leaflet-control-fullscreen-toggle a {
+  background-color: var(--background-color);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 7px !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.leaflet-control-fullscreen-toggle .icon-fullscreen-enter,
+.leaflet-control-fullscreen-toggle .icon-fullscreen-exit {
+  width: 20px;
+  height: 20px;
+  fill: var(--icon-color);
+}
+
+/* Hides the scale control when the elevation chart is visible */
+.leaflet-control-scale.hidden-by-elevation {
+  display: none;
+}
+
+/* Panels Toggle: Hide left icon by default */
+.leaflet-control-toggle-panels .icon-chevron-left {
+  display: none;
+}
+/* Panels Toggle: When hidden, show left and hide right */
+.leaflet-control-toggle-panels.panels-hidden .icon-chevron-left {
+  display: block;
+}
+.leaflet-control-toggle-panels.panels-hidden .icon-chevron-right {
+  display: none;
+}
+
+/* Fullscreen Toggle: Hide exit icon by default */
+.leaflet-control-fullscreen-toggle .icon-fullscreen-exit {
+  display: none;
+}
+/* Fullscreen Toggle: When active, show exit and hide enter */
+.leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-exit {
+  display: block;
+}
+.leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-enter {
+  display: none;
+}

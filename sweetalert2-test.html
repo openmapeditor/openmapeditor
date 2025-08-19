@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SweetAlert2 Theming Test</title>
+
+    <link rel="stylesheet" href="sweetalert2-11.22.2/dist/sweetalert2.min.css" />
+
+    <link rel="stylesheet" href="style.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* Basic styles for this test page */
+      body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        padding: 20px;
+        transition: background-color 0.3s, color 0.3s;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+      }
+      .button-group button {
+        padding: 10px 15px;
+        margin: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 5px;
+        border: 1px solid var(--border-color);
+        background-color: var(--background2-color);
+        color: var(--text-color);
+      }
+      #theme-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>SweetAlert2 Theme Test Page</h1>
+      <p>Click the buttons below to test the different alert types.</p>
+      <div class="button-group" id="test-buttons"></div>
+    </div>
+
+    <button id="theme-toggle" class="button-group">Toggle Dark Mode</button>
+
+    <script src="sweetalert2-11.22.2/dist/sweetalert2.min.js"></script>
+
+    <script>
+      // --- Dark Mode Toggle Logic ---
+      const themeToggleBtn = document.getElementById("theme-toggle");
+      themeToggleBtn.addEventListener("click", () => {
+        document.body.classList.toggle("dark-mode");
+      });
+
+      // --- Test Button Generation Logic ---
+      const buttonContainer = document.getElementById("test-buttons");
+      const testCases = [
+        {
+          text: "Success",
+          action: () => Swal.fire("Success!", "Your action was successful.", "success"),
+        },
+        {
+          text: "Error",
+          action: () => Swal.fire("Error!", "Something went wrong.", "error"),
+        },
+        {
+          text: "Confirm Dialog",
+          action: () =>
+            Swal.fire({
+              title: "Are you sure?",
+              text: "This action cannot be undone.",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonText: "Yes, proceed!",
+            }),
+        },
+        {
+          text: "Input Prompt",
+          action: () =>
+            Swal.fire({
+              title: "Enter your name",
+              input: "text",
+              inputPlaceholder: "e.g., Alex",
+            }),
+        },
+      ];
+
+      // Create a button for each test case
+      testCases.forEach((test) => {
+        const btn = document.createElement("button");
+        btn.textContent = test.text;
+        btn.onclick = test.action;
+        buttonContainer.appendChild(btn);
+      });
+    </script>
+  </body>
+</html>
