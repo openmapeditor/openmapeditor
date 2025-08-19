@@ -21,7 +21,7 @@ This project is self-contained and does not require a local server or package ma
 1.  **Clone the Repository**
 
     ```bash
-    git clone [https://github.com/your-username/your-repository-name.git](https://github.com/your-username/your-repository-name.git)
+    git clone [https://github.com/openmapeditor/openmapeditor](https://github.com/openmapeditor/openmapeditor)
     ```
 
 2.  **Provide API Keys**
