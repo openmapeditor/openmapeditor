@@ -1180,6 +1180,7 @@ function initializeMap() {
       const newProvider = e.target.value;
       elevationProvider = newProvider;
       localStorage.setItem("elevationProvider", newProvider);
+      clearElevationCache();
       Swal.fire({
         toast: true,
         position: "center",

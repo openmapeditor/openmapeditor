@@ -5,6 +5,23 @@
 // At the top of elevation.js, initialize a cache object.
 const elevationCache = new Map();
 
+/**
+ * Clears the elevation data cache and the current elevation profile display.
+ */
+function clearElevationCache() {
+  elevationCache.clear();
+  if (elevationControl) {
+    elevationControl.clear();
+    // Also, hide the elevation div if it's visible
+    const elevationDiv = document.getElementById("elevation-div");
+    if (elevationDiv) {
+      elevationDiv.style.visibility = "hidden";
+      isElevationProfileVisible = false;
+    }
+    updateElevationToggleIconColor();
+  }
+}
+
 // This promise acts as a signal. It will resolve when the API script is ready.
 let resolveGoogleMapsApi;
 const googleMapsApiPromise = new Promise((resolve) => {
