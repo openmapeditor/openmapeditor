@@ -15,40 +15,112 @@ function initializeRouting() {
     customCursorEnd,
     customCursorVia;
 
+  let intermediateViaMarkers = [];
+  let shouldFitBounds = true;
+
   const geocoder = new GeoSearch.OpenStreetMapProvider();
 
-  // Define router options
   const mapboxRouter = L.Routing.mapbox(mapboxAccessToken);
   const osrmRouter = L.Routing.osrmv1({
     serviceUrl: "https://router.project-osrm.org/route/v1",
-    profile: "driving", // This will be updated when 'Get Route' is clicked
+    profile: "driving",
   });
 
-  // --- FIX START: Encapsulate routing control creation in a function ---
+  // --- Central function to calculate a fresh route ---
+  const calculateNewRoute = () => {
+    // Guard clause: only run if we have a start and end.
+    if (!currentStartLatLng || !currentEndLatLng) {
+      return;
+    }
+
+    shouldFitBounds = true;
+    intermediateViaMarkers.forEach((marker) => map.removeLayer(marker));
+    intermediateViaMarkers = [];
+    saveRouteBtn.disabled = true;
+
+    const selectedProfile = profileSelect.value;
+    const currentProvider = localStorage.getItem("routingProvider") || "mapbox";
+
+    if (currentProvider === "mapbox") {
+      let mapboxProfile;
+      switch (selectedProfile) {
+        case "bike":
+          mapboxProfile = "cycling";
+          break;
+        case "foot":
+          mapboxProfile = "walking";
+          break;
+        default:
+          mapboxProfile = "driving";
+      }
+      routingControl.getRouter().options.profile = "mapbox/" + mapboxProfile;
+    } else {
+      routingControl.getRouter().options.profile = selectedProfile;
+    }
+
+    const waypoints = [L.latLng(currentStartLatLng)];
+    if (currentViaLatLng) {
+      waypoints.push(L.latLng(currentViaLatLng));
+    }
+    waypoints.push(L.latLng(currentEndLatLng));
+
+    setWaypointsAndLog(waypoints);
+  };
+
+  const setWaypointsAndLog = (waypoints) => {
+    const providerMap = { mapbox: "Mapbox", osrm: "OSRM" };
+    const currentProvider = localStorage.getItem("routingProvider") || "mapbox";
+    const providerDisplayName = providerMap[currentProvider] || currentProvider;
+    console.log(`Fetching route from: ${providerDisplayName}`);
+    routingControl.setWaypoints(waypoints);
+  };
+
+  const updateRouteWithIntermediateVias = () => {
+    if (!currentStartLatLng || !currentEndLatLng) return;
+    shouldFitBounds = false;
+    const waypoints = [L.latLng(currentStartLatLng)];
+    intermediateViaMarkers.forEach((marker) => {
+      waypoints.push(marker.getLatLng());
+    });
+    if (currentViaLatLng) {
+      waypoints.push(L.latLng(currentViaLatLng));
+    }
+    waypoints.push(L.latLng(currentEndLatLng));
+    setWaypointsAndLog(waypoints);
+  };
+
+  const addIntermediateViaPoint = (latlng) => {
+    const newViaMarker = L.marker(latlng, {
+      icon: createSvgIcon(routingColorVia, 1),
+      draggable: true,
+      title: "Drag to move, right-click to remove",
+    }).addTo(map);
+    newViaMarker.on("contextmenu", () => {
+      map.removeLayer(newViaMarker);
+      intermediateViaMarkers = intermediateViaMarkers.filter((m) => m !== newViaMarker);
+      updateRouteWithIntermediateVias();
+    });
+    newViaMarker.on("dragend", updateRouteWithIntermediateVias);
+    intermediateViaMarkers.push(newViaMarker);
+    updateRouteWithIntermediateVias();
+  };
+
   function setupRoutingControl(provider) {
-    // If an old control exists, remove it from the map
     if (routingControl) {
       map.removeControl(routingControl);
       routingControl = null;
     }
-
-    // Select the appropriate router engine
     const router = provider === "osrm" ? osrmRouter : mapboxRouter;
-
-    // Create and configure the new routing control
     routingControl = L.Routing.control({
       waypoints: [],
       router: router,
-      lineOptions: {
-        styles: [{ opacity: 0, weight: 0 }],
-      },
+      lineOptions: { styles: [{ opacity: 0, weight: 0 }] },
       routeWhileDragging: false,
       show: false,
       addWaypoints: false,
       createMarker: () => null,
     }).addTo(map);
 
-    // Re-attach the 'routesfound' event listener to the new control instance
     routingControl.on("routesfound", (e) => {
       const routes = e.routes;
       if (routes.length > 0) {
@@ -70,7 +142,6 @@ function initializeRouting() {
         const summaryContainer = document.getElementById("routing-summary-container");
         if (route.summary && summaryContainer) {
           const totalDistanceKm = (route.summary.totalDistance / 1000).toFixed(2);
-
           function formatDuration(seconds) {
             const h = Math.floor(seconds / 3600);
             const m = Math.floor((seconds % 3600) / 60);
@@ -80,7 +151,6 @@ function initializeRouting() {
             return parts.join(" ");
           }
           const formattedTime = formatDuration(route.summary.totalTime);
-
           summaryContainer.innerHTML = `<b>Distance:</b> ${totalDistanceKm} km &nbsp;&nbsp; <b>Time:</b> ${formattedTime}`;
           summaryContainer.style.display = "block";
         }
@@ -109,7 +179,9 @@ function initializeRouting() {
             '<div class="direction-item">No turn-by-turn directions available.</div>';
         }
 
-        map.fitBounds(L.latLngBounds(processedCoordinates), { padding: [50, 50] });
+        if (shouldFitBounds) {
+          map.fitBounds(L.latLngBounds(processedCoordinates), { padding: [50, 50] });
+        }
 
         if (currentRoutePath) {
           if (globallySelectedItem === currentRoutePath) {
@@ -135,56 +207,42 @@ function initializeRouting() {
           },
         };
         newRoutePath.pathType = "route";
-
         newRoutePath.on("click", (ev) => {
           L.DomEvent.stopPropagation(ev);
-          selectItem(newRoutePath);
+          addIntermediateViaPoint(ev.latlng);
         });
 
         editableLayers.addLayer(newRoutePath);
         drawnItems.addLayer(newRoutePath);
         newRoutePath.addTo(map);
         currentRoutePath = newRoutePath;
-
         updateOverviewList();
         updateDrawControlStates();
-
         selectItem(newRoutePath);
         saveRouteBtn.disabled = false;
       }
     });
 
-    // --- MODIFIED: Add generalized routing error handler ---
     routingControl.on("routingerror", (e) => {
-      console.error("Routing error:", e.error); // Keep the console log for debugging
-
-      // Check for specific API error messages within the XHR response first
+      console.error("Routing error:", e.error);
       if (e.error && e.error.target && e.error.target.responseText) {
         try {
           const apiResponse = JSON.parse(e.error.target.responseText);
           if (apiResponse && apiResponse.message) {
-            Swal.fire({
-              icon: "error",
-              title: "Routing Service Error", // Generic title
-              text: apiResponse.message, // Show the detailed error from the API
-            });
-            return; // Exit after showing the specific error
+            Swal.fire({ icon: "error", title: "Routing Service Error", text: apiResponse.message });
+            return;
           }
         } catch (err) {
           console.warn("Could not parse API error response:", err);
         }
       }
-
-      // Fallback to library-specific error statuses like "NoRoute"
       if (e.error && e.error.status === "NoRoute") {
         Swal.fire({
           icon: "warning",
           title: "No Route Found",
           text: "A route could not be found between the specified locations. Please check if the locations are accessible by the selected mode of transport.",
         });
-      }
-      // Add a generic fallback for other types of errors (e.g., network down)
-      else {
+      } else {
         Swal.fire({
           icon: "error",
           title: "Routing Unavailable",
@@ -192,13 +250,10 @@ function initializeRouting() {
         });
       }
     });
-    // --- END MODIFIED ---
   }
-  // --- FIX END ---
 
-  // Read saved provider or default to mapbox and initialize the control
   const savedProvider = localStorage.getItem("routingProvider") || "mapbox";
-  setupRoutingControl(savedProvider); // MODIFIED: Use the new setup function
+  setupRoutingControl(savedProvider);
 
   const routingPanelContainer = document.getElementById("routing-panel");
   L.DomEvent.disableClickPropagation(routingPanelContainer);
@@ -209,7 +264,7 @@ function initializeRouting() {
   const viaInput = document.getElementById("route-via");
   const currentLocationBtn = document.getElementById("use-current-location");
   const endCurrentLocationBtn = document.getElementById("use-current-location-end");
-  const getRouteBtn = document.getElementById("get-route-btn");
+  const clearRouteBtn = document.getElementById("clear-route-btn");
   saveRouteBtn = document.getElementById("save-route-btn");
   saveRouteBtn.disabled = true;
   const profileSelect = document.getElementById("route-profile");
@@ -220,6 +275,14 @@ function initializeRouting() {
   customCursorStart = document.getElementById("custom-cursor-start");
   customCursorEnd = document.getElementById("custom-cursor-end");
   customCursorVia = document.getElementById("custom-cursor-via");
+
+  clearRouteBtn.disabled = true;
+
+  profileSelect.addEventListener("change", () => {
+    if (startMarker && endMarker) {
+      calculateNewRoute();
+    }
+  });
 
   const directionsHeader = document.getElementById("directions-panel-header");
   const directionsPanel = document.getElementById("directions-panel");
@@ -280,6 +343,8 @@ function initializeRouting() {
       }).addTo(map);
       addDragHandlersToRoutingMarker(startMarker, "start");
     }
+    updateClearButtonState();
+    calculateNewRoute();
   });
 
   setupAutocomplete(endInput, document.getElementById("route-end-suggestions"), (latlng) => {
@@ -295,6 +360,8 @@ function initializeRouting() {
       }).addTo(map);
       addDragHandlersToRoutingMarker(endMarker, "end");
     }
+    updateClearButtonState();
+    calculateNewRoute();
   });
 
   setupAutocomplete(viaInput, document.getElementById("route-via-suggestions"), (latlng) => {
@@ -310,29 +377,38 @@ function initializeRouting() {
       }).addTo(map);
       addDragHandlersToRoutingMarker(viaMarker, "via");
     }
+    updateClearButtonState();
+    updateRouteWithIntermediateVias(); // Use update here to preserve on-map via points
   });
+
+  const updateClearButtonState = () => {
+    const hasContent =
+      startInput.value || endInput.value || viaInput.value || startMarker || endMarker;
+    clearRouteBtn.disabled = !hasContent;
+  };
+
+  startInput.addEventListener("input", updateClearButtonState);
+  endInput.addEventListener("input", updateClearButtonState);
+  viaInput.addEventListener("input", updateClearButtonState);
 
   function addDragHandlersToRoutingMarker(marker, type) {
     const isStart = type === "start";
     const isVia = type === "via";
     const input = isStart ? startInput : isVia ? viaInput : endInput;
-
     marker.on("dragend", () => {
       const newLatLng = marker.getLatLng();
-
-      if (isStart) {
-        currentStartLatLng = newLatLng;
-      } else if (isVia) {
-        currentViaLatLng = newLatLng;
-      } else {
-        currentEndLatLng = newLatLng;
-      }
-
+      if (isStart) currentStartLatLng = newLatLng;
+      else if (isVia) currentViaLatLng = newLatLng;
+      else currentEndLatLng = newLatLng;
       input.value = `${newLatLng.lat.toFixed(5)}, ${newLatLng.lng.toFixed(5)}`;
       input.style.color = "var(--color-black)";
 
       if (startMarker && endMarker) {
-        getRouteBtn.click();
+        if (type === "via") {
+          updateRouteWithIntermediateVias();
+        } else {
+          calculateNewRoute();
+        }
       }
     });
   }
@@ -348,7 +424,14 @@ function initializeRouting() {
     endMarker = null;
     viaMarker = null;
 
-    if (document.getElementById("route-via")) document.getElementById("route-via").value = "";
+    intermediateViaMarkers.forEach((marker) => map.removeLayer(marker));
+    intermediateViaMarkers = [];
+
+    startInput.value = "";
+    endInput.value = "";
+    viaInput.value = "";
+    currentStartLatLng = null;
+    currentEndLatLng = null;
     currentViaLatLng = null;
 
     const summaryContainer = document.getElementById("routing-summary-container");
@@ -376,15 +459,19 @@ function initializeRouting() {
       updateDrawControlStates();
     }
     if (saveRouteBtn) saveRouteBtn.disabled = true;
+
+    updateClearButtonState();
   };
+
+  clearRouteBtn.addEventListener("click", () => {
+    clearRouting();
+  });
 
   const updateRoutingPoint = (latlng, type) => {
     const locationString = `Current Location (${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)})`;
-
     if (type === "start") {
       currentStartLatLng = latlng;
       startInput.value = locationString;
-
       if (startMarker) {
         startMarker.setLatLng(latlng);
       } else {
@@ -398,7 +485,6 @@ function initializeRouting() {
     } else {
       currentEndLatLng = latlng;
       endInput.value = locationString;
-
       if (endMarker) {
         endMarker.setLatLng(latlng);
       } else {
@@ -410,6 +496,8 @@ function initializeRouting() {
         addDragHandlersToRoutingMarker(endMarker, "end");
       }
     }
+    updateClearButtonState();
+    calculateNewRoute();
     exitRoutePointSelectionMode();
   };
 
@@ -426,13 +514,10 @@ function initializeRouting() {
       updateRoutingPoint(latlng, type);
       map.flyTo(latlng, map.getZoom() < 16 ? 16 : map.getZoom());
     };
-
     const isLocateActive = locateControl.getContainer()?.classList.contains("locate-active");
-
     if (isLocateActive) {
       locateControl.stop();
     }
-
     map
       .locate()
       .once("locationfound", (e) => onLocationAquired(e.latlng))
@@ -465,7 +550,6 @@ function initializeRouting() {
 
   function updateCustomCursorPosition(e) {
     if (!routePointSelectionMode) return;
-
     const mapContainer = map.getContainer();
     const mapRect = mapContainer.getBoundingClientRect();
     const cursorEl =
@@ -474,19 +558,15 @@ function initializeRouting() {
         : routePointSelectionMode === "via"
         ? customCursorVia
         : customCursorEnd;
-
     const x = e.clientX - mapRect.left;
     const y = e.clientY - mapRect.top;
-
     cursorEl.style.left = `${x}px`;
     cursorEl.style.top = `${y}px`;
   }
 
   const enterRoutePointSelectionMode = (mode, e) => {
     exitRoutePointSelectionMode();
-
     if (!mode) return;
-
     if (mode === "start" && startMarker) {
       map.removeLayer(startMarker);
       startMarker = null;
@@ -499,13 +579,11 @@ function initializeRouting() {
       map.removeLayer(viaMarker);
       viaMarker = null;
     }
-
     routePointSelectionMode = mode;
     document.body.classList.add("route-point-select-mode");
     selectStartBtn.classList.toggle("active", mode === "start");
     selectEndBtn.classList.toggle("active", mode === "end");
     selectViaBtn.classList.toggle("active", mode === "via");
-
     if (mode === "start") {
       customCursorStart.style.display = "block";
     } else if (mode === "end") {
@@ -513,9 +591,7 @@ function initializeRouting() {
     } else if (mode === "via") {
       customCursorVia.style.display = "block";
     }
-
     document.addEventListener("mousemove", updateCustomCursorPosition);
-
     if (e) {
       updateCustomCursorPosition(e);
     }
@@ -527,7 +603,6 @@ function initializeRouting() {
     selectStartBtn.classList.remove("active");
     selectEndBtn.classList.remove("active");
     selectViaBtn.classList.remove("active");
-
     customCursorStart.style.display = "none";
     customCursorEnd.style.display = "none";
     customCursorVia.style.display = "none";
@@ -538,12 +613,10 @@ function initializeRouting() {
     L.DomEvent.stop(e);
     enterRoutePointSelectionMode(routePointSelectionMode === "start" ? null : "start", e);
   });
-
   selectEndBtn.addEventListener("click", (e) => {
     L.DomEvent.stop(e);
     enterRoutePointSelectionMode(routePointSelectionMode === "end" ? null : "end", e);
   });
-
   selectViaBtn.addEventListener("click", (e) => {
     L.DomEvent.stop(e);
     enterRoutePointSelectionMode(routePointSelectionMode === "via" ? null : "via", e);
@@ -551,15 +624,16 @@ function initializeRouting() {
 
   clearViaBtn.addEventListener("click", (e) => {
     L.DomEvent.stop(e);
+    const wasViaPointSet = !!currentViaLatLng;
     if (viaMarker) {
       map.removeLayer(viaMarker);
       viaMarker = null;
     }
     viaInput.value = "";
     currentViaLatLng = null;
-    // If a route already exists, recalculate it
-    if (startMarker && endMarker) {
-      getRouteBtn.click();
+    updateClearButtonState();
+    if (startMarker && endMarker && wasViaPointSet) {
+      updateRouteWithIntermediateVias();
     }
   });
 
@@ -614,204 +688,16 @@ function initializeRouting() {
           addDragHandlersToRoutingMarker(endMarker, "end");
         }
       }
+
+      updateClearButtonState();
+
+      if (routePointSelectionMode === "via") {
+        if (startMarker && endMarker) updateRouteWithIntermediateVias();
+      } else {
+        calculateNewRoute();
+      }
+
       exitRoutePointSelectionMode();
-    }
-  });
-
-  getRouteBtn.addEventListener("click", async () => {
-    saveRouteBtn.disabled = true;
-    routingControl.setWaypoints([]);
-
-    const startQuery = startInput.value;
-    const endQuery = endInput.value;
-    const viaQuery = viaInput.value;
-
-    if (!startQuery || !endQuery) {
-      return Swal.fire({
-        icon: "warning",
-        title: "Missing Information",
-        text: "Please provide both a start and end location.",
-      });
-    }
-
-    const selectedProfile = profileSelect.value; // "driving", "bike", "foot"
-
-    const providerMap = {
-      mapbox: "Mapbox",
-      osrm: "OSRM",
-    };
-    const currentProvider = localStorage.getItem("routingProvider") || "mapbox";
-    const providerDisplayName = providerMap[currentProvider] || currentProvider;
-    console.log(`Fetching route from: ${providerDisplayName}`);
-
-    if (currentProvider === "mapbox") {
-      let mapboxProfile;
-      // Translate UI values to Mapbox API values
-      switch (selectedProfile) {
-        case "bike":
-          mapboxProfile = "cycling";
-          break;
-        case "foot":
-          mapboxProfile = "walking";
-          break;
-        default: // "driving"
-          mapboxProfile = "driving";
-      }
-      // --- FIX: Remove the "mapbox/" prefix. The library adds it automatically.
-      routingControl.getRouter().options.profile = "mapbox/" + mapboxProfile;
-    } else {
-      // OSRM
-      // OSRM profiles match our select values directly
-      routingControl.getRouter().options.profile = selectedProfile;
-    }
-
-    try {
-      const parseLatLng = (query) => {
-        const parts = query.split(/[,; ]+/);
-        if (parts.length === 2) {
-          const lat = parseFloat(parts[0]);
-          const lng = parseFloat(parts[1]);
-          if (!isNaN(lat) && !isNaN(lng)) return { y: lat, x: lng };
-        }
-        return null;
-      };
-
-      const createLocationPromise = (type) => {
-        return new Promise((resolve, reject) => {
-          const isLocateActive = locateControl.getContainer()?.classList.contains("locate-active");
-
-          if (isLocateActive) {
-            locateControl.stop();
-          }
-
-          map
-            .locate()
-            .once("locationfound", (e) => {
-              const latlng = e.latlng;
-              updateRoutingPoint(latlng, type);
-              resolve({ y: latlng.lat, x: latlng.lng });
-            })
-            .once("locationerror", (e) => {
-              reject(new Error(`Could not get current location: ${e.message}`));
-            });
-        });
-      };
-
-      let startPromise;
-      if (startQuery.includes("Current Location")) {
-        startPromise = createLocationPromise("start");
-      } else if (currentStartLatLng) {
-        startPromise = Promise.resolve({
-          y: currentStartLatLng.lat,
-          x: currentStartLatLng.lng,
-        });
-      } else {
-        const startCoords = parseLatLng(startQuery);
-        startPromise = startCoords
-          ? Promise.resolve(startCoords)
-          : geocoder.search({ query: startQuery });
-      }
-
-      let endPromise;
-      if (endQuery.includes("Current Location")) {
-        endPromise = createLocationPromise("end");
-      } else if (currentEndLatLng) {
-        endPromise = Promise.resolve({
-          y: currentEndLatLng.lat,
-          x: currentEndLatLng.lng,
-        });
-      } else {
-        const endCoords = parseLatLng(endQuery);
-        endPromise = endCoords ? Promise.resolve(endCoords) : geocoder.search({ query: endQuery });
-      }
-
-      let viaPromise = Promise.resolve(null); // Default to null if no via point
-      if (viaQuery) {
-        if (currentViaLatLng) {
-          viaPromise = Promise.resolve({ y: currentViaLatLng.lat, x: currentViaLatLng.lng });
-        } else {
-          const viaCoords = parseLatLng(viaQuery);
-          viaPromise = viaCoords
-            ? Promise.resolve(viaCoords)
-            : geocoder.search({ query: viaQuery });
-        }
-      }
-
-      const [startResult, endResult, viaResult] = await Promise.all([
-        startPromise,
-        endPromise,
-        viaPromise,
-      ]);
-
-      const start = Array.isArray(startResult) ? startResult[0] : startResult;
-      const end = Array.isArray(endResult) ? endResult[0] : endResult;
-      const via = Array.isArray(viaResult) ? viaResult[0] : viaResult;
-
-      if (!start || !end) {
-        return Swal.fire({
-          icon: "error",
-          title: "Location Not Found",
-          text: "Could not find one or both locations. Please be more specific.",
-        });
-      }
-
-      const startWp = L.latLng(start.y, start.x);
-      const endWp = L.latLng(end.y, end.x);
-      let viaWp = null;
-      if (via) {
-        viaWp = L.latLng(via.y, via.x);
-        currentViaLatLng = viaWp;
-      }
-
-      if (startMarker) {
-        startMarker.setLatLng(startWp);
-      } else {
-        startMarker = L.marker(startWp, {
-          icon: createSvgIcon(routingColorStart, 1),
-          title: `Start: ${start.label || startInput.value}`,
-          draggable: true,
-        }).addTo(map);
-        addDragHandlersToRoutingMarker(startMarker, "start");
-      }
-
-      if (endMarker) {
-        endMarker.setLatLng(endWp);
-      } else {
-        endMarker = L.marker(endWp, {
-          icon: createSvgIcon(routingColorEnd, 1),
-          title: `End: ${end.label || endInput.value}`,
-          draggable: true,
-        }).addTo(map);
-        addDragHandlersToRoutingMarker(endMarker, "end");
-      }
-
-      if (viaWp) {
-        if (viaMarker) {
-          viaMarker.setLatLng(viaWp);
-        } else {
-          viaMarker = L.marker(viaWp, {
-            icon: createSvgIcon(routingColorVia, 1),
-            title: `Via: ${via.label || viaInput.value}`,
-            draggable: true,
-          }).addTo(map);
-          addDragHandlersToRoutingMarker(viaMarker, "via");
-        }
-      }
-
-      const waypoints = [startWp];
-      if (viaWp) {
-        waypoints.push(viaWp);
-      }
-      waypoints.push(endWp);
-
-      routingControl.setWaypoints(waypoints);
-    } catch (error) {
-      console.error("Routing error:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Routing Error",
-        text: "An error occurred while trying to find the route.",
-      });
     }
   });
 
@@ -819,28 +705,22 @@ function initializeRouting() {
     if (!currentRoutePath) {
       return;
     }
-
     const newPath = L.polyline(currentRoutePath.getLatLngs(), {
       ...STYLE_CONFIG.path.default,
       color: currentRoutePath.options.color,
     });
-
     newPath.feature = JSON.parse(JSON.stringify(currentRoutePath.feature));
     newPath.pathType = "drawn";
     newPath.feature.properties.name = newPath.feature.properties.name || "Saved Route";
-
     newPath.on("click", (ev) => {
       L.DomEvent.stopPropagation(ev);
       selectItem(newPath);
     });
     drawnItems.addLayer(newPath);
     editableLayers.addLayer(newPath);
-
     clearRouting();
-
     updateOverviewList();
     updateDrawControlStates();
-
     Swal.fire({
       icon: "success",
       title: "Route Saved!",
@@ -850,9 +730,6 @@ function initializeRouting() {
     });
   });
 
-  // --- Publicly expose the setupRoutingControl and clearRouting functions ---
-  // This is a bit of a hack to make them accessible from main.js, but it's the
-  // simplest way without a proper module system.
   window.app = window.app || {};
   window.app.setupRoutingControl = setupRoutingControl;
   window.app.clearRouting = clearRouting;

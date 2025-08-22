@@ -513,7 +513,7 @@ select:focus {
   box-sizing: border-box;
 }
 
-#get-route-btn,
+#clear-route-btn,
 #save-route-btn {
   flex: 1;
   min-width: 0;
@@ -525,15 +525,23 @@ select:focus {
   box-sizing: border-box;
 }
 
-#get-route-btn {
+#clear-route-btn {
+  font-size: 14px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#clear-route-btn:not(:disabled) {
   font-weight: bold;
   background-color: var(--text-color);
   color: var(--background-color);
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-left: 5px;
-  margin-right: 5px;
+}
+
+#clear-route-btn:disabled {
+  cursor: not-allowed;
 }
 
 #save-route-btn {
@@ -544,6 +552,8 @@ select:focus {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   cursor: pointer;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 #save-route-btn:not(:disabled) {
