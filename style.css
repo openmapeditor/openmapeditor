@@ -1393,3 +1393,27 @@ body.route-point-select-mode * {
 .leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-enter {
   display: none;
 }
+
+/* --- Route Tooltip Styles (NEW) --- */
+.route-tooltip {
+  display: none; /* Initially hidden */
+  position: absolute;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1001; /* Above map tiles, below most controls */
+  pointer-events: none; /* Allows clicks to pass through to the route */
+  transform: translate(calc(-100% - 10px), 10px); /* Positions tooltip above the cursor */
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.route-tooltip .icon-plus {
+  width: 14px;
+  height: 14px;
+}
