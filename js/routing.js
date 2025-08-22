@@ -26,6 +26,28 @@ function initializeRouting() {
     profile: "driving",
   });
 
+  // --- Helper function to clear just the route line and summary ---
+  const clearRouteLine = () => {
+    if (currentRoutePath) {
+      if (globallySelectedItem === currentRoutePath) {
+        deselectCurrentItem();
+      }
+      editableLayers.removeLayer(currentRoutePath);
+      drawnItems.removeLayer(currentRoutePath);
+      map.removeLayer(currentRoutePath);
+      currentRoutePath = null;
+      updateOverviewList();
+    }
+
+    intermediateViaMarkers.forEach((marker) => map.removeLayer(marker));
+    intermediateViaMarkers = [];
+
+    routingControl.setWaypoints([]);
+    document.getElementById("routing-summary-container").style.display = "none";
+    document.getElementById("directions-panel").style.display = "none";
+    saveRouteBtn.disabled = true;
+  };
+
   // --- Central function to calculate a fresh route ---
   const calculateNewRoute = () => {
     // Guard clause: only run if we have a start and end.
@@ -378,7 +400,7 @@ function initializeRouting() {
       addDragHandlersToRoutingMarker(viaMarker, "via");
     }
     updateClearButtonState();
-    updateRouteWithIntermediateVias(); // Use update here to preserve on-map via points
+    updateRouteWithIntermediateVias();
   });
 
   const updateClearButtonState = () => {
@@ -404,12 +426,40 @@ function initializeRouting() {
       input.style.color = "var(--color-black)";
 
       if (startMarker && endMarker) {
-        if (type === "via") {
-          updateRouteWithIntermediateVias();
-        } else {
-          calculateNewRoute();
-        }
+        // MODIFIED: Always use the update function for dragging
+        // to preserve intermediate via points for a better user experience.
+        updateRouteWithIntermediateVias();
       }
+    });
+
+    marker.on("contextmenu", (e) => {
+      L.DomEvent.stop(e);
+      switch (type) {
+        case "start":
+          map.removeLayer(startMarker);
+          startMarker = null;
+          currentStartLatLng = null;
+          startInput.value = "";
+          clearRouteLine();
+          break;
+        case "end":
+          map.removeLayer(endMarker);
+          endMarker = null;
+          currentEndLatLng = null;
+          endInput.value = "";
+          clearRouteLine();
+          break;
+        case "via":
+          map.removeLayer(viaMarker);
+          viaMarker = null;
+          currentViaLatLng = null;
+          viaInput.value = "";
+          if (startMarker && endMarker) {
+            updateRouteWithIntermediateVias();
+          }
+          break;
+      }
+      updateClearButtonState();
     });
   }
 
