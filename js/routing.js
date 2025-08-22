@@ -15,6 +15,8 @@ function initializeRouting() {
     customCursorEnd,
     customCursorVia;
 
+  const routeTooltip = document.getElementById("route-tooltip");
+
   let intermediateViaMarkers = [];
   let shouldFitBounds = true;
 
@@ -232,6 +234,20 @@ function initializeRouting() {
         newRoutePath.on("click", (ev) => {
           L.DomEvent.stopPropagation(ev);
           addIntermediateViaPoint(ev.latlng);
+        });
+
+        // Logic to show a tooltip hint on desktop when hovering over the route
+        newRoutePath.on("mouseover", function () {
+          if (routeTooltip) routeTooltip.style.display = "flex";
+        });
+        newRoutePath.on("mouseout", function () {
+          if (routeTooltip) routeTooltip.style.display = "none";
+        });
+        newRoutePath.on("mousemove", function (ev) {
+          if (routeTooltip) {
+            routeTooltip.style.left = ev.containerPoint.x + "px";
+            routeTooltip.style.top = ev.containerPoint.y + "px";
+          }
         });
 
         editableLayers.addLayer(newRoutePath);
