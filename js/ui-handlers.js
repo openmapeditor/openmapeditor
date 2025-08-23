@@ -275,7 +275,8 @@ function showInfoPanel(layer) {
     case "drawn":
       layerTypeName = "Drawn Item";
       break;
-    case "imported":
+    case "gpx":
+    case "kml":
       layerTypeName = "Imported GPX/KML";
       break;
     case "kmz":
