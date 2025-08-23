@@ -799,6 +799,12 @@ select:focus {
   background-color: var(--highlight-color) !important;
 }
 
+/* Remove margins of image at top in credits */
+.swal2-image {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 /* --- END: Themed Sweetalert2 Styles --- */
 
 /* Leaflet control overrides */
