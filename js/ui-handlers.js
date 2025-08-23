@@ -62,6 +62,65 @@ function updateOverviewList() {
       }
     });
 
+    // Create duplicate button
+    const duplicateBtn = document.createElement("span");
+    // Only add functionality if it's not the active route
+    if (layer !== currentRoutePath) {
+      duplicateBtn.className = "overview-duplicate-btn";
+      duplicateBtn.innerHTML = '<svg class="icon"><use href="#icon-copy"></use></svg>';
+      duplicateBtn.title = "Duplicate";
+
+      duplicateBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent the list item click event
+
+        const layerToDuplicate = editableLayers.getLayer(layerId);
+        if (!layerToDuplicate) return;
+
+        let newLayer;
+
+        // Deep copy feature to avoid reference issues
+        const newFeature = JSON.parse(
+          JSON.stringify(layerToDuplicate.feature || { properties: {} })
+        );
+        newFeature.properties.name =
+          (newFeature.properties.name ||
+            (layerToDuplicate instanceof L.Marker ? "Marker" : "Path")) + " (Copy)";
+
+        const colorName = newFeature.properties.omColorName || "Red";
+        const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
+        const color = colorData ? colorData.css : "#e51b23"; // Fallback to red
+
+        if (layerToDuplicate instanceof L.Marker) {
+          newLayer = L.marker(layerToDuplicate.getLatLng(), {
+            icon: createSvgIcon(color, STYLE_CONFIG.marker.default.opacity),
+          });
+        } else if (layerToDuplicate instanceof L.Polyline) {
+          newLayer = L.polyline(layerToDuplicate.getLatLngs(), {
+            ...STYLE_CONFIG.path.default,
+            color: color,
+          });
+        }
+
+        if (newLayer) {
+          newLayer.feature = newFeature;
+          newLayer.pathType = "drawn"; // Duplicated items are considered drawn
+
+          newLayer.on("click", (ev) => {
+            L.DomEvent.stopPropagation(ev);
+            selectItem(newLayer);
+          });
+
+          drawnItems.addLayer(newLayer);
+          editableLayers.addLayer(newLayer);
+
+          // Refresh UI and select the new item
+          updateOverviewList();
+          updateDrawControlStates();
+          selectItem(newLayer);
+        }
+      });
+    }
+
     // Create delete button
     const deleteBtn = document.createElement("span");
     deleteBtn.className = "overview-delete-btn";
@@ -84,6 +143,7 @@ function updateOverviewList() {
     textSpan.title = layerName;
 
     listItem.appendChild(visibilityBtn);
+    listItem.appendChild(duplicateBtn);
     listItem.appendChild(deleteBtn);
     listItem.appendChild(textSpan);
 

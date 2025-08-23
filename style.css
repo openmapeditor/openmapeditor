@@ -334,20 +334,8 @@ select:focus {
   background-color: var(--background-color);
   color: var(--text-color) !important;
 }
-.overview-visibility-btn {
-  display: inline-block;
-  padding-right: 8px;
-  color: var(--color-black);
-  cursor: pointer;
-  line-height: 1;
-  user-select: none;
-}
-.overview-visibility-btn .icon {
-  width: 18px;
-  height: 18px;
-  fill: var(--icon-color);
-  vertical-align: middle;
-}
+.overview-visibility-btn,
+.overview-duplicate-btn,
 .overview-delete-btn {
   display: inline-block;
   padding-right: 8px;
@@ -356,6 +344,8 @@ select:focus {
   line-height: 1;
   user-select: none;
 }
+.overview-visibility-btn .icon,
+.overview-duplicate-btn .icon,
 .overview-delete-btn .icon {
   width: 18px;
   height: 18px;
