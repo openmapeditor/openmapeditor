@@ -1419,4 +1419,9 @@ body.route-point-select-mode * {
   .route-tooltip {
     display: none !important;
   }
+
+  /* Prevent the floating custom cursor from appearing on touch devices. */
+  .custom-cursor {
+    display: none !important;
+  }
 }
