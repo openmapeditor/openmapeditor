@@ -1319,14 +1319,6 @@ body.route-point-select-mode * {
   border-bottom: 1px solid var(--border-color);
 }
 
-/* Hide Leaflet-draw tooltip on mobile to improve drawing UX. */
-@media (max-width: 768px) {
-  .leaflet-draw-tooltip {
-    display: none !important;
-  }
-}
-
-/* Change the square edit handles to circles */
 .leaflet-editing-icon,
 .leaflet-middle-icon {
   border-radius: 50%;
@@ -1416,4 +1408,15 @@ body.route-point-select-mode * {
 .route-tooltip .icon-plus {
   width: 14px;
   height: 14px;
+}
+
+/* ============================================= */
+/* --- Mobile-Specific Overrides --- */
+/* ============================================= */
+@media (max-width: 768px) {
+  /* Hide tooltips on mobile to improve UX for drawing and routing. */
+  .leaflet-draw-tooltip,
+  .route-tooltip {
+    display: none !important;
+  }
 }
