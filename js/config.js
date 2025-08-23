@@ -39,11 +39,11 @@ let enablePathSimplification = true;
 const STYLE_CONFIG = {
   path: {
     default: {
-      weight: 6,
+      weight: 10,
       opacity: 0.75,
     },
     highlight: {
-      weight: 6,
+      weight: 10,
       opacity: 1,
       outline: {
         enabled: true,
