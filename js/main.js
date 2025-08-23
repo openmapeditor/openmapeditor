@@ -934,18 +934,22 @@ function initializeMap() {
 
   map.on("contextmenu", showCopyCoordsPopup);
 
-  // --- MODIFICATION: Reworked long-press logic for stability ---
+  // --- FINAL: Reworked long-press logic for stability ---
   let pressTimer;
 
   map.on("mousedown", (e) => {
-    // To distinguish between a touch-hold and a mouse-click, we check the pointer type.
-    // We only want to initiate the long-press timer for actual touch events.
-    // Mouse right-clicks are handled by the separate 'contextmenu' event.
+    // This handler is now ONLY for touch events on the map canvas.
     if (e.originalEvent.pointerType !== "touch") {
       return;
     }
 
-    // For touch events, prevent the timer from starting if the touch is on a UI element.
+    // *** FIX: Check if the touch is on a path (which has its own handler). ***
+    // The `leaflet-interactive` class is applied to all vector layers like polylines.
+    if (e.originalEvent.target.classList.contains("leaflet-interactive")) {
+      return;
+    }
+
+    // Also, prevent the timer if the touch is on a known UI element.
     if (
       e.originalEvent.target.closest &&
       e.originalEvent.target.closest(
@@ -955,7 +959,6 @@ function initializeMap() {
       return;
     }
 
-    // If it's a touch event on the map canvas, start the long-press timer.
     pressTimer = setTimeout(() => {
       map.closePopup();
       showCopyCoordsPopup(e);
@@ -963,10 +966,9 @@ function initializeMap() {
   });
 
   map.on("mouseup mouseout dragstart", () => {
-    // Clear the timer if the press is released, the pointer leaves the map, or a drag starts.
     clearTimeout(pressTimer);
   });
-  // --- END MODIFICATION ---
+  // --- END FINAL ---
 
   map.on("draw:edited", (e) => {
     e.layers.eachLayer((layer) => {
