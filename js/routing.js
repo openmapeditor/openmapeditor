@@ -16,8 +16,6 @@ function initializeRouting() {
     customCursorEnd,
     customCursorVia;
 
-  const routeTooltip = document.getElementById("route-tooltip");
-
   let intermediateViaMarkers = [];
   let shouldFitBounds = true;
 
@@ -232,24 +230,46 @@ function initializeRouting() {
           },
         };
         newRoutePath.pathType = "route";
-        newRoutePath.on("click", (ev) => {
-          L.DomEvent.stopPropagation(ev);
-          addIntermediateViaPoint(ev.latlng);
+
+        // --- START: FINAL Click and Long-Press Logic for Route ---
+        let pressTimer = null;
+        let wasLongPress = false;
+
+        newRoutePath.on("mousedown", (e) => {
+          // A long-press on touch devices fires 'contextmenu'. We handle that separately.
+          // This mousedown handler is now primarily for desktop long-press.
+          if (e.originalEvent.pointerType === "touch") {
+            return;
+          }
+          wasLongPress = false;
+          pressTimer = setTimeout(() => {
+            wasLongPress = true;
+            addIntermediateViaPoint(e.latlng);
+          }, 800);
         });
 
-        // Logic to show a tooltip hint on desktop when hovering over the route
-        newRoutePath.on("mouseover", function () {
-          if (routeTooltip) routeTooltip.style.display = "flex";
+        newRoutePath.on("mouseup", () => {
+          clearTimeout(pressTimer);
         });
-        newRoutePath.on("mouseout", function () {
-          if (routeTooltip) routeTooltip.style.display = "none";
-        });
-        newRoutePath.on("mousemove", function (ev) {
-          if (routeTooltip) {
-            routeTooltip.style.left = ev.containerPoint.x + "px";
-            routeTooltip.style.top = ev.containerPoint.y + "px";
+
+        newRoutePath.on("click", (e) => {
+          L.DomEvent.stop(e);
+          // Only select if a long press didn't just happen.
+          if (!wasLongPress) {
+            selectItem(newRoutePath);
           }
+          // Reset for the next interaction.
+          wasLongPress = false;
         });
+
+        // Use 'contextmenu' for mobile long-press, as it's the native behavior.
+        // This is more reliable than timers on touch devices.
+        newRoutePath.on("contextmenu", (e) => {
+          L.DomEvent.stop(e); // Crucial: stops the map's contextmenu from firing.
+          wasLongPress = true; // Flag that a long press occurred.
+          addIntermediateViaPoint(e.latlng);
+        });
+        // --- END: FINAL Click and Long-Press Logic for Route ---
 
         editableLayers.addLayer(newRoutePath);
         drawnItems.addLayer(newRoutePath);
