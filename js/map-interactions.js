@@ -224,6 +224,18 @@ function updateDrawControlStates() {
 function deleteLayerImmediately(layer) {
   if (!layer) return;
 
+  // If the layer being deleted is the active route, we must call the dedicated
+  // clearRouting function. This ensures the routing markers and panel are
+  // also cleared, not just the route line.
+  if (layer === currentRoutePath) {
+    // This function is exposed on window.app from routing.js and handles all cleanup.
+    if (window.app && typeof window.app.clearRouting === "function") {
+      window.app.clearRouting();
+    }
+    // We return here because clearRouting() takes care of all necessary layer removal and UI updates.
+    return;
+  }
+
   if (globallySelectedItem === layer) {
     deselectCurrentItem();
   }
