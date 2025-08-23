@@ -92,9 +92,10 @@ function initializeMap() {
 
   populateColorPicker();
 
-  // --- NEW: Tab System Logic ---
+  // --- MODIFIED: Tab System Logic ---
   const tabButtons = document.querySelectorAll(".tab-button");
   const tabPanels = document.querySelectorAll(".tab-panel");
+  const routingInfoIcon = document.getElementById("routing-info-icon");
 
   tabButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -111,8 +112,56 @@ function initializeMap() {
       if (targetPanel) {
         targetPanel.classList.add("active");
       }
+
+      // Update the visual state of the routing info icon
+      if (document.getElementById("tab-btn-routing").classList.contains("active")) {
+        routingInfoIcon.classList.remove("disabled");
+      } else {
+        routingInfoIcon.classList.add("disabled");
+      }
     });
   });
+
+  // --- NEW: Routing Info Icon Logic ---
+  if (routingInfoIcon) {
+    // Set initial visual state for the info icon on page load
+    if (!document.getElementById("tab-btn-routing").classList.contains("active")) {
+      routingInfoIcon.classList.add("disabled");
+    }
+
+    L.DomEvent.on(routingInfoIcon, "click", (e) => {
+      const routingTabButton = document.getElementById("tab-btn-routing");
+
+      // ONLY if the tab is already active, stop the event and show the alert.
+      if (routingTabButton.classList.contains("active")) {
+        L.DomEvent.stop(e); // Prevent the click from bubbling to the parent button
+        Swal.fire({
+          title: "Routing Help",
+          icon: "info",
+          html: `
+            <div style="text-align: left;">
+              <p style="margin-top:0;"><strong>Managing Waypoints</strong></p>
+              <p>The <strong>Start</strong>, <strong>Via</strong>, and <strong>End</strong> markers can be managed with your mouse or finger.</p>
+              <ul style="margin-bottom: 1.5em;">
+                <li><strong>To Move:</strong> Click/tap and drag the marker to a new position.</li>
+                <li><strong>To Remove (Desktop):</strong> Right-click the marker.</li>
+                <li><strong>To Remove (Mobile):</strong> Long-press the marker.</li>
+              </ul>
+              <p><strong>Adding Extra Via Points</strong></p>
+              <p>After a route appears on the map, you can add extra stops directly on the route line:</p>
+              <ul>
+                <li><strong>On Desktop:</strong> Right-click anywhere on the blue route line.</li>
+                <li><strong>On Mobile:</strong> Long-press anywhere on the blue route line.</li>
+              </ul>
+            </div>
+          `,
+          confirmButtonText: "Got it!",
+        });
+      }
+      // If the tab is NOT active, we do nothing. The click event will
+      // naturally bubble up to the parent button and trigger its click handler.
+    });
+  }
 
   // Disable click propagation on parent containers to allow internal scrolling on mobile
   const overviewPanelList = document.getElementById("overview-panel-list");
