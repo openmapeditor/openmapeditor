@@ -265,9 +265,14 @@ function initializeRouting() {
         // Use 'contextmenu' for mobile long-press, as it's the native behavior.
         // This is more reliable than timers on touch devices.
         newRoutePath.on("contextmenu", (e) => {
-          L.DomEvent.stop(e); // Crucial: stops the map's contextmenu from firing.
-          wasLongPress = true; // Flag that a long press occurred.
-          addIntermediateViaPoint(e.latlng);
+          L.DomEvent.stop(e); // Stop map's contextmenu.
+          // ONLY trigger via point on a long press from a touch device.
+          // Desktop long press is handled by the mousedown/timer logic.
+          // This effectively disables right-click for adding points.
+          if (e.originalEvent.pointerType === "touch") {
+            wasLongPress = true; // Flag that a long press occurred.
+            addIntermediateViaPoint(e.latlng);
+          }
         });
         // --- END: FINAL Click and Long-Press Logic for Route ---
 
