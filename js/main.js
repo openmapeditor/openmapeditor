@@ -144,8 +144,7 @@ function initializeMap() {
               <p>The <strong>Start</strong>, <strong>Via</strong>, and <strong>End</strong> markers can be managed with your mouse or finger.</p>
               <ul style="margin-bottom: 1.5em;">
                 <li><strong>To Move:</strong> Drag the marker to a new position.</li>
-                <li><strong>To Remove (Desktop):</strong> Right-click the marker.</li>
-                <li><strong>To Remove (Mobile):</strong> Long-press the marker.</li>
+                <li><strong>To Remove:</strong> Long-press the marker.</li>
               </ul>
               <p><strong>Adding Extra Via Points</strong></p>
               <p>After a route appears on the map, you can add extra stops by <strong>long-pressing</strong> anywhere on the blue route line.</p>
