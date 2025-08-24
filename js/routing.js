@@ -340,6 +340,13 @@ function initializeRouting() {
   customCursorEnd = document.getElementById("custom-cursor-end");
   customCursorVia = document.getElementById("custom-cursor-via");
 
+  // --- NEW: Select all text in routing inputs on focus ---
+  [startInput, viaInput, endInput].forEach((input) => {
+    input.addEventListener("focus", function () {
+      this.select();
+    });
+  });
+
   clearRouteBtn.disabled = true;
 
   profileSelect.addEventListener("change", () => {
