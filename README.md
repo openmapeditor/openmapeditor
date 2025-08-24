@@ -1,6 +1,6 @@
 # OpenMapEditor
 
-A simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. This project is a static website built with HTML, CSS, and JavaScript, using the Leaflet.js library for mapping.
+OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, GeoJSON), routing, elevation profiles, and custom styling.
 
 ---
 

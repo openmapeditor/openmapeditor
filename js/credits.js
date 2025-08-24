@@ -54,7 +54,7 @@ const CREDITS_HTML = `
 
   <div class="credits-header">
     <h3>OpenMapEditor</h3>
-    <p>A custom web-based map editor built with Leaflet.js and various open-source libraries.</p>
+    <p>A simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers, built with Leaflet.js.</p>
     <p style="margin-top: 10px;"> <a href="mailto:openmapeditor@gmail.com">openmapeditor@gmail.com</a><br>
       <a href="https://github.com/openmapeditor/openmapeditor" target="_blank">GitHub</a>
     </p>
