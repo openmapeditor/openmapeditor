@@ -276,7 +276,6 @@ function initializeRouting() {
         });
         // --- END: FINAL Click and Long-Press Logic for Route ---
 
-        editableLayers.addLayer(newRoutePath);
         drawnItems.addLayer(newRoutePath);
         newRoutePath.addTo(map);
         currentRoutePath = newRoutePath;

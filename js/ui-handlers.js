@@ -5,14 +5,25 @@ function updateOverviewList() {
 
   listContainer.innerHTML = ""; // Clear existing list
 
-  if (editableLayers.getLayers().length === 0) {
+  if (editableLayers.getLayers().length === 0 && !currentRoutePath) {
     listContainer.innerHTML =
       '<div class="overview-list-item" style="color: grey; cursor: default;">No items on map</div>';
     return;
   }
 
   const fragment = document.createDocumentFragment();
-  editableLayers.eachLayer((layer) => {
+
+  // Create a combined array of all items to display.
+  // Start with all drawn/imported items from editableLayers.
+  const allItems = [...editableLayers.getLayers()];
+
+  // If there's an active route, add it to the beginning of our array.
+  if (currentRoutePath) {
+    allItems.unshift(currentRoutePath);
+  }
+
+  // Now, iterate over the combined 'allItems' array instead of just editableLayers.
+  allItems.forEach((layer) => {
     const layerId = L.Util.stamp(layer);
     let layerName =
       layer.feature?.properties?.name || (layer instanceof L.Marker ? "Marker" : "Unnamed Path");
@@ -38,7 +49,9 @@ function updateOverviewList() {
 
     visibilityBtn.addEventListener("click", (e) => {
       e.stopPropagation(); // Prevent item selection
-      const layerToToggle = editableLayers.getLayer(layerId);
+      const layerToToggle =
+        editableLayers.getLayer(layerId) ||
+        (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
       if (!layerToToggle) return;
 
       const isCurrentlyVisible = map.hasLayer(layerToToggle);
@@ -129,7 +142,9 @@ function updateOverviewList() {
 
     deleteBtn.addEventListener("click", (e) => {
       e.stopPropagation(); // Prevent item selection when clicking the delete button
-      const layerToDelete = editableLayers.getLayer(layerId);
+      const layerToDelete =
+        editableLayers.getLayer(layerId) ||
+        (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
       if (layerToDelete) {
         // Use the centralized instant deletion function
         deleteLayerImmediately(layerToDelete);
@@ -153,7 +168,9 @@ function updateOverviewList() {
 
     listItem.addEventListener("click", () => {
       // This event now fires for the whole item, but the delete button stops propagation.
-      const targetLayer = editableLayers.getLayer(layerId);
+      const targetLayer =
+        editableLayers.getLayer(layerId) ||
+        (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
       if (targetLayer) {
         // Pan and zoom to the selected layer
         if (targetLayer instanceof L.Polyline || targetLayer instanceof L.Polygon) {
