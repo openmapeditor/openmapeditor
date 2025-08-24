@@ -3,7 +3,7 @@
 // ===================================================================================
 
 function initializeRouting() {
-  const ROUTING_MARKER_HINT = "Drag to move, right-click to remove";
+  const ROUTING_MARKER_HINT = "Drag to move, long-press to remove";
   let routingControl,
     startMarker,
     endMarker,
@@ -118,12 +118,49 @@ function initializeRouting() {
       draggable: true,
       title: ROUTING_MARKER_HINT,
     }).addTo(map);
-    newViaMarker.on("contextmenu", () => {
+
+    let pressTimer = null; // Timer for long-press detection
+
+    // Specific deletion logic for an intermediate via marker
+    const deleteMarkerAction = () => {
       map.removeLayer(newViaMarker);
+      // Filter this specific marker out of the array
       intermediateViaMarkers = intermediateViaMarkers.filter((m) => m !== newViaMarker);
       updateRouteWithIntermediateVias();
+    };
+
+    // --- START: Add the new long-press logic ---
+    newViaMarker.on("mousedown", (e) => {
+      if (e.originalEvent.pointerType === "touch" || e.originalEvent.button === 2) {
+        return;
+      }
+      pressTimer = setTimeout(() => {
+        deleteMarkerAction();
+      }, 800);
     });
+
+    const clearPressTimer = () => {
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
+    };
+
+    newViaMarker.on("mouseup", clearPressTimer);
+    newViaMarker.on("dragstart", clearPressTimer);
+
+    newViaMarker.on("contextmenu", (e) => {
+      L.DomEvent.stop(e);
+      if (e.originalEvent.pointerType === "touch") {
+        deleteMarkerAction();
+      }
+    });
+    // --- END: Add the new long-press logic ---
+
+    // Keep the original dragend handler
     newViaMarker.on("dragend", updateRouteWithIntermediateVias);
+
+    // Add the new marker to the array and update the route
     intermediateViaMarkers.push(newViaMarker);
     updateRouteWithIntermediateVias();
   };
@@ -465,23 +502,10 @@ function initializeRouting() {
     const isStart = type === "start";
     const isVia = type === "via";
     const input = isStart ? startInput : isVia ? viaInput : endInput;
-    marker.on("dragend", () => {
-      const newLatLng = marker.getLatLng();
-      if (isStart) currentStartLatLng = newLatLng;
-      else if (isVia) currentViaLatLng = newLatLng;
-      else currentEndLatLng = newLatLng;
-      input.value = `${newLatLng.lat.toFixed(5)}, ${newLatLng.lng.toFixed(5)}`;
-      input.style.color = "var(--color-black)";
+    let pressTimer = null; // Timer for long-press detection
 
-      if (startMarker && endMarker) {
-        // MODIFIED: Always use the update function for dragging
-        // to preserve intermediate via points for a better user experience.
-        updateRouteWithIntermediateVias();
-      }
-    });
-
-    marker.on("contextmenu", (e) => {
-      L.DomEvent.stop(e);
+    // Centralized deletion logic
+    const deleteMarkerAction = () => {
       switch (type) {
         case "start":
           map.removeLayer(startMarker);
@@ -508,7 +532,58 @@ function initializeRouting() {
           break;
       }
       updateClearButtonState();
+    };
+
+    marker.on("dragend", () => {
+      const newLatLng = marker.getLatLng();
+      if (isStart) currentStartLatLng = newLatLng;
+      else if (isVia) currentViaLatLng = newLatLng;
+      else currentEndLatLng = newLatLng;
+      input.value = `${newLatLng.lat.toFixed(5)}, ${newLatLng.lng.toFixed(5)}`;
+      input.style.color = "var(--color-black)";
+
+      if (startMarker && endMarker) {
+        // MODIFIED: Always use the update function for dragging
+        // to preserve intermediate via points for a better user experience.
+        updateRouteWithIntermediateVias();
+      }
     });
+
+    // --- START: Long-press logic for deletion ---
+    marker.on("mousedown", (e) => {
+      // Touch events are handled by contextmenu.
+      if (e.originalEvent.pointerType === "touch") {
+        return;
+      }
+      // A right-click shouldn't start a long-press timer.
+      if (e.originalEvent.button === 2) {
+        return;
+      }
+      pressTimer = setTimeout(() => {
+        deleteMarkerAction();
+      }, 800);
+    });
+
+    const clearPressTimer = () => {
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
+    };
+
+    marker.on("mouseup", clearPressTimer);
+    marker.on("dragstart", clearPressTimer); // Important: cancel on drag
+
+    marker.on("contextmenu", (e) => {
+      L.DomEvent.stop(e); // Prevent default map context menu.
+
+      // On touch devices, this is our long-press.
+      if (e.originalEvent.pointerType === "touch") {
+        deleteMarkerAction();
+      }
+      // For mouse right-click, we do nothing, effectively disabling it.
+    });
+    // --- END: Long-press logic for deletion ---
   }
 
   const clearRouting = () => {
