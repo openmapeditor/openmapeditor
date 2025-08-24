@@ -1,3 +1,6 @@
+// OpenMapEditor - A web-based editor for creating and managing geographic data.
+// Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
+
 // --- START: Organic Maps Color Configuration ---
 // Centralized configuration for the 16 Organic Maps colors.
 // KML format is AABBGGRR, which we convert to standard CSS #RRGGBB.

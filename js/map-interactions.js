@@ -1,3 +1,6 @@
+// OpenMapEditor - A web-based editor for creating and managing geographic data.
+// Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
+
 // Creates a custom svg icon for markers.
 function createSvgIcon(color, opacity, size = STYLE_CONFIG.marker.baseSize, anchorOffsetY = 0) {
   const height = size * 1.64; // Maintain aspect ratio

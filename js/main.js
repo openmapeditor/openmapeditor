@@ -1,3 +1,6 @@
+// OpenMapEditor - A web-based editor for creating and managing geographic data.
+// Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
+
 // --- START: NEW code block to apply saved theme on load ---
 // Immediately-invoked function to set theme on initial load.
 // It only applies dark mode if it was explicitly saved, otherwise the default is light.

@@ -1,3 +1,6 @@
+// OpenMapEditor - A web-based editor for creating and managing geographic data.
+// Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
+
 // Populates or updates the overview list with all editable items on the map
 function updateOverviewList() {
   const listContainer = document.getElementById("overview-panel-list");
