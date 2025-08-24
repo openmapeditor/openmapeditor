@@ -1261,8 +1261,7 @@ function initializeMap() {
       // Open the SweetAlert with content from credits.js
       Swal.fire({
         // icon: "info",
-        imageUrl:
-          "https://raw.githubusercontent.com/openmapeditor/openmapeditor-assets/refs/heads/main/icon-750x750-min.png",
+        imageUrl: "https://openmapeditor.github.io/openmapeditor-assets/icon-750x750-min.png",
         imageWidth: 150,
         imageHeight: "auto",
         html: CREDITS_HTML,
