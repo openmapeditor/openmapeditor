@@ -150,7 +150,7 @@ function initializeMap() {
                 <li><strong>To Remove:</strong> Long-press the marker.</li>
               </ul>
               <p><strong>Adding Extra Via Points</strong></p>
-              <p>After a route appears on the map, you can add extra stops by <strong>long-pressing</strong> anywhere on the blue route line.</p>
+              <p>After a route appears on the map, you can add extra stops by <strong>long-pressing</strong> anywhere on the route line.</p>
             </div>
           `,
           confirmButtonText: "Got it!",
