@@ -7,7 +7,8 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 ## Features
 
 - **Interactive Drawing:** Draw paths and place markers directly on the map.
-- **File Support:** Import and export data in GPX, KML, and GeoJSON formats.
+- **File Support:** Import and export data in **GPX, KML, and KMZ** formats.
+- **Organic Maps Compatibility:** Import backup files from Organic Maps and export new backups that can be re-imported, making it a great tool for editing and managing your data.
 - **Routing:** Generate routes for driving, biking, and walking.
 - **Elevation Profiles:** Visualize the elevation of paths.
 - **Custom Styling:** Change colors and styles of map features.
@@ -16,7 +17,7 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 
 ## Local Development Setup
 
-This project is self-contained and does not require a local server or package manager (`npm`).
+This project is self-contained and does not require a package manager (`npm`).
 
 1.  **Clone the Repository**
 
@@ -34,7 +35,10 @@ This project is self-contained and does not require a local server or package ma
     > **Important:** The `secrets.js` file is listed in `.gitignore` and will not be committed to the repository, keeping your keys safe and private.
 
 3.  **Run the Application**
-    Simply open the `index.html` file in your web browser.
+    Local development requires running the project from a local web server and using a browser extension to bypass CORS restrictions.
+
+    - **Local Server:** You must serve the project files from a local web server. Opening `index.html` directly from your filesystem will not work correctly.
+    - **CORS Unblocker:** For the application's features (like routing and search) to fetch data from external APIs, you must install and enable a CORS unblocker extension in your web browser.
 
 ---
 
