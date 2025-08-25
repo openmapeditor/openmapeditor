@@ -28,6 +28,7 @@ function initializeRouting() {
   const osrmRouter = L.Routing.osrmv1({
     serviceUrl: "https://router.project-osrm.org/route/v1",
     profile: "driving",
+    // suppressDemoServerWarning: true,
   });
 
   // --- Helper function to clear just the route line and summary ---
