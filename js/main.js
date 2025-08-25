@@ -1313,6 +1313,19 @@ function initializeMap() {
   setTimeout(replaceDefaultIcons, 0);
   resetInfoPanel();
   updateScaleControlVisibility();
+
+  // --- START: NEW - Preload credits image to prevent flash on modal open ---
+  // This waits for the window to be fully loaded, then downloads the image
+  // into the cache so it's ready when the credits modal is opened.
+  window.addEventListener(
+    "load",
+    () => {
+      const creditsIcon = new Image();
+      creditsIcon.src = "https://openmapeditor.github.io/openmapeditor-assets/icon-750x750-min.png";
+    },
+    { once: true }
+  );
+  // --- END: NEW ---
 }
 
 // Initialize the application once the DOM is fully loaded
