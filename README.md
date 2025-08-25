@@ -86,3 +86,11 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: `https://registry.npmjs.org/sweetalert2/-/sweetalert2-11.22.2.tgz`
 - **togeojson-0.16.2**
   - Download URL: `https://github.com/mapbox/togeojson/archive/refs/tags/0.16.2.zip`
+
+---
+
+## License
+
+Copyright (C) 2025 Aron Sommer.
+
+This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for full details.
