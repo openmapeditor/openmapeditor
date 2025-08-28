@@ -20,13 +20,16 @@ function initializeStrava() {
   const urlParams = new URLSearchParams(window.location.search);
   const authCode = urlParams.get("code");
 
+  // If a Strava authorization code is present in the URL, exchange it for a token.
+  // This happens when the user is redirected back from Strava after authorization.
   if (authCode) {
+    // Automatically switch to the Strava tab to show the progress.
     document.getElementById("tab-btn-strava").click();
     getAccessToken(authCode);
-  } else if (sessionStorage.getItem("strava_access_token")) {
-    // If we already have a token in this session, show the fetch UI.
-    showFetchUI();
   } else {
+    // In all other cases (e.g., initial page load, page reload),
+    // show the 'Connect' button to ensure a fresh authentication flow.
+    // This avoids issues with expired tokens from a previous session.
     showConnectUI();
   }
 }
