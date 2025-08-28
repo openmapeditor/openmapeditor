@@ -612,6 +612,24 @@ select:focus {
   width: auto;
 }
 
+#info-panel-strava-link {
+  display: none; /* Hidden by default */
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #fc5200; /* Strava Orange */
+  font-size: 13px;
+  font-weight: bold;
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+#info-panel-strava-link:hover {
+  background-color: rgba(252, 82, 0, 0.1); /* Light orange on hover */
+}
+
 /* --- Autocomplete suggestion list styles --- */
 .autocomplete-suggestions {
   display: none;
