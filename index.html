@@ -190,13 +190,16 @@
         <div id="tab-container">
           <div id="tab-buttons">
             <button id="tab-btn-overview" class="tab-button active" data-target="overview-panel">
-              Map Contents
+              Contents
             </button>
             <button id="tab-btn-routing" class="tab-button" data-target="routing-panel">
               Routing
               <span id="routing-info-icon" class="settings-info-icon" title="Routing Help"
                 >&#9432;</span
               >
+            </button>
+            <button id="tab-btn-strava" class="tab-button" data-target="strava-panel">
+              Strava
             </button>
             <button
               id="tab-btn-settings"
@@ -321,6 +324,13 @@
                   </div>
                   <div id="directions-list"></div>
                 </div>
+              </div>
+            </div>
+            <div id="strava-panel" class="tab-panel">
+              <div id="strava-panel-content">
+                <p style="padding: 15px; text-align: center">
+                  Connect with Strava to see your activities.
+                </p>
               </div>
             </div>
             <div id="settings-panel" class="tab-panel"></div>
