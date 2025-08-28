@@ -230,11 +230,15 @@ function showInfoPanel(layer) {
   layer.feature.properties = layer.feature.properties || {};
   let name = layer.feature.properties.name || "";
   let details = "";
+  const stravaLink = document.getElementById("info-panel-strava-link"); // Get the new element
 
   // Clear previous click handler and reset cursor
   infoPanelDetails.onclick = null;
   infoPanelDetails.style.cursor = "default";
   infoPanelDetails.title = "";
+
+  // Hide Strava link by default, we'll show it if needed
+  stravaLink.style.display = "none";
 
   if (layer instanceof L.Marker) {
     name = name || "Marker";
@@ -318,6 +322,15 @@ function showInfoPanel(layer) {
     case "strava":
       const activityType = layer.feature.properties.type || "";
       layerTypeName = `Strava Activity ${activityType ? `(${activityType})` : ""}`.trim();
+
+      // --- NEW: Strava Link Logic ---
+      if (layer.feature.properties.stravaId) {
+        const activityUrl = `https://www.strava.com/activities/${layer.feature.properties.stravaId}`;
+        stravaLink.href = activityUrl;
+        stravaLink.textContent = "View on Strava";
+        stravaLink.style.display = "flex";
+      }
+      // --- END NEW ---
       break;
   }
   infoPanelLayerName.textContent = layerTypeName;
@@ -349,6 +362,10 @@ function resetInfoPanel() {
     infoPanelDetails.onclick = null;
     infoPanelDetails.style.cursor = "default";
     infoPanelDetails.title = "";
+
+    // --- NEW: Hide the Strava link when resetting ---
+    document.getElementById("info-panel-strava-link").style.display = "none";
+    // --- END NEW ---
 
     // Hide color picker and the new style row
     infoPanelStyleRow.style.display = "none";
