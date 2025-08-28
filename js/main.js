@@ -45,6 +45,28 @@ let map,
   temporarySearchMarker = null,
   preservedKmzFiles = []; // For preserving empty KMLs from KMZ imports
 
+/**
+ * Adjusts the height of the info panel's name textarea to fit its content,
+ * up to a maximum of approximately three lines.
+ * @param {HTMLTextAreaElement} textarea The textarea element to resize.
+ */
+function adjustInfoPanelNameHeight(textarea) {
+  // Max height for ~3 lines (14px font * 1.5 line-height * 3 lines + 10px padding)
+  const heightLimit = 75;
+
+  // Temporarily reset height to auto to get the new scrollHeight
+  textarea.style.height = "auto";
+
+  // Set the new height, but don't exceed the limit
+  textarea.style.height = `${Math.min(textarea.scrollHeight, heightLimit)}px`;
+
+  // Show a scrollbar only if the content is taller than the limit
+  textarea.style.overflowY = textarea.scrollHeight > heightLimit ? "auto" : "hidden";
+
+  // MODIFIED: Add this line to ensure the text is scrolled to the top
+  textarea.scrollTop = 0;
+}
+
 // Main function to initialize the map and all its components.
 function initializeMap() {
   // --- START: Add this check for secrets.js ---
@@ -78,14 +100,22 @@ function initializeMap() {
   L.DomEvent.disableClickPropagation(infoPanel);
   L.DomEvent.disableScrollPropagation(infoPanel);
 
-  infoPanelName.addEventListener("blur", updateLayerName);
+  infoPanelName.addEventListener("blur", () => {
+    updateLayerName();
+    adjustInfoPanelNameHeight(infoPanelName);
+  });
   infoPanelName.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
+    // MODIFIED: For textarea, "Enter" without Shift should submit, not create a newline.
+    if (e.key === "Enter" && !e.shiftKey) {
       updateLayerName();
-      infoPanelName.blur();
-      e.preventDefault();
+      infoPanelName.blur(); // Unfocus the element
+      e.preventDefault(); // Prevent adding a new line
     }
   });
+
+  // This makes the textarea grow and shrink as you type.
+  infoPanelName.addEventListener("input", () => adjustInfoPanelNameHeight(infoPanelName));
+  infoPanelName.addEventListener("focus", () => infoPanelName.select());
 
   // Toggle color picker on swatch click
   infoPanelColorSwatch.addEventListener("click", () => {
@@ -1313,6 +1343,25 @@ function initializeMap() {
   // Also, re-check on map move as a fallback, as this often triggers attribution changes
   map.on("moveend", adjustElevationSummaryPadding);
   // --- END: NEW ---
+
+  // --- START: NEW - MutationObserver to auto-resize textarea on selection ---
+  // This observer watches for changes in the info panel. When details are
+  // populated (which happens when an item is selected), it automatically
+  // triggers the textarea height adjustment. This robustly solves the problem
+  // of the initial height being incorrect for names of any length.
+  const infoPanelObserver = new MutationObserver(() => {
+    if (infoPanelName) {
+      adjustInfoPanelNameHeight(infoPanelName);
+    }
+  });
+
+  // Start observing the main info panel container for any changes in its content.
+  infoPanelObserver.observe(infoPanel, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
+  // --- END: NEW - MutationObserver ---
 
   // Final ui updates
   setTimeout(updateDrawControlStates, 0);
