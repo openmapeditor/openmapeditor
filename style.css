@@ -572,6 +572,13 @@ select:focus {
   gap: 10px;
 }
 
+#strava-panel-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
 /* --- Autocomplete suggestion list styles --- */
 .autocomplete-suggestions {
   display: none;

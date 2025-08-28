@@ -17,6 +17,7 @@ let map,
   drawnItems,
   importedItems,
   kmzLayer,
+  stravaActivitiesLayer,
   editableLayers,
   elevationControl,
   selectedElevationPath = null,
@@ -246,6 +247,7 @@ function initializeMap() {
   importedItems = new L.FeatureGroup().addTo(map);
   kmzLayer = new L.FeatureGroup().addTo(map);
   editableLayers = new L.FeatureGroup(); // Don't add to map directly, managed by other groups
+  stravaActivitiesLayer = L.featureGroup().addTo(map);
 
   // Combine all overlays into a single object for the custom control
   const allOverlayMaps = {
@@ -253,6 +255,7 @@ function initializeMap() {
     "&#9999;&#65039; Drawn Items": drawnItems,
     "&#128193; Imported GPX/KML": importedItems,
     "&#128193; Imported KMZ": kmzLayer,
+    "&#129505; Strava Activities": stravaActivitiesLayer,
   };
 
   // Start functionality for swisstopo layers
@@ -1120,6 +1123,9 @@ function initializeMap() {
 
   // Kick off routing functionality
   initializeRouting();
+
+  // Initialize Strava functionality
+  initializeStrava();
 
   // --- MODIFIED: Settings Controls are now in the Settings Panel ---
   const settingsPanel = document.getElementById("settings-panel");
