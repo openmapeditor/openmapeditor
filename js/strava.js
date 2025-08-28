@@ -12,33 +12,15 @@ const streamsURL = "https://www.strava.com/api/v3/activities";
 // --- DOM Elements ---
 let stravaPanelContent;
 
-/**
- * Initializes the Strava integration.
- * This is the main entry point, setting up UI and handling the OAuth callback.
- */
-function initializeStrava() {
-  stravaPanelContent = document.getElementById("strava-panel-content");
-  const urlParams = new URLSearchParams(window.location.search);
-  const authCode = urlParams.get("code");
-
-  // If a Strava authorization code is present in the URL, exchange it for a token.
-  // This happens when the user is redirected back from Strava after authorization.
-  if (authCode) {
-    // Automatically switch to the Strava tab to show the progress.
-    document.getElementById("tab-btn-strava").click();
-    getAccessToken(authCode);
-  } else {
-    // In all other cases (e.g., initial page load, page reload),
-    // show the 'Connect' button to ensure a fresh authentication flow.
-    // This avoids issues with expired tokens from a previous session.
-    showConnectUI();
-  }
-}
+// --- START: Refactored Functions ---
+// The following functions have been moved to the top-level scope to prevent
+// re-initialization errors and improve code structure.
 
 /**
  * Displays the "Connect with Strava" button.
  */
 function showConnectUI() {
+  if (!stravaPanelContent) return;
   stravaPanelContent.innerHTML = `
     <p style="padding: 15px; text-align: center;">Connect with Strava to see your activities.</p>
     <a href="${stravaAuthURL}" class="strava-button-link">
@@ -48,17 +30,30 @@ function showConnectUI() {
 }
 
 /**
- * Displays the UI for fetching activities after a successful connection.
+ * Displays the UI for fetching and exporting activities after a successful connection.
+ * @param {number} [activityCount=0] - The number of currently loaded activities.
  */
 function showFetchUI(activityCount = 0) {
+  if (!stravaPanelContent) return;
   const message =
     activityCount > 0 ? `${activityCount} activities loaded.` : "Ready to fetch your activities.";
   stravaPanelContent.innerHTML = `
       <p style="padding: 15px; text-align: center;">Successfully connected to Strava.<br>${message}</p>
-      <button id="fetch-strava-btn" class="strava-button">Fetch Activities</button>
+      <div style="display: flex; gap: 10px; justify-content: center; width: 100%;">
+        <button id="fetch-strava-btn" class="strava-button" style="flex: 1;">Fetch Activities</button>
+        <button id="export-strava-kmz-btn" class="strava-button" style="flex: 1;">Export as KMZ</button>
+      </div>
       <p id="strava-progress" style="text-align: center; padding: 10px; display: none;"></p>
     `;
   document.getElementById("fetch-strava-btn").addEventListener("click", fetchAllActivities);
+
+  const exportBtn = document.getElementById("export-strava-kmz-btn");
+  exportBtn.addEventListener("click", exportStravaActivitiesAsKmz);
+  exportBtn.disabled = activityCount === 0;
+  if (activityCount === 0) {
+    exportBtn.style.backgroundColor = "#aaa";
+    exportBtn.style.cursor = "not-allowed";
+  }
 }
 
 /**
@@ -66,6 +61,7 @@ function showFetchUI(activityCount = 0) {
  * @param {string} code The authorization code from Strava.
  */
 function getAccessToken(code) {
+  if (!stravaPanelContent) return;
   stravaPanelContent.innerHTML =
     '<p style="padding: 15px; text-align: center;">Authenticating...</p>';
 
@@ -82,7 +78,6 @@ function getAccessToken(code) {
     .then((response) => response.json())
     .then((data) => {
       if (data.access_token) {
-        // Store tokens in sessionStorage for this browser session.
         sessionStorage.setItem("strava_access_token", data.access_token);
         sessionStorage.setItem("strava_refresh_token", data.refresh_token);
         sessionStorage.setItem("strava_expires_at", data.expires_at);
@@ -115,14 +110,20 @@ async function fetchAllActivities() {
     return;
   }
 
-  document.getElementById("fetch-strava-btn").style.display = "none";
+  const fetchBtn = document.getElementById("fetch-strava-btn");
+  const exportBtn = document.getElementById("export-strava-kmz-btn");
+  if (fetchBtn) fetchBtn.style.display = "none";
+  if (exportBtn) exportBtn.style.display = "none";
+
   const progressText = document.getElementById("strava-progress");
-  progressText.style.display = "block";
-  progressText.innerText = "Starting activity fetch...";
+  if (progressText) {
+    progressText.style.display = "block";
+    progressText.innerText = "Starting activity fetch...";
+  }
 
   let allActivities = [];
   let page = 1;
-  const perPage = 100; // Strava API can return up to 200, but 100 is safer.
+  const perPage = 100;
   let keepFetching = true;
 
   while (keepFetching) {
@@ -136,20 +137,106 @@ async function fetchAllActivities() {
 
       if (activities.length > 0) {
         allActivities.push(...activities);
-        progressText.innerText = `Fetched ${allActivities.length} activities...`;
+        if (progressText) progressText.innerText = `Fetched ${allActivities.length} activities...`;
         page++;
       } else {
-        keepFetching = false; // No more activities to fetch
+        keepFetching = false;
       }
     } catch (error) {
       console.error("Error fetching Strava activities:", error);
-      progressText.innerText = "Error fetching activities. See console for details.";
+      if (progressText)
+        progressText.innerText = "Error fetching activities. See console for details.";
       keepFetching = false;
     }
   }
 
-  progressText.innerText = `Found ${allActivities.length} total activities. Processing...`;
+  if (progressText)
+    progressText.innerText = `Found ${allActivities.length} total activities. Processing...`;
   displayActivitiesOnMap(allActivities);
+}
+
+/**
+ * Creates and triggers a download for a KMZ file containing all loaded Strava activities.
+ */
+async function exportStravaActivitiesAsKmz() {
+  if (stravaActivitiesLayer.getLayers().length === 0) {
+    return Swal.fire({
+      icon: "info",
+      title: "No Activities Loaded",
+      text: "Please fetch your activities before exporting.",
+    });
+  }
+
+  const zip = new JSZip();
+  const stravaPlacemarks = [];
+
+  stravaActivitiesLayer.eachLayer((layer) => {
+    const defaultName = layer.feature?.properties?.name || "Strava Activity";
+    const kmlSnippet = generateKmlForLayer(layer, defaultName);
+    if (kmlSnippet) {
+      stravaPlacemarks.push(kmlSnippet);
+    }
+  });
+
+  if (stravaPlacemarks.length === 0) {
+    return Swal.fire({
+      icon: "warning",
+      title: "No Exportable Data",
+      text: "Could not generate KML data for the loaded activities.",
+    });
+  }
+
+  const docName = "Strava Activities";
+  const kmlContent = createKmlDocument(docName, stravaPlacemarks);
+  // --- FIX: Use a descriptive filename inside the KMZ ---
+  zip.file("Strava_Activities.kml", kmlContent);
+
+  try {
+    const content = await zip.generateAsync({ type: "blob" });
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now
+      .getDate()
+      .toString()
+      .padStart(2, "0")}${now.getHours().toString().padStart(2, "0")}${now
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}${now.getSeconds().toString().padStart(2, "0")}`;
+    const fileName = `Strava_Export_${timestamp}.kmz`;
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(content);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  } catch (error) {
+    console.error("Error generating Strava KMZ:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Export Error",
+      text: `Failed to generate KMZ file: ${error.message}`,
+    });
+  }
+}
+
+// --- END: Refactored Functions ---
+
+/**
+ * Initializes the Strava integration.
+ * This is the main entry point, setting up UI and handling the OAuth callback.
+ */
+function initializeStrava() {
+  stravaPanelContent = document.getElementById("strava-panel-content");
+  const urlParams = new URLSearchParams(window.location.search);
+  const authCode = urlParams.get("code");
+
+  if (authCode) {
+    document.getElementById("tab-btn-strava").click();
+    getAccessToken(authCode);
+  } else {
+    showConnectUI();
+  }
 }
 
 /**
@@ -167,7 +254,6 @@ async function downloadOriginalStravaGpx(activityId, activityName) {
     });
   }
 
-  // Record the start time and define a minimum display duration
   const startTime = Date.now();
   const MIN_DISPLAY_TIME_MS = 1000;
 
@@ -204,7 +290,6 @@ async function downloadOriginalStravaGpx(activityId, activityName) {
       });
     }
 
-    // --- Build GPX String ---
     const header = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">`;
 
@@ -230,10 +315,8 @@ async function downloadOriginalStravaGpx(activityId, activityName) {
     const footer = "\n</gpx>";
     const gpxData = header + content + footer;
 
-    // Use the utility function to trigger the download
     downloadFile(`${activityName.replace(/[^a-z0-9]/gi, "_")}.gpx`, gpxData);
 
-    // Delay closing the alert if the process was too fast
     const elapsedTime = Date.now() - startTime;
     const timeToWait = MIN_DISPLAY_TIME_MS - elapsedTime;
 
@@ -263,37 +346,32 @@ function displayActivitiesOnMap(activities) {
     console.error("Strava layer group not initialized in main.js");
     return;
   }
-  stravaActivitiesLayer.clearLayers(); // Clear any previous activities
+  stravaActivitiesLayer.clearLayers();
 
-  // --- MODIFIED: Use "DeepOrange" from the color config for consistency ---
   const stravaColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === "DeepOrange");
-  const stravaColor = stravaColorData ? stravaColorData.css : "#f06432"; // Fallback color
+  const stravaColor = stravaColorData ? stravaColorData.css : "#f06432";
 
   let processedCount = 0;
   activities.forEach((activity) => {
-    // We only care about activities that have a polyline
     if (activity.map && activity.map.summary_polyline) {
       try {
-        // Use the Polyline.encoded.js library to decode the geometry
         const latlngs = L.Polyline.fromEncoded(activity.map.summary_polyline).getLatLngs();
         const polyline = L.polyline(latlngs, {
-          ...STYLE_CONFIG.path.default, // Use default path style
-          color: stravaColor, // Use the consistent orange color
+          ...STYLE_CONFIG.path.default,
+          color: stravaColor,
         });
 
-        // Attach feature data for selection and UI integration
         polyline.feature = {
           properties: {
             name: activity.name,
-            type: activity.type, // e.g., "Ride", "Run"
-            totalDistance: activity.distance, // In meters, from Strava
-            omColorName: "DeepOrange", // MODIFIED: Default color for duplication and selection highlight
+            type: activity.type,
+            totalDistance: activity.distance,
+            omColorName: "DeepOrange",
             stravaId: activity.id,
           },
         };
-        polyline.pathType = "strava"; // Custom type for identification
+        polyline.pathType = "strava";
 
-        // Make the polyline selectable
         polyline.on("click", (e) => {
           L.DomEvent.stopPropagation(e);
           selectItem(polyline);
@@ -307,15 +385,18 @@ function displayActivitiesOnMap(activities) {
     }
   });
 
-  // Zoom the map to fit all loaded activities
   if (stravaActivitiesLayer.getLayers().length > 0) {
     map.fitBounds(stravaActivitiesLayer.getBounds());
   }
 
-  // After adding all layers, update the overview list to show them
   updateOverviewList();
-  showFetchUI(processedCount); // Update UI with the final count
-  document.getElementById(
-    "strava-progress"
-  ).innerText = `Displayed ${processedCount} activities on the map.`;
+
+  // --- FIX: Update UI first, then update the progress text ---
+  // This ensures the #strava-progress element exists before we try to modify it.
+  showFetchUI(processedCount);
+
+  const progressText = document.getElementById("strava-progress");
+  if (progressText) {
+    progressText.innerText = `Displayed ${processedCount} activities on the map.`;
+  }
 }
