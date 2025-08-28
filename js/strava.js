@@ -40,11 +40,10 @@ function initializeStrava() {
 function showConnectUI() {
   stravaPanelContent.innerHTML = `
     <p style="padding: 15px; text-align: center;">Connect with Strava to see your activities.</p>
-    <button id="connect-strava-btn" class="strava-button">Connect with Strava</button>
+    <a href="${stravaAuthURL}" class="strava-button-link">
+      <img src="https://openmapeditor.github.io/openmapeditor-assets/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
+    </a>
   `;
-  document.getElementById("connect-strava-btn").addEventListener("click", () => {
-    window.location.href = stravaAuthURL;
-  });
 }
 
 /**

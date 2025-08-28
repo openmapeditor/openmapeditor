@@ -1369,18 +1369,24 @@ function initializeMap() {
   resetInfoPanel();
   updateScaleControlVisibility();
 
-  // --- START: NEW - Preload credits image to prevent flash on modal open ---
-  // This waits for the window to be fully loaded, then downloads the image
-  // into the cache so it's ready when the credits modal is opened.
+  // --- START: Preload key images to prevent flash on modal/panel open ---
+  // This waits for the window to be fully loaded, then downloads the images
+  // into the cache so they are ready when needed.
   window.addEventListener(
     "load",
     () => {
+      // Preload credits icon
       const creditsIcon = new Image();
       creditsIcon.src = "https://openmapeditor.github.io/openmapeditor-assets/icon-750x750-min.png";
+
+      // Preload Strava connect button
+      const stravaButton = new Image();
+      stravaButton.src =
+        "https://openmapeditor.github.io/openmapeditor-assets/btn_strava_connect_with_orange.svg";
     },
     { once: true }
   );
-  // --- END: NEW ---
+  // --- END ---
 }
 
 // Initialize the application once the DOM is fully loaded
