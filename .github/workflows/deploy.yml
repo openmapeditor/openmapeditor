@@ -26,6 +26,8 @@ jobs:
           echo "const googleApiKey = '${{ secrets.VITE_GOOGLE_API_KEY }}';" > js/secrets.js
           echo "const mapboxAccessToken = '${{ secrets.VITE_MAPBOX_ACCESS_TOKEN }}';" >> js/secrets.js
           echo "const tracetrackApiKey = '${{ secrets.VITE_TRACETRACK_API_KEY }}';" >> js/secrets.js
+          echo "const stravaClientId = '${{ secrets.VITE_STRAVA_CLIENT_ID }}';" >> js/secrets.js
+          echo "const stravaClientSecret = '${{ secrets.VITE_STRAVA_CLIENT_SECRET }}';" >> js/secrets.js
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
