@@ -559,6 +559,19 @@ select:focus {
   cursor: not-allowed;
 }
 
+#routing-info-icon {
+  margin-left: 5px;
+}
+
+/* --- Strava Panel Style (NEW) --- */
+#strava-panel {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 8px 8px;
+  background-color: var(--background-color);
+  gap: 10px;
+}
+
 /* --- Autocomplete suggestion list styles --- */
 .autocomplete-suggestions {
   display: none;
@@ -665,18 +678,26 @@ select:focus {
 }
 
 .tab-button {
-  flex: 1; /* MODIFIED: Let text buttons grow */
-  padding: 8px 10px;
+  flex: 1;
+  padding: 8px 5px; /* Reduced padding slightly to help with spacing */
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   border: 1px solid var(--border-color);
   background-color: var(--background2-color);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: none; /* All tabs have no bottom border */
+  border-right: none; /* All tabs but the last have no right border */
   outline: none;
-  border-bottom: none;
   color: var(--text-color);
   min-width: 0;
+  display: flex; /* Use flexbox for alignment */
+  justify-content: center;
+  align-items: center;
+}
+
+/* Add the right border back ONLY to the last button */
+#tab-buttons button:last-child {
+  border-right: 1px solid var(--border-color);
 }
 .tab-button.active {
   /* color: var(--text-color); */
@@ -689,6 +710,12 @@ select:focus {
 
 /* MODIFIED: Routing button is now in the middle */
 #tab-btn-routing {
+  border-radius: 0;
+  border-right: none;
+}
+
+#tab-btn-strava {
+  flex: 0 0 60px; /* Don't grow, fixed width */
   border-radius: 0;
   border-right: none;
 }
