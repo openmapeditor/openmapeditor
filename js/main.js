@@ -147,6 +147,18 @@ function initializeMap() {
         targetPanel.classList.add("active");
       }
 
+      // Check if we need to scroll the overview list
+      if (targetPanelId === "overview-panel" && globallySelectedItem) {
+        const layerId = L.Util.stamp(globallySelectedItem);
+        const listItem = document.querySelector(
+          `#overview-panel-list .overview-list-item[data-layer-id='${layerId}']`
+        );
+        if (listItem) {
+          // The panel is now visible, so we can scroll to the item
+          listItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      }
+
       // Update the visual state of the routing info icon
       if (document.getElementById("tab-btn-routing").classList.contains("active")) {
         routingInfoIcon.classList.remove("disabled");

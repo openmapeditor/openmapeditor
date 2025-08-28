@@ -101,7 +101,9 @@ function selectItem(layer) {
   );
   if (newListItem) {
     newListItem.classList.add("selected");
-    newListItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (document.getElementById("overview-panel").classList.contains("active")) {
+      newListItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   }
 
   const colorName = layer.feature?.properties?.omColorName || "Red";
