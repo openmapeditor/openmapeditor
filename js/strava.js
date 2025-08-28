@@ -162,6 +162,10 @@ function displayActivitiesOnMap(activities) {
   }
   stravaActivitiesLayer.clearLayers(); // Clear any previous activities
 
+  // --- MODIFIED: Use "DeepOrange" from the color config for consistency ---
+  const stravaColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === "DeepOrange");
+  const stravaColor = stravaColorData ? stravaColorData.css : "#f06432"; // Fallback color
+
   let processedCount = 0;
   activities.forEach((activity) => {
     // We only care about activities that have a polyline
@@ -170,12 +174,26 @@ function displayActivitiesOnMap(activities) {
         // Use the Polyline.encoded.js library to decode the geometry
         const latlngs = L.Polyline.fromEncoded(activity.map.summary_polyline).getLatLngs();
         const polyline = L.polyline(latlngs, {
-          color: "#fc5200", // Strava orange
-          weight: 2,
-          opacity: 0.8,
+          ...STYLE_CONFIG.path.default, // Use default path style
+          color: stravaColor, // Use the consistent orange color
         });
 
-        // TODO: Add properties for the info panel in the next step
+        // Attach feature data for selection and UI integration
+        polyline.feature = {
+          properties: {
+            name: activity.name,
+            type: activity.type, // e.g., "Ride", "Run"
+            totalDistance: activity.distance, // In meters, from Strava
+            omColorName: "DeepOrange", // MODIFIED: Default color for duplication and selection highlight
+          },
+        };
+        polyline.pathType = "strava"; // Custom type for identification
+
+        // Make the polyline selectable
+        polyline.on("click", (e) => {
+          L.DomEvent.stopPropagation(e);
+          selectItem(polyline);
+        });
 
         stravaActivitiesLayer.addLayer(polyline);
         processedCount++;
@@ -190,6 +208,8 @@ function displayActivitiesOnMap(activities) {
     map.fitBounds(stravaActivitiesLayer.getBounds());
   }
 
+  // After adding all layers, update the overview list to show them
+  updateOverviewList();
   showFetchUI(processedCount); // Update UI with the final count
   document.getElementById(
     "strava-progress"

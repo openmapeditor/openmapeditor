@@ -8,7 +8,10 @@ function updateOverviewList() {
 
   listContainer.innerHTML = ""; // Clear existing list
 
-  if (editableLayers.getLayers().length === 0 && !currentRoutePath) {
+  const hasEditableLayers = editableLayers.getLayers().length > 0;
+  const hasStravaLayers = stravaActivitiesLayer.getLayers().length > 0;
+
+  if (!hasEditableLayers && !hasStravaLayers && !currentRoutePath) {
     listContainer.innerHTML =
       '<div class="overview-list-item" style="color: grey; cursor: default;">No items on map</div>';
     return;
@@ -17,10 +20,11 @@ function updateOverviewList() {
   const fragment = document.createDocumentFragment();
 
   // Create a combined array of all items to display.
-  // Start with all drawn/imported items from editableLayers.
-  const allItems = [...editableLayers.getLayers()];
+  const allItems = [
+    ...editableLayers.getLayers(),
+    ...stravaActivitiesLayer.getLayers(), // Add Strava layers to the list
+  ];
 
-  // If there's an active route, add it to the beginning of our array.
   if (currentRoutePath) {
     allItems.unshift(currentRoutePath);
   }
@@ -54,6 +58,7 @@ function updateOverviewList() {
       e.stopPropagation(); // Prevent item selection
       const layerToToggle =
         editableLayers.getLayer(layerId) ||
+        stravaActivitiesLayer.getLayer(layerId) || // Check Strava layer
         (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
       if (!layerToToggle) return;
 
@@ -89,7 +94,8 @@ function updateOverviewList() {
       duplicateBtn.addEventListener("click", (e) => {
         e.stopPropagation(); // Prevent the list item click event
 
-        const layerToDuplicate = editableLayers.getLayer(layerId);
+        const layerToDuplicate =
+          editableLayers.getLayer(layerId) || stravaActivitiesLayer.getLayer(layerId);
         if (!layerToDuplicate) return;
 
         let newLayer;
@@ -106,7 +112,20 @@ function updateOverviewList() {
         const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
         const color = colorData ? colorData.css : "#e51b23"; // Fallback to red
 
-        if (layerToDuplicate instanceof L.Marker) {
+        // --- NEW: Special handling for duplicating Strava activities ---
+        if (layerToDuplicate.pathType === "strava") {
+          const originalCoords = layerToDuplicate
+            .getLatLngs()
+            .map((latlng) => [latlng.lng, latlng.lat]);
+          // Simplify the path using the standard import configuration
+          const simplified = simplifyPath(originalCoords, "LineString", pathSimplificationConfig);
+          newLayer = L.polyline(
+            simplified.coords.map((c) => [c[1], c[0]]), // Convert back to [lat, lng] for Leaflet
+            { ...STYLE_CONFIG.path.default, color: color }
+          );
+          // Recalculate and store the new, simplified distance
+          newFeature.properties.totalDistance = calculatePathDistance(newLayer);
+        } else if (layerToDuplicate instanceof L.Marker) {
           newLayer = L.marker(layerToDuplicate.getLatLng(), {
             icon: createSvgIcon(color, STYLE_CONFIG.marker.default.opacity),
           });
@@ -127,7 +146,7 @@ function updateOverviewList() {
           });
 
           drawnItems.addLayer(newLayer);
-          editableLayers.addLayer(newLayer);
+          editableLayers.addLayer(newLayer); // Make the new copy editable
 
           // Refresh UI and select the new item
           updateOverviewList();
@@ -147,6 +166,7 @@ function updateOverviewList() {
       e.stopPropagation(); // Prevent item selection when clicking the delete button
       const layerToDelete =
         editableLayers.getLayer(layerId) ||
+        stravaActivitiesLayer.getLayer(layerId) || // Check Strava layer
         (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
       if (layerToDelete) {
         // Use the centralized instant deletion function
@@ -173,6 +193,7 @@ function updateOverviewList() {
       // This event now fires for the whole item, but the delete button stops propagation.
       const targetLayer =
         editableLayers.getLayer(layerId) ||
+        stravaActivitiesLayer.getLayer(layerId) || // Check Strava layer
         (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
       if (targetLayer) {
         // Pan and zoom to the selected layer
@@ -259,26 +280,15 @@ function showInfoPanel(layer) {
     name = name || "Path";
     let totalDistance = 0;
 
-    // --- FIX: Use the authoritative distance from feature properties if available ---
-    // This is now the single source of truth for distance, updated on edit.
     if (layer.feature?.properties?.totalDistance) {
       totalDistance = layer.feature.properties.totalDistance;
     } else {
-      // Fallback for paths without the property (e.g., complex cases)
-      let latlngs = layer.getLatLngs();
-      while (latlngs.length > 0 && Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
-        latlngs = latlngs[0];
-      }
-      for (let i = 0; i < latlngs.length - 1; i++) {
-        if (latlngs[i] && typeof latlngs[i].distanceTo === "function" && latlngs[i + 1]) {
-          totalDistance += latlngs[i].distanceTo(latlngs[i + 1]);
-        }
-      }
+      totalDistance = calculatePathDistance(layer);
     }
-    // --- END FIX ---
 
     const distanceInKm = totalDistance / 1000;
     const distanceInMiles = 0.621371 * distanceInKm;
+    // --- MODIFIED: Removed activity type from this line ---
     details = `Length: ${distanceInKm.toFixed(2)} km (${distanceInMiles.toFixed(2)} mi)`;
   }
 
@@ -286,7 +296,6 @@ function showInfoPanel(layer) {
   infoPanelName.value = name;
   infoPanelDetails.innerHTML = details;
 
-  // --- NEW LOGIC for style row ---
   infoPanelStyleRow.style.display = "flex";
 
   // Determine layer type for display
@@ -304,6 +313,11 @@ function showInfoPanel(layer) {
       break;
     case "route":
       layerTypeName = "Route";
+      break;
+    // --- MODIFIED: Case for Strava Activities now includes the type ---
+    case "strava":
+      const activityType = layer.feature.properties.type || "";
+      layerTypeName = `Strava Activity ${activityType ? `(${activityType})` : ""}`.trim();
       break;
   }
   infoPanelLayerName.textContent = layerTypeName;

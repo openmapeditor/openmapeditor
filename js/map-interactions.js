@@ -56,6 +56,8 @@ function deselectCurrentItem() {
     const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
     if (colorData) {
       if (item instanceof L.Polyline || item instanceof L.Polygon) {
+        // --- MODIFIED: Removed special case for Strava paths ---
+        // It will now correctly use the color defined by its omColorName ("Orange")
         item.setStyle({ ...STYLE_CONFIG.path.default, color: colorData.css });
       } else if (item instanceof L.Marker) {
         item.setIcon(createSvgIcon(colorData.css, STYLE_CONFIG.marker.default.opacity));
@@ -244,7 +246,7 @@ function deleteLayerImmediately(layer) {
   }
 
   // Remove the layer from whichever display group it resides in (including nested groups)
-  [drawnItems, importedItems, kmzLayer].forEach((group) => {
+  [drawnItems, importedItems, kmzLayer, stravaActivitiesLayer].forEach((group) => {
     if (group.hasLayer(layer)) {
       group.removeLayer(layer);
     } else {
@@ -256,8 +258,10 @@ function deleteLayerImmediately(layer) {
     }
   });
 
-  // Also remove it from the master editable layer group
-  editableLayers.removeLayer(layer);
+  // Also remove it from the master editable layer group if it's there
+  if (editableLayers.hasLayer(layer)) {
+    editableLayers.removeLayer(layer);
+  }
 
   if (layer === currentRoutePath) {
     currentRoutePath = null;
