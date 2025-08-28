@@ -7,6 +7,7 @@ const scope = "read,activity:read_all";
 const stravaAuthURL = `https://www.strava.com/oauth/authorize?client_id=${stravaClientId}&redirect_uri=${redirectURI}&response_type=code&scope=${scope}`;
 const tokenURL = "https://www.strava.com/oauth/token";
 const activitiesURL = "https://www.strava.com/api/v3/athlete/activities";
+const streamsURL = "https://www.strava.com/api/v3/activities";
 
 // --- DOM Elements ---
 let stravaPanelContent;
@@ -152,6 +153,108 @@ async function fetchAllActivities() {
 }
 
 /**
+ * Fetches the original data stream for a Strava activity and initiates a GPX download.
+ * @param {string} activityId The ID of the Strava activity.
+ * @param {string} activityName The name of the activity, used for the filename.
+ */
+async function downloadOriginalStravaGpx(activityId, activityName) {
+  const accessToken = sessionStorage.getItem("strava_access_token");
+  if (!accessToken) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Connection Expired",
+      text: "Your Strava connection has expired. Please reconnect via the Strava panel.",
+    });
+  }
+
+  // Record the start time and define a minimum display duration
+  const startTime = Date.now();
+  const MIN_DISPLAY_TIME_MS = 1000;
+
+  Swal.fire({
+    title: "Fetching Original Data",
+    text: "Please wait while we download the high-resolution track from Strava...",
+    didOpen: () => {
+      Swal.showLoading();
+    },
+    allowOutsideClick: false,
+  });
+
+  try {
+    const response = await fetch(
+      `${streamsURL}/${activityId}/streams?keys=latlng,altitude&key_by_type=true`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Strava API responded with status ${response.status}`);
+    }
+
+    const streams = await response.json();
+
+    if (!streams.latlng || streams.latlng.data.length === 0) {
+      return Swal.fire({
+        icon: "info",
+        title: "No GPS Data",
+        text: "This Strava activity does not contain any GPS data to download.",
+      });
+    }
+
+    // --- Build GPX String ---
+    const header = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">`;
+
+    const trackPoints = streams.latlng.data
+      .map((p, i) => {
+        let pt = `<trkpt lat="${p[0]}" lon="${p[1]}">`;
+        if (streams.altitude && streams.altitude.data[i] !== undefined) {
+          pt += `<ele>${streams.altitude.data[i]}</ele>`;
+        }
+        pt += `</trkpt>`;
+        return pt;
+      })
+      .join("\n      ");
+
+    const content = `
+  <trk>
+    <name>${activityName}</name>
+    <trkseg>
+      ${trackPoints}
+    </trkseg>
+  </trk>`;
+
+    const footer = "\n</gpx>";
+    const gpxData = header + content + footer;
+
+    // Use the utility function to trigger the download
+    downloadFile(`${activityName.replace(/[^a-z0-9]/gi, "_")}.gpx`, gpxData);
+
+    // Delay closing the alert if the process was too fast
+    const elapsedTime = Date.now() - startTime;
+    const timeToWait = MIN_DISPLAY_TIME_MS - elapsedTime;
+
+    if (timeToWait > 0) {
+      setTimeout(() => {
+        Swal.close();
+      }, timeToWait);
+    } else {
+      Swal.close();
+    }
+  } catch (error) {
+    console.error("Error downloading original Strava GPX:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Download Failed",
+      text: `Could not fetch the original file from Strava. ${error.message}`,
+    });
+  }
+}
+
+/**
  * Processes activities and adds them to the map layer.
  * @param {Array} activities - The array of activity objects from Strava.
  */
@@ -185,6 +288,7 @@ function displayActivitiesOnMap(activities) {
             type: activity.type, // e.g., "Ride", "Run"
             totalDistance: activity.distance, // In meters, from Strava
             omColorName: "DeepOrange", // MODIFIED: Default color for duplication and selection highlight
+            stravaId: activity.id,
           },
         };
         polyline.pathType = "strava"; // Custom type for identification
