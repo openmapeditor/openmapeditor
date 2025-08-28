@@ -137,6 +137,7 @@ function generateFullKmzZip(docName) {
   const kmlGroups = {};
   const drawnPlacemarks = [];
   const importedPlacemarks = [];
+  const stravaPlacemarks = [];
 
   editableLayers.eachLayer(function (layer) {
     const defaultName =
@@ -166,6 +167,16 @@ function generateFullKmzZip(docName) {
     }
   });
 
+  // --- NEW: Process Strava activities ---
+  stravaActivitiesLayer.eachLayer(function (layer) {
+    const defaultName = `Strava_Activity_${++featureCounter}`;
+    const kmlSnippet = generateKmlForLayer(layer, defaultName);
+    if (kmlSnippet) {
+      stravaPlacemarks.push(kmlSnippet);
+    }
+  });
+  // --- END NEW ---
+
   Object.keys(kmlGroups).forEach((path) => {
     if (kmlGroups[path].length > 0) {
       const fileName = path.substring(path.lastIndexOf("/") + 1);
@@ -188,6 +199,16 @@ function generateFullKmzZip(docName) {
     );
     networkLinks.push({ name: "Imported Features", href: "files/Imported_Features.kml" });
   }
+
+  // --- NEW: Create a separate KML for Strava activities ---
+  if (stravaPlacemarks.length > 0) {
+    filesFolder.file(
+      "Strava_Activities.kml",
+      createKmlDocument("Strava Activities", stravaPlacemarks)
+    );
+    networkLinks.push({ name: "Strava Activities", href: "files/Strava_Activities.kml" });
+  }
+  // --- END NEW ---
 
   preservedKmzFiles.forEach((file) => {
     const fileName = file.path.substring(file.path.lastIndexOf("/") + 1);
