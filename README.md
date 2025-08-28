@@ -1,6 +1,6 @@
 # OpenMapEditor
 
-OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, GeoJSON), routing, elevation profiles, and custom styling.
+OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, GeoJSON), routing, elevation profiles, custom styling, and Strava activity integration.
 
 ---
 
@@ -12,6 +12,7 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 - **Routing:** Generate routes for driving, biking, and walking.
 - **Elevation Profiles:** Visualize the elevation of paths.
 - **Custom Styling:** Change colors and styles of map features.
+- **Strava Integration:** Connect your Strava account to view your activities on the map, download their original high-resolution GPX tracks, or duplicate them for editing.
 
 ---
 
