@@ -77,6 +77,12 @@ function deselectCurrentItem() {
   const downloadContainer = downloadControl.getContainer();
   const gpxButton = downloadContainer.querySelector("#download-gpx");
   const kmlButton = downloadContainer.querySelector("#download-kml");
+  const stravaGpxButton = downloadContainer.querySelector("#download-strava-original-gpx");
+
+  // Reset button visibility to default
+  gpxButton.style.display = "block";
+  kmlButton.style.display = "block";
+  stravaGpxButton.style.display = "none";
 
   gpxButton.disabled = true;
   kmlButton.disabled = true;
@@ -115,11 +121,26 @@ function selectItem(layer) {
   if (downloadControl) {
     const gpxButton = downloadControl.getContainer().querySelector("#download-gpx");
     const kmlButton = downloadControl.getContainer().querySelector("#download-kml");
-    gpxButton.disabled = false;
-    kmlButton.disabled = false;
-    const itemType = layer instanceof L.Marker ? "Marker" : "Path";
-    gpxButton.textContent = `GPX (Selected ${itemType})`;
-    kmlButton.textContent = `KML (Selected ${itemType})`;
+    const stravaGpxButton = downloadControl
+      .getContainer()
+      .querySelector("#download-strava-original-gpx");
+
+    // Logic to show the correct button(s)
+    if (layer.pathType === "strava") {
+      gpxButton.style.display = "none"; // Hide standard GPX button
+      kmlButton.style.display = "none"; // Hide standard KML button
+      stravaGpxButton.style.display = "block"; // Show Strava-specific button
+    } else {
+      gpxButton.style.display = "block";
+      kmlButton.style.display = "block";
+      stravaGpxButton.style.display = "none";
+
+      gpxButton.disabled = false;
+      kmlButton.disabled = false;
+      const itemType = layer instanceof L.Marker ? "Marker" : "Path";
+      gpxButton.textContent = `GPX (Selected ${itemType})`;
+      kmlButton.textContent = `KML (Selected ${itemType})`;
+    }
   }
 
   if (layer instanceof L.Polyline || layer instanceof L.Polygon) {

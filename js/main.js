@@ -544,7 +544,13 @@ function initializeMap() {
       container.title = "Download file";
       container.style.position = "relative";
       container.innerHTML =
-        '<a href="#" role="button"><svg class="icon icon-download"><use href="#icon-download"></use></svg></a><div class="download-submenu"><button id="download-gpx" disabled>GPX (Selected Item)</button><button id="download-kml" disabled>KML (Selected Item)</button><button id="download-kmz">KMZ (Everything)</button></div>';
+        '<a href="#" role="button"><svg class="icon icon-download"><use href="#icon-download"></use></svg></a>' +
+        '<div class="download-submenu">' +
+        '<button id="download-gpx" disabled>GPX (Selected Item)</button>' +
+        '<button id="download-kml" disabled>KML (Selected Item)</button>' +
+        '<button id="download-strava-original-gpx" style="display: none;">GPX (Original from Strava)</button>' +
+        '<button id="download-kmz">KMZ (Everything)</button>' +
+        "</div>";
       const subMenu = container.querySelector(".download-submenu");
 
       L.DomEvent.on(container, "click", (ev) => {
@@ -580,6 +586,14 @@ function initializeMap() {
       L.DomEvent.on(container.querySelector("#download-kml"), "click", (e) => {
         L.DomEvent.stop(e);
         downloadAction("kml");
+      });
+      L.DomEvent.on(container.querySelector("#download-strava-original-gpx"), "click", (e) => {
+        L.DomEvent.stop(e);
+        if (globallySelectedItem && globallySelectedItem.feature.properties.stravaId) {
+          const { stravaId, name } = globallySelectedItem.feature.properties;
+          downloadOriginalStravaGpx(stravaId, name);
+        }
+        subMenu.style.display = "none";
       });
       L.DomEvent.on(container.querySelector("#download-kmz"), "click", (e) => {
         L.DomEvent.stop(e);
