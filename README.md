@@ -84,6 +84,8 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: `https://registry.npmjs.org/leaflet.locatecontrol/-/leaflet.locatecontrol-0.84.2.tgz`
 - **leaflet-routing-machine-3.2.12**
   - Download URL: `https://github.com/perliedman/leaflet-routing-machine/archive/refs/tags/v3.2.12.zip`
+- **polyline-encoded-0.0.9**
+- Download URL: `https://registry.npmjs.org/polyline-encoded/-/polyline-encoded-0.0.9.tgz`
 - **simplify-js-1.2.4**
   - Download URL: `https://github.com/mourner/simplify-js/archive/refs/tags/v1.2.4.zip`
 - **sweetalert2-11.22.2**
