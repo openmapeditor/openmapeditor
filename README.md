@@ -59,7 +59,9 @@ To make the deployment work, you must add your production API keys to your repos
     - `VITE_GOOGLE_API_KEY`
     - `VITE_MAPBOX_ACCESS_TOKEN`
     - `VITE_TRACETRACK_API_KEY`
-5.  Repeat this process for all three keys.
+    - `VITE_STRAVA_CLIENT_ID`
+    - `VITE_STRAVA_CLIENT_SECRET`
+5.  Repeat this process for all required keys.
 
 ---
 
