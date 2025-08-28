@@ -135,7 +135,7 @@ function selectItem(layer) {
       });
       // Only add the outline to the map if the main layer is actually visible
       if (map.hasLayer(layer) && !isEditMode) {
-        selectedPathOutline.addTo(map).bringToBack();
+        selectedPathOutline.addTo(map).bringToFront();
       }
     }
     // --- END ---
