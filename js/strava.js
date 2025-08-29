@@ -41,14 +41,15 @@ function showFetchUI(activityCount = 0) {
       <p style="padding: 15px; text-align: center;">Successfully connected to Strava.<br>${message}</p>
       <div style="display: flex; gap: 10px; justify-content: center; width: 100%;">
         <button id="fetch-strava-btn" class="strava-button" style="flex: 1;">Fetch Activities</button>
-        <button id="export-strava-kmz-btn" class="strava-button" style="flex: 1;">Export as KMZ</button>
+        <button id="export-strava-kml-btn" class="strava-button" style="flex: 1;">Export as KML</button>
       </div>
       <p id="strava-progress" style="text-align: center; padding: 10px; display: none;"></p>
     `;
   document.getElementById("fetch-strava-btn").addEventListener("click", fetchAllActivities);
 
-  const exportBtn = document.getElementById("export-strava-kmz-btn");
-  exportBtn.addEventListener("click", exportStravaActivitiesAsKmz);
+  // MODIFIED: Updated to target the new button ID and call the new function
+  const exportBtn = document.getElementById("export-strava-kml-btn");
+  exportBtn.addEventListener("click", exportStravaActivitiesAsKml);
   exportBtn.disabled = activityCount === 0;
   if (activityCount === 0) {
     exportBtn.style.backgroundColor = "#aaa";
@@ -111,7 +112,7 @@ async function fetchAllActivities() {
   }
 
   const fetchBtn = document.getElementById("fetch-strava-btn");
-  const exportBtn = document.getElementById("export-strava-kmz-btn");
+  const exportBtn = document.getElementById("export-strava-kml-btn"); // MODIFIED: Target updated ID
   if (fetchBtn) fetchBtn.style.display = "none";
   if (exportBtn) exportBtn.style.display = "none";
 
@@ -156,9 +157,9 @@ async function fetchAllActivities() {
 }
 
 /**
- * Creates and triggers a download for a KMZ file containing all loaded Strava activities.
+ * MODIFIED: Creates and triggers a download for a KML file containing all loaded Strava activities.
  */
-async function exportStravaActivitiesAsKmz() {
+async function exportStravaActivitiesAsKml() {
   if (stravaActivitiesLayer.getLayers().length === 0) {
     return Swal.fire({
       icon: "info",
@@ -167,7 +168,6 @@ async function exportStravaActivitiesAsKmz() {
     });
   }
 
-  const zip = new JSZip();
   const stravaPlacemarks = [];
 
   stravaActivitiesLayer.eachLayer((layer) => {
@@ -188,11 +188,8 @@ async function exportStravaActivitiesAsKmz() {
 
   const docName = "Strava Activities";
   const kmlContent = createKmlDocument(docName, stravaPlacemarks);
-  // --- FIX: Use a descriptive filename inside the KMZ ---
-  zip.file("Strava_Activities.kml", kmlContent);
 
   try {
-    const content = await zip.generateAsync({ type: "blob" });
     const now = new Date();
     const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now
       .getDate()
@@ -201,21 +198,18 @@ async function exportStravaActivitiesAsKmz() {
       .getMinutes()
       .toString()
       .padStart(2, "0")}${now.getSeconds().toString().padStart(2, "0")}`;
-    const fileName = `Strava_Export_${timestamp}.kmz`;
 
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(content);
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(link.href);
+    // MODIFIED: Changed file extension
+    const fileName = `Strava_Export_${timestamp}.kml`;
+
+    // MODIFIED: Use the downloadFile utility directly, no JSZip needed
+    downloadFile(fileName, kmlContent);
   } catch (error) {
-    console.error("Error generating Strava KMZ:", error);
+    console.error("Error generating Strava KML:", error);
     Swal.fire({
       icon: "error",
       title: "Export Error",
-      text: `Failed to generate KMZ file: ${error.message}`,
+      text: `Failed to generate KML file: ${error.message}`,
     });
   }
 }
