@@ -472,6 +472,8 @@ select:focus {
   border-radius: 4px;
   height: 30px;
   box-sizing: border-box;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 .routing-input-group button {
@@ -1245,6 +1247,14 @@ select:focus {
 /* Make routing and elevation provider select boxes the same width */
 #settings-panel select {
   width: 120px;
+  /* ADDED: Styles to match other dropdowns */
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  height: 30px;
+  padding: 6px;
+  box-sizing: border-box;
 }
 
 #settings-panel .settings-control-item label {
@@ -1502,8 +1512,5 @@ body.route-point-select-mode * {
 
 /* Disabled state for secondary buttons */
 .strava-button-secondary:disabled {
-  background-color: var(--background2-color);
-  color: var(--text-color);
-  opacity: 0.6;
   cursor: not-allowed;
 }
