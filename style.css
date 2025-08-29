@@ -235,6 +235,16 @@ select:focus {
   flex-shrink: 0; /* Prevents the icon from shrinking if space is tight */
 }
 
+#info-panel-edit-hint {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--color-grey-dark);
+  margin-top: 8px;
+  padding: 0 10px;
+  max-width: 95%; /* To ensure it wraps nicely */
+  box-sizing: border-box;
+}
+
 /* --- Style Row for Color Swatch and Layer Name --- */
 #info-panel-style-row {
   display: flex;
