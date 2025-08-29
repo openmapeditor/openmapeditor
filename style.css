@@ -612,10 +612,6 @@ select:focus {
   transition: background-color 0.2s ease-in-out;
 }
 
-#info-panel-strava-link:hover {
-  background-color: rgba(252, 82, 0, 0.1); /* Light orange on hover */
-}
-
 /* --- Autocomplete suggestion list styles --- */
 .autocomplete-suggestions {
   display: none;
