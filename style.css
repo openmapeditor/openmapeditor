@@ -1514,3 +1514,10 @@ body.route-point-select-mode * {
 .strava-button-secondary:disabled {
   cursor: not-allowed;
 }
+
+/* Active state for secondary buttons to match routing buttons */
+button.strava-button-secondary:not(:disabled) {
+  font-weight: bold;
+  background-color: var(--text-color);
+  color: var(--background-color);
+}
