@@ -594,6 +594,10 @@ select:focus {
   gap: 10px;
 }
 
+#strava-panel-content p {
+  font-size: 14px;
+}
+
 /* REMOVED .strava-button rule */
 
 /* Link containing the official 'Connect with Strava' SVG image */
