@@ -230,14 +230,16 @@ function showInfoPanel(layer) {
   layer.feature.properties = layer.feature.properties || {};
   let name = layer.feature.properties.name || "";
   let details = "";
-  const stravaLink = document.getElementById("info-panel-strava-link"); // Get the new element
+  const editHint = document.getElementById("info-panel-edit-hint");
+  const stravaLink = document.getElementById("info-panel-strava-link");
 
   // Clear previous click handler and reset cursor
   infoPanelDetails.onclick = null;
   infoPanelDetails.style.cursor = "default";
   infoPanelDetails.title = "";
 
-  // Hide Strava link by default, we'll show it if needed
+  // Hide hint and Strava link by default
+  editHint.style.display = "none";
   stravaLink.style.display = "none";
 
   if (layer instanceof L.Marker) {
@@ -323,19 +325,21 @@ function showInfoPanel(layer) {
     case "route":
       layerTypeName = "Route";
       break;
-    // --- MODIFIED: Case for Strava Activities now includes the type ---
     case "strava":
       const activityType = layer.feature.properties.type || "";
       layerTypeName = `Strava Activity ${activityType ? `(${activityType})` : ""}`.trim();
 
-      // --- NEW: Strava Link Logic ---
+      // Show the "View on Strava" link
       if (layer.feature.properties.stravaId) {
         const activityUrl = `https://www.strava.com/activities/${layer.feature.properties.stravaId}`;
         stravaLink.href = activityUrl;
         stravaLink.textContent = "View on Strava";
         stravaLink.style.display = "flex";
       }
-      // --- END NEW ---
+
+      // Show the editing hint
+      editHint.innerHTML = "To edit, duplicate this activity from the <b>Contents</b> tab.";
+      editHint.style.display = "block";
       break;
   }
   infoPanelLayerName.textContent = layerTypeName;
@@ -363,14 +367,14 @@ function resetInfoPanel() {
     infoPanel.style.justifyContent = "center";
     infoPanelDetails.style.marginTop = "0";
 
-    // NEW: Ensure click handler and styles are reset
+    // Ensure click handler and styles are reset
     infoPanelDetails.onclick = null;
     infoPanelDetails.style.cursor = "default";
     infoPanelDetails.title = "";
 
-    // --- NEW: Hide the Strava link when resetting ---
+    // Hide the hint and Strava link when resetting
+    document.getElementById("info-panel-edit-hint").style.display = "none";
     document.getElementById("info-panel-strava-link").style.display = "none";
-    // --- END NEW ---
 
     // Hide color picker and the new style row
     infoPanelStyleRow.style.display = "none";
