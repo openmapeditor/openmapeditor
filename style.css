@@ -582,23 +582,7 @@ select:focus {
   gap: 10px;
 }
 
-/* Button used for fetching activities */
-.strava-button {
-  background-color: #fc5200; /* Strava Orange */
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-  font-size: 14px;
-  height: 48px; /* Match the SVG button height */
-  box-sizing: border-box; /* Include padding in the height calculation */
-  display: flex; /* Enable flexbox for vertical alignment */
-  align-items: center; /* Center text vertically */
-  justify-content: center; /* Center text horizontally */
-}
+/* REMOVED .strava-button rule */
 
 /* Link containing the official 'Connect with Strava' SVG image */
 .strava-button-link {
@@ -1483,4 +1467,43 @@ body.route-point-select-mode * {
   .custom-cursor {
     display: none !important;
   }
+}
+
+/* --- Strava Panel Button Styles (MODIFIED) --- */
+/* Base styles to match routing panel controls */
+.strava-button-primary,
+.strava-button-secondary {
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-size: 14px;
+  height: 30px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Primary button style (Strava Orange) */
+.strava-button-primary {
+  background-color: #fc5200;
+  color: white;
+  border: none;
+  font-weight: bold;
+}
+
+/* Secondary button style (Theme-Aware) */
+.strava-button-secondary {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Disabled state for secondary buttons */
+.strava-button-secondary:disabled {
+  background-color: var(--background2-color);
+  color: var(--text-color);
+  opacity: 0.6;
+  cursor: not-allowed;
 }

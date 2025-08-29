@@ -30,31 +30,37 @@ function showConnectUI() {
 }
 
 /**
- * Displays the UI for fetching and exporting activities after a successful connection.
+ * MODIFIED: Displays the UI for fetching and exporting activities after a successful connection.
+ * Includes a dropdown to select the number of activities to fetch.
  * @param {number} [activityCount=0] - The number of currently loaded activities.
  */
 function showFetchUI(activityCount = 0) {
   if (!stravaPanelContent) return;
   const message =
-    activityCount > 0 ? `${activityCount} activities loaded.` : "Ready to fetch your activities.";
+    activityCount > 0
+      ? `${activityCount} activities loaded.`
+      : "Select how many activities to fetch.";
   stravaPanelContent.innerHTML = `
       <p style="padding: 15px; text-align: center;">Successfully connected to Strava.<br>${message}</p>
-      <div style="display: flex; gap: 10px; justify-content: center; width: 100%;">
-        <button id="fetch-strava-btn" class="strava-button" style="flex: 1;">Fetch Activities</button>
-        <button id="export-strava-kml-btn" class="strava-button" style="flex: 1;">Export as KML</button>
+      <div id="strava-controls" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%;">
+        <select id="strava-fetch-count" class="strava-button-secondary" style="flex: 2; min-width: 120px;">
+          <option value="25">Latest 25</option>
+          <option value="50">Latest 50</option>
+          <option value="100">Latest 100</option>
+          <option value="all" selected>All Activities</option>
+        </select>
+        <button id="fetch-strava-btn" class="strava-button-primary" style="flex: 1; min-width: 80px;">Fetch</button>
+        <button id="export-strava-kml-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export KML</button>
       </div>
       <p id="strava-progress" style="text-align: center; padding: 10px; display: none;"></p>
     `;
   document.getElementById("fetch-strava-btn").addEventListener("click", fetchAllActivities);
 
-  // MODIFIED: Updated to target the new button ID and call the new function
   const exportBtn = document.getElementById("export-strava-kml-btn");
   exportBtn.addEventListener("click", exportStravaActivitiesAsKml);
   exportBtn.disabled = activityCount === 0;
-  if (activityCount === 0) {
-    exportBtn.style.backgroundColor = "#aaa";
-    exportBtn.style.cursor = "not-allowed";
-  }
+
+  // MODIFIED: Removed inline styling for the disabled state, as it's now handled by CSS.
 }
 
 /**
@@ -101,7 +107,7 @@ function getAccessToken(code) {
 }
 
 /**
- * Fetches all activities from the Strava API, handling pagination.
+ * MODIFIED: Fetches activities from the Strava API, handling pagination and respecting a user-defined limit.
  */
 async function fetchAllActivities() {
   const accessToken = sessionStorage.getItem("strava_access_token");
@@ -111,10 +117,14 @@ async function fetchAllActivities() {
     return;
   }
 
-  const fetchBtn = document.getElementById("fetch-strava-btn");
-  const exportBtn = document.getElementById("export-strava-kml-btn"); // MODIFIED: Target updated ID
-  if (fetchBtn) fetchBtn.style.display = "none";
-  if (exportBtn) exportBtn.style.display = "none";
+  // --- MODIFIED: Read the desired activity count from the new dropdown ---
+  const fetchCountSelect = document.getElementById("strava-fetch-count");
+  const limit = fetchCountSelect ? fetchCountSelect.value : "all";
+  const fetchLimit = limit === "all" ? Infinity : parseInt(limit, 10);
+
+  // --- MODIFIED: Hide the entire control group during the fetch process ---
+  const controlsDiv = document.getElementById("strava-controls");
+  if (controlsDiv) controlsDiv.style.display = "none";
 
   const progressText = document.getElementById("strava-progress");
   if (progressText) {
@@ -124,10 +134,11 @@ async function fetchAllActivities() {
 
   let allActivities = [];
   let page = 1;
-  const perPage = 100;
+  const perPage = 100; // Fetch in efficient chunks of 100
   let keepFetching = true;
 
-  while (keepFetching) {
+  // --- MODIFIED: The loop now also checks if the fetch limit has been reached ---
+  while (keepFetching && allActivities.length < fetchLimit) {
     try {
       const url = `${activitiesURL}?access_token=${accessToken}&per_page=${perPage}&page=${page}`;
       const response = await fetch(url);
@@ -141,7 +152,7 @@ async function fetchAllActivities() {
         if (progressText) progressText.innerText = `Fetched ${allActivities.length} activities...`;
         page++;
       } else {
-        keepFetching = false;
+        keepFetching = false; // No more activities available from the API
       }
     } catch (error) {
       console.error("Error fetching Strava activities:", error);
@@ -149,6 +160,11 @@ async function fetchAllActivities() {
         progressText.innerText = "Error fetching activities. See console for details.";
       keepFetching = false;
     }
+  }
+
+  // --- MODIFIED: Trim the results to the exact limit if we fetched more than needed on the last page ---
+  if (fetchLimit !== Infinity && allActivities.length > fetchLimit) {
+    allActivities = allActivities.slice(0, fetchLimit);
   }
 
   if (progressText)
