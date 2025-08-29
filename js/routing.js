@@ -205,7 +205,10 @@ function initializeRouting() {
 
         const summaryContainer = document.getElementById("routing-summary-container");
         if (route.summary && summaryContainer) {
-          const totalDistanceKm = (route.summary.totalDistance / 1000).toFixed(2);
+          // NEW: Calculate and then truncate the distance for display
+          const totalDistanceKm = route.summary.totalDistance / 1000;
+          const truncatedKm = Math.floor(totalDistanceKm * 100) / 100;
+
           function formatDuration(seconds) {
             const h = Math.floor(seconds / 3600);
             const m = Math.floor((seconds % 3600) / 60);
@@ -215,7 +218,11 @@ function initializeRouting() {
             return parts.join(" ");
           }
           const formattedTime = formatDuration(route.summary.totalTime);
-          summaryContainer.innerHTML = `<b>Distance:</b> ${totalDistanceKm} km &nbsp;&nbsp; <b>Time:</b> ${formattedTime}`;
+
+          // Use the truncated value, ensuring two decimal places with toFixed
+          summaryContainer.innerHTML = `<b>Distance:</b> ${truncatedKm.toFixed(
+            2
+          )} km &nbsp;&nbsp; <b>Time:</b> ${formattedTime}`;
           summaryContainer.style.display = "block";
         }
 
@@ -231,7 +238,10 @@ function initializeRouting() {
             const distanceM = instr.distance;
             let distanceStr = "";
             if (distanceM > 999) {
-              distanceStr = `(${(distanceM / 1000).toFixed(1)} km)`;
+              // NEW: Apply truncation to one decimal place for consistency
+              const distanceKm = distanceM / 1000;
+              const truncatedKm = Math.floor(distanceKm * 10) / 10;
+              distanceStr = `(${truncatedKm.toFixed(1)} km)`;
             } else if (distanceM > 0) {
               distanceStr = `(${Math.round(distanceM)} m)`;
             }

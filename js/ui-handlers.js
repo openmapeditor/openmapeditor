@@ -290,10 +290,15 @@ function showInfoPanel(layer) {
       totalDistance = calculatePathDistance(layer);
     }
 
+    // NEW: Calculate and then truncate both km and miles
     const distanceInKm = totalDistance / 1000;
     const distanceInMiles = 0.621371 * distanceInKm;
-    // --- MODIFIED: Removed activity type from this line ---
-    details = `Length: ${distanceInKm.toFixed(2)} km (${distanceInMiles.toFixed(2)} mi)`;
+
+    const truncatedKm = Math.floor(distanceInKm * 100) / 100;
+    const truncatedMiles = Math.floor(distanceInMiles * 100) / 100;
+
+    // Use the truncated values for display, ensuring two decimal places with toFixed
+    details = `Length: ${truncatedKm.toFixed(2)} km (${truncatedMiles.toFixed(2)} mi)`;
   }
 
   layer.feature.properties.name = name;
