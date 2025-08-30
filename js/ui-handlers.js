@@ -1,215 +1,240 @@
 // OpenMapEditor - A web-based editor for creating and managing geographic data.
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
-// Populates or updates the overview list with all editable items on the map
+/**
+ * Helper function to create a single list item for the overview panel.
+ * This encapsulates the logic for creating the item's text, buttons, and event listeners.
+ * @param {L.Layer} layer - The layer to create the list item for.
+ * @returns {HTMLElement} The created list item element.
+ */
+function createOverviewListItem(layer) {
+  const layerId = L.Util.stamp(layer);
+  let layerName =
+    layer.feature?.properties?.name || (layer instanceof L.Marker ? "Marker" : "Unnamed Path");
+
+  const listItem = document.createElement("div");
+  listItem.className = "overview-list-item";
+  listItem.setAttribute("data-layer-id", layerId);
+
+  // Visibility toggle button
+  const visibilityBtn = document.createElement("span");
+  visibilityBtn.className = "overview-visibility-btn";
+  visibilityBtn.title = "Toggle visibility";
+  const setIcon = (visible) => {
+    visibilityBtn.innerHTML = visible
+      ? '<svg class="icon"><use href="#icon-eye-open"></use></svg>'
+      : '<svg class="icon"><use href="#icon-eye-closed"></use></svg>';
+  };
+  const isInitiallyVisible = map.hasLayer(layer) && !layer.isManuallyHidden;
+  setIcon(isInitiallyVisible);
+  visibilityBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const layerToToggle =
+      editableLayers.getLayer(layerId) ||
+      stravaActivitiesLayer.getLayer(layerId) ||
+      (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
+    if (!layerToToggle) return;
+    const isCurrentlyVisible = map.hasLayer(layerToToggle);
+    if (isCurrentlyVisible) {
+      layerToToggle.isManuallyHidden = true;
+      map.removeLayer(layerToToggle);
+      if (layerToToggle === globallySelectedItem) {
+        if (selectedPathOutline) map.removeLayer(selectedPathOutline);
+        if (selectedMarkerOutline) map.removeLayer(selectedMarkerOutline);
+      }
+      setIcon(false);
+    } else {
+      layerToToggle.isManuallyHidden = false;
+      map.addLayer(layerToToggle);
+      if (layerToToggle === globallySelectedItem) {
+        if (selectedPathOutline) selectedPathOutline.addTo(map).bringToBack();
+        if (selectedMarkerOutline) selectedMarkerOutline.addTo(map);
+      }
+      setIcon(true);
+    }
+  });
+
+  // Duplicate button
+  const duplicateBtn = document.createElement("span");
+  if (layer !== currentRoutePath) {
+    duplicateBtn.className = "overview-duplicate-btn";
+    duplicateBtn.innerHTML = '<svg class="icon"><use href="#icon-copy"></use></svg>';
+    duplicateBtn.title = "Duplicate";
+    duplicateBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const layerToDuplicate =
+        editableLayers.getLayer(layerId) || stravaActivitiesLayer.getLayer(layerId);
+      if (!layerToDuplicate) return;
+      let newLayer;
+      const newFeature = JSON.parse(JSON.stringify(layerToDuplicate.feature || { properties: {} }));
+      newFeature.properties.name =
+        (newFeature.properties.name || (layerToDuplicate instanceof L.Marker ? "Marker" : "Path")) +
+        " (Copy)";
+      const colorName = newFeature.properties.omColorName || "Red";
+      const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
+      const color = colorData ? colorData.css : "#e51b23";
+      if (layerToDuplicate.pathType === "strava") {
+        const originalCoords = layerToDuplicate
+          .getLatLngs()
+          .map((latlng) => [latlng.lng, latlng.lat]);
+        const simplified = simplifyPath(originalCoords, "LineString", pathSimplificationConfig);
+        newLayer = L.polyline(
+          simplified.coords.map((c) => [c[1], c[0]]),
+          { ...STYLE_CONFIG.path.default, color: color }
+        );
+        newFeature.properties.totalDistance = calculatePathDistance(newLayer);
+      } else if (layerToDuplicate instanceof L.Marker) {
+        newLayer = L.marker(layerToDuplicate.getLatLng(), {
+          icon: createSvgIcon(color, STYLE_CONFIG.marker.default.opacity),
+        });
+      } else if (layerToDuplicate instanceof L.Polyline) {
+        newLayer = L.polyline(layerToDuplicate.getLatLngs(), {
+          ...STYLE_CONFIG.path.default,
+          color: color,
+        });
+      }
+      if (newLayer) {
+        newLayer.feature = newFeature;
+        newLayer.pathType = "drawn";
+        newLayer.on("click", (ev) => {
+          L.DomEvent.stopPropagation(ev);
+          selectItem(newLayer);
+        });
+        drawnItems.addLayer(newLayer);
+        editableLayers.addLayer(newLayer);
+        updateOverviewList();
+        updateDrawControlStates();
+        selectItem(newLayer);
+      }
+    });
+  }
+
+  // Delete button
+  const deleteBtn = document.createElement("span");
+  deleteBtn.className = "overview-delete-btn";
+  deleteBtn.innerHTML = '<svg class="icon"><use href="#icon-delete-circle"></use></svg>';
+  deleteBtn.title = "Delete";
+  deleteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const layerToDelete =
+      editableLayers.getLayer(layerId) ||
+      stravaActivitiesLayer.getLayer(layerId) ||
+      (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
+    if (layerToDelete) {
+      deleteLayerImmediately(layerToDelete);
+    }
+  });
+
+  // Text span for the name
+  const textSpan = document.createElement("span");
+  textSpan.className = "overview-item-text";
+  textSpan.textContent = layerName;
+  textSpan.title = layerName;
+
+  listItem.appendChild(visibilityBtn);
+  listItem.appendChild(duplicateBtn);
+  listItem.appendChild(deleteBtn);
+  listItem.appendChild(textSpan);
+
+  if (globallySelectedItem && L.Util.stamp(globallySelectedItem) === layerId) {
+    listItem.classList.add("selected");
+  }
+
+  listItem.addEventListener("click", () => {
+    const targetLayer =
+      editableLayers.getLayer(layerId) ||
+      stravaActivitiesLayer.getLayer(layerId) ||
+      (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
+    if (targetLayer) {
+      if (targetLayer instanceof L.Polyline || targetLayer instanceof L.Polygon) {
+        if (targetLayer.getBounds().isValid()) {
+          map.fitBounds(targetLayer.getBounds(), { paddingTopLeft: [50, 50] });
+        }
+      } else if (targetLayer instanceof L.Marker) {
+        const targetZoom = Math.max(map.getZoom(), 16);
+        map.flyTo(targetLayer.getLatLng(), targetZoom);
+      }
+      selectItem(targetLayer);
+    }
+  });
+
+  return listItem;
+}
+
+// Populates or updates the overview list with all items on the map, grouped by type.
 function updateOverviewList() {
   const listContainer = document.getElementById("overview-panel-list");
   if (!listContainer) return;
 
   listContainer.innerHTML = ""; // Clear existing list
 
-  const hasEditableLayers = editableLayers.getLayers().length > 0;
-  const hasStravaLayers = stravaActivitiesLayer.getLayers().length > 0;
+  // 1. Collect all items into a single array
+  const allItems = [...editableLayers.getLayers(), ...stravaActivitiesLayer.getLayers()];
+  if (currentRoutePath) {
+    allItems.unshift(currentRoutePath);
+  }
 
-  if (!hasEditableLayers && !hasStravaLayers && !currentRoutePath) {
+  // Handle the empty state
+  if (allItems.length === 0) {
     listContainer.innerHTML =
       '<div class="overview-list-item" style="color: grey; cursor: default;">No items on map</div>';
     return;
   }
 
-  const fragment = document.createDocumentFragment();
+  // 2. Group all items by their type
+  const groupedItems = {};
+  const getGroupTitle = (pathType) => {
+    switch (pathType) {
+      case "route":
+        return "Route";
+      case "drawn":
+        return "Drawn Items";
+      case "gpx":
+      case "kml":
+        return "Imported GPX/KML";
+      case "kmz":
+        return "Imported KMZ";
+      case "strava":
+        return "Strava Activities";
+      default:
+        return "Other";
+    }
+  };
 
-  // Create a combined array of all items to display.
-  const allItems = [
-    ...editableLayers.getLayers(),
-    ...stravaActivitiesLayer.getLayers(), // Add Strava layers to the list
+  allItems.forEach((layer) => {
+    const title = getGroupTitle(layer.pathType);
+    if (!groupedItems[title]) {
+      groupedItems[title] = [];
+    }
+    groupedItems[title].push(layer);
+  });
+
+  // 3. Render the groups in a specific order
+  const fragment = document.createDocumentFragment();
+  const groupOrder = [
+    "Route",
+    "Drawn Items",
+    "Imported GPX/KML",
+    "Imported KMZ",
+    "Strava Activities",
+    "Other",
   ];
 
-  if (currentRoutePath) {
-    allItems.unshift(currentRoutePath);
-  }
+  groupOrder.forEach((title) => {
+    const itemsInGroup = groupedItems[title];
+    if (itemsInGroup && itemsInGroup.length > 0) {
+      // Create and append a header for the group
+      const header = document.createElement("div");
+      header.className = "overview-list-header";
+      header.textContent = title;
+      fragment.appendChild(header);
 
-  // Now, iterate over the combined 'allItems' array instead of just editableLayers.
-  allItems.forEach((layer) => {
-    const layerId = L.Util.stamp(layer);
-    let layerName =
-      layer.feature?.properties?.name || (layer instanceof L.Marker ? "Marker" : "Unnamed Path");
-
-    const listItem = document.createElement("div");
-    listItem.className = "overview-list-item";
-    listItem.setAttribute("data-layer-id", layerId);
-
-    // Create visibility toggle button
-    const visibilityBtn = document.createElement("span");
-    visibilityBtn.className = "overview-visibility-btn";
-    visibilityBtn.title = "Toggle visibility";
-
-    const setIcon = (visible) => {
-      visibilityBtn.innerHTML = visible
-        ? '<svg class="icon"><use href="#icon-eye-open"></use></svg>'
-        : '<svg class="icon"><use href="#icon-eye-closed"></use></svg>';
-    };
-
-    // A layer is visible if it's on the map AND not manually hidden.
-    const isInitiallyVisible = map.hasLayer(layer) && !layer.isManuallyHidden;
-    setIcon(isInitiallyVisible);
-
-    visibilityBtn.addEventListener("click", (e) => {
-      e.stopPropagation(); // Prevent item selection
-      const layerToToggle =
-        editableLayers.getLayer(layerId) ||
-        stravaActivitiesLayer.getLayer(layerId) || // Check Strava layer
-        (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
-      if (!layerToToggle) return;
-
-      const isCurrentlyVisible = map.hasLayer(layerToToggle);
-
-      if (isCurrentlyVisible) {
-        layerToToggle.isManuallyHidden = true; // Set flag
-        map.removeLayer(layerToToggle);
-        if (layerToToggle === globallySelectedItem) {
-          if (selectedPathOutline) map.removeLayer(selectedPathOutline);
-          if (selectedMarkerOutline) map.removeLayer(selectedMarkerOutline);
-        }
-        setIcon(false);
-      } else {
-        layerToToggle.isManuallyHidden = false; // Clear flag
-        map.addLayer(layerToToggle);
-        if (layerToToggle === globallySelectedItem) {
-          if (selectedPathOutline) selectedPathOutline.addTo(map).bringToBack();
-          if (selectedMarkerOutline) selectedMarkerOutline.addTo(map);
-        }
-        setIcon(true);
-      }
-    });
-
-    // Create duplicate button
-    const duplicateBtn = document.createElement("span");
-    // Only add functionality if it's not the active route
-    if (layer !== currentRoutePath) {
-      duplicateBtn.className = "overview-duplicate-btn";
-      duplicateBtn.innerHTML = '<svg class="icon"><use href="#icon-copy"></use></svg>';
-      duplicateBtn.title = "Duplicate";
-
-      duplicateBtn.addEventListener("click", (e) => {
-        e.stopPropagation(); // Prevent the list item click event
-
-        const layerToDuplicate =
-          editableLayers.getLayer(layerId) || stravaActivitiesLayer.getLayer(layerId);
-        if (!layerToDuplicate) return;
-
-        let newLayer;
-
-        // Deep copy feature to avoid reference issues
-        const newFeature = JSON.parse(
-          JSON.stringify(layerToDuplicate.feature || { properties: {} })
-        );
-        newFeature.properties.name =
-          (newFeature.properties.name ||
-            (layerToDuplicate instanceof L.Marker ? "Marker" : "Path")) + " (Copy)";
-
-        const colorName = newFeature.properties.omColorName || "Red";
-        const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-        const color = colorData ? colorData.css : "#e51b23"; // Fallback to red
-
-        // --- NEW: Special handling for duplicating Strava activities ---
-        if (layerToDuplicate.pathType === "strava") {
-          const originalCoords = layerToDuplicate
-            .getLatLngs()
-            .map((latlng) => [latlng.lng, latlng.lat]);
-          // Simplify the path using the standard import configuration
-          const simplified = simplifyPath(originalCoords, "LineString", pathSimplificationConfig);
-          newLayer = L.polyline(
-            simplified.coords.map((c) => [c[1], c[0]]), // Convert back to [lat, lng] for Leaflet
-            { ...STYLE_CONFIG.path.default, color: color }
-          );
-          // Recalculate and store the new, simplified distance
-          newFeature.properties.totalDistance = calculatePathDistance(newLayer);
-        } else if (layerToDuplicate instanceof L.Marker) {
-          newLayer = L.marker(layerToDuplicate.getLatLng(), {
-            icon: createSvgIcon(color, STYLE_CONFIG.marker.default.opacity),
-          });
-        } else if (layerToDuplicate instanceof L.Polyline) {
-          newLayer = L.polyline(layerToDuplicate.getLatLngs(), {
-            ...STYLE_CONFIG.path.default,
-            color: color,
-          });
-        }
-
-        if (newLayer) {
-          newLayer.feature = newFeature;
-          newLayer.pathType = "drawn"; // Duplicated items are considered drawn
-
-          newLayer.on("click", (ev) => {
-            L.DomEvent.stopPropagation(ev);
-            selectItem(newLayer);
-          });
-
-          drawnItems.addLayer(newLayer);
-          editableLayers.addLayer(newLayer); // Make the new copy editable
-
-          // Refresh UI and select the new item
-          updateOverviewList();
-          updateDrawControlStates();
-          selectItem(newLayer);
-        }
+      // Create and append the list items for this group
+      itemsInGroup.forEach((layer) => {
+        const listItem = createOverviewListItem(layer); // Use the helper function
+        fragment.appendChild(listItem);
       });
     }
-
-    // Create delete button
-    const deleteBtn = document.createElement("span");
-    deleteBtn.className = "overview-delete-btn";
-    deleteBtn.innerHTML = '<svg class="icon"><use href="#icon-delete-circle"></use></svg>';
-    deleteBtn.title = "Delete";
-
-    deleteBtn.addEventListener("click", (e) => {
-      e.stopPropagation(); // Prevent item selection when clicking the delete button
-      const layerToDelete =
-        editableLayers.getLayer(layerId) ||
-        stravaActivitiesLayer.getLayer(layerId) || // Check Strava layer
-        (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
-      if (layerToDelete) {
-        // Use the centralized instant deletion function
-        deleteLayerImmediately(layerToDelete);
-      }
-    });
-
-    // Create text span for the name
-    const textSpan = document.createElement("span");
-    textSpan.className = "overview-item-text";
-    textSpan.textContent = layerName;
-    textSpan.title = layerName;
-
-    listItem.appendChild(visibilityBtn);
-    listItem.appendChild(duplicateBtn);
-    listItem.appendChild(deleteBtn);
-    listItem.appendChild(textSpan);
-
-    if (globallySelectedItem && L.Util.stamp(globallySelectedItem) === layerId) {
-      listItem.classList.add("selected");
-    }
-
-    listItem.addEventListener("click", () => {
-      // This event now fires for the whole item, but the delete button stops propagation.
-      const targetLayer =
-        editableLayers.getLayer(layerId) ||
-        stravaActivitiesLayer.getLayer(layerId) || // Check Strava layer
-        (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
-      if (targetLayer) {
-        // Pan and zoom to the selected layer
-        if (targetLayer instanceof L.Polyline || targetLayer instanceof L.Polygon) {
-          if (targetLayer.getBounds().isValid()) {
-            map.fitBounds(targetLayer.getBounds(), { paddingTopLeft: [50, 50] });
-          }
-        } else if (targetLayer instanceof L.Marker) {
-          const targetZoom = Math.max(map.getZoom(), 16);
-          map.flyTo(targetLayer.getLatLng(), targetZoom);
-        }
-        // Select the item without rebuilding the whole list
-        selectItem(targetLayer);
-      }
-    });
-    fragment.appendChild(listItem);
   });
 
   listContainer.appendChild(fragment);

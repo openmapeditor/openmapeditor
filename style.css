@@ -349,6 +349,7 @@ select:focus {
   text-overflow: ellipsis;
   background-color: var(--background-color);
   color: var(--text-color) !important;
+  scroll-margin-top: 30px;
 }
 .overview-visibility-btn,
 .overview-duplicate-btn,
@@ -1531,3 +1532,32 @@ button.strava-button-secondary:not(:disabled) {
   background-color: var(--text-color);
   color: var(--background-color);
 }
+
+/* --- Styles for Overview Panel Group Headers --- */
+.overview-list-header {
+  font-weight: bold;
+  font-size: 12px;
+  padding: 8px 12px 4px 12px;
+  background-color: var(--background2-color);
+  color: var(--text-color);
+  border-bottom: 1px solid var(--divider-color);
+  /* border-top: 1px solid var(--divider-color); */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky; /* Make headers stick to the top when scrolling */
+  top: 0;
+  z-index: 1; /* Ensure header is above list items */
+}
+
+#overview-panel-list .overview-list-header:first-child {
+  border-top: none; /* The very first header doesn't need a top border */
+}
+
+/* Remove the bottom border from a list item if it's the last one in a group */
+/* .overview-list-item:has(+ .overview-list-header) {
+  border-bottom: none;
+}
+
+#overview-panel-list .overview-list-header:first-child {
+  border-top: none;
+} */
