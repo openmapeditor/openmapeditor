@@ -1552,12 +1552,3 @@ button.strava-button-secondary:not(:disabled) {
 #overview-panel-list .overview-list-header:first-child {
   border-top: none; /* The very first header doesn't need a top border */
 }
-
-/* Remove the bottom border from a list item if it's the last one in a group */
-/* .overview-list-item:has(+ .overview-list-header) {
-  border-bottom: none;
-}
-
-#overview-panel-list .overview-list-header:first-child {
-  border-top: none;
-} */
