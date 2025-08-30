@@ -2,7 +2,7 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
 // --- Strava API Configuration ---
-const redirectURI = window.location.origin + window.location.pathname;
+const redirectURI = `${window.location.origin}/strava-callback.html`;
 const scope = "read,activity:read_all";
 const stravaAuthURL = `https://www.strava.com/oauth/authorize?client_id=${stravaClientId}&redirect_uri=${redirectURI}&response_type=code&scope=${scope}`;
 const tokenURL = "https://www.strava.com/oauth/token";
@@ -23,10 +23,37 @@ function showConnectUI() {
   if (!stravaPanelContent) return;
   stravaPanelContent.innerHTML = `
     <p style="padding: 15px; text-align: center;">Connect with Strava to see your activities.</p>
-    <a href="${stravaAuthURL}" class="strava-button-link">
+    <button id="strava-connect-btn" class="strava-button-link" style="border: none; background: transparent; padding: 0; cursor: pointer;">
       <img src="https://openmapeditor.github.io/openmapeditor-assets/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
-    </a>
+    </button>
   `;
+
+  document.getElementById("strava-connect-btn").addEventListener("click", () => {
+    stravaPanelContent.innerHTML =
+      '<p style="padding: 15px; text-align: center;">Waiting for Strava authentication in the new tab...</p>';
+    window.open(stravaAuthURL, "_blank");
+    window.addEventListener("storage", handleStravaAuthReturn);
+  });
+}
+
+/**
+ * ADDED: Handles the authentication callback from the new tab via localStorage.
+ * @param {StorageEvent} event The storage event.
+ */
+function handleStravaAuthReturn(event) {
+  if (event.key === "strava_auth_code" && event.newValue) {
+    const authCode = event.newValue;
+    localStorage.removeItem("strava_auth_code");
+    window.removeEventListener("storage", handleStravaAuthReturn);
+    getAccessToken(authCode);
+  } else if (event.key === "strava_auth_error") {
+    console.error("Strava authentication error:", event.newValue);
+    localStorage.removeItem("strava_auth_error");
+    window.removeEventListener("storage", handleStravaAuthReturn);
+    stravaPanelContent.innerHTML =
+      '<p style="padding: 15px; text-align: center; color: red;">Authentication was cancelled or failed.</p>';
+    setTimeout(showConnectUI, 3000);
+  }
 }
 
 /**
@@ -67,43 +94,61 @@ function showFetchUI(activityCount = 0) {
  * Exchanges the authorization code for an access token and stores it.
  * @param {string} code The authorization code from Strava.
  */
-function getAccessToken(code) {
+async function getAccessToken(code) {
   if (!stravaPanelContent) return;
   stravaPanelContent.innerHTML =
     '<p style="padding: 15px; text-align: center;">Authenticating...</p>';
 
-  fetch(tokenURL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      client_id: stravaClientId,
-      client_secret: stravaClientSecret,
-      code: code,
-      grant_type: "authorization_code",
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.access_token) {
-        sessionStorage.setItem("strava_access_token", data.access_token);
-        sessionStorage.setItem("strava_refresh_token", data.refresh_token);
-        sessionStorage.setItem("strava_expires_at", data.expires_at);
-        showFetchUI();
-      } else {
-        throw new Error("Access token not received.");
-      }
-    })
-    .catch((error) => {
-      console.error("Error getting Strava access token:", error);
-      stravaPanelContent.innerHTML =
-        '<p style="padding: 15px; text-align: center; color: red;">Authentication failed. Please try again.</p>';
-      setTimeout(showConnectUI, 3000);
-    })
-    .finally(() => {
-      const cleanURL =
-        window.location.protocol + "//" + window.location.host + window.location.pathname;
-      window.history.replaceState({}, document.title, cleanURL);
+  if (
+    typeof stravaClientId === "undefined" ||
+    typeof stravaClientSecret === "undefined" ||
+    !stravaClientId ||
+    !stravaClientSecret
+  ) {
+    console.error("Strava client ID or secret is not defined in secrets.js.");
+    stravaPanelContent.innerHTML =
+      '<p style="padding: 15px; text-align: center; color: red;">Configuration Error: Strava keys are missing in secrets.js.</p>';
+    setTimeout(showConnectUI, 5000);
+    return;
+  }
+
+  try {
+    const response = await fetch(tokenURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: stravaClientId,
+        client_secret: stravaClientSecret,
+        code: code,
+        grant_type: "authorization_code",
+      }),
     });
+
+    const data = await response.json();
+
+    if (!response.ok || data.errors) {
+      let errorMessage = data.message || "An unknown authentication error occurred.";
+      console.error("Strava API Error:", data);
+      if (errorMessage.toLowerCase().includes("invalid client")) {
+        errorMessage =
+          "Authentication failed: Invalid Client ID or Secret. Please double-check your secrets.js file.";
+      }
+      throw new Error(errorMessage);
+    }
+
+    if (data.access_token) {
+      sessionStorage.setItem("strava_access_token", data.access_token);
+      sessionStorage.setItem("strava_refresh_token", data.refresh_token);
+      sessionStorage.setItem("strava_expires_at", data.expires_at);
+      showFetchUI();
+    } else {
+      throw new Error("Access token was not received from Strava.");
+    }
+  } catch (error) {
+    console.error("Error getting Strava access token:", error);
+    stravaPanelContent.innerHTML = `<p style="padding: 15px; text-align: center; color: red;">${error.message}</p>`;
+    setTimeout(showConnectUI, 5000);
+  }
 }
 
 /**
@@ -238,15 +283,8 @@ async function exportStravaActivitiesAsKml() {
  */
 function initializeStrava() {
   stravaPanelContent = document.getElementById("strava-panel-content");
-  const urlParams = new URLSearchParams(window.location.search);
-  const authCode = urlParams.get("code");
-
-  if (authCode) {
-    document.getElementById("tab-btn-strava").click();
-    getAccessToken(authCode);
-  } else {
-    showConnectUI();
-  }
+  // MODIFIED: Removed the direct URL check, now handled by the new flow.
+  showConnectUI();
 }
 
 /**
