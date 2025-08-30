@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Authenticating with Strava...</title>
+    <script>
+      window.onload = function () {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("code");
+        const error = params.get("error");
+
+        if (code) {
+          // Pass the code to the main app via localStorage
+          localStorage.setItem("strava_auth_code", code);
+          document.getElementById("message").textContent = "Success! You can now close this tab.";
+        } else if (error) {
+          document.getElementById("message").textContent =
+            "Authentication failed or was denied. Please try again.";
+          // Optional: Pass error back to the main app
+          localStorage.setItem("strava_auth_error", error);
+        }
+
+        // Close the window automatically
+        window.close();
+      };
+    </script>
+  </head>
+  <body style="font-family: sans-serif; text-align: center; padding-top: 50px">
+    <p id="message">Processing authentication...</p>
+  </body>
+</html>
