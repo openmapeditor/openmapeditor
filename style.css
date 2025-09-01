@@ -240,8 +240,7 @@ select:focus {
   font-style: italic;
   color: var(--color-grey-dark);
   margin-top: 8px;
-  padding: 0 10px;
-  max-width: 95%; /* To ensure it wraps nicely */
+  max-width: 100%;
   box-sizing: border-box;
 }
 

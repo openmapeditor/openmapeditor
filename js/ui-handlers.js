@@ -363,7 +363,7 @@ function showInfoPanel(layer) {
       }
 
       // Show the editing hint
-      editHint.innerHTML = "To edit, duplicate this activity from the <b>Contents</b> tab.";
+      editHint.innerHTML = "To edit, duplicate activity in <b>Contents</b> tab.";
       editHint.style.display = "block";
       break;
   }
