@@ -1342,6 +1342,7 @@ body.route-point-select-mode * {
   flex-direction: column;
   gap: 10px; /* Space between panels */
   max-width: calc(100vw - 60px);
+  cursor: auto;
 }
 
 #directions-panel-header {
