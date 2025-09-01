@@ -8,7 +8,7 @@
     <title>OpenMapEditor</title>
     <meta
       name="description"
-      content="OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, GeoJSON), routing, elevation profiles, and custom styling."
+      content="OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, GeoJSON), routing, elevation profiles, custom styling, and Strava activity integration."
     />
 
     <script src="d3-7.8.4/d3.min.js"></script>
@@ -32,6 +32,8 @@
 
     <link rel="stylesheet" href="leaflet-routing-machine-3.2.12/dist/leaflet-routing-machine.css" />
     <script src="leaflet-routing-machine-3.2.12/dist/leaflet-routing-machine.js"></script>
+
+    <script src="polyline-encoded-0.0.9/Polyline.encoded.js"></script>
 
     <script src="simplify-js-1.2.4/simplify.js"></script>
 
@@ -178,8 +180,10 @@
     <div id="map">
       <div id="main-right-container">
         <div id="info-panel">
-          <input type="text" id="info-panel-name" />
+          <textarea id="info-panel-name" rows="1"></textarea>
           <p id="info-panel-details"></p>
+          <p id="info-panel-edit-hint" style="display: none"></p>
+          <a id="info-panel-strava-link" target="_blank" rel="noopener noreferrer"></a>
           <div id="info-panel-style-row">
             <div id="info-panel-color-swatch" title="Change color"></div>
             <span id="info-panel-layer-name"></span>
@@ -190,13 +194,16 @@
         <div id="tab-container">
           <div id="tab-buttons">
             <button id="tab-btn-overview" class="tab-button active" data-target="overview-panel">
-              Map Contents
+              Contents
             </button>
             <button id="tab-btn-routing" class="tab-button" data-target="routing-panel">
               Routing
               <span id="routing-info-icon" class="settings-info-icon" title="Routing Help"
                 >&#9432;</span
               >
+            </button>
+            <button id="tab-btn-strava" class="tab-button" data-target="strava-panel">
+              Strava
             </button>
             <button
               id="tab-btn-settings"
@@ -323,6 +330,13 @@
                 </div>
               </div>
             </div>
+            <div id="strava-panel" class="tab-panel">
+              <div id="strava-panel-content">
+                <p style="padding: 15px; text-align: center">
+                  Connect with Strava to see your activities.
+                </p>
+              </div>
+            </div>
             <div id="settings-panel" class="tab-panel"></div>
           </div>
         </div>
@@ -350,6 +364,7 @@
     <script src="js/file-handlers.js"></script>
     <script src="js/elevation.js"></script>
     <script src="js/routing.js"></script>
+    <script src="js/strava.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>

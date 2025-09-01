@@ -191,18 +191,21 @@ select:focus {
 
 #info-panel-name {
   position: relative;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   text-align: center;
-  width: 200px;
+  width: 250px;
   max-width: 100%;
   margin-bottom: 5px;
   background-color: var(--background-color2);
-  border: none;
   border: 2px dashed var(--text-color);
   border-radius: 0;
   color: var(--text-color);
   padding: 5px;
+  resize: none;
+  overflow-y: hidden;
+  line-height: 1.5;
+  box-sizing: border-box;
 }
 
 #info-panel-name:focus {
@@ -230,6 +233,16 @@ select:focus {
   fill: var(--icon-color);
   margin-left: 6px;
   flex-shrink: 0; /* Prevents the icon from shrinking if space is tight */
+}
+
+#info-panel-edit-hint {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--color-grey-dark);
+  margin-top: 8px;
+  padding: 0 10px;
+  max-width: 95%; /* To ensure it wraps nicely */
+  box-sizing: border-box;
 }
 
 /* --- Style Row for Color Swatch and Layer Name --- */
@@ -336,6 +349,7 @@ select:focus {
   text-overflow: ellipsis;
   background-color: var(--background-color);
   color: var(--text-color) !important;
+  scroll-margin-top: 30px;
 }
 .overview-visibility-btn,
 .overview-duplicate-btn,
@@ -469,6 +483,8 @@ select:focus {
   border-radius: 4px;
   height: 30px;
   box-sizing: border-box;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 .routing-input-group button {
@@ -557,6 +573,58 @@ select:focus {
 
 #save-route-btn:disabled {
   cursor: not-allowed;
+}
+
+#routing-info-icon {
+  margin-left: 5px;
+}
+
+/* --- Strava Panel Style --- */
+#strava-panel {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 8px 8px;
+  background-color: var(--background-color);
+  gap: 10px;
+}
+
+#strava-panel-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+#strava-panel-content p {
+  font-size: 14px;
+}
+
+/* REMOVED .strava-button rule */
+
+/* Link containing the official 'Connect with Strava' SVG image */
+.strava-button-link {
+  display: inline-block;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.strava-button-link img {
+  display: block;
+  height: 48px; /* Standard height for these buttons */
+  width: auto;
+}
+
+#info-panel-strava-link {
+  display: none; /* Hidden by default */
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #fc5200; /* Strava Orange */
+  font-size: 13px;
+  font-weight: bold;
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease-in-out;
 }
 
 /* --- Autocomplete suggestion list styles --- */
@@ -665,18 +733,26 @@ select:focus {
 }
 
 .tab-button {
-  flex: 1; /* MODIFIED: Let text buttons grow */
-  padding: 8px 10px;
+  flex: 1;
+  padding: 8px 5px; /* Reduced padding slightly to help with spacing */
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   border: 1px solid var(--border-color);
   background-color: var(--background2-color);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: none; /* All tabs have no bottom border */
+  border-right: none; /* All tabs but the last have no right border */
   outline: none;
-  border-bottom: none;
   color: var(--text-color);
   min-width: 0;
+  display: flex; /* Use flexbox for alignment */
+  justify-content: center;
+  align-items: center;
+}
+
+/* Add the right border back ONLY to the last button */
+#tab-buttons button:last-child {
+  border-right: 1px solid var(--border-color);
 }
 .tab-button.active {
   /* color: var(--text-color); */
@@ -689,6 +765,12 @@ select:focus {
 
 /* MODIFIED: Routing button is now in the middle */
 #tab-btn-routing {
+  border-radius: 0;
+  border-right: none;
+}
+
+#tab-btn-strava {
+  flex: 0 0 60px; /* Don't grow, fixed width */
   border-radius: 0;
   border-right: none;
 }
@@ -1176,6 +1258,14 @@ select:focus {
 /* Make routing and elevation provider select boxes the same width */
 #settings-panel select {
   width: 120px;
+  /* ADDED: Styles to match other dropdowns */
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  height: 30px;
+  padding: 6px;
+  box-sizing: border-box;
 }
 
 #settings-panel .settings-control-item label {
@@ -1398,4 +1488,67 @@ body.route-point-select-mode * {
   .custom-cursor {
     display: none !important;
   }
+}
+
+/* --- Strava Panel Button Styles (MODIFIED) --- */
+/* Base styles to match routing panel controls */
+.strava-button-primary,
+.strava-button-secondary {
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-size: 14px;
+  height: 30px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Primary button style (Strava Orange) */
+.strava-button-primary {
+  background-color: #fc5200;
+  color: white;
+  border: none;
+  font-weight: bold;
+}
+
+/* Secondary button style (Theme-Aware) */
+.strava-button-secondary {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Disabled state for secondary buttons */
+.strava-button-secondary:disabled {
+  cursor: not-allowed;
+}
+
+/* Active state for secondary buttons to match routing buttons */
+button.strava-button-secondary:not(:disabled) {
+  font-weight: bold;
+  background-color: var(--text-color);
+  color: var(--background-color);
+}
+
+/* --- Styles for Overview Panel Group Headers --- */
+.overview-list-header {
+  font-weight: bold;
+  font-size: 12px;
+  padding: 8px 12px 4px 12px;
+  background-color: var(--background2-color);
+  color: var(--text-color);
+  border-bottom: 1px solid var(--divider-color);
+  /* border-top: 1px solid var(--divider-color); */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky; /* Make headers stick to the top when scrolling */
+  top: 0;
+  z-index: 1; /* Ensure header is above list items */
+}
+
+#overview-panel-list .overview-list-header:first-child {
+  border-top: none; /* The very first header doesn't need a top border */
 }

@@ -1,6 +1,6 @@
 # OpenMapEditor
 
-OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, GeoJSON), routing, elevation profiles, and custom styling.
+OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, GeoJSON), routing, elevation profiles, custom styling, and Strava activity integration.
 
 ---
 
@@ -12,6 +12,7 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 - **Routing:** Generate routes for driving, biking, and walking.
 - **Elevation Profiles:** Visualize the elevation of paths.
 - **Custom Styling:** Change colors and styles of map features.
+- **Strava Integration:** Connect your Strava account to view your activities on the map, download their original high-resolution GPX tracks, or duplicate them for editing.
 
 ---
 
@@ -59,7 +60,9 @@ To make the deployment work, you must add your production API keys to your repos
     - `VITE_GOOGLE_API_KEY`
     - `VITE_MAPBOX_ACCESS_TOKEN`
     - `VITE_TRACETRACK_API_KEY`
-5.  Repeat this process for all three keys.
+    - `VITE_STRAVA_CLIENT_ID`
+    - `VITE_STRAVA_CLIENT_SECRET`
+5.  Repeat this process for all required keys.
 
 ---
 
@@ -84,6 +87,8 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: `https://registry.npmjs.org/leaflet.locatecontrol/-/leaflet.locatecontrol-0.84.2.tgz`
 - **leaflet-routing-machine-3.2.12**
   - Download URL: `https://github.com/perliedman/leaflet-routing-machine/archive/refs/tags/v3.2.12.zip`
+- **polyline-encoded-0.0.9**
+- Download URL: `https://registry.npmjs.org/polyline-encoded/-/polyline-encoded-0.0.9.tgz`
 - **simplify-js-1.2.4**
   - Download URL: `https://github.com/mourner/simplify-js/archive/refs/tags/v1.2.4.zip`
 - **sweetalert2-11.22.2**

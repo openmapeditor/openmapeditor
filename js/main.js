@@ -17,6 +17,7 @@ let map,
   drawnItems,
   importedItems,
   kmzLayer,
+  stravaActivitiesLayer,
   editableLayers,
   elevationControl,
   selectedElevationPath = null,
@@ -43,6 +44,28 @@ let map,
   saveRouteBtn,
   temporarySearchMarker = null,
   preservedKmzFiles = []; // For preserving empty KMLs from KMZ imports
+
+/**
+ * Adjusts the height of the info panel's name textarea to fit its content,
+ * up to a maximum of approximately three lines.
+ * @param {HTMLTextAreaElement} textarea The textarea element to resize.
+ */
+function adjustInfoPanelNameHeight(textarea) {
+  // Max height for ~3 lines (14px font * 1.5 line-height * 3 lines + 10px padding)
+  const heightLimit = 75;
+
+  // Temporarily reset height to auto to get the new scrollHeight
+  textarea.style.height = "auto";
+
+  // Set the new height, but don't exceed the limit
+  textarea.style.height = `${Math.min(textarea.scrollHeight, heightLimit)}px`;
+
+  // Show a scrollbar only if the content is taller than the limit
+  textarea.style.overflowY = textarea.scrollHeight > heightLimit ? "auto" : "hidden";
+
+  // MODIFIED: Add this line to ensure the text is scrolled to the top
+  textarea.scrollTop = 0;
+}
 
 // Main function to initialize the map and all its components.
 function initializeMap() {
@@ -77,14 +100,22 @@ function initializeMap() {
   L.DomEvent.disableClickPropagation(infoPanel);
   L.DomEvent.disableScrollPropagation(infoPanel);
 
-  infoPanelName.addEventListener("blur", updateLayerName);
+  infoPanelName.addEventListener("blur", () => {
+    updateLayerName();
+    adjustInfoPanelNameHeight(infoPanelName);
+  });
   infoPanelName.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
+    // MODIFIED: For textarea, "Enter" without Shift should submit, not create a newline.
+    if (e.key === "Enter" && !e.shiftKey) {
       updateLayerName();
-      infoPanelName.blur();
-      e.preventDefault();
+      infoPanelName.blur(); // Unfocus the element
+      e.preventDefault(); // Prevent adding a new line
     }
   });
+
+  // This makes the textarea grow and shrink as you type.
+  infoPanelName.addEventListener("input", () => adjustInfoPanelNameHeight(infoPanelName));
+  infoPanelName.addEventListener("focus", () => infoPanelName.select());
 
   // Toggle color picker on swatch click
   infoPanelColorSwatch.addEventListener("click", () => {
@@ -114,6 +145,18 @@ function initializeMap() {
       const targetPanel = document.getElementById(targetPanelId);
       if (targetPanel) {
         targetPanel.classList.add("active");
+      }
+
+      // Check if we need to scroll the overview list
+      if (targetPanelId === "overview-panel" && globallySelectedItem) {
+        const layerId = L.Util.stamp(globallySelectedItem);
+        const listItem = document.querySelector(
+          `#overview-panel-list .overview-list-item[data-layer-id='${layerId}']`
+        );
+        if (listItem) {
+          // The panel is now visible, so we can scroll to the item
+          listItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
       }
 
       // Update the visual state of the routing info icon
@@ -246,6 +289,7 @@ function initializeMap() {
   importedItems = new L.FeatureGroup().addTo(map);
   kmzLayer = new L.FeatureGroup().addTo(map);
   editableLayers = new L.FeatureGroup(); // Don't add to map directly, managed by other groups
+  stravaActivitiesLayer = L.featureGroup().addTo(map);
 
   // Combine all overlays into a single object for the custom control
   const allOverlayMaps = {
@@ -253,6 +297,7 @@ function initializeMap() {
     "&#9999;&#65039; Drawn Items": drawnItems,
     "&#128193; Imported GPX/KML": importedItems,
     "&#128193; Imported KMZ": kmzLayer,
+    "&#129505; Strava Activities": stravaActivitiesLayer,
   };
 
   // Start functionality for swisstopo layers
@@ -499,7 +544,13 @@ function initializeMap() {
       container.title = "Download file";
       container.style.position = "relative";
       container.innerHTML =
-        '<a href="#" role="button"><svg class="icon icon-download"><use href="#icon-download"></use></svg></a><div class="download-submenu"><button id="download-gpx" disabled>GPX (Selected Item)</button><button id="download-kml" disabled>KML (Selected Item)</button><button id="download-kmz">KMZ (Everything)</button></div>';
+        '<a href="#" role="button"><svg class="icon icon-download"><use href="#icon-download"></use></svg></a>' +
+        '<div class="download-submenu">' +
+        '<button id="download-gpx" disabled>GPX (Selected Item)</button>' +
+        '<button id="download-kml" disabled>KML (Selected Item)</button>' +
+        '<button id="download-strava-original-gpx" style="display: none;">GPX (Original from Strava)</button>' +
+        '<button id="download-kmz">KMZ (Everything)</button>' +
+        "</div>";
       const subMenu = container.querySelector(".download-submenu");
 
       L.DomEvent.on(container, "click", (ev) => {
@@ -535,6 +586,14 @@ function initializeMap() {
       L.DomEvent.on(container.querySelector("#download-kml"), "click", (e) => {
         L.DomEvent.stop(e);
         downloadAction("kml");
+      });
+      L.DomEvent.on(container.querySelector("#download-strava-original-gpx"), "click", (e) => {
+        L.DomEvent.stop(e);
+        if (globallySelectedItem && globallySelectedItem.feature.properties.stravaId) {
+          const { stravaId, name } = globallySelectedItem.feature.properties;
+          downloadOriginalStravaGpx(stravaId, name);
+        }
+        subMenu.style.display = "none";
       });
       L.DomEvent.on(container.querySelector("#download-kmz"), "click", (e) => {
         L.DomEvent.stop(e);
@@ -1121,6 +1180,9 @@ function initializeMap() {
   // Kick off routing functionality
   initializeRouting();
 
+  // Initialize Strava functionality
+  initializeStrava();
+
   // --- MODIFIED: Settings Controls are now in the Settings Panel ---
   const settingsPanel = document.getElementById("settings-panel");
   if (settingsPanel) {
@@ -1308,24 +1370,49 @@ function initializeMap() {
   map.on("moveend", adjustElevationSummaryPadding);
   // --- END: NEW ---
 
+  // --- START: NEW - MutationObserver to auto-resize textarea on selection ---
+  // This observer watches for changes in the info panel. When details are
+  // populated (which happens when an item is selected), it automatically
+  // triggers the textarea height adjustment. This robustly solves the problem
+  // of the initial height being incorrect for names of any length.
+  const infoPanelObserver = new MutationObserver(() => {
+    if (infoPanelName) {
+      adjustInfoPanelNameHeight(infoPanelName);
+    }
+  });
+
+  // Start observing the main info panel container for any changes in its content.
+  infoPanelObserver.observe(infoPanel, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
+  // --- END: NEW - MutationObserver ---
+
   // Final ui updates
   setTimeout(updateDrawControlStates, 0);
   setTimeout(replaceDefaultIcons, 0);
   resetInfoPanel();
   updateScaleControlVisibility();
 
-  // --- START: NEW - Preload credits image to prevent flash on modal open ---
-  // This waits for the window to be fully loaded, then downloads the image
-  // into the cache so it's ready when the credits modal is opened.
+  // --- START: Preload key images to prevent flash on modal/panel open ---
+  // This waits for the window to be fully loaded, then downloads the images
+  // into the cache so they are ready when needed.
   window.addEventListener(
     "load",
     () => {
+      // Preload credits icon
       const creditsIcon = new Image();
       creditsIcon.src = "https://openmapeditor.github.io/openmapeditor-assets/icon-750x750-min.png";
+
+      // Preload Strava connect button
+      const stravaButton = new Image();
+      stravaButton.src =
+        "https://openmapeditor.github.io/openmapeditor-assets/btn_strava_connect_with_orange.svg";
     },
     { once: true }
   );
-  // --- END: NEW ---
+  // --- END ---
 }
 
 // Initialize the application once the DOM is fully loaded

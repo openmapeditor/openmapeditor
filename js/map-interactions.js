@@ -56,6 +56,8 @@ function deselectCurrentItem() {
     const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
     if (colorData) {
       if (item instanceof L.Polyline || item instanceof L.Polygon) {
+        // --- MODIFIED: Removed special case for Strava paths ---
+        // It will now correctly use the color defined by its omColorName ("Orange")
         item.setStyle({ ...STYLE_CONFIG.path.default, color: colorData.css });
       } else if (item instanceof L.Marker) {
         item.setIcon(createSvgIcon(colorData.css, STYLE_CONFIG.marker.default.opacity));
@@ -75,6 +77,12 @@ function deselectCurrentItem() {
   const downloadContainer = downloadControl.getContainer();
   const gpxButton = downloadContainer.querySelector("#download-gpx");
   const kmlButton = downloadContainer.querySelector("#download-kml");
+  const stravaGpxButton = downloadContainer.querySelector("#download-strava-original-gpx");
+
+  // Reset button visibility to default
+  gpxButton.style.display = "block";
+  kmlButton.style.display = "block";
+  stravaGpxButton.style.display = "none";
 
   gpxButton.disabled = true;
   kmlButton.disabled = true;
@@ -99,7 +107,9 @@ function selectItem(layer) {
   );
   if (newListItem) {
     newListItem.classList.add("selected");
-    newListItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (document.getElementById("overview-panel").classList.contains("active")) {
+      newListItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   }
 
   const colorName = layer.feature?.properties?.omColorName || "Red";
@@ -111,11 +121,26 @@ function selectItem(layer) {
   if (downloadControl) {
     const gpxButton = downloadControl.getContainer().querySelector("#download-gpx");
     const kmlButton = downloadControl.getContainer().querySelector("#download-kml");
-    gpxButton.disabled = false;
-    kmlButton.disabled = false;
-    const itemType = layer instanceof L.Marker ? "Marker" : "Path";
-    gpxButton.textContent = `GPX (Selected ${itemType})`;
-    kmlButton.textContent = `KML (Selected ${itemType})`;
+    const stravaGpxButton = downloadControl
+      .getContainer()
+      .querySelector("#download-strava-original-gpx");
+
+    // Logic to show the correct button(s)
+    if (layer.pathType === "strava") {
+      gpxButton.style.display = "none"; // Hide standard GPX button
+      kmlButton.style.display = "none"; // Hide standard KML button
+      stravaGpxButton.style.display = "block"; // Show Strava-specific button
+    } else {
+      gpxButton.style.display = "block";
+      kmlButton.style.display = "block";
+      stravaGpxButton.style.display = "none";
+
+      gpxButton.disabled = false;
+      kmlButton.disabled = false;
+      const itemType = layer instanceof L.Marker ? "Marker" : "Path";
+      gpxButton.textContent = `GPX (Selected ${itemType})`;
+      kmlButton.textContent = `KML (Selected ${itemType})`;
+    }
   }
 
   if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
@@ -133,7 +158,7 @@ function selectItem(layer) {
       });
       // Only add the outline to the map if the main layer is actually visible
       if (map.hasLayer(layer) && !isEditMode) {
-        selectedPathOutline.addTo(map).bringToBack();
+        selectedPathOutline.addTo(map).bringToFront();
       }
     }
     // --- END ---
@@ -244,7 +269,7 @@ function deleteLayerImmediately(layer) {
   }
 
   // Remove the layer from whichever display group it resides in (including nested groups)
-  [drawnItems, importedItems, kmzLayer].forEach((group) => {
+  [drawnItems, importedItems, kmzLayer, stravaActivitiesLayer].forEach((group) => {
     if (group.hasLayer(layer)) {
       group.removeLayer(layer);
     } else {
@@ -256,8 +281,10 @@ function deleteLayerImmediately(layer) {
     }
   });
 
-  // Also remove it from the master editable layer group
-  editableLayers.removeLayer(layer);
+  // Also remove it from the master editable layer group if it's there
+  if (editableLayers.hasLayer(layer)) {
+    editableLayers.removeLayer(layer);
+  }
 
   if (layer === currentRoutePath) {
     currentRoutePath = null;

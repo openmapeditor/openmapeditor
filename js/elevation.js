@@ -44,7 +44,7 @@ function onGoogleMapsApiReady() {
  * using the key from config.js and waiting for the callback.
  */
 async function fetchElevationForPathGoogle(latlngs) {
-  console.log("Fetching elevation data from: Google (via JS API)");
+  console.log("Fetching elevation data from: Google");
   if (!latlngs || latlngs.length < 2) return latlngs;
 
   // This block runs only once to create and add the script tag to the page.
