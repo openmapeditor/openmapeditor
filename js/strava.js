@@ -22,15 +22,14 @@ let stravaPanelContent;
 function showConnectUI() {
   if (!stravaPanelContent) return;
   stravaPanelContent.innerHTML = `
-    <p style="padding: 15px; text-align: center;">Connect with Strava to see your activities.</p>
+    <p>Connect with Strava to see your activities.</p>
     <button id="strava-connect-btn" class="strava-button-link" style="border: none; background: transparent; padding: 0; cursor: pointer;">
       <img src="https://openmapeditor.github.io/openmapeditor-assets/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
     </button>
   `;
 
   document.getElementById("strava-connect-btn").addEventListener("click", () => {
-    stravaPanelContent.innerHTML =
-      '<p style="padding: 15px; text-align: center;">Waiting for Strava authentication in the new tab...</p>';
+    stravaPanelContent.innerHTML = "<p>Waiting for Strava authentication in the new tab...</p>";
     window.open(stravaAuthURL, "_blank");
     window.addEventListener("storage", handleStravaAuthReturn);
   });
@@ -51,7 +50,7 @@ function handleStravaAuthReturn(event) {
     localStorage.removeItem("strava_auth_error");
     window.removeEventListener("storage", handleStravaAuthReturn);
     stravaPanelContent.innerHTML =
-      '<p style="padding: 15px; text-align: center; color: red;">Authentication was cancelled or failed.</p>';
+      '<p style="color: red;">Authentication was cancelled or failed.</p>';
     setTimeout(showConnectUI, 3000);
   }
 }
@@ -68,7 +67,7 @@ function showFetchUI(activityCount = 0) {
       ? `${activityCount} activities loaded.`
       : "Select how many activities to fetch.";
   stravaPanelContent.innerHTML = `
-      <p style="padding: 15px; text-align: center;">Successfully connected to Strava.<br>${message}</p>
+      <p>Successfully connected to Strava.<br>${message}</p>
       <div id="strava-controls" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%;">
         <select id="strava-fetch-count" class="strava-button-secondary" style="flex: 2; min-width: 120px;">
           <option value="25">Latest 25</option>
@@ -79,7 +78,7 @@ function showFetchUI(activityCount = 0) {
         <button id="fetch-strava-btn" class="strava-button-primary" style="flex: 1; min-width: 80px;">Fetch</button>
         <button id="export-strava-kml-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export KML</button>
       </div>
-      <p id="strava-progress" style="text-align: center; padding: 10px; display: none;"></p>
+      <p id="strava-progress" style="display: none;"></p>
     `;
   document.getElementById("fetch-strava-btn").addEventListener("click", fetchAllActivities);
 
@@ -96,8 +95,7 @@ function showFetchUI(activityCount = 0) {
  */
 async function getAccessToken(code) {
   if (!stravaPanelContent) return;
-  stravaPanelContent.innerHTML =
-    '<p style="padding: 15px; text-align: center;">Authenticating...</p>';
+  stravaPanelContent.innerHTML = "<p>Authenticating...</p>";
 
   if (
     typeof stravaClientId === "undefined" ||
@@ -107,7 +105,7 @@ async function getAccessToken(code) {
   ) {
     console.error("Strava client ID or secret is not defined in secrets.js.");
     stravaPanelContent.innerHTML =
-      '<p style="padding: 15px; text-align: center; color: red;">Configuration Error: Strava keys are missing in secrets.js.</p>';
+      '<p style="color: red;">Configuration Error: Strava keys are missing in secrets.js.</p>';
     setTimeout(showConnectUI, 5000);
     return;
   }
@@ -146,7 +144,7 @@ async function getAccessToken(code) {
     }
   } catch (error) {
     console.error("Error getting Strava access token:", error);
-    stravaPanelContent.innerHTML = `<p style="padding: 15px; text-align: center; color: red;">${error.message}</p>`;
+    stravaPanelContent.innerHTML = `<p style="color: red;">${error.message}</p>`;
     setTimeout(showConnectUI, 5000);
   }
 }
