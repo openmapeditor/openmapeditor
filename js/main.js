@@ -97,8 +97,12 @@ function initializeMap() {
   infoPanelLayerName = document.getElementById("info-panel-layer-name");
   colorPicker = document.getElementById("color-picker");
 
-  L.DomEvent.disableClickPropagation(infoPanel);
-  L.DomEvent.disableScrollPropagation(infoPanel);
+  // Isolate the entire right-side UI panel from the map.
+  // This prevents clicks, drags, and scrolls within the panel from
+  // accidentally panning or zooming the map underneath it.
+  const mainRightContainer = document.getElementById("main-right-container");
+  L.DomEvent.disableClickPropagation(mainRightContainer);
+  L.DomEvent.disableScrollPropagation(mainRightContainer);
 
   infoPanelName.addEventListener("blur", () => {
     updateLayerName();
@@ -203,11 +207,6 @@ function initializeMap() {
       // naturally bubble up to the parent button and trigger its click handler.
     });
   }
-
-  // Disable click propagation on parent containers to allow internal scrolling on mobile
-  const overviewPanelList = document.getElementById("overview-panel-list");
-  L.DomEvent.disableClickPropagation(overviewPanelList);
-  L.DomEvent.disableScrollPropagation(overviewPanelList);
 
   // Define base and overlay layers
   const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
