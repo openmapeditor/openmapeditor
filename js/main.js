@@ -680,6 +680,15 @@ function initializeMap() {
         // Toggle the state class on the button itself
         container.classList.toggle("panels-visible");
         container.classList.toggle("panels-hidden");
+
+        // --- START: NEW FIX ---
+        // If the panel was just made visible and an item is selected,
+        // re-run the height adjustment for the name textarea. This corrects
+        // the height if an item was selected while the panel was hidden.
+        if (!panelContainer.classList.contains("hidden") && globallySelectedItem) {
+          adjustInfoPanelNameHeight(infoPanelName);
+        }
+        // --- END: NEW FIX ---
       });
       L.DomEvent.on(container, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
       return container;
