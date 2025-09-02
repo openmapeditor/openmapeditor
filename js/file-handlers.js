@@ -258,7 +258,7 @@ function exportKmz() {
   }
 
   zip
-    .generateAsync({ type: "blob" })
+    .generateAsync({ type: "blob", mimeType: "application/vnd.google-earth.kmz" })
     .then(function (content) {
       const link = document.createElement("a");
       link.href = URL.createObjectURL(content);
