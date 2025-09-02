@@ -14,6 +14,8 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 - **Elevation Profiles:** Instantly visualize the elevation profile for any path.
 - **Strava Integration:** Connect your Strava account to view your activities on the map, download their original high-resolution GPX tracks, or duplicate them for editing.
 
+---
+
 ## Privacy
 
 OpenMapEditor is designed with privacy as a priority. All processing of your imported geographic data files (GPX, KML, KMZ) happens **entirely in your web browser**. Your files are never uploaded to or stored on any server.
