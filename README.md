@@ -1,17 +1,17 @@
 # OpenMapEditor
 
-OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, GeoJSON), routing, elevation profiles, custom styling, and Strava activity integration.
+OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, KMZ), routing, elevation profiles, custom styling, and Strava activity integration.
 
 ---
 
 ## Features
 
-- **Interactive Drawing:** Draw paths and place markers directly on the map.
-- **File Support:** Import and export data in **GPX, KML, and KMZ** formats.
-- **Organic Maps Compatibility:** Import backup files from Organic Maps and export new backups that can be re-imported, making it a great tool for editing and managing your data.
-- **Routing:** Generate routes for driving, biking, and walking.
-- **Elevation Profiles:** Visualize the elevation of paths.
-- **Custom Styling:** Change colors and styles of map features.
+- **Organic Maps Compatibility:** Smoothly import and export KMZ backups while preserving all 16 of the Organic Maps colors for your paths and markers.
+- **Draw & Edit:** Easily draw new paths and place markers directly on the map, or edit existing items.
+- **File Support:** Full support for importing and exporting GPX, KML, and KMZ files.
+- **Performance Optimized:** To ensure a smooth experience, complex paths from imported files (GPX, KML, KMZ) are automatically simplified. This is enabled by default but can be disabled in the settings if you need to preserve every single point.
+- **Routing:** Generate routes for driving, biking, or walking. You can then save the generated route as an editable path.
+- **Elevation Profiles:** Instantly visualize the elevation profile for any path.
 - **Strava Integration:** Connect your Strava account to view your activities on the map, download their original high-resolution GPX tracks, or duplicate them for editing.
 
 ---
