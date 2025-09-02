@@ -1047,6 +1047,7 @@ select:focus {
   padding: 0 !important;
 }
 .leaflet-geosearch-bar {
+  box-sizing: border-box;
   border: 1px solid var(--border-color) !important;
   margin-top: 10px !important;
   border-radius: 8px !important; /* Rounded corners for the bar */
