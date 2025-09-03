@@ -25,7 +25,7 @@ The application only sends data to external services for specific, optional feat
 
 - **Routing:** When you request a route, the coordinates of your start, end, and via points are sent to the selected routing provider.
 - **Elevation Profiles:** To generate a profile, the coordinates of the selected path are sent to the chosen elevation provider.
-- **Search:** Text queries entered into the search bar are sent to an external geocoding provider to find locations.
+- **Search:** Text queries are sent to OpenStreetMap's Nominatim geocoding service to find and display locations on the map.
 - **Strava Integration:** If you choose to connect your Strava account, the application communicates directly with the Strava API to fetch your activities after you grant authorization.
 
 ---
