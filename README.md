@@ -53,7 +53,6 @@ This project is self-contained and does not require a package manager (`npm`).
     Local development requires running the project from a local web server and using a browser extension to bypass CORS restrictions.
 
     - **Local Server:** You must serve the project files from a local web server. Opening `index.html` directly from your filesystem will not work correctly.
-    - **CORS Unblocker:** For the application's features (like routing and search) to fetch data from external APIs, you must install and enable a CORS unblocker extension in your web browser.
 
 ---
 
