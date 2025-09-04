@@ -411,46 +411,6 @@ function initializeRouting() {
     directionsPanel.classList.toggle("collapsed");
   });
 
-  const setupAutocomplete = (inputEl, suggestionsEl, latLngCallback) => {
-    let debounceTimeout;
-    inputEl.addEventListener("input", () => {
-      clearTimeout(debounceTimeout);
-      const query = inputEl.value;
-      if (query.length < 3) {
-        suggestionsEl.innerHTML = "";
-        suggestionsEl.style.display = "none";
-        return;
-      }
-      debounceTimeout = setTimeout(async () => {
-        const results = await geocoder.search({ query });
-        suggestionsEl.innerHTML = "";
-        if (results && results.length > 0) {
-          suggestionsEl.style.display = "block";
-          results.forEach((result) => {
-            const item = document.createElement("div");
-            item.className = "autocomplete-suggestion-item";
-            item.textContent = result.label;
-            item.addEventListener("click", () => {
-              inputEl.value = result.label;
-              latLngCallback(L.latLng(result.y, result.x));
-              suggestionsEl.innerHTML = "";
-              suggestionsEl.style.display = "none";
-            });
-            suggestionsEl.appendChild(item);
-          });
-        } else {
-          suggestionsEl.style.display = "none";
-        }
-      }, 300);
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!inputEl.contains(e.target) && !suggestionsEl.contains(e.target)) {
-        suggestionsEl.style.display = "none";
-      }
-    });
-  };
-
   setupAutocomplete(startInput, document.getElementById("route-start-suggestions"), (latlng) => {
     currentStartLatLng = latlng;
     startInput.style.color = "var(--color-black)";

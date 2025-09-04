@@ -156,3 +156,91 @@ function downsamplePath(latlngs, maxPoints) {
   pointsToSend.push(latlngs[latlngs.length - 1]); // Always include the last point
   return pointsToSend;
 }
+
+/**
+ * Sets up autocomplete functionality for a text input field using a geocoding provider.
+ * @param {HTMLInputElement} inputEl The input element to attach the autocomplete to.
+ * @param {HTMLElement} suggestionsEl The container element to display suggestions in.
+ * @param {function(L.LatLng, string): void} callback The function to call when a location is selected. It receives the LatLng object and the location's label.
+ */
+function setupAutocomplete(inputEl, suggestionsEl, callback) {
+  const geocoder = new GeoSearch.OpenStreetMapProvider({
+    // params: {
+    //   email: "your-email@example.com",
+    // },
+  });
+  let debounceTimeout;
+  let activeSuggestionIndex = -1;
+
+  function updateActiveSuggestion() {
+    const items = suggestionsEl.querySelectorAll(".autocomplete-suggestion-item");
+    items.forEach((item, index) => {
+      item.classList.toggle("active", index === activeSuggestionIndex);
+    });
+  }
+
+  inputEl.addEventListener("input", () => {
+    clearTimeout(debounceTimeout);
+    activeSuggestionIndex = -1; // Reset on new input
+    const query = inputEl.value;
+    if (query.length < 3) {
+      suggestionsEl.innerHTML = "";
+      suggestionsEl.style.display = "none";
+      return;
+    }
+    debounceTimeout = setTimeout(async () => {
+      const results = await geocoder.search({ query });
+      suggestionsEl.innerHTML = "";
+      if (results && results.length > 0) {
+        suggestionsEl.style.display = "block";
+        results.forEach((result) => {
+          const item = document.createElement("div");
+          item.className = "autocomplete-suggestion-item";
+          item.textContent = result.label;
+          item.addEventListener("click", (e) => {
+            L.DomEvent.stop(e);
+            inputEl.value = result.label;
+            callback(L.latLng(result.y, result.x), result.label); // Pass latlng and label
+            suggestionsEl.innerHTML = "";
+            suggestionsEl.style.display = "none";
+          });
+          suggestionsEl.appendChild(item);
+        });
+      } else {
+        suggestionsEl.style.display = "none";
+      }
+    }, 300);
+  });
+
+  // START: ADDED KEYDOWN LISTENER
+  inputEl.addEventListener("keydown", (e) => {
+    const items = suggestionsEl.querySelectorAll(".autocomplete-suggestion-item");
+    if (items.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
+      updateActiveSuggestion();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
+      updateActiveSuggestion();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (activeSuggestionIndex > -1) {
+        items[activeSuggestionIndex].click();
+        activeSuggestionIndex = -1;
+      }
+    } else if (e.key === "Escape") {
+      suggestionsEl.style.display = "none";
+      activeSuggestionIndex = -1;
+    }
+  });
+  // END: ADDED KEYDOWN LISTENER
+
+  document.addEventListener("click", (e) => {
+    if (!inputEl.contains(e.target) && !suggestionsEl.contains(e.target)) {
+      suggestionsEl.style.display = "none";
+    }
+  });
+}

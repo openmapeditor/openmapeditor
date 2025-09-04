@@ -643,17 +643,6 @@ function initializeMap() {
 
   L.control.zoom({ position: "topleft" }).addTo(map);
 
-  // Setup GeoSearch control with a custom event listener
-  const searchControl = new GeoSearch.GeoSearchControl({
-    provider: new GeoSearch.OpenStreetMapProvider(),
-    style: "bar",
-    position: "topright",
-    autoClose: true,
-    showMarker: false, // We will handle our own marker
-    searchLabel: "Search",
-  });
-  map.addControl(searchControl);
-
   // --- REFACTORED: PanelsToggleControl with cleaner CSS-based icon swapping ---
   const PanelsToggleControl = L.Control.extend({
     options: { position: "topright" },
@@ -751,14 +740,18 @@ function initializeMap() {
 
   new FullscreenToggleControl().addTo(map);
 
-  map.on("geosearch/showlocation", function (result) {
+  // --- START: NEW Custom Search Bar Setup ---
+  const searchInput = document.getElementById("search-input");
+  const searchSuggestions = document.getElementById("search-suggestions");
+
+  const onSearchResult = (locationLatLng, label) => {
+    // This logic is moved from the old 'geosearch/showlocation' event handler.
+
     // Remove previous temporary marker if it exists
     if (temporarySearchMarker) {
       map.removeLayer(temporarySearchMarker);
       temporarySearchMarker = null; // Important to nullify it
     }
-
-    const locationLatLng = L.latLng(result.location.y, result.location.x);
 
     // Create a new, temporary black marker and make it interactive
     temporarySearchMarker = L.marker(locationLatLng, {
@@ -769,7 +762,7 @@ function initializeMap() {
     // --- Create Popup Content ---
     const popupContent = document.createElement("div");
     popupContent.style.textAlign = "center";
-    popupContent.innerHTML = `<div style="font-weight: bold; margin-bottom: 8px;">${result.location.label}</div>`;
+    popupContent.innerHTML = `<div style="font-weight: bold; margin-bottom: 8px;">${label}</div>`;
 
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save to Map";
@@ -793,7 +786,7 @@ function initializeMap() {
       newMarker.pathType = "drawn";
       newMarker.feature = {
         properties: {
-          name: result.location.label,
+          name: label,
           omColorName: defaultDrawColorName,
         },
       };
@@ -806,12 +799,13 @@ function initializeMap() {
         selectItem(newMarker);
       });
 
-      // Clean up the temporary marker
+      // Clean up the temporary marker and input
       if (temporarySearchMarker) {
         map.removeLayer(temporarySearchMarker);
         temporarySearchMarker = null;
       }
       map.closePopup();
+      searchInput.value = ""; // Clear search input on save
 
       // Update UI
       updateDrawControlStates();
@@ -839,8 +833,15 @@ function initializeMap() {
         map.removeLayer(temporarySearchMarker);
         temporarySearchMarker = null;
       }
+      searchInput.value = ""; // Also clear input on popup close
     });
-  });
+
+    // Fly to the location
+    map.flyTo(locationLatLng, map.getZoom() < 16 ? 16 : map.getZoom());
+  };
+
+  setupAutocomplete(searchInput, searchSuggestions, onSearchResult);
+  // --- END: NEW Custom Search Bar Setup ---
 
   elevationControl = L.control.elevation({
     position: "bottomright",

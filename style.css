@@ -1029,68 +1029,48 @@ select:focus {
   margin-top: 10px !important;
 }
 
-/* Geosearch bar styles */
-#map
-  > div.leaflet-control-container
-  > div.leaflet-control-geosearch.leaflet-geosearch-bar
-  > form
-  > input {
-  font-size: 14px;
-}
-.leaflet-control-geosearch {
-  width: 200px;
-  z-index: 1001;
-  right: 90px; /* Adjusted to make space for other controls */
+/* --- Search Bar --- */
+#search-container {
   position: absolute;
-  overflow: hidden;
-  margin-top: 0 !important; /* Remove default margin-top from Leaflet */
-  padding: 0 !important;
-}
-.leaflet-geosearch-bar {
-  box-sizing: border-box;
-  border: 1px solid var(--border-color) !important;
-  margin-top: 10px !important;
-  border-radius: 8px !important; /* Rounded corners for the bar */
+  top: 10px;
+  right: 90px; /* Aligns with other right-side controls */
+  width: 200px; /* A bit wider for better usability */
+  z-index: 1001;
   max-width: calc(100vw - 140px);
 }
-.leaflet-geosearch-bar,
-.leaflet-geosearch-bar form,
-.leaflet-control-geosearch form input,
-.leaflet-touch .leaflet-control-geosearch button.reset,
-.leaflet-control-geosearch .results {
-  background-color: var(--background-color) !important;
-  color: var(--text-color);
-  padding: 0;
-}
-.leaflet-control-geosearch .results > .active,
-.leaflet-control-geosearch .results > *:hover {
-  background-color: var(--highlight-color);
-}
-.leaflet-control-geosearch .results > * {
-  padding: 5px 8px;
-  border: none;
-}
-.leaflet-control-geosearch .results.active {
-  padding-top: 0;
-  border-top: 1px solid var(--text-color);
-}
-.leaflet-geosearch-bar form,
-.leaflet-control-layers {
+
+/* The search input field itself */
+#search-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px; /* Rounded corners */
+  height: 32px;
+  box-sizing: border-box;
   background-color: var(--background-color);
-  border: none !important;
-  border-radius: 8px !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-.leaflet-control-geosearch .results.active {
-  padding-bottom: 5px;
-}
-.leaflet-geosearch-bar form input::placeholder {
   color: var(--text-color);
+  font-size: 14px;
 }
-.leaflet-touch .leaflet-control-geosearch button.reset {
-  margin-right: 10px;
-  display: none;
+
+#search-input::placeholder {
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+/* The dropdown container for suggestions */
+#search-suggestions {
+  /* Uses the .autocomplete-suggestions class for most styling */
+  width: 100%;
+  box-sizing: border-box;
+  position: absolute;
+  top: 100%;
+  left: 0;
+}
+
+/* Makes the input and suggestion box visually connect when open */
+#search-container:has(.autocomplete-suggestions[style*="display: block"]) #search-input {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 /* Toolbar styles */
