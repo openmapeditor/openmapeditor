@@ -317,9 +317,7 @@ function showInfoPanel(layer) {
       totalDistance = calculatePathDistance(layer);
     }
 
-    // The complex logic is replaced by one clean function call.
-    // The `true` argument tells it to include the secondary unit in parentheses.
-    details = `Length: ${formatDistance(totalDistance, true)}`;
+    details = `Length: ${formatDistance(totalDistance)}`;
   }
 
   layer.feature.properties.name = name;

@@ -867,7 +867,24 @@ function initializeRouting() {
     });
   });
 
+  // This function will be called from main.js when the user toggles the unit setting.
+  const redisplayCurrentRoute = () => {
+    // Check if there is an active route to recalculate/redisplay.
+    if (currentRoutePath && routingControl) {
+      const waypoints = routingControl.getWaypoints();
+      // Check for waypoints that have a valid latLng.
+      const validWaypoints = waypoints.filter((wp) => wp.latLng);
+      if (validWaypoints.length > 1) {
+        // Re-trigger the route calculation, which will fire the 'routesfound' event.
+        // That event will now use the updated `useImperialUnits` flag to format its output.
+        shouldFitBounds = false; // Don't re-zoom the map on unit change.
+        routingControl.setWaypoints(validWaypoints);
+      }
+    }
+  };
+
   window.app = window.app || {};
   window.app.setupRoutingControl = setupRoutingControl;
   window.app.clearRouting = clearRouting;
+  window.app.redisplayCurrentRoute = redisplayCurrentRoute;
 }

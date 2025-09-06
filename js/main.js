@@ -95,6 +95,23 @@ function createAndAddElevationControl(useImperial) {
   return control;
 }
 
+/**
+ * A simple function to trigger updates on currently displayed UI elements
+ * that show units, like the routing panel and info panel. This is called
+ * when the user toggles the unit setting.
+ */
+function updateAllDynamicUnitDisplays() {
+  // 1. If an item is selected, re-render its info panel to update units.
+  if (globallySelectedItem) {
+    showInfoPanel(globallySelectedItem);
+  }
+
+  // 2. If a route is active, tell the routing module to redisplay it.
+  if (window.app && typeof window.app.redisplayCurrentRoute === "function") {
+    window.app.redisplayCurrentRoute();
+  }
+}
+
 // Main function to initialize the map and all its components.
 function initializeMap() {
   // --- START: Add this check for secrets.js ---
@@ -1342,27 +1359,21 @@ function initializeMap() {
     imperialUnitsCheckbox.checked = useImperialUnits; // Use the global variable
 
     L.DomEvent.on(imperialUnitsCheckbox, "change", async (e) => {
-      useImperialUnits = e.target.checked; // Update the global flag
-
-      // 1. Save the preference for next time
+      useImperialUnits = e.target.checked;
       localStorage.setItem("useImperialUnits", useImperialUnits);
 
-      // 2. Remove the old elevation control from the map
       if (elevationControl) {
         map.removeControl(elevationControl);
       }
-
-      // 3. Create a new elevation control with the updated imperial setting
       elevationControl = createAndAddElevationControl(useImperialUnits);
 
-      // 4. Force a redraw of the elevation profile if a path is currently selected and visible.
-      // Other parts of the UI (info panel, routing) will update automatically on their next render.
       const isProfileVisible =
         document.getElementById("elevation-div").style.visibility === "visible";
-
       if (selectedElevationPath && isProfileVisible) {
         await addElevationProfileForLayer(selectedElevationPath);
       }
+
+      updateAllDynamicUnitDisplays();
 
       Swal.fire({
         toast: true,
