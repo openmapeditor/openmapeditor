@@ -656,6 +656,8 @@ function initializeMap() {
       position: "topleft",
       flyTo: true,
       locateOptions: { maxZoom: 16 },
+      drawCircle: false,
+      showPopup: false,
       markerStyle: {
         color: "white", // Color of the marker's border
         fillColor: locateCircleColor, // Fill color of the marker
