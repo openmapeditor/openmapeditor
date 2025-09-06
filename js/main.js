@@ -908,6 +908,8 @@ function initializeMap() {
     draw: {
       polyline: {
         shapeOptions: { ...STYLE_CONFIG.path.default, color: defaultDrawColor },
+        metric: true,
+        feet: false,
       },
       polygon: false,
       rectangle: false,
