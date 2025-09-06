@@ -67,6 +67,33 @@ function adjustInfoPanelNameHeight(textarea) {
   textarea.scrollTop = 0;
 }
 
+/**
+ * Creates, configures, and adds the Leaflet Elevation control to the map.
+ * @param {boolean} useImperial - If true, the control will use imperial units (feet/miles).
+ * @returns {L.Control.Elevation} The newly created elevation control instance.
+ */
+function createAndAddElevationControl(useImperial) {
+  const control = L.control.elevation({
+    position: "bottomright",
+    theme: "custom-theme",
+    detached: true,
+    elevationDiv: "#elevation-div",
+    collapsed: false,
+    closeBtn: false,
+    distance: false,
+    time: false,
+    imperial: useImperial, // The parameter is used here
+    margins: {
+      top: 30,
+      right: 30,
+      bottom: -10,
+      left: 60,
+    },
+  });
+  control.addTo(map);
+  return control;
+}
+
 // Main function to initialize the map and all its components.
 function initializeMap() {
   // --- START: Add this check for secrets.js ---
@@ -843,23 +870,9 @@ function initializeMap() {
   setupAutocomplete(searchInput, searchSuggestions, onSearchResult);
   // --- END: NEW Custom Search Bar Setup ---
 
-  elevationControl = L.control.elevation({
-    position: "bottomright",
-    theme: "custom-theme",
-    detached: true,
-    elevationDiv: "#elevation-div",
-    collapsed: false,
-    closeBtn: false,
-    distance: false,
-    time: false,
-    margins: {
-      top: 30,
-      right: 30,
-      bottom: -10,
-      left: 60,
-    },
-  });
-  elevationControl.addTo(map);
+  // Add elevationControl
+  const useImperialElevationUnits = localStorage.getItem("useImperialElevationUnits") === "true"; // Read saved preference
+  elevationControl = createAndAddElevationControl(useImperialElevationUnits);
 
   // Configure draw control
   const defaultDrawColorName = "Red";
@@ -1315,6 +1328,74 @@ function initializeMap() {
       "dblclick mousedown wheel",
       L.DomEvent.stopPropagation
     );
+
+    // --- START: Imperial Elevation Units Toggle ---
+    // Renamed variables for clarity (e.g., imperialUnitsContainer -> imperialElevationContainer)
+    const imperialElevationContainer = L.DomUtil.create(
+      "div",
+      "settings-control-item",
+      settingsPanel
+    );
+    const imperialElevationLabel = L.DomUtil.create("label", "", imperialElevationContainer);
+    imperialElevationLabel.htmlFor = "imperial-elevation-toggle";
+    imperialElevationLabel.innerText = "Imperial Elevation Units";
+    const imperialElevationCheckbox = L.DomUtil.create("input", "", imperialElevationContainer);
+    imperialElevationCheckbox.type = "checkbox";
+    imperialElevationCheckbox.id = "imperial-elevation-toggle";
+    imperialElevationCheckbox.checked = useImperialElevationUnits;
+
+    L.DomEvent.on(imperialElevationCheckbox, "change", async (e) => {
+      const useImperialForElevation = e.target.checked;
+
+      // 1. Save the preference for next time with a more specific key
+      localStorage.setItem("useImperialElevationUnits", useImperialForElevation);
+
+      // 2. Remove the old elevation control from the map
+      if (elevationControl) {
+        map.removeControl(elevationControl);
+      }
+
+      // 3. Create a new elevation control with the updated imperial setting
+      elevationControl = createAndAddElevationControl(useImperialForElevation);
+
+      // 4. Force a redraw IF a path is currently selected and the profile is visible.
+      const isProfileVisible =
+        document.getElementById("elevation-div").style.visibility === "visible";
+
+      if (selectedElevationPath && isProfileVisible) {
+        let latlngs =
+          selectedElevationPath instanceof L.Polyline
+            ? selectedElevationPath.getLatLngs()
+            : selectedElevationPath.getLatLngs()[0];
+
+        if (latlngs && latlngs.length > 0) {
+          const pointsWithElev = await fetchElevationForPath(latlngs);
+          elevationControl.clear(); // Clear any previous data from the new control
+
+          if (pointsWithElev && pointsWithElev.length > 0) {
+            elevationControl.addData(L.polyline(pointsWithElev).toGeoJSON());
+          } else {
+            elevationControl.addData(selectedElevationPath.toGeoJSON());
+          }
+        }
+      }
+
+      Swal.fire({
+        toast: true,
+        position: "center",
+        icon: "info",
+        title: `Elevation units set to ${useImperialForElevation ? "Imperial" : "Metric"}`,
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    });
+
+    L.DomEvent.on(
+      imperialElevationContainer,
+      "dblclick mousedown wheel",
+      L.DomEvent.stopPropagation
+    );
+    // --- END: Imperial Elevation Units Toggle ---
   }
 
   // --- START: MODIFIED code block for clickable attribution using event delegation ---
