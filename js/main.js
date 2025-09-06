@@ -1352,7 +1352,7 @@ function initializeMap() {
     const imperialUnitsContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
     const imperialUnitsLabel = L.DomUtil.create("label", "", imperialUnitsContainer);
     imperialUnitsLabel.htmlFor = "imperial-units-toggle";
-    imperialUnitsLabel.innerText = "Use Imperial Units (mi, ft)";
+    imperialUnitsLabel.innerText = "Use Imperial Units";
     const imperialUnitsCheckbox = L.DomUtil.create("input", "", imperialUnitsContainer);
     imperialUnitsCheckbox.type = "checkbox";
     imperialUnitsCheckbox.id = "imperial-units-toggle";
