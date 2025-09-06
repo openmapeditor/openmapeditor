@@ -1288,6 +1288,46 @@ function initializeMap() {
     });
     L.DomEvent.on(themeToggleContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
 
+    // --- START: Imperial Units Toggle ---
+    const imperialUnitsContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
+    const imperialUnitsLabel = L.DomUtil.create("label", "", imperialUnitsContainer);
+    imperialUnitsLabel.htmlFor = "imperial-units-toggle";
+    imperialUnitsLabel.innerText = "Imperial Units";
+    const imperialUnitsCheckbox = L.DomUtil.create("input", "", imperialUnitsContainer);
+    imperialUnitsCheckbox.type = "checkbox";
+    imperialUnitsCheckbox.id = "imperial-units-toggle";
+    imperialUnitsCheckbox.checked = useImperialUnits; // Use the global variable
+
+    L.DomEvent.on(imperialUnitsCheckbox, "change", async (e) => {
+      useImperialUnits = e.target.checked;
+      localStorage.setItem("useImperialUnits", useImperialUnits);
+
+      if (elevationControl) {
+        map.removeControl(elevationControl);
+      }
+      elevationControl = createAndAddElevationControl(useImperialUnits);
+
+      const isProfileVisible =
+        document.getElementById("elevation-div").style.visibility === "visible";
+      if (selectedElevationPath && isProfileVisible) {
+        await addElevationProfileForLayer(selectedElevationPath);
+      }
+
+      updateAllDynamicUnitDisplays();
+
+      Swal.fire({
+        toast: true,
+        position: "center",
+        icon: "info",
+        title: `Units set to ${useImperialUnits ? "Imperial" : "Metric"}`,
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    });
+
+    L.DomEvent.on(imperialUnitsContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
+    // --- END: Imperial Units Toggle ---
+
     // --- Routing Provider Setting ---
     const routingProviderContainer = L.DomUtil.create(
       "div",
@@ -1352,46 +1392,6 @@ function initializeMap() {
       "dblclick mousedown wheel",
       L.DomEvent.stopPropagation
     );
-
-    // --- START: Imperial Units Toggle ---
-    const imperialUnitsContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
-    const imperialUnitsLabel = L.DomUtil.create("label", "", imperialUnitsContainer);
-    imperialUnitsLabel.htmlFor = "imperial-units-toggle";
-    imperialUnitsLabel.innerText = "Use Imperial Units";
-    const imperialUnitsCheckbox = L.DomUtil.create("input", "", imperialUnitsContainer);
-    imperialUnitsCheckbox.type = "checkbox";
-    imperialUnitsCheckbox.id = "imperial-units-toggle";
-    imperialUnitsCheckbox.checked = useImperialUnits; // Use the global variable
-
-    L.DomEvent.on(imperialUnitsCheckbox, "change", async (e) => {
-      useImperialUnits = e.target.checked;
-      localStorage.setItem("useImperialUnits", useImperialUnits);
-
-      if (elevationControl) {
-        map.removeControl(elevationControl);
-      }
-      elevationControl = createAndAddElevationControl(useImperialUnits);
-
-      const isProfileVisible =
-        document.getElementById("elevation-div").style.visibility === "visible";
-      if (selectedElevationPath && isProfileVisible) {
-        await addElevationProfileForLayer(selectedElevationPath);
-      }
-
-      updateAllDynamicUnitDisplays();
-
-      Swal.fire({
-        toast: true,
-        position: "center",
-        icon: "info",
-        title: `Units set to ${useImperialUnits ? "Imperial" : "Metric"}`,
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    });
-
-    L.DomEvent.on(imperialUnitsContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
-    // --- END: Imperial Units Toggle ---
   }
 
   // --- START: MODIFIED code block for clickable attribution using event delegation ---
