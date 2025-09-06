@@ -43,7 +43,8 @@ let map,
   currentRoutePath = null,
   saveRouteBtn,
   temporarySearchMarker = null,
-  preservedKmzFiles = []; // For preserving empty KMLs from KMZ imports
+  preservedKmzFiles = [], // For preserving empty KMLs from KMZ imports
+  useImperialUnits = false;
 
 /**
  * Adjusts the height of the info panel's name textarea to fit its content,
@@ -871,8 +872,9 @@ function initializeMap() {
   // --- END: NEW Custom Search Bar Setup ---
 
   // Add elevationControl
-  const useImperialElevationUnits = localStorage.getItem("useImperialElevationUnits") === "true"; // Read saved preference
-  elevationControl = createAndAddElevationControl(useImperialElevationUnits);
+  // Read saved preference for the global units setting
+  useImperialUnits = localStorage.getItem("useImperialUnits") === "true";
+  elevationControl = createAndAddElevationControl(useImperialUnits);
 
   // Configure draw control
   const defaultDrawColorName = "Red";
@@ -1329,26 +1331,21 @@ function initializeMap() {
       L.DomEvent.stopPropagation
     );
 
-    // --- START: Imperial Elevation Units Toggle ---
-    // Renamed variables for clarity (e.g., imperialUnitsContainer -> imperialElevationContainer)
-    const imperialElevationContainer = L.DomUtil.create(
-      "div",
-      "settings-control-item",
-      settingsPanel
-    );
-    const imperialElevationLabel = L.DomUtil.create("label", "", imperialElevationContainer);
-    imperialElevationLabel.htmlFor = "imperial-elevation-toggle";
-    imperialElevationLabel.innerText = "Imperial Elevation Units";
-    const imperialElevationCheckbox = L.DomUtil.create("input", "", imperialElevationContainer);
-    imperialElevationCheckbox.type = "checkbox";
-    imperialElevationCheckbox.id = "imperial-elevation-toggle";
-    imperialElevationCheckbox.checked = useImperialElevationUnits;
+    // --- START: Imperial Units Toggle ---
+    const imperialUnitsContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
+    const imperialUnitsLabel = L.DomUtil.create("label", "", imperialUnitsContainer);
+    imperialUnitsLabel.htmlFor = "imperial-units-toggle";
+    imperialUnitsLabel.innerText = "Use Imperial Units (mi, ft)";
+    const imperialUnitsCheckbox = L.DomUtil.create("input", "", imperialUnitsContainer);
+    imperialUnitsCheckbox.type = "checkbox";
+    imperialUnitsCheckbox.id = "imperial-units-toggle";
+    imperialUnitsCheckbox.checked = useImperialUnits; // Use the global variable
 
-    L.DomEvent.on(imperialElevationCheckbox, "change", async (e) => {
-      const useImperialForElevation = e.target.checked;
+    L.DomEvent.on(imperialUnitsCheckbox, "change", async (e) => {
+      useImperialUnits = e.target.checked; // Update the global flag
 
-      // 1. Save the preference for next time with a more specific key
-      localStorage.setItem("useImperialElevationUnits", useImperialForElevation);
+      // 1. Save the preference for next time
+      localStorage.setItem("useImperialUnits", useImperialUnits);
 
       // 2. Remove the old elevation control from the map
       if (elevationControl) {
@@ -1356,46 +1353,29 @@ function initializeMap() {
       }
 
       // 3. Create a new elevation control with the updated imperial setting
-      elevationControl = createAndAddElevationControl(useImperialForElevation);
+      elevationControl = createAndAddElevationControl(useImperialUnits);
 
-      // 4. Force a redraw IF a path is currently selected and the profile is visible.
+      // 4. Force a redraw of the elevation profile if a path is currently selected and visible.
+      // Other parts of the UI (info panel, routing) will update automatically on their next render.
       const isProfileVisible =
         document.getElementById("elevation-div").style.visibility === "visible";
 
       if (selectedElevationPath && isProfileVisible) {
-        let latlngs =
-          selectedElevationPath instanceof L.Polyline
-            ? selectedElevationPath.getLatLngs()
-            : selectedElevationPath.getLatLngs()[0];
-
-        if (latlngs && latlngs.length > 0) {
-          const pointsWithElev = await fetchElevationForPath(latlngs);
-          elevationControl.clear(); // Clear any previous data from the new control
-
-          if (pointsWithElev && pointsWithElev.length > 0) {
-            elevationControl.addData(L.polyline(pointsWithElev).toGeoJSON());
-          } else {
-            elevationControl.addData(selectedElevationPath.toGeoJSON());
-          }
-        }
+        await addElevationProfileForLayer(selectedElevationPath);
       }
 
       Swal.fire({
         toast: true,
         position: "center",
         icon: "info",
-        title: `Elevation units set to ${useImperialForElevation ? "Imperial" : "Metric"}`,
+        title: `Units set to ${useImperialUnits ? "Imperial" : "Metric"}`,
         showConfirmButton: false,
         timer: 1500,
       });
     });
 
-    L.DomEvent.on(
-      imperialElevationContainer,
-      "dblclick mousedown wheel",
-      L.DomEvent.stopPropagation
-    );
-    // --- END: Imperial Elevation Units Toggle ---
+    L.DomEvent.on(imperialUnitsContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
+    // --- END: Imperial Units Toggle ---
   }
 
   // --- START: MODIFIED code block for clickable attribution using event delegation ---
