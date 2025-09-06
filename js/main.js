@@ -910,6 +910,7 @@ function initializeMap() {
         shapeOptions: { ...STYLE_CONFIG.path.default, color: defaultDrawColor },
         metric: true,
         feet: false,
+        showLength: false,
       },
       polygon: false,
       rectangle: false,
