@@ -21,6 +21,8 @@ function initializeRouting() {
 
   let intermediateViaMarkers = [];
   let shouldFitBounds = true;
+  let isUnitRefreshInProgress = false;
+  let wasRouteSelectedOnUnitRefresh = false;
 
   const geocoder = new GeoSearch.OpenStreetMapProvider();
 
@@ -322,7 +324,15 @@ function initializeRouting() {
         currentRoutePath = newRoutePath;
         updateOverviewList();
         updateDrawControlStates();
-        selectItem(newRoutePath);
+
+        // Re-select the route if it was selected before a unit change,
+        // or select it if it's a brand new calculation.
+        if (wasRouteSelectedOnUnitRefresh || !isUnitRefreshInProgress) {
+          selectItem(newRoutePath);
+        }
+        isUnitRefreshInProgress = false; // Always reset the flag
+        wasRouteSelectedOnUnitRefresh = false; // Always reset the flag
+
         saveRouteBtn.disabled = false;
       }
     });
@@ -871,13 +881,14 @@ function initializeRouting() {
   const redisplayCurrentRoute = () => {
     // Check if there is an active route to recalculate/redisplay.
     if (currentRoutePath && routingControl) {
+      wasRouteSelectedOnUnitRefresh = globallySelectedItem === currentRoutePath;
       const waypoints = routingControl.getWaypoints();
       // Check for waypoints that have a valid latLng.
       const validWaypoints = waypoints.filter((wp) => wp.latLng);
       if (validWaypoints.length > 1) {
-        // Re-trigger the route calculation, which will fire the 'routesfound' event.
-        // That event will now use the updated `useImperialUnits` flag to format its output.
+        // Set the flags before re-triggering the route calculation.
         shouldFitBounds = false; // Don't re-zoom the map on unit change.
+        isUnitRefreshInProgress = true; // Flag that a unit refresh is occurring.
         routingControl.setWaypoints(validWaypoints);
       }
     }
