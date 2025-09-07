@@ -258,7 +258,7 @@ function initializeRouting() {
           map.removeLayer(currentRoutePath);
         }
 
-        const routeColorName = "DeepPurple";
+        const routeColorName = "Yellow";
         const routeColor = ORGANIC_MAPS_COLORS.find((c) => c.name === routeColorName).css;
         const newRoutePath = L.polyline(processedCoordinates, {
           ...STYLE_CONFIG.path.default,
