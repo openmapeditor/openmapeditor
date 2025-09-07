@@ -94,7 +94,7 @@ export function Time() {
 		],
 		summary: (this.options.time) && {
 			"tottime"  : {
-				label: "Total Time: ",
+				label: "Walking Time: ",
 				value: (track) => _.formatTime(track.time || 0),
 				order: 20
 			}
