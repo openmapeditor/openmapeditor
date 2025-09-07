@@ -266,8 +266,6 @@ function initializeMap() {
   // Define base and overlay layers
   const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a>',
   });
   const baseMaps = {
     "&#127757; OpenStreetMap": osmLayer,
@@ -275,41 +273,33 @@ function initializeMap() {
     //   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     //   {
     //     maxZoom: 19,
-    //     attribution: '&copy; <a href="https://www.esri.com/" target="_blank">Esri</a>',
     //   }
     // ),
     // "&#127757; Google Satellite": L.tileLayer("http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
     //   maxZoom: 19,
     //   subdomains: ["mt0", "mt1", "mt2", "mt3"],
-    //   attribution: "&copy; Google",
     // }),
     "&#127757; CyclOSM": L.tileLayer(
       "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png",
       {
         maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a>. Tiles style by <a href="https://www.cyclosm.org/" target="_blank">CyclOSM</a>',
       }
     ),
     "&#127757; Tracetrack Topo": L.tileLayer(
       `https://tile.tracestrack.com/topo__/{z}/{x}/{y}.webp?key=${tracetrackApiKey}`,
       {
         maxZoom: 19,
-        attribution: '&copy; <a href="https://www.tracestrack.com/" target="_blank">Tracetrack</a>',
       }
     ),
     "&#127465;&#127466; TopPlusOpen": L.tileLayer(
       "http://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web/default/WEBMERCATOR/{z}/{y}/{x}.png",
       {
         maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://www.govdata.de/dl-de/by-2-0" target="_blank">dl-de/by-2-0</a>',
       }
     ),
     "&#127464;&#127469; Swisstopo Map": L.tileLayer.wms("https://wms.geo.admin.ch/", {
       layers: "ch.swisstopo.pixelkarte-farbe",
       format: "image/jpeg",
-      attribution: '&copy; <a href="https://www.swisstopo.admin.ch/" target="_blank">swisstopo</a>',
     }),
   };
   const staticOverlayMaps = {
@@ -317,7 +307,6 @@ function initializeMap() {
       layers: "ch.swisstopo.swisstlm3d-wanderwege",
       format: "image/png",
       transparent: true,
-      attribution: '&copy; <a href="https://www.swisstopo.admin.ch/" target="_blank">swisstopo</a>',
     }),
   };
 
@@ -1431,42 +1420,6 @@ function initializeMap() {
     }
   });
   // --- END: MODIFIED code block ---
-
-  // --- START: NEW - Dynamically adjust elevation summary padding ---
-  // This is necessary because the elevation-div is absolutely positioned at the
-  // bottom of the screen, and the attribution control can overlap its content.
-  // This code dynamically calculates the height of the attribution control and
-  // applies it as bottom padding to the elevation summary, ensuring the summary
-  // content is never hidden.
-  const adjustElevationSummaryPadding = () => {
-    const attributionControl = document.querySelector(".leaflet-control-attribution");
-    const elevationSummary = document.querySelector(".elevation-summary");
-
-    if (attributionControl && elevationSummary) {
-      const attributionHeight = attributionControl.offsetHeight;
-      // Add a 10px buffer for spacing
-      const requiredPadding = attributionHeight + 10;
-      elevationSummary.style.paddingBottom = `${requiredPadding}px`;
-    }
-  };
-
-  // Initial adjustment after a short delay to ensure rendering is complete
-  setTimeout(adjustElevationSummaryPadding, 500);
-
-  // Use a MutationObserver to react to any changes in the attribution content
-  const attributionElement = document.querySelector(".leaflet-control-attribution");
-  if (attributionElement) {
-    const observer = new MutationObserver(adjustElevationSummaryPadding);
-    observer.observe(attributionElement, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
-  }
-
-  // Also, re-check on map move as a fallback, as this often triggers attribution changes
-  map.on("moveend", adjustElevationSummaryPadding);
-  // --- END: NEW ---
 
   // --- START: NEW - MutationObserver to auto-resize textarea on selection ---
   // This observer watches for changes in the info panel. When details are
