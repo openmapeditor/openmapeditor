@@ -954,6 +954,11 @@ select:focus {
   stroke: none;
 }
 
+/* Hide time axis at top of elevation chart */
+g.x.axis.top.time {
+  display: none;
+}
+
 /* Hide altitude text below the elevation chart  */
 .legend {
   display: none;

@@ -81,7 +81,7 @@ export function Time() {
 				}
 		},
 		tooltips: [
-			(this.options.time) && {
+			/* (this.options.time) && {
 				name: 'time',
 				chart: (item) => L._("T: ") + _.formatTime(item.duration || 0),
 				order: 20
@@ -90,7 +90,7 @@ export function Time() {
 				name: 'date',
 				chart: (item) => L._("t: ") + this.options.timeFormat(item.time),
 				order: 21,
-			}
+			} */
 		],
 		summary: (this.options.time) && {
 			"tottime"  : {
