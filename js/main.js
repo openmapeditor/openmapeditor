@@ -881,7 +881,9 @@ function initializeMap() {
     // --- End Save Button Logic ---
 
     // Bind the popup and open it.
-    temporarySearchMarker.bindPopup(popupContent, { offset: L.point(0, -35), maxWidth: 150 }).openPopup();
+    temporarySearchMarker
+      .bindPopup(popupContent, { offset: L.point(0, -35), maxWidth: 150 })
+      .openPopup();
 
     // When the popup is closed (without saving), remove the temporary marker.
     temporarySearchMarker.on("popupclose", () => {
