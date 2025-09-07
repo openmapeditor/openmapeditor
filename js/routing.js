@@ -249,86 +249,80 @@ function initializeRouting() {
           map.fitBounds(L.latLngBounds(processedCoordinates), { padding: [50, 50] });
         }
 
+        // --- START: MODIFIED In-Place Route Update ---
+        // If a route already exists on the map, we update it in-place to prevent
+        // it from being deselected, which would incorrectly close the elevation panel.
         if (currentRoutePath) {
-          if (globallySelectedItem === currentRoutePath) {
-            deselectCurrentItem();
-          }
-          editableLayers.removeLayer(currentRoutePath);
-          drawnItems.removeLayer(currentRoutePath);
-          map.removeLayer(currentRoutePath);
+          currentRoutePath.setLatLngs(processedCoordinates);
+          currentRoutePath.feature.properties.name = route.name || "Calculated Route";
+          currentRoutePath.feature.properties.totalDistance = route.summary.totalDistance;
+        } else {
+          // If no route exists, this is the first calculation, so we create the layer.
+          const routeColorName = "Yellow";
+          const routeColor = ORGANIC_MAPS_COLORS.find((c) => c.name === routeColorName).css;
+          const newRoutePath = L.polyline(processedCoordinates, {
+            ...STYLE_CONFIG.path.default,
+            color: routeColor,
+          });
+
+          newRoutePath.feature = {
+            properties: {
+              name: route.name || "Calculated Route",
+              omColorName: routeColorName,
+              totalDistance: route.summary.totalDistance,
+            },
+          };
+          newRoutePath.pathType = "route";
+
+          // --- START: FINAL Click and Long-Press Logic for Route ---
+          let pressTimer = null;
+          let wasLongPress = false;
+
+          newRoutePath.on("mousedown", (e) => {
+            if (e.originalEvent.pointerType === "touch") {
+              return;
+            }
+            wasLongPress = false;
+            pressTimer = setTimeout(() => {
+              wasLongPress = true;
+              addIntermediateViaPoint(e.latlng);
+            }, 800);
+          });
+
+          newRoutePath.on("mouseup", () => {
+            clearTimeout(pressTimer);
+          });
+
+          newRoutePath.on("click", (e) => {
+            L.DomEvent.stop(e);
+            if (!wasLongPress) {
+              selectItem(newRoutePath);
+            }
+            wasLongPress = false;
+          });
+
+          newRoutePath.on("contextmenu", (e) => {
+            L.DomEvent.stop(e);
+            if (e.originalEvent.pointerType === "touch") {
+              wasLongPress = true;
+              addIntermediateViaPoint(e.latlng);
+            }
+          });
+          // --- END: FINAL Click and Long-Press Logic for Route ---
+
+          drawnItems.addLayer(newRoutePath);
+          newRoutePath.addTo(map);
+          currentRoutePath = newRoutePath; // Assign the new path to the global variable
         }
+        // --- END: MODIFIED In-Place Route Update ---
 
-        const routeColorName = "Yellow";
-        const routeColor = ORGANIC_MAPS_COLORS.find((c) => c.name === routeColorName).css;
-        const newRoutePath = L.polyline(processedCoordinates, {
-          ...STYLE_CONFIG.path.default,
-          color: routeColor,
-        });
-
-        newRoutePath.feature = {
-          properties: {
-            name: route.name || "Calculated Route",
-            omColorName: routeColorName,
-            totalDistance: route.summary.totalDistance,
-          },
-        };
-        newRoutePath.pathType = "route";
-
-        // --- START: FINAL Click and Long-Press Logic for Route ---
-        let pressTimer = null;
-        let wasLongPress = false;
-
-        newRoutePath.on("mousedown", (e) => {
-          // A long-press on touch devices fires 'contextmenu'. We handle that separately.
-          // This mousedown handler is now primarily for desktop long-press.
-          if (e.originalEvent.pointerType === "touch") {
-            return;
-          }
-          wasLongPress = false;
-          pressTimer = setTimeout(() => {
-            wasLongPress = true;
-            addIntermediateViaPoint(e.latlng);
-          }, 800);
-        });
-
-        newRoutePath.on("mouseup", () => {
-          clearTimeout(pressTimer);
-        });
-
-        newRoutePath.on("click", (e) => {
-          L.DomEvent.stop(e);
-          // Only select if a long press didn't just happen.
-          if (!wasLongPress) {
-            selectItem(newRoutePath);
-          }
-          // Reset for the next interaction.
-          wasLongPress = false;
-        });
-
-        // Use 'contextmenu' for mobile long-press, as it's the native behavior.
-        // This is more reliable than timers on touch devices.
-        newRoutePath.on("contextmenu", (e) => {
-          L.DomEvent.stop(e); // Stop map's contextmenu.
-          // ONLY trigger via point on a long press from a touch device.
-          // Desktop long press is handled by the mousedown/timer logic.
-          // This effectively disables right-click for adding points.
-          if (e.originalEvent.pointerType === "touch") {
-            wasLongPress = true; // Flag that a long press occurred.
-            addIntermediateViaPoint(e.latlng);
-          }
-        });
-        // --- END: FINAL Click and Long-Press Logic for Route ---
-
-        drawnItems.addLayer(newRoutePath);
-        newRoutePath.addTo(map);
-        currentRoutePath = newRoutePath;
         updateOverviewList();
         updateDrawControlStates();
 
         // Re-select the route if it was selected before a unit change,
         // or select it if it's a brand new calculation.
         if (wasRouteSelectedOnUnitRefresh || !isUnitRefreshInProgress) {
-          selectItem(newRoutePath);
+          selectItem(currentRoutePath);
         }
         isUnitRefreshInProgress = false; // Always reset the flag
         wasRouteSelectedOnUnitRefresh = false; // Always reset the flag
