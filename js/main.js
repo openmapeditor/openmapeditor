@@ -297,7 +297,7 @@ function initializeMap() {
         maxZoom: 19,
       }
     ),
-    "&#127464;&#127469; Swisstopo Map": L.tileLayer.wms("https://wms.geo.admin.ch/", {
+    "&#127464;&#127469; Swisstopo": L.tileLayer.wms("https://wms.geo.admin.ch/", {
       layers: "ch.swisstopo.pixelkarte-farbe",
       format: "image/jpeg",
     }),
