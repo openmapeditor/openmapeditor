@@ -21,6 +21,8 @@ function initializeRouting() {
 
   let intermediateViaMarkers = [];
   let shouldFitBounds = true;
+  let isUnitRefreshInProgress = false;
+  let wasRouteSelectedOnUnitRefresh = false;
 
   const geocoder = new GeoSearch.OpenStreetMapProvider();
 
@@ -205,9 +207,7 @@ function initializeRouting() {
 
         const summaryContainer = document.getElementById("routing-summary-container");
         if (route.summary && summaryContainer) {
-          // NEW: Calculate and then truncate the distance for display
-          const totalDistanceKm = route.summary.totalDistance / 1000;
-          const truncatedKm = Math.floor(totalDistanceKm * 100) / 100;
+          const distanceDisplay = formatDistance(route.summary.totalDistance);
 
           function formatDuration(seconds) {
             const h = Math.floor(seconds / 3600);
@@ -219,10 +219,7 @@ function initializeRouting() {
           }
           const formattedTime = formatDuration(route.summary.totalTime);
 
-          // Use the truncated value, ensuring two decimal places with toFixed
-          summaryContainer.innerHTML = `<b>Distance:</b> ${truncatedKm.toFixed(
-            2
-          )} km &nbsp;&nbsp; <b>Time:</b> ${formattedTime}`;
+          summaryContainer.innerHTML = `<b>Distance:</b> ${distanceDisplay} &nbsp;&nbsp; <b>Time:</b> ${formattedTime}`;
           summaryContainer.style.display = "block";
         }
 
@@ -237,13 +234,8 @@ function initializeRouting() {
             item.className = "direction-item";
             const distanceM = instr.distance;
             let distanceStr = "";
-            if (distanceM > 999) {
-              // NEW: Apply truncation to one decimal place for consistency
-              const distanceKm = distanceM / 1000;
-              const truncatedKm = Math.floor(distanceKm * 10) / 10;
-              distanceStr = `(${truncatedKm.toFixed(1)} km)`;
-            } else if (distanceM > 0) {
-              distanceStr = `(${Math.round(distanceM)} m)`;
+            if (distanceM > 0) {
+              distanceStr = `(${formatDistance(distanceM)})`;
             }
             item.textContent = `${instr.text} ${distanceStr}`;
             directionsList.appendChild(item);
@@ -332,7 +324,15 @@ function initializeRouting() {
         currentRoutePath = newRoutePath;
         updateOverviewList();
         updateDrawControlStates();
-        selectItem(newRoutePath);
+
+        // Re-select the route if it was selected before a unit change,
+        // or select it if it's a brand new calculation.
+        if (wasRouteSelectedOnUnitRefresh || !isUnitRefreshInProgress) {
+          selectItem(newRoutePath);
+        }
+        isUnitRefreshInProgress = false; // Always reset the flag
+        wasRouteSelectedOnUnitRefresh = false; // Always reset the flag
+
         saveRouteBtn.disabled = false;
       }
     });
@@ -877,7 +877,25 @@ function initializeRouting() {
     });
   });
 
+  // This function will be called from main.js when the user toggles the unit setting.
+  const redisplayCurrentRoute = () => {
+    // Check if there is an active route to recalculate/redisplay.
+    if (currentRoutePath && routingControl) {
+      wasRouteSelectedOnUnitRefresh = globallySelectedItem === currentRoutePath;
+      const waypoints = routingControl.getWaypoints();
+      // Check for waypoints that have a valid latLng.
+      const validWaypoints = waypoints.filter((wp) => wp.latLng);
+      if (validWaypoints.length > 1) {
+        // Set the flags before re-triggering the route calculation.
+        shouldFitBounds = false; // Don't re-zoom the map on unit change.
+        isUnitRefreshInProgress = true; // Flag that a unit refresh is occurring.
+        routingControl.setWaypoints(validWaypoints);
+      }
+    }
+  };
+
   window.app = window.app || {};
   window.app.setupRoutingControl = setupRoutingControl;
   window.app.clearRouting = clearRouting;
+  window.app.redisplayCurrentRoute = redisplayCurrentRoute;
 }

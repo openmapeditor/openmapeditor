@@ -244,3 +244,45 @@ function setupAutocomplete(inputEl, suggestionsEl, callback) {
     }
   });
 }
+
+/**
+ * Formats a distance in meters into a human-readable string,
+ * respecting the global 'useImperialUnits' setting.
+ * @param {number} meters The distance in meters.
+ * @param {boolean} [includeSecondary=false] - If true, adds the other unit system in parentheses.
+ * @returns {string} The formatted distance string (e.g., "10.54 km" or "6.55 mi").
+ */
+function formatDistance(meters, includeSecondary = false) {
+  if (typeof meters !== "number" || isNaN(meters)) {
+    return "";
+  }
+
+  const METERS_TO_FEET = 3.28084;
+  const METERS_TO_MILES = 0.000621371;
+
+  const km = meters / 1000;
+  const miles = meters * METERS_TO_MILES;
+
+  let primaryDisplay, secondaryDisplay;
+
+  if (useImperialUnits) {
+    // Imperial is primary
+    if (miles < 0.1 && miles > 0) {
+      primaryDisplay = `${Math.round(meters * METERS_TO_FEET)} ft`;
+    } else {
+      primaryDisplay = `${miles.toFixed(2)} mi`;
+    }
+    secondaryDisplay = km < 1 ? `${Math.round(meters)} m` : `${km.toFixed(2)} km`;
+  } else {
+    // Metric is primary
+    if (km < 1) {
+      primaryDisplay = `${Math.round(meters)} m`;
+    } else {
+      primaryDisplay = `${km.toFixed(2)} km`;
+    }
+    secondaryDisplay =
+      miles < 0.1 ? `${Math.round(meters * METERS_TO_FEET)} ft` : `${miles.toFixed(2)} mi`;
+  }
+
+  return includeSecondary ? `${primaryDisplay} (${secondaryDisplay})` : primaryDisplay;
+}

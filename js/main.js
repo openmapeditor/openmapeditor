@@ -43,7 +43,8 @@ let map,
   currentRoutePath = null,
   saveRouteBtn,
   temporarySearchMarker = null,
-  preservedKmzFiles = []; // For preserving empty KMLs from KMZ imports
+  preservedKmzFiles = [], // For preserving empty KMLs from KMZ imports
+  useImperialUnits = false;
 
 /**
  * Adjusts the height of the info panel's name textarea to fit its content,
@@ -65,6 +66,60 @@ function adjustInfoPanelNameHeight(textarea) {
 
   // MODIFIED: Add this line to ensure the text is scrolled to the top
   textarea.scrollTop = 0;
+}
+
+/**
+ * Creates, configures, and adds the Leaflet Elevation control to the map.
+ * @param {boolean} useImperial - If true, the control will use imperial units (feet/miles).
+ * @returns {L.Control.Elevation} The newly created elevation control instance.
+ */
+function createAndAddElevationControl(useImperial) {
+  const control = L.control.elevation({
+    position: "bottomright",
+    theme: "custom-theme",
+    detached: true,
+    elevationDiv: "#elevation-div",
+    collapsed: false,
+    closeBtn: false,
+    distance: false,
+    time: true,
+    imperial: useImperial, // The parameter is used here
+    margins: {
+      top: 30,
+      right: 30,
+      bottom: -10,
+      left: 60,
+    },
+  });
+
+  control.on("eledata_added", ({ track_info }) => {
+    // console.log("Elevation data added!", track_info);
+    // console.log("Elevation data distance", track_info.distance);
+    // console.log("Elevation data elevation_min", track_info.elevation_min);
+    // console.log("Elevation data elevation_max", track_info.elevation_max);
+    // console.log("Elevation data elevation_avg", track_info.elevation_avg);
+    // console.log("Elevation data time", track_info.time);
+  });
+
+  control.addTo(map);
+  return control;
+}
+
+/**
+ * A simple function to trigger updates on currently displayed UI elements
+ * that show units, like the routing panel and info panel. This is called
+ * when the user toggles the unit setting.
+ */
+function updateAllDynamicUnitDisplays() {
+  // 1. If an item is selected, re-render its info panel to update units.
+  if (globallySelectedItem) {
+    showInfoPanel(globallySelectedItem);
+  }
+
+  // 2. If a route is active, tell the routing module to redisplay it.
+  if (window.app && typeof window.app.redisplayCurrentRoute === "function") {
+    window.app.redisplayCurrentRoute();
+  }
 }
 
 // Main function to initialize the map and all its components.
@@ -611,6 +666,8 @@ function initializeMap() {
       position: "topleft",
       flyTo: true,
       locateOptions: { maxZoom: 16 },
+      drawCircle: false,
+      showPopup: false,
       markerStyle: {
         color: "white", // Color of the marker's border
         fillColor: locateCircleColor, // Fill color of the marker
@@ -843,23 +900,10 @@ function initializeMap() {
   setupAutocomplete(searchInput, searchSuggestions, onSearchResult);
   // --- END: NEW Custom Search Bar Setup ---
 
-  elevationControl = L.control.elevation({
-    position: "bottomright",
-    theme: "custom-theme",
-    detached: true,
-    elevationDiv: "#elevation-div",
-    collapsed: false,
-    closeBtn: false,
-    distance: false,
-    time: false,
-    margins: {
-      top: 30,
-      right: 30,
-      bottom: -10,
-      left: 60,
-    },
-  });
-  elevationControl.addTo(map);
+  // Add elevationControl
+  // Read saved preference for the global units setting
+  useImperialUnits = localStorage.getItem("useImperialUnits") === "true";
+  elevationControl = createAndAddElevationControl(useImperialUnits);
 
   // Configure draw control
   const defaultDrawColorName = "Red";
@@ -876,6 +920,9 @@ function initializeMap() {
     draw: {
       polyline: {
         shapeOptions: { ...STYLE_CONFIG.path.default, color: defaultDrawColor },
+        metric: true,
+        feet: false,
+        showLength: false,
       },
       polygon: false,
       rectangle: false,
@@ -1250,6 +1297,46 @@ function initializeMap() {
       }
     });
     L.DomEvent.on(themeToggleContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
+
+    // --- START: Imperial Units Toggle ---
+    const imperialUnitsContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
+    const imperialUnitsLabel = L.DomUtil.create("label", "", imperialUnitsContainer);
+    imperialUnitsLabel.htmlFor = "imperial-units-toggle";
+    imperialUnitsLabel.innerText = "Imperial Units";
+    const imperialUnitsCheckbox = L.DomUtil.create("input", "", imperialUnitsContainer);
+    imperialUnitsCheckbox.type = "checkbox";
+    imperialUnitsCheckbox.id = "imperial-units-toggle";
+    imperialUnitsCheckbox.checked = useImperialUnits; // Use the global variable
+
+    L.DomEvent.on(imperialUnitsCheckbox, "change", async (e) => {
+      useImperialUnits = e.target.checked;
+      localStorage.setItem("useImperialUnits", useImperialUnits);
+
+      if (elevationControl) {
+        map.removeControl(elevationControl);
+      }
+      elevationControl = createAndAddElevationControl(useImperialUnits);
+
+      const isProfileVisible =
+        document.getElementById("elevation-div").style.visibility === "visible";
+      if (selectedElevationPath && isProfileVisible) {
+        await addElevationProfileForLayer(selectedElevationPath);
+      }
+
+      updateAllDynamicUnitDisplays();
+
+      Swal.fire({
+        toast: true,
+        position: "center",
+        icon: "info",
+        title: `Units set to ${useImperialUnits ? "Imperial" : "Metric"}`,
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    });
+
+    L.DomEvent.on(imperialUnitsContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
+    // --- END: Imperial Units Toggle ---
 
     // --- Routing Provider Setting ---
     const routingProviderContainer = L.DomUtil.create(
