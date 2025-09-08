@@ -370,8 +370,6 @@ function initializeRouting() {
   const startInput = document.getElementById("route-start");
   const endInput = document.getElementById("route-end");
   const viaInput = document.getElementById("route-via");
-  const currentLocationBtn = document.getElementById("use-current-location");
-  const endCurrentLocationBtn = document.getElementById("use-current-location-end");
   const clearRouteBtn = document.getElementById("clear-route-btn");
   saveRouteBtn = document.getElementById("save-route-btn");
   saveRouteBtn.disabled = true;
@@ -379,7 +377,6 @@ function initializeRouting() {
   const selectStartBtn = document.getElementById("select-start-on-map");
   const selectEndBtn = document.getElementById("select-end-on-map");
   const selectViaBtn = document.getElementById("select-via-on-map");
-  const clearViaBtn = document.getElementById("clear-via-stop");
   customCursorStart = document.getElementById("custom-cursor-start");
   customCursorEnd = document.getElementById("custom-cursor-end");
   customCursorVia = document.getElementById("custom-cursor-via");
@@ -474,32 +471,7 @@ function initializeRouting() {
 
     // Centralized deletion logic
     const deleteMarkerAction = () => {
-      switch (type) {
-        case "start":
-          map.removeLayer(startMarker);
-          startMarker = null;
-          currentStartLatLng = null;
-          startInput.value = "";
-          clearRouteLine();
-          break;
-        case "end":
-          map.removeLayer(endMarker);
-          endMarker = null;
-          currentEndLatLng = null;
-          endInput.value = "";
-          clearRouteLine();
-          break;
-        case "via":
-          map.removeLayer(viaMarker);
-          viaMarker = null;
-          currentViaLatLng = null;
-          viaInput.value = "";
-          if (startMarker && endMarker) {
-            updateRouteWithIntermediateVias();
-          }
-          break;
-      }
-      updateClearButtonState();
+      clearRoutingPoint(type);
     };
 
     marker.on("dragend", () => {
@@ -608,8 +580,10 @@ function initializeRouting() {
     clearRouting();
   });
 
+  // --- MODIFIED: Generalized function to handle start, via, or end ---
   const updateRoutingPoint = (latlng, type) => {
     const locationString = `Current Location (${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)})`;
+
     if (type === "start") {
       currentStartLatLng = latlng;
       startInput.value = locationString;
@@ -623,7 +597,21 @@ function initializeRouting() {
         }).addTo(map);
         addDragHandlersToRoutingMarker(startMarker, "start");
       }
+    } else if (type === "via") {
+      currentViaLatLng = latlng;
+      viaInput.value = locationString;
+      if (viaMarker) {
+        viaMarker.setLatLng(latlng);
+      } else {
+        viaMarker = L.marker(latlng, {
+          icon: createSvgIcon(routingColorVia, 1),
+          title: ROUTING_MARKER_HINT,
+          draggable: true,
+        }).addTo(map);
+        addDragHandlersToRoutingMarker(viaMarker, "via");
+      }
     } else {
+      // 'end' case
       currentEndLatLng = latlng;
       endInput.value = locationString;
       if (endMarker) {
@@ -638,7 +626,13 @@ function initializeRouting() {
       }
     }
     updateClearButtonState();
-    calculateNewRoute();
+
+    if (type === "via") {
+      updateRouteWithIntermediateVias();
+    } else {
+      calculateNewRoute();
+    }
+
     exitRoutePointSelectionMode();
   };
 
@@ -667,14 +661,56 @@ function initializeRouting() {
       });
   };
 
-  currentLocationBtn.addEventListener("click", (e) => {
-    L.DomEvent.stop(e);
-    handleRoutingLocation("start");
+  // --- MODIFIED: Use a loop to set up "Use Current Location" buttons ---
+  ["start", "via", "end"].forEach((type) => {
+    const btn = document.getElementById(`use-current-location-${type}`);
+    if (btn) {
+      btn.addEventListener("click", (e) => {
+        L.DomEvent.stop(e);
+        handleRoutingLocation(type);
+      });
+    }
   });
 
-  endCurrentLocationBtn.addEventListener("click", (e) => {
-    L.DomEvent.stop(e);
-    handleRoutingLocation("end");
+  // --- NEW: Generic function to clear a single routing point ---
+  const clearRoutingPoint = (type) => {
+    switch (type) {
+      case "start":
+        if (startMarker) map.removeLayer(startMarker);
+        startMarker = null;
+        currentStartLatLng = null;
+        startInput.value = "";
+        clearRouteLine();
+        break;
+      case "end":
+        if (endMarker) map.removeLayer(endMarker);
+        endMarker = null;
+        currentEndLatLng = null;
+        endInput.value = "";
+        clearRouteLine();
+        break;
+      case "via":
+        if (viaMarker) map.removeLayer(viaMarker);
+        viaMarker = null;
+        currentViaLatLng = null;
+        viaInput.value = "";
+        if (startMarker && endMarker) {
+          updateRouteWithIntermediateVias();
+        }
+        break;
+    }
+    updateClearButtonState();
+  };
+
+  // --- NEW: Use a loop to set up "Clear" buttons ---
+  ["start", "via", "end"].forEach((type) => {
+    const btn = document.getElementById(`clear-point-${type}`);
+    if (btn) {
+      btn.addEventListener("click", (e) => {
+        L.DomEvent.stop(e);
+        clearRoutingPoint(type);
+      });
+    }
   });
 
   startInput.addEventListener("input", () => {
@@ -761,21 +797,6 @@ function initializeRouting() {
   selectViaBtn.addEventListener("click", (e) => {
     L.DomEvent.stop(e);
     enterRoutePointSelectionMode(routePointSelectionMode === "via" ? null : "via", e);
-  });
-
-  clearViaBtn.addEventListener("click", (e) => {
-    L.DomEvent.stop(e);
-    const wasViaPointSet = !!currentViaLatLng;
-    if (viaMarker) {
-      map.removeLayer(viaMarker);
-      viaMarker = null;
-    }
-    viaInput.value = "";
-    currentViaLatLng = null;
-    updateClearButtonState();
-    if (startMarker && endMarker && wasViaPointSet) {
-      updateRouteWithIntermediateVias();
-    }
   });
 
   map.on("click", (e) => {
