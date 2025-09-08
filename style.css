@@ -15,9 +15,9 @@
   --color-royal-blue: #4169e1;
   --color-orange: #ff8c00;
 
-  --routing-color-start: #388e3c;
-  --routing-color-end: #e51b23;
-  --routing-color-via: #006ec7;
+  --routing-color-start: #34a853; /* Google Green 500 */
+  --routing-color-end: #ea4335; /* Google Red 500 */
+  --routing-color-via: #4285f4; /* Google Blue 500 */
 
   /* Light Theme Variables */
   --icon-color: black;
