@@ -651,6 +651,100 @@ function initializeMap() {
     },
   });
 
+  // A single constant for both custom locate markers.
+  const CUSTOM_LOCATE_ICON_SIZE = 50;
+
+  const locationArrowIcon = L.divIcon({
+    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -25 220 220" style="width: ${CUSTOM_LOCATE_ICON_SIZE}px; height: ${CUSTOM_LOCATE_ICON_SIZE}px; fill: #4169e1;"><use href="#location-arrow"></use></svg>`,
+    className: "custom-locate-icon",
+    iconSize: [CUSTOM_LOCATE_ICON_SIZE, CUSTOM_LOCATE_ICON_SIZE],
+    // Calculate anchor based on the SVG's dimensions relative to its viewBox.
+    // The tip of the arrow is at x=100, y=150.
+    // The total viewBox width is 220 - (-10) = 230
+    // The total viewBox height is 220 - (-25) = 245
+    iconAnchor: [(100 / 230) * CUSTOM_LOCATE_ICON_SIZE, (150 / 245) * CUSTOM_LOCATE_ICON_SIZE],
+  });
+
+  // Custom location compass marker for locateControl
+  const locationCompassArrowIcon = L.Control.Locate.LocationMarker.extend({
+    initialize(latlng, heading, options) {
+      // Use leaflet.setOptions instead of L.setOptions
+      leaflet.setOptions(this, options);
+      this._latlng = latlng;
+      this._heading = heading;
+      this.createIcon();
+    },
+
+    setHeading(heading) {
+      this._heading = heading;
+      // Rotate the icon's SVG element directly
+      if (this._icon) {
+        const svgElement = this._icon.querySelector("svg");
+        if (svgElement) {
+          svgElement.style.transform = `rotate(${this._heading}deg)`;
+        }
+      }
+
+      // The L.Control.Locate plugin internally creates its default marker with this specific class name.
+      // We select it here so we can hide it, ensuring only our custom compass icon is visible when heading is available.
+      const locationMarkerElement = document.querySelector(".leaflet-control-locate-location");
+      // Check if the element exists
+      if (locationMarkerElement) {
+        // Set the display property to 'none'
+        locationMarkerElement.style.display = "none";
+      }
+    },
+
+    /**
+     * **OVERRIDE THE ENTIRE METHOD TO ADD THE ICON ANCHOR**
+     * Create a styled circle location marker
+     */
+    createIcon() {
+      // This method is copied from the parent L.Control.Locate.LocationMarker
+      // with one critical addition: `iconAnchor`.
+      const opt = this.options;
+      const style = ""; // Style is not needed as we use an SVG symbol
+
+      const icon = this._getIconSVG(opt, style);
+
+      this._locationIcon = leaflet.divIcon({
+        className: icon.className,
+        html: icon.svg,
+        iconSize: [icon.w, icon.h],
+        // --- THIS IS THE FIX ---
+        // Add the same anchor calculation as locationArrowIcon
+        iconAnchor: [(100 / 230) * CUSTOM_LOCATE_ICON_SIZE, (150 / 245) * CUSTOM_LOCATE_ICON_SIZE],
+      });
+
+      this.setIcon(this._locationIcon);
+
+      // After setting the icon, apply initial heading
+      this.setHeading(this._heading);
+    },
+
+    /**
+     * Create a styled arrow compass marker
+     */
+    _getIconSVG(options, style) {
+      const size = CUSTOM_LOCATE_ICON_SIZE;
+
+      // The rotation is now handled by CSS transform in setHeading.
+      // The viewBox must match the one used in the anchor calculation.
+      const svgContent = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -25 220 220" style="width:${size}px; height:${size}px;">
+          <use href="#location-arrow"></use>
+        </svg>
+      `;
+
+      return {
+        className: "leaflet-control-locate-heading",
+        svg: svgContent,
+        w: size,
+        h: size,
+      };
+    },
+  });
+
   // Get the color value from your CSS file
   const locateCircleColor = rootStyles.getPropertyValue("--locate-color").trim();
 
@@ -661,6 +755,10 @@ function initializeMap() {
       locateOptions: { maxZoom: 16 },
       drawCircle: false,
       showPopup: false,
+      showCompass: true,
+      // Custom compass marker
+      compassClass: locationCompassArrowIcon,
+      // Marker style when not using custom marker
       markerStyle: {
         color: "white", // Color of the marker's border
         fillColor: locateCircleColor, // Fill color of the marker
@@ -669,6 +767,17 @@ function initializeMap() {
         opacity: 1,
         radius: 10, // Size of the center dot
       },
+      // --- FOR DEBUGGING ALIGNMENT ---
+      // To visually test that the rotating compass marker has the correct anchor point,
+      // you can un-comment the 'markerClass' option below. This will force the plugin
+      // to use our non-rotating custom icon, making it easy to confirm that both
+      // the compass and static icons align perfectly.
+      //
+      // markerClass: L.Marker.extend({
+      //   options: {
+      //     icon: locationArrowIcon,
+      //   },
+      // }),
     })
     .addTo(map);
   setTimeout(() => {
