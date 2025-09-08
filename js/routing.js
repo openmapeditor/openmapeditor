@@ -695,7 +695,11 @@ function initializeRouting() {
         currentViaLatLng = null;
         viaInput.value = "";
         if (startMarker && endMarker) {
+          // This is the default behavior: only clears the main via point.
           updateRouteWithIntermediateVias();
+
+          // To clear ALL via points comment the line above and uncomment the line below.
+          // calculateNewRoute();
         }
         break;
     }
