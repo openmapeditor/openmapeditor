@@ -44,7 +44,8 @@ let map,
   saveRouteBtn,
   temporarySearchMarker = null,
   preservedKmzFiles = [], // For preserving empty KMLs from KMZ imports
-  useImperialUnits = false;
+  useImperialUnits = false,
+  scaleControl;
 
 /**
  * Adjusts the height of the info panel's name textarea to fit its content,
@@ -139,6 +140,9 @@ function initializeMap() {
     });
   }
   // --- END: Check for secrets.js ---
+
+  // Read saved preference for units setting at the beginning
+  useImperialUnits = localStorage.getItem("useImperialUnits") === "true";
 
   // FIX: This prevents the polyline drawing tool from finishing on the second tap on touch devices.
   L.Draw.Polyline.prototype._onTouch = L.Util.falseFn;
@@ -675,8 +679,14 @@ function initializeMap() {
     }
   }, 0);
 
-  // Add a scale control showing both metric and imperial units
-  L.control.scale({ position: "bottomleft", metric: true, imperial: true }).addTo(map);
+  // Add a scale control showing units based on the user's setting
+  scaleControl = L.control
+    .scale({
+      position: "bottomleft",
+      metric: !useImperialUnits,
+      imperial: useImperialUnits,
+    })
+    .addTo(map);
 
   // Change background of locate button on locationfound/locationerror
   const locateButtonContainer = locateControl.getContainer();
@@ -892,8 +902,6 @@ function initializeMap() {
   // --- END: NEW Custom Search Bar Setup ---
 
   // Add elevationControl
-  // Read saved preference for the global units setting
-  useImperialUnits = localStorage.getItem("useImperialUnits") === "true";
   elevationControl = createAndAddElevationControl(useImperialUnits);
 
   // Configure draw control
@@ -1302,6 +1310,18 @@ function initializeMap() {
     L.DomEvent.on(imperialUnitsCheckbox, "change", async (e) => {
       useImperialUnits = e.target.checked;
       localStorage.setItem("useImperialUnits", useImperialUnits);
+
+      // Update the scale control to reflect the new unit setting
+      if (scaleControl) {
+        map.removeControl(scaleControl);
+      }
+      scaleControl = L.control
+        .scale({
+          position: "bottomleft",
+          metric: !useImperialUnits,
+          imperial: useImperialUnits,
+        })
+        .addTo(map);
 
       if (elevationControl) {
         map.removeControl(elevationControl);
