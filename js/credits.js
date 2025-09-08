@@ -46,7 +46,7 @@ const CREDITS_HTML = `
     font-size: 16px;
     font-weight: bold;
     color: #fff;
-    background-color: #6772E5;
+    background-color: var(--highlight-color);
     border-radius: 8px;
     text-decoration: none;
     transition: background-color 0.2s;

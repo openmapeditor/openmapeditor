@@ -26,8 +26,8 @@
   --background-color: white;
   --background2-color: #9ba0a4;
   --text-color: black;
-  --highlight-color: #1f6eeb;
-  --locate-color: #1f6eeb;
+  --highlight-color: #4285f4; /* Google Blue 500 */
+  --locate-color: #4285f4; /* Google Blue 500 */
 }
 
 body.dark-mode {
