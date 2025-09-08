@@ -95,6 +95,7 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: `https://registry.npmjs.org/@raruto/leaflet-elevation/-/leaflet-elevation-2.5.1.tgz`
   - Important Info: Changed line 64 in `leaflet-elevation-2.5.1/src/components/marker.js`
   - Important Info: Changed line 43, 84, 93, 97 in `leaflet-elevation-2.5.1/src/handlers/time.js`
+  - Important Info: Changed line 161 in `leaflet-elevation-2.5.1/src/components/chart.js`
 - **leaflet-geosearch-4.2.0**
   - Download URL: `https://registry.npmjs.org/leaflet-geosearch/-/leaflet-geosearch-4.2.0.tgz`
 - **leaflet-locatecontrol-0.84.2**
