@@ -1550,8 +1550,7 @@ function initializeMap() {
       // Open the SweetAlert with content from credits.js
       Swal.fire({
         // icon: "info",
-        imageUrl:
-          "https://openmapeditor.github.io/openmapeditor-assets/icon-1024x1024-transparent-min.png",
+        imageUrl: "img/icon-1024x1024.svg",
         imageWidth: 150,
         imageHeight: "auto",
         html: CREDITS_HTML,
@@ -1589,26 +1588,6 @@ function initializeMap() {
   setTimeout(replaceDefaultIcons, 0);
   resetInfoPanel();
   updateScaleControlVisibility();
-
-  // --- START: Preload key images to prevent flash on modal/panel open ---
-  // This waits for the window to be fully loaded, then downloads the images
-  // into the cache so they are ready when needed.
-  window.addEventListener(
-    "load",
-    () => {
-      // Preload credits icon
-      const creditsIcon = new Image();
-      creditsIcon.src =
-        "https://openmapeditor.github.io/openmapeditor-assets/icon-1024x1024-transparent-min.png";
-
-      // Preload Strava connect button
-      const stravaButton = new Image();
-      stravaButton.src =
-        "https://openmapeditor.github.io/openmapeditor-assets/btn_strava_connect_with_orange.svg";
-    },
-    { once: true }
-  );
-  // --- END ---
 }
 
 // Initialize the application once the DOM is fully loaded

@@ -24,7 +24,7 @@ function showConnectUI() {
   stravaPanelContent.innerHTML = `
     <p>Connect with Strava to see your activities.</p>
     <button id="strava-connect-btn" class="strava-button-link" style="border: none; background: transparent; padding: 0; cursor: pointer;">
-      <img src="https://openmapeditor.github.io/openmapeditor-assets/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
+      <img src="img/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
     </button>
   `;
 
