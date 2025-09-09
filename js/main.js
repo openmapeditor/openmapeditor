@@ -1550,7 +1550,8 @@ function initializeMap() {
       // Open the SweetAlert with content from credits.js
       Swal.fire({
         // icon: "info",
-        imageUrl: "https://openmapeditor.github.io/openmapeditor-assets/icon-750x750-min.png",
+        imageUrl:
+          "https://openmapeditor.github.io/openmapeditor-assets/icon-1024x1024-transparent-min.png",
         imageWidth: 150,
         imageHeight: "auto",
         html: CREDITS_HTML,
@@ -1594,7 +1595,8 @@ function initializeMap() {
     () => {
       // Preload credits icon
       const creditsIcon = new Image();
-      creditsIcon.src = "https://openmapeditor.github.io/openmapeditor-assets/icon-750x750-min.png";
+      creditsIcon.src =
+        "https://openmapeditor.github.io/openmapeditor-assets/icon-1024x1024-transparent-min.png";
 
       // Preload Strava connect button
       const stravaButton = new Image();
