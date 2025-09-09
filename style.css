@@ -240,8 +240,7 @@ select:focus {
 
 #info-panel-edit-hint {
   font-size: 12px;
-  font-style: italic;
-  color: var(--color-grey-dark);
+  color: var(--text-color);
   margin-top: 8px;
   max-width: 100%;
   box-sizing: border-box;
