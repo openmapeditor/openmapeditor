@@ -863,26 +863,6 @@ select:focus {
   color: var(--highlight-color) !important;
 }
 
-/* Icons (Success, Error, Info, etc.) */
-.swal2-icon.swal2-success .swal2-success-line-tip,
-.swal2-icon.swal2-success .swal2-success-line-long {
-  stroke: #22c55e !important; /* A vibrant green */
-}
-
-.swal2-icon.swal2-error [class^="swal2-x-mark-line"] {
-  stroke: #ef4444 !important; /* A vibrant red */
-}
-
-.swal2-icon.swal2-info {
-  border-color: var(--highlight-color) !important;
-  color: var(--highlight-color) !important;
-}
-
-.swal2-icon.swal2-warning {
-  border-color: #f59e0b !important; /* A vibrant amber */
-  color: #f59e0b !important;
-}
-
 /* Progress bar for timers */
 .swal2-timer-progress-bar {
   background-color: var(--highlight-color) !important;
