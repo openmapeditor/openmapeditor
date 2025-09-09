@@ -24,7 +24,7 @@
   --border-color: black;
   --divider-color: black;
   --background-color: white;
-  --background2-color: #9ba0a4;
+  --background2-color: #9aa0a6; /* Google Grey 500 */
   --text-color: black;
   --highlight-color: #4285f4; /* Google Blue 500 */
   --locate-color: #4285f4; /* Google Blue 500 */
@@ -35,8 +35,8 @@ body.dark-mode {
   --icon-color: white;
   --border-color: white;
   --divider-color: white;
-  --background-color: #212529;
-  --background2-color: #5e6b81;
+  --background-color: #1b1c1d;
+  --background2-color: #575b5f;
   --text-color: white;
   color: white;
 }
