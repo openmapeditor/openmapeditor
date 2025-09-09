@@ -14,6 +14,7 @@
   --routing-color-start: var(--color-green);
   --routing-color-end: var(--color-red);
   --routing-color-via: var(--color-blue);
+  --strava-color: #fc5200;
 
   /* Light Theme Variables */
   --icon-color: var(--color-black);
@@ -614,7 +615,7 @@ select:focus {
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  color: #fc5200; /* Strava Orange */
+  color: var(--strava-color);
   font-size: 13px;
   font-weight: bold;
   margin-top: 8px;
@@ -1518,7 +1519,7 @@ body.route-point-select-mode * {
 
 /* Primary button style (Strava Orange) */
 .strava-button-primary {
-  background-color: #fc5200;
+  background-color: var(--strava-color);
   color: white;
   border: none;
   font-weight: bold;
