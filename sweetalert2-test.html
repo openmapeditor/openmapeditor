@@ -5,7 +5,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SweetAlert2 Theming Test</title>
+    <title>SweetAlert2 Theme Test Page</title>
 
     <link rel="stylesheet" href="sweetalert2-11.22.2/dist/sweetalert2.min.css" />
 
@@ -36,10 +36,11 @@
         margin: 5px;
         font-size: 16px;
         cursor: pointer;
-        border-radius: 5px;
-        border: 1px solid var(--border-color);
-        background-color: var(--background2-color);
-        color: var(--text-color);
+        border: none !important;
+        border-radius: 4px !important;
+        font-weight: bold !important;
+        background-color: var(--text-color) !important;
+        color: var(--background-color) !important;
       }
       #theme-toggle {
         position: absolute;
@@ -71,21 +72,55 @@
       const testCases = [
         {
           text: "Success",
-          action: () => Swal.fire("Success!", "Your action was successful.", "success"),
+          action: () =>
+            Swal.fire({
+              title: "Success!",
+              text: "Your action was successful.",
+              icon: "success",
+              iconColor: "var(--swal-color-success)",
+            }),
         },
         {
           text: "Error",
-          action: () => Swal.fire("Error!", "Something went wrong.", "error"),
-        },
-        {
-          text: "Confirm Dialog",
           action: () =>
             Swal.fire({
-              title: "Are you sure?",
-              text: "This action cannot be undone.",
+              title: "Error!",
+              text: "Something went wrong.",
+              icon: "error",
+              iconColor: "var(--swal-color-error)",
+            }),
+        },
+        {
+          text: "Warning",
+          action: () =>
+            Swal.fire({
+              title: "Warning!",
+              text: "Something went wrong.",
               icon: "warning",
+              iconColor: "var(--swal-color-warning)",
+            }),
+        },
+        {
+          text: "Info",
+          action: () =>
+            Swal.fire({
+              title: "Info!",
+              text: "Its working.",
+              icon: "info",
+              iconColor: "var(--swal-color-info)",
+            }),
+        },
+        {
+          text: "Question",
+          action: () =>
+            Swal.fire({
+              title: "Question!",
+              text: "Are you ready?",
+              icon: "question",
+              iconColor: "var(--swal-color-question)",
               showCancelButton: true,
               confirmButtonText: "Yes, proceed!",
+              cancelButtonText: "No, cancel!",
             }),
         },
         {
