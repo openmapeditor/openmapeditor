@@ -750,6 +750,7 @@ select:focus {
   display: flex; /* Use flexbox for alignment */
   justify-content: center;
   align-items: center;
+  height: 30px;
 }
 
 /* Add the right border back ONLY to the last button */
