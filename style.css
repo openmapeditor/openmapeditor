@@ -16,6 +16,12 @@
   --routing-color-via: var(--color-blue);
   --strava-color: #fc5200;
 
+  --swal-color-success: var(--color-green);
+  --swal-color-error: var(--color-red);
+  --swal-color-warning: var(--color-yellow);
+  --swal-color-info: var(--color-blue);
+  --swal-color-question: var(--color-blue);
+
   /* Light Theme Variables */
   --icon-color: var(--color-black);
   --border-color: var(--color-black);
