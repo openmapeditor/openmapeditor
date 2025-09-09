@@ -1557,6 +1557,9 @@ function initializeMap() {
         html: CREDITS_HTML,
         confirmButtonText: "Close",
         width: "500px",
+        customClass: {
+          popup: "swal2-no-top-padding-popup",
+        },
       });
     }
   });

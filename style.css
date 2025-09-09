@@ -823,6 +823,11 @@ select:focus {
   color: var(--text-color) !important;
 }
 
+/* Remove top padding from credits popup */
+.swal2-no-top-padding-popup .swal2-html-container {
+  padding-top: 0;
+}
+
 /* Title text */
 .swal2-title {
   color: var(--text-color) !important;
