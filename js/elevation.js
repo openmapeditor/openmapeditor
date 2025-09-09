@@ -54,6 +54,7 @@ async function fetchElevationForPathGoogle(latlngs) {
       console.error("Google API Key is missing from config.js");
       Swal.fire({
         icon: "error",
+        iconColor: "var(--swal-color-error)",
         title: "API Key Missing",
         text: "Google API key is not configured in config.js.",
       });
@@ -95,6 +96,7 @@ async function fetchElevationForPathGoogle(latlngs) {
       console.error("Error fetching elevation data from Google:", error);
       Swal.fire({
         icon: "error",
+        iconColor: "var(--swal-color-error)",
         title: "Google Elevation Error",
         text: `Failed to fetch elevation data: ${error}`,
       });
@@ -113,6 +115,7 @@ async function fetchElevationForPathMapbox(latlngs) {
     console.error("Mapbox Access Token is missing or a placeholder.");
     Swal.fire({
       icon: "error",
+      iconColor: "var(--swal-color-error)",
       title: "API Key Missing",
       text: "Mapbox Access Token is not configured. Please add it to the script.",
     });
@@ -155,6 +158,7 @@ async function fetchElevationForPathMapbox(latlngs) {
     console.error("Error fetching elevation data from Mapbox:", error);
     Swal.fire({
       icon: "error",
+      iconColor: "var(--swal-color-error)",
       title: "Mapbox Elevation Error",
       text: `Failed to fetch elevation data: ${error.message}`,
     });
@@ -209,6 +213,7 @@ async function fetchElevationForPathOpenTopo(latlngs) {
     console.error("Error fetching elevation data from OpenTopoData:", error);
     Swal.fire({
       icon: "error",
+      iconColor: "var(--swal-color-error)",
       title: "OpenTopoData Error",
       text: "Failed to fetch elevation data.",
     });

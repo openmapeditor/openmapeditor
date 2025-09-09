@@ -222,6 +222,7 @@ async function exportStravaActivitiesAsKml() {
   if (stravaActivitiesLayer.getLayers().length === 0) {
     return Swal.fire({
       icon: "info",
+      iconColor: "var(--swal-color-info)",
       title: "No Activities Loaded",
       text: "Please fetch your activities before exporting.",
     });
@@ -240,6 +241,7 @@ async function exportStravaActivitiesAsKml() {
   if (stravaPlacemarks.length === 0) {
     return Swal.fire({
       icon: "warning",
+      iconColor: "var(--swal-color-warning)",
       title: "No Exportable Data",
       text: "Could not generate KML data for the loaded activities.",
     });
@@ -267,6 +269,7 @@ async function exportStravaActivitiesAsKml() {
     console.error("Error generating Strava KML:", error);
     Swal.fire({
       icon: "error",
+      iconColor: "var(--swal-color-error)",
       title: "Export Error",
       text: `Failed to generate KML file: ${error.message}`,
     });

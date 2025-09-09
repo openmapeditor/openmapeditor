@@ -337,7 +337,12 @@ function initializeRouting() {
         try {
           const apiResponse = JSON.parse(e.error.target.responseText);
           if (apiResponse && apiResponse.message) {
-            Swal.fire({ icon: "error", title: "Routing Service Error", text: apiResponse.message });
+            Swal.fire({
+              icon: "error",
+              iconColor: "var(--swal-color-error)",
+              title: "Routing Service Error",
+              text: apiResponse.message,
+            });
             return;
           }
         } catch (err) {
@@ -347,12 +352,14 @@ function initializeRouting() {
       if (e.error && e.error.status === "NoRoute") {
         Swal.fire({
           icon: "warning",
+          iconColor: "var(--swal-color-warning)",
           title: "No Route Found",
           text: "A route could not be found between the specified locations. Please check if the locations are accessible by the selected mode of transport.",
         });
       } else {
         Swal.fire({
           icon: "error",
+          iconColor: "var(--swal-color-error)",
           title: "Routing Unavailable",
           text: "The routing service could not be reached or returned an unknown error. Please try again later.",
         });
@@ -641,6 +648,7 @@ function initializeRouting() {
       if (!latlng || typeof latlng.lat !== "number" || typeof latlng.lng !== "number") {
         Swal.fire({
           icon: "error",
+          iconColor: "var(--swal-color-error)",
           title: "Location Error",
           text: "Could not retrieve a valid location.",
         });
@@ -657,7 +665,12 @@ function initializeRouting() {
       .locate()
       .once("locationfound", (e) => onLocationAquired(e.latlng))
       .once("locationerror", (e) => {
-        Swal.fire({ icon: "error", title: "Location Error", text: e.message });
+        Swal.fire({
+          icon: "error",
+          iconColor: "var(--swal-color-error)",
+          title: "Location Error",
+          text: e.message,
+        });
       });
   };
 
@@ -889,6 +902,7 @@ function initializeRouting() {
     updateDrawControlStates();
     Swal.fire({
       icon: "success",
+      iconColor: "var(--swal-color-success)",
       title: "Route Saved!",
       text: 'The route has been added to the "Drawn Items" layer.',
       timer: 2500,

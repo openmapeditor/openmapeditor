@@ -134,6 +134,7 @@ function initializeMap() {
   ) {
     Swal.fire({
       icon: "error",
+      iconColor: "var(--swal-color-error)",
       title: "Configuration Error",
       html: `The <strong>secrets.js</strong> file is missing or misconfigured.<br><br>Please ensure the file exists in the 'js/' folder and contains all required API keys.`,
       allowOutsideClick: false,
@@ -247,6 +248,7 @@ function initializeMap() {
         Swal.fire({
           title: "Routing Help",
           icon: "info",
+          iconColor: "var(--swal-color-info)",
           html: `
             <div style="text-align: left;">
               <p style="margin-top:0;"><strong>Managing Waypoints</strong></p>
@@ -981,6 +983,7 @@ function initializeMap() {
         toast: true,
         position: "center",
         icon: "success",
+        iconColor: "var(--swal-color-success)",
         title: "Marker Saved!",
         showConfirmButton: false,
         timer: 2000,
@@ -1116,6 +1119,7 @@ function initializeMap() {
               console.error("Error parsing file:", error);
               Swal.fire({
                 icon: "error",
+                iconColor: "var(--swal-color-error)",
                 title: "File Parse Error",
                 text: `Could not parse the file: ${error.message}`,
               });
@@ -1181,6 +1185,7 @@ function initializeMap() {
             toast: true,
             position: "center",
             icon: "success",
+            iconColor: "var(--swal-color-success)",
             title: "Coordinates Copied!",
             html: coordString,
             showConfirmButton: false,
@@ -1194,6 +1199,7 @@ function initializeMap() {
             toast: true,
             position: "center",
             icon: "error",
+            iconColor: "var(--swal-color-error)",
             title: "Failed to Copy",
             showConfirmButton: false,
             timer: 2000,
@@ -1371,6 +1377,7 @@ function initializeMap() {
         toast: true,
         position: "center",
         icon: "info",
+        iconColor: "var(--swal-color-info)",
         title: `Path Simplification ${enablePathSimplification ? "Enabled" : "Disabled"}`,
         showConfirmButton: false,
         timer: 1500,
@@ -1379,6 +1386,7 @@ function initializeMap() {
     L.DomEvent.on(infoIcon, "click", () => {
       Swal.fire({
         icon: "info",
+        iconColor: "var(--swal-color-info)",
         title: "Path Simplification",
         html: `<p style="text-align: left; margin-bottom: 1em;">This option automatically reduces the number of points in complex imported paths (GPX, KML) and generated routes.</p><p style="text-align: left;"><strong>Enabled (Recommended):</strong> Improves performance and responsiveness, especially with long tracks. The visual change is often unnoticeable.</p><p style="text-align: left;"><strong>Disabled:</strong> Preserves every single point from the original file. Use this if absolute precision is critical and you are not experiencing performance issues.</p>`,
         confirmButtonText: "Got it!",
@@ -1449,6 +1457,7 @@ function initializeMap() {
         toast: true,
         position: "center",
         icon: "info",
+        iconColor: "var(--swal-color-info)",
         title: `Units set to ${useImperialUnits ? "Imperial" : "Metric"}`,
         showConfirmButton: false,
         timer: 1500,
@@ -1480,6 +1489,7 @@ function initializeMap() {
         toast: true,
         position: "center",
         icon: "info",
+        iconColor: "var(--swal-color-info)",
         title: `Routing provider set to ${e.target.options[e.target.selectedIndex].text}`,
         showConfirmButton: false,
         timer: 1500,
@@ -1512,6 +1522,7 @@ function initializeMap() {
         toast: true,
         position: "center",
         icon: "info",
+        iconColor: "var(--swal-color-info)",
         title: `Elevation Provider set to ${e.target.options[e.target.selectedIndex].text}`,
         showConfirmButton: false,
         timer: 1500,

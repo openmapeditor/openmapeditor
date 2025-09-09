@@ -252,6 +252,7 @@ function exportKmz() {
   if (Object.keys(zip.files).length === 0) {
     return Swal.fire({
       icon: "info",
+      iconColor: "var(--swal-color-info)",
       title: "No Data to Export",
       text: "There are no drawn or imported paths on the map to export.",
     });
@@ -269,6 +270,7 @@ function exportKmz() {
       URL.revokeObjectURL(link.href);
       Swal.fire({
         icon: "success",
+        iconColor: "var(--swal-color-success)",
         title: "Export Successful!",
         text: "All items have been exported to KMZ.",
         timer: 2000,
@@ -279,6 +281,7 @@ function exportKmz() {
       console.error("Error generating KMZ:", error);
       Swal.fire({
         icon: "error",
+        iconColor: "var(--swal-color-error)",
         title: "Export Error",
         text: `Failed to generate KMZ file: ${error.message}`,
       });
@@ -392,6 +395,7 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
       toast: true,
       position: "center",
       icon: "info",
+      iconColor: "var(--swal-color-info)",
       title: "Path Optimized",
       text: "The imported path was simplified for better performance.",
       showConfirmButton: false,
@@ -481,6 +485,7 @@ async function handleKmzFile(file) {
     if (kmlFiles.length === 0) {
       return Swal.fire({
         icon: "info",
+        iconColor: "var(--swal-color-info)",
         title: "No KML Data",
         text: "No KML files could be found within the KMZ archive.",
       });
@@ -513,6 +518,7 @@ async function handleKmzFile(file) {
     } else if (preservedKmzFiles.length > 0) {
       Swal.fire({
         icon: "success",
+        iconColor: "var(--swal-color-success)",
         title: "KMZ Structure Loaded",
         text: "Empty KML files were found and will be preserved on export.",
         timer: 2500,
@@ -521,6 +527,7 @@ async function handleKmzFile(file) {
     } else {
       Swal.fire({
         icon: "warning",
+        iconColor: "var(--swal-color-warning)",
         title: "KMZ Loaded (No Features)",
         text: "No geographical features or preservable KML files found.",
       });
@@ -529,6 +536,7 @@ async function handleKmzFile(file) {
     console.error("Error loading or processing KMZ file:", error);
     Swal.fire({
       icon: "error",
+      iconColor: "var(--swal-color-error)",
       title: "KMZ Read Error",
       text: `Could not read the file: ${error.message}`,
     });
