@@ -498,13 +498,11 @@ function replaceDefaultIcons() {
   const zoomInButton = document.querySelector(".leaflet-control-zoom-in");
   if (zoomInButton) {
     zoomInButton.innerHTML = '<svg class="icon icon-plus"><use href="#icon-plus"></use></svg>';
-    zoomInButton.title = "Zoom in";
   }
 
   const zoomOutButton = document.querySelector(".leaflet-control-zoom-out");
   if (zoomOutButton) {
     zoomOutButton.innerHTML = '<svg class="icon icon-minus"><use href="#icon-minus"></use></svg>';
-    zoomOutButton.title = "Zoom out";
   }
 
   const pathButton = document.querySelector(".leaflet-draw-draw-polyline");
