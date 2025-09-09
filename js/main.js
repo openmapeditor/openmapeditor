@@ -1588,6 +1588,24 @@ function initializeMap() {
   setTimeout(replaceDefaultIcons, 0);
   resetInfoPanel();
   updateScaleControlVisibility();
+
+  // --- START: Preload key images to prevent flash on modal/panel open ---
+  // This waits for the window to be fully loaded, then downloads the images
+  // into the cache so they are ready when needed.
+  window.addEventListener(
+    "load",
+    () => {
+      // Preload credits icon
+      const creditsIcon = new Image();
+      creditsIcon.src = "img/icon-1024x1024.svg";
+
+      // Preload Strava connect button
+      const stravaButton = new Image();
+      stravaButton.src = "img/btn_strava_connect_with_orange.svg";
+    },
+    { once: true }
+  );
+  // --- END ---
 }
 
 // Initialize the application once the DOM is fully loaded
