@@ -837,6 +837,7 @@ select:focus {
 .swal2-confirm,
 .swal2-cancel,
 .swal2-deny {
+  border: none !important;
   border-radius: 4px !important;
   font-weight: bold !important;
 }
