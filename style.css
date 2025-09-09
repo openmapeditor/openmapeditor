@@ -2,43 +2,39 @@
 /* Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details. */
 
 :root {
-  --color-black: #000;
-  --color-white: #fff;
-  --color-grey: #cccccc;
-  --color-grey-dark: #999999;
-  --color-red: #f00;
-  --color-green: #0f0;
-  --color-blue: #006ec7;
-  --color-yellow: #ff0;
-  --color-magenta: #ff00ff;
-  --color-violet: #8a2be2;
-  --color-royal-blue: #4169e1;
-  --color-orange: #ff8c00;
+  --color-black: #000000;
+  --color-grey-dark: #3c4043; /* Google Grey */
+  --color-grey: #9aa0a6; /* Google Grey 500 */
+  --color-white: #ffffff;
+  --color-red: #ea4335; /* Google Red 500 */
+  --color-blue: #4285f4; /* Google Blue 500 */
+  --color-yellow: #fbbc04; /* Google Yellow 500 */
+  --color-green: #34a853; /* Google Green 500 */
 
-  --routing-color-start: #34a853; /* Google Green 500 */
-  --routing-color-end: #ea4335; /* Google Red 500 */
-  --routing-color-via: #4285f4; /* Google Blue 500 */
+  --routing-color-start: var(--color-green);
+  --routing-color-end: var(--color-red);
+  --routing-color-via: var(--color-blue);
 
   /* Light Theme Variables */
-  --icon-color: black;
-  --border-color: black;
-  --divider-color: black;
-  --background-color: white;
-  --background2-color: #9aa0a6; /* Google Grey 500 */
-  --text-color: black;
-  --highlight-color: #4285f4; /* Google Blue 500 */
-  --locate-color: #4285f4; /* Google Blue 500 */
+  --icon-color: var(--color-black);
+  --border-color: var(--color-black);
+  --divider-color: var(--color-black);
+  --background-color: var(--color-white);
+  --background2-color: var(--color-grey);
+  --text-color: var(--color-black);
+  --highlight-color: var(--color-blue);
+  --locate-color: var(--color-blue);
 }
 
 body.dark-mode {
   /* Dark Theme Variables */
-  --icon-color: white;
-  --border-color: white;
-  --divider-color: white;
+  --icon-color: var(--color-white);
+  --border-color: var(--color-white);
+  --divider-color: var(--color-white);
   --background-color: #1b1c1d;
   --background2-color: #575b5f;
-  --text-color: white;
-  color: white;
+  --text-color: var(--color-white);
+  color: var(--color-white);
 }
 
 * {
