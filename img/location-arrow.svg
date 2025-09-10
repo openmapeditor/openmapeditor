@@ -1,0 +1,15 @@
+<svg width="200" height="200" viewBox="-10 -25 220 220" xmlns="http://www.w3.org/2000/svg">
+  <!-- <g id="shadow" fill="#000000" fill-opacity="0.35">
+    <polygon points="100,0 30,158.5 100,100"/>
+    <polygon points="100,0 170,158.5 100,100"/>
+    <polygon points="30,158.5 100,125 100,100"/>
+    <polygon points="170,158.5 100,125 100,100"/>
+  </g> -->
+  
+  <g id="arrow" stroke="#004488" stroke-linejoin="round" stroke-width="1.5" stroke-opacity="0">
+    <polygon points="100,0 40,150 100,100" fill="#29B6F6"/>
+    <polygon points="100,0 170,150 100,100" fill="#039BE5"/>
+    <polygon points="40,150 100,125 100,100" fill="#0277BD"/>
+    <polygon points="170,150 100,125 100,100" fill="#01579B"/>
+  </g>
+</svg>

@@ -657,7 +657,7 @@ function initializeMap() {
   const CUSTOM_LOCATE_ICON_SIZE = 50;
 
   const locationArrowIcon = L.divIcon({
-    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -25 220 220" style="width: ${CUSTOM_LOCATE_ICON_SIZE}px; height: ${CUSTOM_LOCATE_ICON_SIZE}px; fill: #4169e1;"><use href="#location-arrow"></use></svg>`,
+    html: `<img src="img/location-arrow.svg" style="width: ${CUSTOM_LOCATE_ICON_SIZE}px; height: ${CUSTOM_LOCATE_ICON_SIZE}px;">`,
     className: "custom-locate-icon",
     iconSize: [CUSTOM_LOCATE_ICON_SIZE, CUSTOM_LOCATE_ICON_SIZE],
     // Calculate anchor based on the SVG's dimensions relative to its viewBox.
@@ -679,11 +679,11 @@ function initializeMap() {
 
     setHeading(heading) {
       this._heading = heading;
-      // Rotate the icon's SVG element directly
+      // Rotate the icon's IMG element directly
       if (this._icon) {
-        const svgElement = this._icon.querySelector("svg");
-        if (svgElement) {
-          svgElement.style.transform = `rotate(${this._heading}deg)`;
+        const imgElement = this._icon.querySelector("img");
+        if (imgElement) {
+          imgElement.style.transform = `rotate(${this._heading}deg)`;
         }
       }
 
@@ -711,7 +711,7 @@ function initializeMap() {
 
       this._locationIcon = leaflet.divIcon({
         className: icon.className,
-        html: icon.svg,
+        html: icon.html, // Use 'html' property
         iconSize: [icon.w, icon.h],
         // --- THIS IS THE FIX ---
         // Add the same anchor calculation as locationArrowIcon
@@ -729,18 +729,11 @@ function initializeMap() {
      */
     _getIconSVG(options, style) {
       const size = CUSTOM_LOCATE_ICON_SIZE;
-
-      // The rotation is now handled by CSS transform in setHeading.
-      // The viewBox must match the one used in the anchor calculation.
-      const svgContent = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -25 220 220" style="width:${size}px; height:${size}px;">
-          <use href="#location-arrow"></use>
-        </svg>
-      `;
+      const imgContent = `<img src="img/location-arrow.svg" style="width:${size}px; height:${size}px;">`;
 
       return {
         className: "leaflet-control-locate-heading",
-        svg: svgContent,
+        html: imgContent,
         w: size,
         h: size,
       };
