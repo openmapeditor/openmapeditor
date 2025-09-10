@@ -236,6 +236,8 @@ select:focus {
   fill: var(--icon-color);
   margin-left: 6px;
   flex-shrink: 0; /* Prevents the icon from shrinking if space is tight */
+  position: absolute;
+  transform: translateY(-6px);
 }
 
 #info-panel-edit-hint {

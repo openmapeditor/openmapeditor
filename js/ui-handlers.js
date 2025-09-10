@@ -272,7 +272,7 @@ function showInfoPanel(layer) {
     const latlng = layer.getLatLng();
     details = `<span>Lat: ${latlng.lat.toFixed(5)}, Lon: ${latlng.lng.toFixed(
       5
-    )}</span><svg class="copy-icon"><use href="#icon-copy"></use></svg>`;
+    )}<span class="copy-icon material-symbols">content_copy</span>`;
     infoPanelDetails.innerHTML = details;
 
     // Add click-to-copy functionality for marker coordinates
