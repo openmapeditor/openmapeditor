@@ -520,9 +520,11 @@ function initializeMap() {
     "click",
     function (event) {
       const layersPanel = document.getElementById("custom-layers-panel");
-      const layersButton = document.querySelector(".icon-layers")?.closest(".leaflet-control");
+      const layersButton = document.querySelector('.leaflet-control-custom[title="Layers"]');
       const downloadMenu = document.querySelector(".download-submenu");
-      const downloadButton = document.querySelector(".icon-download")?.closest(".leaflet-control");
+      const downloadButton = document.querySelector(
+        '.leaflet-control-custom[title="Download file"]'
+      );
 
       // Close Layers Panel if click is outside
       if (
