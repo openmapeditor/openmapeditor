@@ -527,3 +527,65 @@ function replaceDefaultIcons() {
     deleteButton.innerHTML = '<svg class="icon icon-delete"><use href="#icon-delete"></use></svg>';
   }
 }
+
+function replaceDefaultIconsWithMaterialSymbols() {
+  const layersButton = document.querySelector(".icon-layers")?.closest(".leaflet-control-custom");
+  if (layersButton) {
+    layersButton.querySelector("a").innerHTML = '<span class="material-symbols">layers</span>';
+  }
+
+  const locateButton = document.querySelector(".leaflet-control-locate a");
+  if (locateButton) {
+    locateButton.innerHTML = '<span class="material-symbols">my_location</span>';
+  }
+
+  const zoomInButton = document.querySelector(".leaflet-control-zoom-in");
+  if (zoomInButton) {
+    zoomInButton.innerHTML = '<span class="material-symbols">add</span>';
+  }
+
+  const zoomOutButton = document.querySelector(".leaflet-control-zoom-out");
+  if (zoomOutButton) {
+    zoomOutButton.innerHTML = '<span class="material-symbols">remove</span>';
+  }
+
+  const pathButton = document.querySelector(".leaflet-draw-draw-polyline");
+  if (pathButton) {
+    pathButton.innerHTML = '<span class="material-symbols">diagonal_line</span>';
+  }
+
+  const markerButton = document.querySelector(".leaflet-draw-draw-marker");
+  if (markerButton) {
+    markerButton.innerHTML = '<span class="material-symbols">location_on</span>';
+  }
+
+  const editButton = document.querySelector(".leaflet-draw-edit-edit");
+  if (editButton) {
+    editButton.innerHTML = '<span class="material-symbols">edit</span>';
+  }
+
+  const deleteButton = document.querySelector(".leaflet-draw-edit-remove");
+  if (deleteButton) {
+    deleteButton.innerHTML = '<span class="material-symbols">delete</span>';
+  }
+
+  const importButton = document.querySelector(".icon-import")?.closest(".leaflet-control-custom");
+  if (importButton) {
+    importButton.querySelector("a").innerHTML = '<span class="material-symbols">folder_open</span>';
+  }
+
+  const downloadButton = document
+    .querySelector(".icon-download")
+    ?.closest(".leaflet-control-custom");
+  if (downloadButton) {
+    downloadButton.querySelector("a").innerHTML = '<span class="material-symbols">download</span>';
+  }
+
+  const elevationButton = document
+    .querySelector(".icon-elevation")
+    ?.closest(".leaflet-control-custom");
+  if (elevationButton) {
+    elevationButton.querySelector("a").innerHTML =
+      '<span class="material-symbols">elevation</span>';
+  }
+}
