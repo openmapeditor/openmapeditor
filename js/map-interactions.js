@@ -2,13 +2,20 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
 // Creates a custom svg icon for markers.
-function createSvgIcon(color, opacity, size = STYLE_CONFIG.marker.baseSize, anchorOffsetY = 0) {
-  const height = size * 1.64; // Maintain aspect ratio
+function createSvgIcon(
+  color,
+  opacity,
+  size = STYLE_CONFIG.marker.baseSize,
+  anchorOffsetY = 0,
+  isOutline = false
+) {
+  const fillClass = isOutline ? "" : "material-symbols-fill";
+
   return L.divIcon({
-    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 41" width="${size}" height="${height}" style="--marker-color: ${color}; --marker-opacity: ${opacity};"><use href="#icon-marker-pin" class="marker-pin-use" /></svg>`,
+    html: `<span class="material-symbols ${fillClass} material-symbols-map-marker" style="font-size: ${size}px; color: ${color}; opacity: ${opacity}; line-height: 1;">location_on</span>`,
     className: "svg-marker-icon",
-    iconSize: [size, height],
-    iconAnchor: [size / 2, height + anchorOffsetY],
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size + anchorOffsetY],
   });
 }
 
@@ -177,32 +184,33 @@ function selectItem(layer) {
       isElevationProfileVisible = true;
     }
   } else if (layer instanceof L.Marker) {
-    // --- Create and add the marker selection outline if enabled ---
+    // --- START: REFINED MARKER OUTLINE LOGIC ---
     const { outline } = STYLE_CONFIG.marker.highlight;
     if (outline.enabled) {
       if (selectedMarkerOutline) {
         map.removeLayer(selectedMarkerOutline);
       }
-      const outlineSize = STYLE_CONFIG.marker.baseSize + outline.sizeOffset;
+
+      // The outline marker is now the SAME size as the base marker.
+      const outlineSize = STYLE_CONFIG.marker.baseSize;
+
       selectedMarkerOutline = L.marker(layer.getLatLng(), {
-        icon: createSvgIcon(outline.color, 1, outlineSize, outline.anchorOffsetY),
-        zIndexOffset: 999, // Below the main marker
+        // Call the modified function with 'isOutline' set to true.
+        icon: createSvgIcon(outline.color, 1, outlineSize, 0, true), // <-- SET isOutline to true
+        zIndexOffset: 1001, // HIGHER z-index to appear ON TOP
         interactive: false,
       });
+
       if (map.hasLayer(layer) && !isEditMode) {
         selectedMarkerOutline.addTo(map);
       }
     }
-    // --- END ---
+    // --- END: REFINED MARKER OUTLINE LOGIC ---
 
-    selectedElevationPath = null;
-    if (elevationToggleControl) {
-      L.DomUtil.addClass(elevationToggleControl.getContainer(), "disabled");
-    }
+    // The main marker is now styled using the same function, ensuring it's filled.
     layer.setIcon(createSvgIcon(highlightColor, STYLE_CONFIG.marker.highlight.opacity));
-    layer.setZIndexOffset(1000); // Ensure main marker is on top
+    layer.setZIndexOffset(1000);
 
-    // Add a drag listener that will update the outline's position
     layer.on("drag", updateMarkerOutlinePosition);
   }
 

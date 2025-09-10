@@ -1306,23 +1306,19 @@ body.route-point-select-mode * {
   display: none;
   pointer-events: none; /* Make it unclickable */
   z-index: 2000; /* Ensure it's on top */
-  width: 25px;
-  height: 41px;
-  /* Anchor the cursor so the tip of the pin is at the mouse pointer */
-  transform: translate(-12.5px, -41px);
+  width: 50px; /* Match the icon's font-size */
+  height: 50px; /* Match the icon's font-size */
+  /* Anchor the cursor so the bottom-center of the icon is at the mouse pointer */
+  transform: translate(-25px, -62.5px);
 }
-.custom-cursor svg {
-  width: 100%;
-  height: 100%;
+#custom-cursor-start .material-symbols {
+  color: var(--routing-color-start);
 }
-#custom-cursor-start svg {
-  fill: var(--routing-color-start);
+#custom-cursor-end .material-symbols {
+  color: var(--routing-color-end);
 }
-#custom-cursor-end svg {
-  fill: var(--routing-color-end);
-}
-#custom-cursor-via svg {
-  fill: var(--routing-color-via);
+#custom-cursor-via .material-symbols {
+  color: var(--routing-color-via);
 }
 /* Change cursor to 'all-scroll' when hovering over draggable markers */
 .leaflet-marker-draggable {
