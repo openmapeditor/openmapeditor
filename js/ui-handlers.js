@@ -22,8 +22,8 @@ function createOverviewListItem(layer) {
   visibilityBtn.title = "Toggle visibility";
   const setIcon = (visible) => {
     visibilityBtn.innerHTML = visible
-      ? '<svg class="icon"><use href="#icon-eye-open"></use></svg>'
-      : '<svg class="icon"><use href="#icon-eye-closed"></use></svg>';
+      ? '<span class="material-symbols">visibility</span>'
+      : '<span class="material-symbols">visibility_off</span>';
   };
   const isInitiallyVisible = map.hasLayer(layer) && !layer.isManuallyHidden;
   setIcon(isInitiallyVisible);
@@ -58,7 +58,7 @@ function createOverviewListItem(layer) {
   const duplicateBtn = document.createElement("span");
   if (layer !== currentRoutePath) {
     duplicateBtn.className = "overview-duplicate-btn";
-    duplicateBtn.innerHTML = '<svg class="icon"><use href="#icon-copy"></use></svg>';
+    duplicateBtn.innerHTML = '<span class="material-symbols">content_copy</span>';
     duplicateBtn.title = "Duplicate";
     duplicateBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -112,7 +112,7 @@ function createOverviewListItem(layer) {
   // Delete button
   const deleteBtn = document.createElement("span");
   deleteBtn.className = "overview-delete-btn";
-  deleteBtn.innerHTML = '<svg class="icon"><use href="#icon-delete-circle"></use></svg>';
+  deleteBtn.innerHTML = '<span class="material-symbols material-symbols-fill">cancel</span>';
   deleteBtn.title = "Delete";
   deleteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
