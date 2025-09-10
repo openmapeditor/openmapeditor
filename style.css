@@ -1578,6 +1578,12 @@ button.strava-button-secondary:not(:disabled) {
   font-size: 50px !important;
 }
 
+/* Forcefully sets the cursor to a crosshair for the marker icon
+   whenever any drawing tool is active (class added via main.js L.Draw.Event.DRAWSTART) */
+body.leaflet-is-drawing .leaflet-marker-icon {
+  cursor: crosshair !important;
+}
+
 .locate-active .material-symbols {
   color: var(--color-white) !important;
 }
