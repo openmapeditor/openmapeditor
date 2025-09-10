@@ -1358,7 +1358,7 @@ function initializeMap() {
     label.htmlFor = "simplification-toggle";
     label.innerText = "Path Simplification";
     const infoIcon = L.DomUtil.create("span", "settings-info-icon", labelGroup);
-    infoIcon.innerHTML = "&#9432;";
+    infoIcon.innerHTML = '<span class="material-symbols">info</span>';
     infoIcon.title = "What's this?";
     const checkbox = L.DomUtil.create("input", "", simplificationContainer);
     checkbox.type = "checkbox";

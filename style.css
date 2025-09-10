@@ -1285,7 +1285,7 @@ g.x.axis.top.time {
   font-weight: bold;
   color: var(--text-color);
   cursor: pointer;
-  margin-left: 10px;
+  margin-left: 5px;
   line-height: 1;
 }
 .settings-info-icon:hover {
