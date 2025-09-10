@@ -1533,7 +1533,8 @@ function initializeMap() {
   // --- START: MODIFIED code block for clickable attribution using event delegation ---
   // Use event delegation on the map container to handle clicks on the attribution link.
   // This is robust and works even if Leaflet redraws the attribution control.
-  map.getContainer().addEventListener("click", (e) => {
+  map.getContainer().addEventListener("click", async (e) => {
+    // <-- Note the 'async' keyword
     // Use .closest() to check if the click was on the link or an element inside it.
     const attributionLink = e.target.closest("#attribution-link");
 
@@ -1542,19 +1543,35 @@ function initializeMap() {
       e.preventDefault();
       e.stopPropagation();
 
-      // Open the SweetAlert with content from credits.js
-      Swal.fire({
-        // icon: "info",
-        imageUrl: "img/icon-1024x1024.svg",
-        imageWidth: 150,
-        imageHeight: "auto",
-        html: CREDITS_HTML,
-        confirmButtonText: "Close",
-        width: "500px",
-        customClass: {
-          popup: "swal2-no-top-padding-popup",
-        },
-      });
+      try {
+        // Fetch the content from the new HTML file
+        const response = await fetch("credits.html");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const creditsHtmlContent = await response.text();
+
+        // Open the SweetAlert with the fetched content
+        Swal.fire({
+          imageUrl: "img/icon-1024x1024.svg",
+          imageWidth: 150,
+          imageHeight: "auto",
+          html: creditsHtmlContent, // <-- Use the fetched HTML here
+          confirmButtonText: "Close",
+          width: "500px",
+          customClass: {
+            popup: "swal2-no-top-padding-popup",
+          },
+        });
+      } catch (error) {
+        console.error("Could not load credits.html:", error);
+        Swal.fire({
+          icon: "error",
+          iconColor: "var(--swal-color-error)",
+          title: "Error",
+          text: "Could not load the credits information.",
+        });
+      }
     }
   });
   // --- END: MODIFIED code block ---
