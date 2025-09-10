@@ -42,7 +42,7 @@ const CREDITS_HTML = `
   }
   .support-button {
     display: inline-block;
-    padding: 12px 24px;
+    padding: 6px 12px;
     font-size: 16px;
     font-weight: bold;
     color: #fff;
@@ -64,8 +64,8 @@ const CREDITS_HTML = `
     font-weight: 500;
   }
   .attributions-section p {
-      margin: 5px 0;
-      font-size: 14px;
+    margin: 5px 0;
+    font-size: 14px;
   }
   /* Style for the sub-header to make it clear */
   .attribution-subheader {
@@ -75,55 +75,69 @@ const CREDITS_HTML = `
     font-size: 16px;
   }
   .attributions-section a {
-      color: var(--highlight-color);
+    color: var(--highlight-color);
   }
 </style>
 
 <div class="credits-container">
-
   <div class="credits-header">
     <h3>OpenMapEditor</h3>
-    <p>A simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers, built with Leaflet.js.</p>
-    <p style="margin-top: 10px;"> <a href="mailto:openmapeditor@gmail.com">openmapeditor@gmail.com</a><br>
+    <p>
+      A simple, powerful web-based editor for creating, viewing, and managing geographic data like
+      paths and markers, built with Leaflet.js.
+    </p>
+    <p style="margin-top: 10px">
+      <a href="mailto:openmapeditor@gmail.com">openmapeditor@gmail.com</a><br />
       <a href="https://github.com/openmapeditor/openmapeditor" target="_blank">GitHub</a>
     </p>
   </div>
 
   <div class="support-section">
-    <p style="margin-top: 10px;"> If you find this tool useful, consider supporting its development.</p>
-    <a href="https://donate.stripe.com/7sY4gy8bmc8egk61fr7ss00" target="_blank" rel="noopener noreferrer" class="support-button">
-      ♥ Support the Project ♥
+    <p style="margin-top: 10px">
+      If you find this tool useful, consider supporting its development.
+    </p>
+    <a
+      href="https://donate.stripe.com/7sY4gy8bmc8egk61fr7ss00"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="support-button"
+    >
+      <span
+        class="material-symbols material-symbols-fill"
+        style="color: var(--color-white); font-size: 30px !important; vertical-align: middle"
+        >heart_smile</span
+      >
+      Support the Project
+      <span
+        class="material-symbols material-symbols-fill"
+        style="color: var(--color-white); font-size: 30px !important; vertical-align: middle"
+        >heart_smile</span
+      >
     </a>
   </div>
 
   <div class="attributions-section">
     <h4>Data & Technology Attributions</h4>
-    
-    <p>Powered by <a href="https://leafletjs.com" target="_blank">Leaflet</a></p>
-    
-    <p class="attribution-subheader">Base Maps</p>
-    
-    <p>
-      OpenStreetMap:
-      &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a>
-    </p>
-    <p>
-      CyclOSM:
-      &copy; <a href="https://www.cyclosm.org/" target="_blank">CyclOSM</a>
-    </p>
-    <p>
-      Tracetrack Topo:
-      &copy; <a href="https://www.tracestrack.com/" target="_blank">Tracetrack</a>
-    </p>
-    <p>
-      TopPlusOpen:
-      &copy; <a href="https://www.govdata.de/dl-de/by-2-0" target="_blank">dl-de/by-2-0</a>
-    </p>
-    <p>
-      Swisstopo:
-      &copy; <a href="https://www.swisstopo.admin.ch/" target="_blank">swisstopo</a>
-    </p>
-    </div>
 
+    <p>Powered by <a href="https://leafletjs.com" target="_blank">Leaflet</a></p>
+
+    <p class="attribution-subheader">Base Maps</p>
+
+    <p>
+      OpenStreetMap: &copy;
+      <a href="https://www.openstreetmap.org/copyright" target="_blank"
+        >OpenStreetMap contributors</a
+      >
+    </p>
+    <p>CyclOSM: &copy; <a href="https://www.cyclosm.org/" target="_blank">CyclOSM</a></p>
+    <p>
+      Tracetrack Topo: &copy; <a href="https://www.tracestrack.com/" target="_blank">Tracetrack</a>
+    </p>
+    <p>
+      TopPlusOpen: &copy;
+      <a href="https://www.govdata.de/dl-de/by-2-0" target="_blank">dl-de/by-2-0</a>
+    </p>
+    <p>Swisstopo: &copy; <a href="https://www.swisstopo.admin.ch/" target="_blank">swisstopo</a></p>
+  </div>
 </div>
 `;
