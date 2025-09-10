@@ -819,8 +819,8 @@ function initializeMap() {
       // Both icons are present in the HTML, their visibility is controlled by CSS
       container.innerHTML =
         '<a href="#" role="button">' +
-        '<svg class="icon icon-chevron-right"><use href="#icon-chevron-right"></use></svg>' +
-        '<svg class="icon icon-chevron-left"><use href="#icon-chevron-left"></use></svg>' +
+        '<span class="icon-chevron-right-span material-symbols">chevron_right</span>' +
+        '<span class="icon-chevron-left-span material-symbols">chevron_left</span>' +
         "</a>";
 
       L.DomEvent.on(container, "click", (ev) => {
@@ -859,8 +859,8 @@ function initializeMap() {
       // Both icons are present, CSS will control visibility
       container.innerHTML =
         '<a href="#" role="button">' +
-        '<svg class="icon icon-fullscreen-enter"><use href="#icon-fullscreen-enter"></use></svg>' +
-        '<svg class="icon icon-fullscreen-exit"><use href="#icon-fullscreen-exit"></use></svg>' +
+        '<span class="icon-fullscreen-enter-span material-symbols">fullscreen</span>' +
+        '<span class="icon-fullscreen-exit-span material-symbols">fullscreen_exit</span>' +
         "</a>";
 
       L.DomEvent.on(container, "click", (ev) => {
