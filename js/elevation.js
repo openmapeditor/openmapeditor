@@ -248,9 +248,13 @@ async function fetchElevationForPath(latlngs) {
 
 function updateElevationToggleIconColor() {
   if (elevationToggleControl) {
-    const iconSvg = elevationToggleControl.getContainer().querySelector("svg");
-    if (iconSvg) {
-      iconSvg.style.fill = isElevationProfileVisible ? "var(--color-red)" : "var(--icon-color)";
+    const materialSymbolsIcon = elevationToggleControl
+      .getContainer()
+      .querySelector(".material-symbols");
+    if (materialSymbolsIcon) {
+      materialSymbolsIcon.style.color = isElevationProfileVisible
+        ? "var(--color-red)"
+        : "var(--icon-color)";
     }
   }
 }
