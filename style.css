@@ -1554,3 +1554,72 @@ button.strava-button-secondary:not(:disabled) {
 #overview-panel-list .overview-list-header:first-child {
   border-top: none; /* The very first header doesn't need a top border */
 }
+
+/* --- Material Symbols Styles Start--- */
+
+/* For self hosting the font */
+/* @font-face {
+  font-family: "Material Symbols Outlined";
+  font-style: normal;
+  src: url(MaterialSymbolsOutlined[FILLGRADopszwght].woff2) format("woff");
+} */
+
+.material-symbols {
+  font-family: "Material Symbols Outlined" !important;
+  font-size: 20px !important;
+  color: var(--icon-color);
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24 !important;
+}
+
+.material-symbols-fill {
+  /* The FILL setting to 1 makes the icons solid. */
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24 !important;
+}
+
+.material-symbols-map-marker {
+  font-size: 50px !important;
+}
+
+.locate-active .material-symbols {
+  color: var(--color-white) !important;
+}
+
+.routing-panel-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.leaflet-control-toggle-panels a,
+.leaflet-control-fullscreen-toggle a {
+  text-decoration: none;
+}
+
+/* Panels Toggle: Hide left icon by default */
+.leaflet-control-toggle-panels .icon-chevron-left-span {
+  display: none;
+}
+/* Panels Toggle: When hidden, show left and hide right */
+.leaflet-control-toggle-panels.panels-hidden .icon-chevron-left-span {
+  display: block;
+}
+.leaflet-control-toggle-panels.panels-hidden .icon-chevron-right-span {
+  display: none;
+}
+
+/* Fullscreen Toggle: Hide exit icon by default */
+.leaflet-control-fullscreen-toggle .icon-fullscreen-exit-span {
+  display: none;
+}
+/* Fullscreen Toggle: When active, show exit and hide enter */
+.leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-exit-span {
+  display: block;
+}
+.leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-enter-span {
+  display: none;
+}
+/* --- Material Symbols Styles End--- */
