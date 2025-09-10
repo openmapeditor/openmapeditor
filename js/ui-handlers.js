@@ -493,41 +493,7 @@ function updateScaleControlVisibility() {
   }
 }
 
-// Replaces default leaflet icons with custom svgs.
-function replaceDefaultIcons() {
-  const zoomInButton = document.querySelector(".leaflet-control-zoom-in");
-  if (zoomInButton) {
-    zoomInButton.innerHTML = '<svg class="icon icon-plus"><use href="#icon-plus"></use></svg>';
-  }
-
-  const zoomOutButton = document.querySelector(".leaflet-control-zoom-out");
-  if (zoomOutButton) {
-    zoomOutButton.innerHTML = '<svg class="icon icon-minus"><use href="#icon-minus"></use></svg>';
-  }
-
-  const pathButton = document.querySelector(".leaflet-draw-draw-polyline");
-  if (pathButton) {
-    pathButton.innerHTML =
-      '<svg class="icon icon-draw-path"><use href="#icon-draw-path"></use></svg>';
-  }
-
-  const markerButton = document.querySelector(".leaflet-draw-draw-marker");
-  if (markerButton) {
-    markerButton.innerHTML =
-      '<svg class="icon icon-draw-marker"><use href="#icon-draw-marker"></use></svg>';
-  }
-
-  const editButton = document.querySelector(".leaflet-draw-edit-edit");
-  if (editButton) {
-    editButton.innerHTML = '<svg class="icon icon-edit"><use href="#icon-edit"></use></svg>';
-  }
-
-  const deleteButton = document.querySelector(".leaflet-draw-edit-remove");
-  if (deleteButton) {
-    deleteButton.innerHTML = '<svg class="icon icon-delete"><use href="#icon-delete"></use></svg>';
-  }
-}
-
+// Replaces default leaflet icons with Material Symbols
 function replaceDefaultIconsWithMaterialSymbols() {
   const layersButton = document.querySelector(".icon-layers")?.closest(".leaflet-control-custom");
   if (layersButton) {

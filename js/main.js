@@ -1578,7 +1578,6 @@ function initializeMap() {
 
   // Final ui updates
   setTimeout(updateDrawControlStates, 0);
-  // setTimeout(replaceDefaultIcons, 0);
   setTimeout(replaceDefaultIconsWithMaterialSymbols, 0);
   resetInfoPanel();
   updateScaleControlVisibility();
