@@ -22,8 +22,8 @@ function createOverviewListItem(layer) {
   visibilityBtn.title = "Toggle visibility";
   const setIcon = (visible) => {
     visibilityBtn.innerHTML = visible
-      ? '<svg class="icon"><use href="#icon-eye-open"></use></svg>'
-      : '<svg class="icon"><use href="#icon-eye-closed"></use></svg>';
+      ? '<span class="material-symbols">visibility</span>'
+      : '<span class="material-symbols">visibility_off</span>';
   };
   const isInitiallyVisible = map.hasLayer(layer) && !layer.isManuallyHidden;
   setIcon(isInitiallyVisible);
@@ -58,7 +58,7 @@ function createOverviewListItem(layer) {
   const duplicateBtn = document.createElement("span");
   if (layer !== currentRoutePath) {
     duplicateBtn.className = "overview-duplicate-btn";
-    duplicateBtn.innerHTML = '<svg class="icon"><use href="#icon-copy"></use></svg>';
+    duplicateBtn.innerHTML = '<span class="material-symbols">content_copy</span>';
     duplicateBtn.title = "Duplicate";
     duplicateBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -85,7 +85,7 @@ function createOverviewListItem(layer) {
         newFeature.properties.totalDistance = calculatePathDistance(newLayer);
       } else if (layerToDuplicate instanceof L.Marker) {
         newLayer = L.marker(layerToDuplicate.getLatLng(), {
-          icon: createSvgIcon(color, STYLE_CONFIG.marker.default.opacity),
+          icon: createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity),
         });
       } else if (layerToDuplicate instanceof L.Polyline) {
         newLayer = L.polyline(layerToDuplicate.getLatLngs(), {
@@ -112,7 +112,7 @@ function createOverviewListItem(layer) {
   // Delete button
   const deleteBtn = document.createElement("span");
   deleteBtn.className = "overview-delete-btn";
-  deleteBtn.innerHTML = '<svg class="icon"><use href="#icon-delete-circle"></use></svg>';
+  deleteBtn.innerHTML = '<span class="material-symbols material-symbols-fill">cancel</span>';
   deleteBtn.title = "Delete";
   deleteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -272,7 +272,7 @@ function showInfoPanel(layer) {
     const latlng = layer.getLatLng();
     details = `<span>Lat: ${latlng.lat.toFixed(5)}, Lon: ${latlng.lng.toFixed(
       5
-    )}</span><svg class="copy-icon"><use href="#icon-copy"></use></svg>`;
+    )}<span class="copy-icon material-symbols">content_copy</span>`;
     infoPanelDetails.innerHTML = details;
 
     // Add click-to-copy functionality for marker coordinates
@@ -445,7 +445,7 @@ function populateColorPicker() {
           });
         } else if (globallySelectedItem instanceof L.Marker) {
           globallySelectedItem.setIcon(
-            createSvgIcon(newColorData.css, STYLE_CONFIG.marker.highlight.opacity)
+            createMarkerIcon(newColorData.css, STYLE_CONFIG.marker.highlight.opacity)
           );
         }
 
@@ -493,37 +493,65 @@ function updateScaleControlVisibility() {
   }
 }
 
-// Replaces default leaflet icons with custom svgs.
-function replaceDefaultIcons() {
+// Replaces default leaflet icons with Material Symbols
+function replaceDefaultIconsWithMaterialSymbols() {
+  const layersButton = document.querySelector('.leaflet-control-custom[title="Layers"]');
+  if (layersButton) {
+    layersButton.querySelector("a").innerHTML = '<span class="material-symbols">layers</span>';
+  }
+
+  const locateButton = document.querySelector(".leaflet-control-locate a");
+  if (locateButton) {
+    locateButton.innerHTML = '<span class="material-symbols">my_location</span>';
+  }
+
   const zoomInButton = document.querySelector(".leaflet-control-zoom-in");
   if (zoomInButton) {
-    zoomInButton.innerHTML = '<svg class="icon icon-plus"><use href="#icon-plus"></use></svg>';
+    zoomInButton.innerHTML = '<span class="material-symbols">add</span>';
   }
 
   const zoomOutButton = document.querySelector(".leaflet-control-zoom-out");
   if (zoomOutButton) {
-    zoomOutButton.innerHTML = '<svg class="icon icon-minus"><use href="#icon-minus"></use></svg>';
+    zoomOutButton.innerHTML = '<span class="material-symbols">remove</span>';
   }
 
   const pathButton = document.querySelector(".leaflet-draw-draw-polyline");
   if (pathButton) {
-    pathButton.innerHTML =
-      '<svg class="icon icon-draw-path"><use href="#icon-draw-path"></use></svg>';
+    pathButton.innerHTML = '<span class="material-symbols">diagonal_line</span>';
   }
 
   const markerButton = document.querySelector(".leaflet-draw-draw-marker");
   if (markerButton) {
-    markerButton.innerHTML =
-      '<svg class="icon icon-draw-marker"><use href="#icon-draw-marker"></use></svg>';
+    markerButton.innerHTML = '<span class="material-symbols">location_on</span>';
   }
 
   const editButton = document.querySelector(".leaflet-draw-edit-edit");
   if (editButton) {
-    editButton.innerHTML = '<svg class="icon icon-edit"><use href="#icon-edit"></use></svg>';
+    editButton.innerHTML = '<span class="material-symbols">edit</span>';
   }
 
   const deleteButton = document.querySelector(".leaflet-draw-edit-remove");
   if (deleteButton) {
-    deleteButton.innerHTML = '<svg class="icon icon-delete"><use href="#icon-delete"></use></svg>';
+    deleteButton.innerHTML = '<span class="material-symbols">delete</span>';
+  }
+
+  const importButton = document.querySelector(
+    '.leaflet-control-custom[title="Import GPX/KML/KMZ file"]'
+  );
+  if (importButton) {
+    importButton.querySelector("a").innerHTML = '<span class="material-symbols">folder_open</span>';
+  }
+
+  const downloadButton = document.querySelector('.leaflet-control-custom[title="Download file"]');
+  if (downloadButton) {
+    downloadButton.querySelector("a").innerHTML = '<span class="material-symbols">download</span>';
+  }
+
+  const elevationButton = document.querySelector(
+    '.leaflet-control-custom[title="Toggle elevation profile"]'
+  );
+  if (elevationButton) {
+    elevationButton.querySelector("a").innerHTML =
+      '<span class="material-symbols">elevation</span>';
   }
 }

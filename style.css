@@ -104,63 +104,6 @@ select:focus {
   width: 205px;
 }
 
-/* 3. Define size for each svg icon class */
-.icon-locate,
-.icon-elevation,
-.icon-download,
-.icon-layers,
-.icon-fullscreen-enter,
-.icon-fullscreen-exit,
-.icon-delete-circle {
-  width: 22px;
-  height: 22px;
-}
-
-/* NEW: Settings Icon Size */
-.icon-settings {
-  width: 20px;
-  height: 20px;
-}
-
-.icon-import {
-  width: 20px;
-  height: 20px;
-}
-.icon-plus,
-.icon-minus,
-.icon-draw-path,
-.icon-draw-marker,
-.icon-edit,
-.icon-delete {
-  width: 18px;
-  height: 18px;
-}
-
-/* 4. Define the color for all icons */
-.icon-clear-via-stop,
-.icon-locate,
-.icon-elevation,
-.icon-download,
-.icon-import,
-.icon-plus,
-.icon-minus,
-.icon-draw-marker,
-.icon-edit,
-.icon-delete,
-.icon-layers,
-.icon-delete-circle,
-.icon-fullscreen-enter,
-.icon-fullscreen-exit,
-.icon-settings /* NEW: Add settings icon to color rule */ {
-  fill: var(--icon-color);
-}
-
-/* Specific rule for path to use stroke color */
-.icon-draw-path {
-  stroke: var(--icon-color);
-  fill: none;
-}
-
 /* Clear style for disabled draw buttons */
 .leaflet-draw-toolbar a.leaflet-disabled {
   background-color: var(--background2-color) !important;
@@ -168,12 +111,6 @@ select:focus {
 }
 .leaflet-draw-toolbar a.leaflet-disabled .icon {
   fill: var(--icon-color); /* Use a faded grey for the icon itself */
-}
-
-/* --- Svg marker icon styling (for map markers, not toolbar) --- */
-.svg-marker-icon .marker-pin-use {
-  fill: var(--marker-color);
-  fill-opacity: var(--marker-opacity);
 }
 
 /* --- Info panel for selected items (MODIFIED) --- */
@@ -236,6 +173,8 @@ select:focus {
   fill: var(--icon-color);
   margin-left: 6px;
   flex-shrink: 0; /* Prevents the icon from shrinking if space is tight */
+  position: absolute;
+  transform: translateY(-6px);
 }
 
 #info-panel-edit-hint {
@@ -282,6 +221,15 @@ select:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: center;
+}
+
+a#info-panel-strava-link {
+  color: var(--strava-color) !important;
+  text-decoration: none !important;
+}
+
+a#info-panel-strava-link:hover {
+  text-decoration: underline !important;
 }
 
 /* --- Color Picker Styles --- */
@@ -750,7 +698,7 @@ select:focus {
   display: flex; /* Use flexbox for alignment */
   justify-content: center;
   align-items: center;
-  height: 30px;
+  height: 35px;
 }
 
 /* Add the right border back ONLY to the last button */
@@ -1145,6 +1093,11 @@ g.x.axis.top.time {
 }
 .leaflet-container .leaflet-control-attribution a {
   color: var(--highlight-color) !important;
+  text-decoration: none !important;
+}
+.leaflet-container .leaflet-control-attribution a:hover {
+  color: var(--highlight-color) !important;
+  text-decoration: underline !important;
 }
 
 .leaflet-marker-shadow {
@@ -1285,7 +1238,7 @@ g.x.axis.top.time {
   font-weight: bold;
   color: var(--text-color);
   cursor: pointer;
-  margin-left: 10px;
+  margin-left: 5px;
   line-height: 1;
 }
 .settings-info-icon:hover {
@@ -1304,23 +1257,19 @@ body.route-point-select-mode * {
   display: none;
   pointer-events: none; /* Make it unclickable */
   z-index: 2000; /* Ensure it's on top */
-  width: 25px;
-  height: 41px;
-  /* Anchor the cursor so the tip of the pin is at the mouse pointer */
-  transform: translate(-12.5px, -41px);
+  width: 50px; /* Match the icon's font-size */
+  height: 50px; /* Match the icon's font-size */
+  /* Anchor the cursor so the bottom-center of the icon is at the mouse pointer */
+  transform: translate(-25px, -62.5px);
 }
-.custom-cursor svg {
-  width: 100%;
-  height: 100%;
+#custom-cursor-start .material-symbols {
+  color: var(--routing-color-start);
 }
-#custom-cursor-start svg {
-  fill: var(--routing-color-start);
+#custom-cursor-end .material-symbols {
+  color: var(--routing-color-end);
 }
-#custom-cursor-end svg {
-  fill: var(--routing-color-end);
-}
-#custom-cursor-via svg {
-  fill: var(--routing-color-via);
+#custom-cursor-via .material-symbols {
+  color: var(--routing-color-via);
 }
 /* Change cursor to 'all-scroll' when hovering over draggable markers */
 .leaflet-marker-draggable {
@@ -1554,3 +1503,78 @@ button.strava-button-secondary:not(:disabled) {
 #overview-panel-list .overview-list-header:first-child {
   border-top: none; /* The very first header doesn't need a top border */
 }
+
+/* --- Material Symbols Styles Start--- */
+
+/* For self hosting the font */
+/* @font-face {
+  font-family: "Material Symbols Outlined";
+  font-style: normal;
+  src: url(MaterialSymbolsOutlined[FILLGRADopszwght].woff2) format("woff");
+} */
+
+.material-symbols {
+  font-family: "Material Symbols Outlined" !important;
+  font-size: 20px !important;
+  color: var(--icon-color);
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24 !important;
+}
+
+.material-symbols-fill {
+  /* The FILL setting to 1 makes the icons solid. */
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24 !important;
+}
+
+.material-symbols-map-marker {
+  font-size: 50px !important;
+}
+
+/* Forcefully sets the cursor to a crosshair for the marker icon
+   whenever any drawing tool is active (class added via main.js L.Draw.Event.DRAWSTART) */
+body.leaflet-is-drawing .leaflet-marker-icon {
+  cursor: crosshair !important;
+}
+
+.locate-active .material-symbols {
+  color: var(--color-white) !important;
+}
+
+.routing-panel-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.leaflet-control-toggle-panels a,
+.leaflet-control-fullscreen-toggle a {
+  text-decoration: none;
+}
+
+/* Panels Toggle: Hide left icon by default */
+.leaflet-control-toggle-panels .icon-chevron-left-span {
+  display: none;
+}
+/* Panels Toggle: When hidden, show left and hide right */
+.leaflet-control-toggle-panels.panels-hidden .icon-chevron-left-span {
+  display: block;
+}
+.leaflet-control-toggle-panels.panels-hidden .icon-chevron-right-span {
+  display: none;
+}
+
+/* Fullscreen Toggle: Hide exit icon by default */
+.leaflet-control-fullscreen-toggle .icon-fullscreen-exit-span {
+  display: none;
+}
+/* Fullscreen Toggle: When active, show exit and hide enter */
+.leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-exit-span {
+  display: block;
+}
+.leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-enter-span {
+  display: none;
+}
+/* --- Material Symbols Styles End--- */

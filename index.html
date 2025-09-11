@@ -50,135 +50,13 @@
       href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />
+
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,altitude,arrow_left_alt,arrow_right_alt,cancel,chevron_left,chevron_right,content_copy,delete,diagonal_line,download,edit,elevation,folder_open,fullscreen,fullscreen_exit,heart_smile,help,info,landscape,layers,location_on,my_location,polyline,remove,settings,stacks,upload,visibility,visibility_off&display=block"
+    />
   </head>
   <body>
-    <svg style="display: none" aria-hidden="true">
-      <defs>
-        <symbol id="icon-layers" viewBox="0 0 48 48">
-          <path
-            d="M45.3,14.1,24,6,2.7,14.1a.9.9,0,0,0,0,1.8L24,24l21.3-8.1A.9.9,0,0,0,45.3,14.1Z"
-          ></path>
-          <path
-            d="M43.3,22.1,24,29.7,4.7,22.1a2,2,0,1,0-1.4,3.8L24,34l20.7-8.1a2,2,0,0,0-1.4-3.8Z"
-          ></path>
-          <path
-            d="M43.3,32.1,24,39.7,4.7,32.1a2,2,0,1,0-1.4,3.8L24,44l20.7-8.1a2,2,0,1,0-1.4-3.8Z"
-          ></path>
-        </symbol>
-
-        <symbol id="icon-locate" viewBox="0 0 24 24">
-          <path
-            d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"
-          />
-        </symbol>
-
-        <symbol id="icon-plus" viewBox="0 0 24 24">
-          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-        </symbol>
-
-        <symbol id="icon-minus" viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z" /></symbol>
-
-        <symbol
-          id="icon-draw-path"
-          viewBox="0 0 24 24"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path fill="none" d="M5 17h4v4H5zM15 3h4v4h-4zM9 19l6-12" />
-        </symbol>
-
-        <symbol id="icon-draw-marker" viewBox="-3 0 24 24">
-          <path
-            d="m8.075 23.52c-6.811-9.878-8.075-10.891-8.075-14.52 0-4.971 4.029-9 9-9s9 4.029 9 9c0 3.629-1.264 4.64-8.075 14.516-.206.294-.543.484-.925.484s-.719-.19-.922-.48l-.002-.004zm.925-10.77c2.07 0 3.749-1.679 3.749-3.75s-1.679-3.75-3.75-3.75-3.75 1.679-3.75 3.75c0 2.071 1.679 3.75 3.75 3.75z"
-          ></path>
-        </symbol>
-
-        <symbol id="icon-edit" viewBox="0 0 24 24">
-          <path
-            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
-          />
-        </symbol>
-
-        <symbol id="icon-delete" viewBox="0 0 24 24">
-          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
-        </symbol>
-
-        <symbol id="icon-import" viewBox="0 0 450.583 450.584">
-          <path
-            d="M448.21,188.658c-1.897-2.242-4.688-3.535-7.629-3.535H9.999c-2.938,0-5.729,1.293-7.629,3.535c-1.898,2.242-2.717,5.207-2.234,8.106l29.547,177.704c1.838,11.158,11.379,19.256,22.688,19.256h345.842c11.31,0,20.851-8.098,22.687-19.24l29.549-177.72C450.929,193.864,450.111,190.899,448.21,188.658z"
-          />
-          <path
-            d="M413.984,104.678c0-7.661-6.211-13.874-13.875-13.874H194.212V70.735c0-7.664-6.211-13.875-13.873-13.875H50.472c-7.662,0-13.873,6.211-13.873,13.875v82.418h377.386L413.984,104.678L413.984,104.678z"
-          />
-        </symbol>
-
-        <symbol id="icon-download" viewBox="0 0 24 24">
-          <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-        </symbol>
-
-        <symbol id="icon-elevation" viewBox="0 0 24 24">
-          <path d="M14 6l-3.75 5 2.85 3.8-1.6 1.2-4.5-6L1 18h22L14 6z" />
-        </symbol>
-
-        <symbol id="icon-marker-pin" viewBox="0 0 25 41">
-          <path
-            d="M12.5 0C5.6 0 0 5.6 0 12.5C0 21.25 12.5 41 12.5 41S25 21.25 25 12.5C25 5.6 19.4 0 12.5 0Z"
-          />
-        </symbol>
-
-        <symbol id="icon-eye-open" viewBox="0 0 24 24">
-          <path
-            d="M12.015 7c4.751 0 8.063 3.012 9.504 4.636-1.401 1.837-4.713 5.364-9.504 5.364-4.42 0-7.93-3.536-9.478-5.407 1.493-1.647 4.817-4.593 9.478-4.593zm0-2c-7.569 0-12.015 6.551-12.015 6.551s4.835 7.449 12.015 7.449c7.733 0 11.985-7.449 11.985-7.449s-4.291-6.551-11.985-6.551zm-.015 3c-2.209 0-4 1.792-4 4 0 2.209 1.791 4 4 4s4-1.791 4-4c0-2.208-1.791-4-4-4z"
-          />
-        </symbol>
-
-        <symbol id="icon-eye-closed" viewBox="0 0 24 24">
-          <path
-            d="M19.604 2.562l-3.346 3.137c-1.27-.428-2.686-.699-4.243-.699-7.569 0-12.015 6.551-12.015 6.551s1.928 2.951 5.146 5.138l-2.911 2.909 1.414 1.414 17.37-17.035-1.415-1.415zm-6.016 5.779c-3.288-1.453-6.681 1.908-5.265 5.206l-1.726 1.707c-1.814-1.16-3.225-2.65-4.06-3.66 1.493-1.648 4.817-4.594 9.478-4.594.927 0 1.796.119 2.61.315l-1.037 1.026zm-2.883 7.431l5.09-4.993c1.017 3.111-2.003 6.067-5.09 4.993zm13.295-4.221s-4.252 7.449-11.985 7.449c-1.379 0-2.662-.291-3.851-.737l1.614-1.583c.715.193 1.458.32 2.237.32 4.791 0 8.104-3.527 9.504-5.364-.729-.822-1.956-1.99-3.587-2.952l1.489-1.46c2.982 1.9 4.579 4.327 4.579 4.327z"
-          />
-        </symbol>
-
-        <symbol id="icon-delete-circle" viewBox="0 0 512 512">
-          <path
-            d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c9.4-9.4 24.6-9.4 33.9 0l47 47 47-47c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-47 47 47 47c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-47-47-47 47c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l47-47-47-47c-9.4-9.4-9.4-24.6 0-33.9z"
-          ></path>
-        </symbol>
-
-        <symbol id="icon-chevron-left" viewBox="0 0 24 24">
-          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-        </symbol>
-
-        <symbol id="icon-chevron-right" viewBox="0 0 24 24">
-          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-        </symbol>
-
-        <symbol id="icon-fullscreen-enter" viewBox="0 0 18 18">
-          <path
-            d="M0 0v6h2V2h4V0H0zm16 0h-4v2h4v4h2V0h-2zm0 16h-4v2h6v-6h-2v4zM2 12H0v6h6v-2H2v-4z"
-          />
-        </symbol>
-
-        <symbol id="icon-fullscreen-exit" viewBox="0 0 18 18">
-          <path
-            d="M4 4H0v2h6V0H4v4zm10 0V0h-2v6h6V4h-4zm-2 14h2v-4h4v-2h-6v6zM0 14h4v4h2v-6H0v2z"
-          />
-        </symbol>
-
-        <symbol id="icon-settings" viewBox="0 0 24 24">
-          <path
-            d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"
-          />
-        </symbol>
-
-        <symbol id="icon-copy" viewBox="0 0 256 256">
-          <path
-            d="M216,34H88a6,6,0,0,0-6,6V82H40a6,6,0,0,0-6,6V216a6,6,0,0,0,6,6H168a6,6,0,0,0,6-6V174h42a6,6,0,0,0,6-6V40A6,6,0,0,0,216,34ZM162,210H46V94H162Zm48-48H174V88a6,6,0,0,0-6-6H94V46H210Z"
-          ></path>
-        </symbol>
-      </defs>
-    </svg>
-
     <div id="map">
       <div id="search-container">
         <input type="text" id="search-input" placeholder="Search" autocomplete="off" />
@@ -204,9 +82,7 @@
             </button>
             <button id="tab-btn-routing" class="tab-button" data-target="routing-panel">
               Routing
-              <span id="routing-info-icon" class="settings-info-icon" title="Routing Help"
-                >&#9432;</span
-              >
+              <span id="routing-info-icon" class="material-symbols" title="Routing Help">info</span>
             </button>
             <button id="tab-btn-strava" class="tab-button" data-target="strava-panel">
               Strava
@@ -217,7 +93,7 @@
               data-target="settings-panel"
               title="Settings"
             >
-              <svg class="icon icon-settings"><use href="#icon-settings"></use></svg>
+              <span class="material-symbols material-symbols-fill">settings</span>
             </button>
           </div>
 
@@ -231,37 +107,22 @@
                 <div class="routing-input-group">
                   <input type="text" id="route-start" placeholder="Start" autocomplete="off" />
                   <button id="select-start-on-map" title="Select start point on map">
-                    <svg
-                      viewBox="0 0 25 41"
-                      style="
-                        width: 16px;
-                        height: 16px;
-                        fill: var(--routing-color-start);
-                        display: block;
-                        margin: auto;
-                      "
+                    <span
+                      class="material-symbols material-symbols-fill routing-panel-icon"
+                      style="color: var(--routing-color-start)"
+                      >location_on</span
                     >
-                      <use href="#icon-marker-pin"></use>
-                    </svg>
                   </button>
                   <button
                     id="use-current-location-start"
                     title="Use my current location for start point"
                   >
-                    <svg
-                      class="icon-locate"
-                      style="width: 16px; height: 16px; display: block; margin: auto"
-                    >
-                      <use href="#icon-locate"></use>
-                    </svg>
+                    <span class="material-symbols routing-panel-icon">my_location</span>
                   </button>
                   <button id="clear-point-start" title="Clear start point">
-                    <svg
-                      class="icon-clear-via-stop"
-                      style="width: 16px; height: 16px; display: block; margin: auto"
+                    <span class="material-symbols material-symbols-fill routing-panel-icon"
+                      >cancel</span
                     >
-                      <use href="#icon-delete-circle"></use>
-                    </svg>
                   </button>
                   <div id="route-start-suggestions" class="autocomplete-suggestions"></div>
                 </div>
@@ -273,74 +134,44 @@
                     autocomplete="off"
                   />
                   <button id="select-via-on-map" title="Select via point on map">
-                    <svg
-                      viewBox="0 0 25 41"
-                      style="
-                        width: 16px;
-                        height: 16px;
-                        fill: var(--routing-color-via);
-                        display: block;
-                        margin: auto;
-                      "
+                    <span
+                      class="material-symbols material-symbols-fill routing-panel-icon"
+                      style="color: var(--routing-color-via)"
+                      >location_on</span
                     >
-                      <use href="#icon-marker-pin"></use>
-                    </svg>
                   </button>
                   <button
                     id="use-current-location-via"
                     title="Use my current location for via point"
                   >
-                    <svg
-                      class="icon-locate"
-                      style="width: 16px; height: 16px; display: block; margin: auto"
-                    >
-                      <use href="#icon-locate"></use>
-                    </svg>
+                    <span class="material-symbols routing-panel-icon">my_location</span>
                   </button>
                   <button id="clear-point-via" title="Clear via point">
-                    <svg
-                      class="icon-clear-via-stop"
-                      style="width: 16px; height: 16px; display: block; margin: auto"
+                    <span class="material-symbols material-symbols-fill routing-panel-icon"
+                      >cancel</span
                     >
-                      <use href="#icon-delete-circle"></use>
-                    </svg>
                   </button>
                   <div id="route-via-suggestions" class="autocomplete-suggestions"></div>
                 </div>
                 <div class="routing-input-group">
                   <input type="text" id="route-end" placeholder="End" autocomplete="off" />
                   <button id="select-end-on-map" title="Select end point on map">
-                    <svg
-                      viewBox="0 0 25 41"
-                      style="
-                        width: 16px;
-                        height: 16px;
-                        fill: var(--routing-color-end);
-                        display: block;
-                        margin: auto;
-                      "
+                    <span
+                      class="material-symbols material-symbols-fill routing-panel-icon"
+                      style="color: var(--routing-color-end)"
+                      >location_on</span
                     >
-                      <use href="#icon-marker-pin"></use>
-                    </svg>
                   </button>
                   <button
                     id="use-current-location-end"
                     title="Use my current location for end point"
                   >
-                    <svg
-                      class="icon-locate"
-                      style="width: 16px; height: 16px; display: block; margin: auto"
-                    >
-                      <use href="#icon-locate"></use>
-                    </svg>
+                    <span class="material-symbols routing-panel-icon">my_location</span>
                   </button>
                   <button id="clear-point-end" title="Clear end point">
-                    <svg
-                      class="icon-clear-via-stop"
-                      style="width: 16px; height: 16px; display: block; margin: auto"
+                    <span class="material-symbols material-symbols-fill routing-panel-icon"
+                      >cancel</span
                     >
-                      <use href="#icon-delete-circle"></use>
-                    </svg>
                   </button>
                   <div id="route-end-suggestions" class="autocomplete-suggestions"></div>
                 </div>
@@ -384,19 +215,24 @@
       <div id="custom-layers-panel"></div>
       <div id="elevation-div"></div>
       <div id="custom-cursor-start" class="custom-cursor">
-        <svg viewBox="0 0 25 41"><use href="#icon-marker-pin"></use></svg>
+        <span class="material-symbols material-symbols-fill material-symbols-map-marker"
+          >location_on</span
+        >
       </div>
       <div id="custom-cursor-end" class="custom-cursor">
-        <svg viewBox="0 0 25 41"><use href="#icon-marker-pin"></use></svg>
+        <span class="material-symbols material-symbols-fill material-symbols-map-marker"
+          >location_on</span
+        >
       </div>
       <div id="custom-cursor-via" class="custom-cursor">
-        <svg viewBox="0 0 25 41"><use href="#icon-marker-pin"></use></svg>
+        <span class="material-symbols material-symbols-fill material-symbols-map-marker"
+          >location_on</span
+        >
       </div>
     </div>
 
     <script src="js/secrets.js"></script>
     <script src="js/config.js"></script>
-    <script src="js/credits.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/ui-handlers.js"></script>
     <script src="js/map-interactions.js"></script>

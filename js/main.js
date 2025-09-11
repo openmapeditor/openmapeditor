@@ -275,12 +275,12 @@ function initializeMap() {
   });
   const baseMaps = {
     "&#127757; OpenStreetMap": osmLayer,
-    // "&#127757; Esri World Imagery": L.tileLayer(
-    //   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    //   {
-    //     maxZoom: 19,
-    //   }
-    // ),
+    "&#127757; Esri World Imagery": L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      {
+        maxZoom: 19,
+      }
+    ),
     // "&#127757; Google Satellite": L.tileLayer("http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
     //   maxZoom: 19,
     //   subdomains: ["mt0", "mt1", "mt2", "mt3"],
@@ -379,7 +379,7 @@ function initializeMap() {
       const link = L.DomUtil.create("a", "", container);
       link.href = "#";
       link.role = "button";
-      link.innerHTML = '<svg class="icon icon-layers"><use href="#icon-layers"></use></svg>';
+      link.innerHTML = "";
 
       // This control ONLY handles the click on the button.
       // The global document listener handles closing.
@@ -520,9 +520,11 @@ function initializeMap() {
     "click",
     function (event) {
       const layersPanel = document.getElementById("custom-layers-panel");
-      const layersButton = document.querySelector(".icon-layers")?.closest(".leaflet-control");
+      const layersButton = document.querySelector('.leaflet-control-custom[title="Layers"]');
       const downloadMenu = document.querySelector(".download-submenu");
-      const downloadButton = document.querySelector(".icon-download")?.closest(".leaflet-control");
+      const downloadButton = document.querySelector(
+        '.leaflet-control-custom[title="Download file"]'
+      );
 
       // Close Layers Panel if click is outside
       if (
@@ -558,8 +560,7 @@ function initializeMap() {
         "leaflet-bar leaflet-control leaflet-control-custom"
       );
       container.title = "Toggle elevation profile";
-      container.innerHTML =
-        '<a href="#" role="button"><svg class="icon icon-elevation"><use href="#icon-elevation"></use></svg></a>';
+      container.innerHTML = '<a href="#" role="button"></a>';
       L.DomEvent.on(container, "click", (ev) => {
         L.DomEvent.stop(ev);
         if (L.DomUtil.hasClass(container, "disabled")) return;
@@ -593,7 +594,7 @@ function initializeMap() {
       container.title = "Download file";
       container.style.position = "relative";
       container.innerHTML =
-        '<a href="#" role="button"><svg class="icon icon-download"><use href="#icon-download"></use></svg></a>' +
+        '<a href="#" role="button"></a>' +
         '<div class="download-submenu">' +
         '<button id="download-gpx" disabled>GPX (Selected Item)</button>' +
         '<button id="download-kml" disabled>KML (Selected Item)</button>' +
@@ -775,13 +776,6 @@ function initializeMap() {
       // }),
     })
     .addTo(map);
-  setTimeout(() => {
-    const locateButton = locateControl.getContainer().querySelector("a");
-    if (locateButton) {
-      locateButton.innerHTML =
-        '<svg class="icon icon-locate"><use href="#icon-locate"></use></svg>';
-    }
-  }, 0);
 
   // Add a scale control showing units based on the user's setting
   scaleControl = L.control
@@ -817,8 +811,8 @@ function initializeMap() {
       // Both icons are present in the HTML, their visibility is controlled by CSS
       container.innerHTML =
         '<a href="#" role="button">' +
-        '<svg class="icon icon-chevron-right"><use href="#icon-chevron-right"></use></svg>' +
-        '<svg class="icon icon-chevron-left"><use href="#icon-chevron-left"></use></svg>' +
+        '<span class="icon-chevron-right-span material-symbols">chevron_right</span>' +
+        '<span class="icon-chevron-left-span material-symbols">chevron_left</span>' +
         "</a>";
 
       L.DomEvent.on(container, "click", (ev) => {
@@ -857,8 +851,8 @@ function initializeMap() {
       // Both icons are present, CSS will control visibility
       container.innerHTML =
         '<a href="#" role="button">' +
-        '<svg class="icon icon-fullscreen-enter"><use href="#icon-fullscreen-enter"></use></svg>' +
-        '<svg class="icon icon-fullscreen-exit"><use href="#icon-fullscreen-exit"></use></svg>' +
+        '<span class="icon-fullscreen-enter-span material-symbols">fullscreen</span>' +
+        '<span class="icon-fullscreen-exit-span material-symbols">fullscreen_exit</span>' +
         "</a>";
 
       L.DomEvent.on(container, "click", (ev) => {
@@ -915,7 +909,7 @@ function initializeMap() {
 
     // Create a new, temporary black marker and make it interactive
     temporarySearchMarker = L.marker(locationLatLng, {
-      icon: createSvgIcon(rootStyles.getPropertyValue("--color-black").trim(), 1),
+      icon: createMarkerIcon(rootStyles.getPropertyValue("--color-black").trim(), 1),
       interactive: true,
     }).addTo(map);
 
@@ -940,7 +934,7 @@ function initializeMap() {
       const defaultDrawColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === defaultDrawColorName);
 
       const newMarker = L.marker(locationLatLng, {
-        icon: createSvgIcon(defaultDrawColorData.css, STYLE_CONFIG.marker.default.opacity),
+        icon: createMarkerIcon(defaultDrawColorData.css, STYLE_CONFIG.marker.default.opacity),
       });
 
       newMarker.pathType = "drawn";
@@ -1032,7 +1026,7 @@ function initializeMap() {
       rectangle: false,
       circle: false,
       marker: {
-        icon: createSvgIcon(defaultDrawColor, STYLE_CONFIG.marker.default.opacity),
+        icon: createMarkerIcon(defaultDrawColor, STYLE_CONFIG.marker.default.opacity),
       },
       circlemarker: false,
     },
@@ -1050,7 +1044,7 @@ function initializeMap() {
       const link = L.DomUtil.create("a", "", container);
       link.href = "#";
       link.role = "button";
-      link.innerHTML = '<svg class="icon icon-import"><use href="#icon-import"></use></svg>';
+      link.innerHTML = "";
       const input = L.DomUtil.create("input", "hidden", container);
       input.type = "file";
       input.accept = ".gpx,.kml,.kmz";
@@ -1265,6 +1259,18 @@ function initializeMap() {
     });
   });
 
+  map.on(L.Draw.Event.DRAWSTART, function (e) {
+    // When any drawing starts deselect current item
+    deselectCurrentItem();
+    // When any drawing starts, add a general class to the body.
+    L.DomUtil.addClass(document.body, "leaflet-is-drawing");
+  });
+
+  map.on(L.Draw.Event.DRAWSTOP, function () {
+    // When drawing stops for any reason, remove the class.
+    L.DomUtil.removeClass(document.body, "leaflet-is-drawing");
+  });
+
   map.on("click", (e) => {
     if (
       e.originalEvent.target.id === "map" ||
@@ -1358,7 +1364,7 @@ function initializeMap() {
     label.htmlFor = "simplification-toggle";
     label.innerText = "Path Simplification";
     const infoIcon = L.DomUtil.create("span", "settings-info-icon", labelGroup);
-    infoIcon.innerHTML = "&#9432;";
+    infoIcon.innerHTML = '<span class="material-symbols">info</span>';
     infoIcon.title = "What's this?";
     const checkbox = L.DomUtil.create("input", "", simplificationContainer);
     checkbox.type = "checkbox";
@@ -1531,7 +1537,8 @@ function initializeMap() {
   // --- START: MODIFIED code block for clickable attribution using event delegation ---
   // Use event delegation on the map container to handle clicks on the attribution link.
   // This is robust and works even if Leaflet redraws the attribution control.
-  map.getContainer().addEventListener("click", (e) => {
+  map.getContainer().addEventListener("click", async (e) => {
+    // <-- Note the 'async' keyword
     // Use .closest() to check if the click was on the link or an element inside it.
     const attributionLink = e.target.closest("#attribution-link");
 
@@ -1540,19 +1547,35 @@ function initializeMap() {
       e.preventDefault();
       e.stopPropagation();
 
-      // Open the SweetAlert with content from credits.js
-      Swal.fire({
-        // icon: "info",
-        imageUrl: "img/icon-1024x1024.svg",
-        imageWidth: 150,
-        imageHeight: "auto",
-        html: CREDITS_HTML,
-        confirmButtonText: "Close",
-        width: "500px",
-        customClass: {
-          popup: "swal2-no-top-padding-popup",
-        },
-      });
+      try {
+        // Fetch the content from the new HTML file
+        const response = await fetch("credits.html");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const creditsHtmlContent = await response.text();
+
+        // Open the SweetAlert with the fetched content
+        Swal.fire({
+          imageUrl: "img/icon-1024x1024.svg",
+          imageWidth: 150,
+          imageHeight: "auto",
+          html: creditsHtmlContent, // <-- Use the fetched HTML here
+          confirmButtonText: "Close",
+          width: "500px",
+          customClass: {
+            popup: "swal2-no-top-padding-popup",
+          },
+        });
+      } catch (error) {
+        console.error("Could not load credits.html:", error);
+        Swal.fire({
+          icon: "error",
+          iconColor: "var(--swal-color-error)",
+          title: "Error",
+          text: "Could not load the credits information.",
+        });
+      }
     }
   });
   // --- END: MODIFIED code block ---
@@ -1578,7 +1601,7 @@ function initializeMap() {
 
   // Final ui updates
   setTimeout(updateDrawControlStates, 0);
-  setTimeout(replaceDefaultIcons, 0);
+  setTimeout(replaceDefaultIconsWithMaterialSymbols, 0);
   resetInfoPanel();
   updateScaleControlVisibility();
 

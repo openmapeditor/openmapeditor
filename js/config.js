@@ -56,7 +56,7 @@ const STYLE_CONFIG = {
     },
   },
   marker: {
-    baseSize: 25, // Base width of the marker icon in pixels
+    baseSize: 50, // Base width of marker in pixels - MUST match font-size in .material-symbols-map-marker
     default: {
       opacity: 0.75,
     },
