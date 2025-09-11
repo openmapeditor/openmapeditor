@@ -120,7 +120,7 @@ function initializeRouting() {
 
   const addIntermediateViaPoint = (latlng) => {
     const newViaMarker = L.marker(latlng, {
-      icon: createSvgIcon(routingColorVia, 1),
+      icon: createMarkerIcon(routingColorVia, 1),
       draggable: true,
       title: ROUTING_MARKER_HINT,
     }).addTo(map);
@@ -416,7 +416,7 @@ function initializeRouting() {
       startMarker.setLatLng(latlng);
     } else {
       startMarker = L.marker(latlng, {
-        icon: createSvgIcon(routingColorStart, 1),
+        icon: createMarkerIcon(routingColorStart, 1),
         title: ROUTING_MARKER_HINT,
         draggable: true,
       }).addTo(map);
@@ -433,7 +433,7 @@ function initializeRouting() {
       endMarker.setLatLng(latlng);
     } else {
       endMarker = L.marker(latlng, {
-        icon: createSvgIcon(routingColorEnd, 1),
+        icon: createMarkerIcon(routingColorEnd, 1),
         title: ROUTING_MARKER_HINT,
         draggable: true,
       }).addTo(map);
@@ -450,7 +450,7 @@ function initializeRouting() {
       viaMarker.setLatLng(latlng);
     } else {
       viaMarker = L.marker(latlng, {
-        icon: createSvgIcon(routingColorVia, 1),
+        icon: createMarkerIcon(routingColorVia, 1),
         title: ROUTING_MARKER_HINT,
         draggable: true,
       }).addTo(map);
@@ -598,7 +598,7 @@ function initializeRouting() {
         startMarker.setLatLng(latlng);
       } else {
         startMarker = L.marker(latlng, {
-          icon: createSvgIcon(routingColorStart, 1),
+          icon: createMarkerIcon(routingColorStart, 1),
           title: ROUTING_MARKER_HINT,
           draggable: true,
         }).addTo(map);
@@ -611,7 +611,7 @@ function initializeRouting() {
         viaMarker.setLatLng(latlng);
       } else {
         viaMarker = L.marker(latlng, {
-          icon: createSvgIcon(routingColorVia, 1),
+          icon: createMarkerIcon(routingColorVia, 1),
           title: ROUTING_MARKER_HINT,
           draggable: true,
         }).addTo(map);
@@ -625,7 +625,7 @@ function initializeRouting() {
         endMarker.setLatLng(latlng);
       } else {
         endMarker = L.marker(latlng, {
-          icon: createSvgIcon(routingColorEnd, 1),
+          icon: createMarkerIcon(routingColorEnd, 1),
           title: ROUTING_MARKER_HINT,
           draggable: true,
         }).addTo(map);
@@ -834,7 +834,7 @@ function initializeRouting() {
           startMarker.setLatLng(latlng);
         } else {
           startMarker = L.marker(latlng, {
-            icon: createSvgIcon(routingColorStart, 1),
+            icon: createMarkerIcon(routingColorStart, 1),
             title: ROUTING_MARKER_HINT,
             draggable: true,
           }).addTo(map);
@@ -847,7 +847,7 @@ function initializeRouting() {
           viaMarker.setLatLng(latlng);
         } else {
           viaMarker = L.marker(latlng, {
-            icon: createSvgIcon(routingColorVia, 1),
+            icon: createMarkerIcon(routingColorVia, 1),
             title: ROUTING_MARKER_HINT,
             draggable: true,
           }).addTo(map);
@@ -860,7 +860,7 @@ function initializeRouting() {
           endMarker.setLatLng(latlng);
         } else {
           endMarker = L.marker(latlng, {
-            icon: createSvgIcon(routingColorEnd, 1),
+            icon: createMarkerIcon(routingColorEnd, 1),
             title: ROUTING_MARKER_HINT,
             draggable: true,
           }).addTo(map);

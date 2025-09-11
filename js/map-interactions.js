@@ -1,8 +1,8 @@
 // OpenMapEditor - A web-based editor for creating and managing geographic data.
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
-// Creates a custom svg icon for markers.
-function createSvgIcon(
+// Creates a marker icon
+function createMarkerIcon(
   color,
   opacity,
   size = STYLE_CONFIG.marker.baseSize,
@@ -73,7 +73,7 @@ function deselectCurrentItem() {
         // It will now correctly use the color defined by its omColorName ("Orange")
         item.setStyle({ ...STYLE_CONFIG.path.default, color: colorData.css });
       } else if (item instanceof L.Marker) {
-        item.setIcon(createSvgIcon(colorData.css, STYLE_CONFIG.marker.default.opacity));
+        item.setIcon(createMarkerIcon(colorData.css, STYLE_CONFIG.marker.default.opacity));
         item.setZIndexOffset(0);
       }
     }
@@ -208,7 +208,7 @@ function selectItem(layer) {
 
       selectedMarkerOutline = L.marker(layer.getLatLng(), {
         // Call the modified function with 'isOutline' set to true.
-        icon: createSvgIcon(outline.color, 1, outlineSize, 0, true), // <-- SET isOutline to true
+        icon: createMarkerIcon(outline.color, 1, outlineSize, 0, true), // <-- SET isOutline to true
         zIndexOffset: 1001, // HIGHER z-index to appear ON TOP
         interactive: false,
       });
@@ -220,7 +220,7 @@ function selectItem(layer) {
     // --- END: REFINED MARKER OUTLINE LOGIC ---
 
     // The main marker is now styled using the same function, ensuring it's filled.
-    layer.setIcon(createSvgIcon(highlightColor, STYLE_CONFIG.marker.highlight.opacity));
+    layer.setIcon(createMarkerIcon(highlightColor, STYLE_CONFIG.marker.highlight.opacity));
     layer.setZIndexOffset(1000);
 
     layer.on("drag", updateMarkerOutlinePosition);

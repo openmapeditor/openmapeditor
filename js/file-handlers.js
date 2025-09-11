@@ -449,7 +449,7 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
       const color = colorData ? colorData.css : colorScheme.imported.primary;
       const marker = L.marker(latlng, {
-        icon: createSvgIcon(color, STYLE_CONFIG.marker.default.opacity),
+        icon: createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity),
       });
       marker.feature = feature; // ensure feature is attached for selection logic
       return marker;

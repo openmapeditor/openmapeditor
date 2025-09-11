@@ -917,7 +917,7 @@ function initializeMap() {
 
     // Create a new, temporary black marker and make it interactive
     temporarySearchMarker = L.marker(locationLatLng, {
-      icon: createSvgIcon(rootStyles.getPropertyValue("--color-black").trim(), 1),
+      icon: createMarkerIcon(rootStyles.getPropertyValue("--color-black").trim(), 1),
       interactive: true,
     }).addTo(map);
 
@@ -942,7 +942,7 @@ function initializeMap() {
       const defaultDrawColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === defaultDrawColorName);
 
       const newMarker = L.marker(locationLatLng, {
-        icon: createSvgIcon(defaultDrawColorData.css, STYLE_CONFIG.marker.default.opacity),
+        icon: createMarkerIcon(defaultDrawColorData.css, STYLE_CONFIG.marker.default.opacity),
       });
 
       newMarker.pathType = "drawn";
@@ -1034,7 +1034,7 @@ function initializeMap() {
       rectangle: false,
       circle: false,
       marker: {
-        icon: createSvgIcon(defaultDrawColor, STYLE_CONFIG.marker.default.opacity),
+        icon: createMarkerIcon(defaultDrawColor, STYLE_CONFIG.marker.default.opacity),
       },
       circlemarker: false,
     },

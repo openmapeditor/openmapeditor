@@ -85,7 +85,7 @@ function createOverviewListItem(layer) {
         newFeature.properties.totalDistance = calculatePathDistance(newLayer);
       } else if (layerToDuplicate instanceof L.Marker) {
         newLayer = L.marker(layerToDuplicate.getLatLng(), {
-          icon: createSvgIcon(color, STYLE_CONFIG.marker.default.opacity),
+          icon: createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity),
         });
       } else if (layerToDuplicate instanceof L.Polyline) {
         newLayer = L.polyline(layerToDuplicate.getLatLngs(), {
@@ -445,7 +445,7 @@ function populateColorPicker() {
           });
         } else if (globallySelectedItem instanceof L.Marker) {
           globallySelectedItem.setIcon(
-            createSvgIcon(newColorData.css, STYLE_CONFIG.marker.highlight.opacity)
+            createMarkerIcon(newColorData.css, STYLE_CONFIG.marker.highlight.opacity)
           );
         }
 
