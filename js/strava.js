@@ -12,6 +12,9 @@ const streamsURL = "https://www.strava.com/api/v3/activities";
 // --- DOM Elements ---
 let stravaPanelContent;
 
+// NEW: Global variable to store the raw activities data from the API.
+let allFetchedActivities = [];
+
 // --- START: Refactored Functions ---
 // The following functions have been moved to the top-level scope to prevent
 // re-initialization errors and improve code structure.
@@ -77,16 +80,20 @@ function showFetchUI(activityCount = 0) {
         </select>
         <button id="fetch-strava-btn" class="strava-button-primary" style="flex: 1; min-width: 80px;">Fetch</button>
         <button id="export-strava-kml-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export KML</button>
+        <button id="export-strava-json-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export JSON</button>
       </div>
       <p id="strava-progress" style="display: none;"></p>
     `;
   document.getElementById("fetch-strava-btn").addEventListener("click", fetchAllActivities);
 
-  const exportBtn = document.getElementById("export-strava-kml-btn");
-  exportBtn.addEventListener("click", exportStravaActivitiesAsKml);
-  exportBtn.disabled = activityCount === 0;
+  const exportKmlBtn = document.getElementById("export-strava-kml-btn");
+  exportKmlBtn.addEventListener("click", exportStravaActivitiesAsKml);
+  exportKmlBtn.disabled = activityCount === 0;
 
-  // MODIFIED: Removed inline styling for the disabled state, as it's now handled by CSS.
+  // NEW: Get the JSON button and add its event listener
+  const exportJsonBtn = document.getElementById("export-strava-json-btn");
+  exportJsonBtn.addEventListener("click", exportStravaActivitiesAsJson);
+  exportJsonBtn.disabled = activityCount === 0;
 }
 
 /**
@@ -160,12 +167,10 @@ async function fetchAllActivities() {
     return;
   }
 
-  // --- MODIFIED: Read the desired activity count from the new dropdown ---
   const fetchCountSelect = document.getElementById("strava-fetch-count");
   const limit = fetchCountSelect ? fetchCountSelect.value : "all";
   const fetchLimit = limit === "all" ? Infinity : parseInt(limit, 10);
 
-  // --- MODIFIED: Hide the entire control group during the fetch process ---
   const controlsDiv = document.getElementById("strava-controls");
   if (controlsDiv) controlsDiv.style.display = "none";
 
@@ -177,10 +182,9 @@ async function fetchAllActivities() {
 
   let allActivities = [];
   let page = 1;
-  const perPage = 100; // Fetch in efficient chunks of 100
+  const perPage = 100;
   let keepFetching = true;
 
-  // --- MODIFIED: The loop now also checks if the fetch limit has been reached ---
   while (keepFetching && allActivities.length < fetchLimit) {
     try {
       const url = `${activitiesURL}?access_token=${accessToken}&per_page=${perPage}&page=${page}`;
@@ -195,7 +199,7 @@ async function fetchAllActivities() {
         if (progressText) progressText.innerText = `Fetched ${allActivities.length} activities...`;
         page++;
       } else {
-        keepFetching = false; // No more activities available from the API
+        keepFetching = false;
       }
     } catch (error) {
       console.error("Error fetching Strava activities:", error);
@@ -205,14 +209,34 @@ async function fetchAllActivities() {
     }
   }
 
-  // --- MODIFIED: Trim the results to the exact limit if we fetched more than needed on the last page ---
   if (fetchLimit !== Infinity && allActivities.length > fetchLimit) {
     allActivities = allActivities.slice(0, fetchLimit);
   }
 
+  // NEW: Store the raw API data in the global variable.
+  allFetchedActivities = allActivities;
+
   if (progressText)
     progressText.innerText = `Found ${allActivities.length} total activities. Processing...`;
   displayActivitiesOnMap(allActivities);
+}
+
+/**
+ * REFACTORED: Generates a timestamped filename for exports.
+ * @param {string} baseName - The base name for the file (e.g., "Strava_Export").
+ * @param {string} extension - The file extension (e.g., "kml" or "json").
+ * @returns {string} - The complete, timestamped filename.
+ */
+function generateTimestampedFilename(baseName, extension) {
+  const now = new Date();
+  const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now
+    .getDate()
+    .toString()
+    .padStart(2, "0")}${now.getHours().toString().padStart(2, "0")}${now
+    .getMinutes()
+    .toString()
+    .padStart(2, "0")}${now.getSeconds().toString().padStart(2, "0")}`;
+  return `${baseName}_${timestamp}.${extension}`;
 }
 
 /**
@@ -251,19 +275,7 @@ async function exportStravaActivitiesAsKml() {
   const kmlContent = createKmlDocument(docName, stravaPlacemarks);
 
   try {
-    const now = new Date();
-    const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now
-      .getDate()
-      .toString()
-      .padStart(2, "0")}${now.getHours().toString().padStart(2, "0")}${now
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")}${now.getSeconds().toString().padStart(2, "0")}`;
-
-    // MODIFIED: Changed file extension
-    const fileName = `Strava_Export_${timestamp}.kml`;
-
-    // MODIFIED: Use the downloadFile utility directly, no JSZip needed
+    const fileName = generateTimestampedFilename("Strava_Export", "kml");
     downloadFile(fileName, kmlContent);
   } catch (error) {
     console.error("Error generating Strava KML:", error);
@@ -276,6 +288,48 @@ async function exportStravaActivitiesAsKml() {
   }
 }
 
+/**
+ * ADDED: Creates and triggers a download for a JSON file containing all loaded Strava activities.
+ */
+async function exportStravaActivitiesAsJson() {
+  if (allFetchedActivities.length === 0) {
+    return Swal.fire({
+      icon: "info",
+      iconColor: "var(--swal-color-info)",
+      title: "No Activities Loaded",
+      text: "Please fetch your activities before exporting.",
+    });
+  }
+
+  const activitiesData = allFetchedActivities;
+
+  // We check if the data has the expected structure.
+  if (!activitiesData || activitiesData.length === 0 || !activitiesData[0].id) {
+    return Swal.fire({
+      icon: "warning",
+      iconColor: "var(--swal-color-warning)",
+      title: "No Exportable Data",
+      text: "Could not find any data to export.",
+    });
+  }
+
+  // Convert the array of JavaScript objects to a JSON string
+  const jsonContent = JSON.stringify(activitiesData, null, 2); // 'null, 2' for pretty printing
+
+  try {
+    const fileName = generateTimestampedFilename("Strava_Export", "json");
+    downloadFile(fileName, jsonContent);
+  } catch (error) {
+    console.error("Error generating Strava JSON:", error);
+    Swal.fire({
+      icon: "error",
+      iconColor: "var(--swal-color-error)",
+      title: "Export Error",
+      text: `Failed to generate JSON file: ${error.message}`,
+    });
+  }
+}
+
 // --- END: Refactored Functions ---
 
 /**
@@ -284,7 +338,6 @@ async function exportStravaActivitiesAsKml() {
  */
 function initializeStrava() {
   stravaPanelContent = document.getElementById("strava-panel-content");
-  // MODIFIED: Removed the direct URL check, now handled by the new flow.
   showConnectUI();
 }
 
@@ -339,16 +392,21 @@ function displayActivitiesOnMap(activities) {
           color: stravaColor,
         });
 
+        // This is the important part that needs to be restored to its original state.
+        // We set BOTH the feature properties AND the top-level pathType.
         polyline.feature = {
           properties: {
-            name: activity.name,
-            type: activity.type,
-            totalDistance: activity.distance,
+            ...activity,
             omColorName: "DeepOrange",
+            // The property is also here for completeness, but the top-level one is what's used.
+            pathType: "strava",
+            // The original file used activity.id, which is correct. The spread operator also includes it.
             stravaId: activity.id,
           },
         };
+        // This top-level property is what the rest of the application uses to identify the layer.
         polyline.pathType = "strava";
+        // *** THE PROBLEM LINE HAS BEEN REMOVED. WE NO LONGER `delete polyline.pathType;` ***
 
         polyline.on("click", (e) => {
           L.DomEvent.stopPropagation(e);
@@ -369,8 +427,6 @@ function displayActivitiesOnMap(activities) {
 
   updateOverviewList();
 
-  // --- FIX: Update UI first, then update the progress text ---
-  // This ensures the #strava-progress element exists before we try to modify it.
   showFetchUI(processedCount);
 
   const progressText = document.getElementById("strava-progress");
