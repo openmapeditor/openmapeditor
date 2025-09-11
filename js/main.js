@@ -275,12 +275,12 @@ function initializeMap() {
   });
   const baseMaps = {
     "&#127757; OpenStreetMap": osmLayer,
-    // "&#127757; Esri World Imagery": L.tileLayer(
-    //   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    //   {
-    //     maxZoom: 19,
-    //   }
-    // ),
+    "&#127757; Esri World Imagery": L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      {
+        maxZoom: 19,
+      }
+    ),
     // "&#127757; Google Satellite": L.tileLayer("http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
     //   maxZoom: 19,
     //   subdomains: ["mt0", "mt1", "mt2", "mt3"],
