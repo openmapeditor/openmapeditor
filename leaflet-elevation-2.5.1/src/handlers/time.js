@@ -95,9 +95,24 @@ export function Time() {
 		summary: (this.options.time) && {
 			"tottime"  : {
 				label: "Walking Time: ",
-				value: (track) => _.formatTime(track.time || 0),
+				// value: (track) => _.formatTime(track.time || 0),
+				value: (track) => formatDurationVerbose(track.time || 0),
 				order: 20
 			}
 		}
 	};
+
+	function formatDurationVerbose(milliseconds) {
+    if (!milliseconds || milliseconds < 0) {
+        return "0 d 0 h 0 m 0 s";
+    }
+
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+	
+    return `${days} d ${hours} h ${minutes} m ${seconds} s`;
+	}
 }
