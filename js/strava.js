@@ -392,21 +392,19 @@ function displayActivitiesOnMap(activities) {
           color: stravaColor,
         });
 
-        // This is the important part that needs to be restored to its original state.
-        // We set BOTH the feature properties AND the top-level pathType.
+        // --- FIX: Add this line to explicitly map the distance property ---
+        // This ensures the info panel uses Strava's authoritative distance
+        // instead of recalculating it from the summary polyline.
         polyline.feature = {
           properties: {
             ...activity,
+            totalDistance: activity.distance, // <-- THE FIX
             omColorName: "DeepOrange",
-            // The property is also here for completeness, but the top-level one is what's used.
             pathType: "strava",
-            // The original file used activity.id, which is correct. The spread operator also includes it.
             stravaId: activity.id,
           },
         };
-        // This top-level property is what the rest of the application uses to identify the layer.
         polyline.pathType = "strava";
-        // *** THE PROBLEM LINE HAS BEEN REMOVED. WE NO LONGER `delete polyline.pathType;` ***
 
         polyline.on("click", (e) => {
           L.DomEvent.stopPropagation(e);
