@@ -72,7 +72,7 @@ To make the deployment work, you must add your production API keys to your repos
 4.  Enter the name and value for each secret. The names must exactly match the ones used in the workflow file:
     - `GOOGLE_API_KEY`
     - `MAPBOX_ACCESS_TOKEN`
-    - `TRACETRACK_API_KEY`
+    - `TRACESTRACK_API_KEY`
     - `STRAVA_CLIENT_ID`
     - `STRAVA_CLIENT_SECRET`
 5.  Repeat this process for all required keys.

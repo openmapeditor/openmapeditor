@@ -130,7 +130,7 @@ function initializeMap() {
   if (
     typeof googleApiKey === "undefined" ||
     typeof mapboxAccessToken === "undefined" ||
-    typeof tracetrackApiKey === "undefined"
+    typeof tracestrackApiKey === "undefined"
   ) {
     Swal.fire({
       icon: "error",
@@ -291,8 +291,8 @@ function initializeMap() {
         maxZoom: 19,
       }
     ),
-    "&#127757; Tracetrack Topo": L.tileLayer(
-      `https://tile.tracestrack.com/topo__/{z}/{x}/{y}.webp?key=${tracetrackApiKey}`,
+    "&#127757; Tracestrack Topo": L.tileLayer(
+      `https://tile.tracestrack.com/topo__/{z}/{x}/{y}.webp?key=${tracestrackApiKey}`,
       {
         maxZoom: 19,
       }
