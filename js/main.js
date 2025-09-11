@@ -379,7 +379,7 @@ function initializeMap() {
       const link = L.DomUtil.create("a", "", container);
       link.href = "#";
       link.role = "button";
-      link.innerHTML = '<svg class="icon icon-layers"><use href="#icon-layers"></use></svg>';
+      link.innerHTML = "";
 
       // This control ONLY handles the click on the button.
       // The global document listener handles closing.
@@ -560,8 +560,7 @@ function initializeMap() {
         "leaflet-bar leaflet-control leaflet-control-custom"
       );
       container.title = "Toggle elevation profile";
-      container.innerHTML =
-        '<a href="#" role="button"><svg class="icon icon-elevation"><use href="#icon-elevation"></use></svg></a>';
+      container.innerHTML = '<a href="#" role="button"></a>';
       L.DomEvent.on(container, "click", (ev) => {
         L.DomEvent.stop(ev);
         if (L.DomUtil.hasClass(container, "disabled")) return;
@@ -595,7 +594,7 @@ function initializeMap() {
       container.title = "Download file";
       container.style.position = "relative";
       container.innerHTML =
-        '<a href="#" role="button"><svg class="icon icon-download"><use href="#icon-download"></use></svg></a>' +
+        '<a href="#" role="button"></a>' +
         '<div class="download-submenu">' +
         '<button id="download-gpx" disabled>GPX (Selected Item)</button>' +
         '<button id="download-kml" disabled>KML (Selected Item)</button>' +
@@ -777,13 +776,6 @@ function initializeMap() {
       // }),
     })
     .addTo(map);
-  setTimeout(() => {
-    const locateButton = locateControl.getContainer().querySelector("a");
-    if (locateButton) {
-      locateButton.innerHTML =
-        '<svg class="icon icon-locate"><use href="#icon-locate"></use></svg>';
-    }
-  }, 0);
 
   // Add a scale control showing units based on the user's setting
   scaleControl = L.control
@@ -1052,7 +1044,7 @@ function initializeMap() {
       const link = L.DomUtil.create("a", "", container);
       link.href = "#";
       link.role = "button";
-      link.innerHTML = '<svg class="icon icon-import"><use href="#icon-import"></use></svg>';
+      link.innerHTML = "";
       const input = L.DomUtil.create("input", "hidden", container);
       input.type = "file";
       input.accept = ".gpx,.kml,.kmz";

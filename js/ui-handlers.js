@@ -495,7 +495,7 @@ function updateScaleControlVisibility() {
 
 // Replaces default leaflet icons with Material Symbols
 function replaceDefaultIconsWithMaterialSymbols() {
-  const layersButton = document.querySelector(".icon-layers")?.closest(".leaflet-control-custom");
+  const layersButton = document.querySelector('.leaflet-control-custom[title="Layers"]');
   if (layersButton) {
     layersButton.querySelector("a").innerHTML = '<span class="material-symbols">layers</span>';
   }
@@ -535,21 +535,21 @@ function replaceDefaultIconsWithMaterialSymbols() {
     deleteButton.innerHTML = '<span class="material-symbols">delete</span>';
   }
 
-  const importButton = document.querySelector(".icon-import")?.closest(".leaflet-control-custom");
+  const importButton = document.querySelector(
+    '.leaflet-control-custom[title="Import GPX/KML/KMZ file"]'
+  );
   if (importButton) {
     importButton.querySelector("a").innerHTML = '<span class="material-symbols">folder_open</span>';
   }
 
-  const downloadButton = document
-    .querySelector(".icon-download")
-    ?.closest(".leaflet-control-custom");
+  const downloadButton = document.querySelector('.leaflet-control-custom[title="Download file"]');
   if (downloadButton) {
     downloadButton.querySelector("a").innerHTML = '<span class="material-symbols">download</span>';
   }
 
-  const elevationButton = document
-    .querySelector(".icon-elevation")
-    ?.closest(".leaflet-control-custom");
+  const elevationButton = document.querySelector(
+    '.leaflet-control-custom[title="Toggle elevation profile"]'
+  );
   if (elevationButton) {
     elevationButton.querySelector("a").innerHTML =
       '<span class="material-symbols">elevation</span>';
