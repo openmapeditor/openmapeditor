@@ -286,6 +286,15 @@ select:focus {
   text-align: center;
 }
 
+a#info-panel-strava-link {
+  color: var(--strava-color) !important;
+  text-decoration: none !important;
+}
+
+a#info-panel-strava-link:hover {
+  text-decoration: underline !important;
+}
+
 /* --- Color Picker Styles --- */
 #color-picker {
   display: none; /* Hidden by default, JS toggles to 'grid' */
@@ -1147,6 +1156,11 @@ g.x.axis.top.time {
 }
 .leaflet-container .leaflet-control-attribution a {
   color: var(--highlight-color) !important;
+  text-decoration: none !important;
+}
+.leaflet-container .leaflet-control-attribution a:hover {
+  color: var(--highlight-color) !important;
+  text-decoration: underline !important;
 }
 
 .leaflet-marker-shadow {

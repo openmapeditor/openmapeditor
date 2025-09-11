@@ -36,15 +36,15 @@
     margin-bottom: 15px;
     font-size: 16px;
   }
-  .support-button {
+  a.support-button {
     display: inline-block;
     padding: 6px 12px;
     font-size: 16px;
     font-weight: bold;
-    color: #fff;
+    color: var(--color-white) !important;
     background-color: var(--highlight-color);
     border-radius: 8px;
-    text-decoration: none;
+    text-decoration: none !important;
     transition: background-color 0.2s;
   }
   .attributions-section {
@@ -73,6 +73,10 @@
   }
   .attributions-section a {
     color: var(--highlight-color);
+    text-decoration: none; /* This removes the underline by default */
+  }
+  .attributions-section a:hover {
+    text-decoration: underline; /* This adds the underline ONLY on hover */
   }
 </style>
 
@@ -101,7 +105,11 @@
     >
       <span
         class="material-symbols material-symbols-fill"
-        style="color: var(--color-white); font-size: 30px !important; vertical-align: middle"
+        style="
+          color: var(--color-white) !important;
+          font-size: 30px !important;
+          vertical-align: middle;
+        "
         >heart_smile</span
       >
       Support the Project
