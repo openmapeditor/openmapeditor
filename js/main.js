@@ -1451,6 +1451,7 @@ function initializeMap() {
       }
 
       updateAllDynamicUnitDisplays();
+      updateScaleControlVisibility();
 
       Swal.fire({
         toast: true,
