@@ -49,6 +49,12 @@ function deselectCurrentItem() {
     globallySelectedItem.off("drag", updateMarkerOutlinePosition);
   }
 
+  // Reset the overlay pane's z-index to its default value of 400
+  const overlayPane = document.querySelector(".leaflet-overlay-pane");
+  if (overlayPane) {
+    overlayPane.style.zIndex = 400;
+  }
+
   const layerId = L.Util.stamp(globallySelectedItem);
   const listItem = document.querySelector(
     `#overview-panel-list .overview-list-item[data-layer-id='${layerId}']`
@@ -151,6 +157,12 @@ function selectItem(layer) {
   }
 
   if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
+    // Set the overlay pane's z-index to a higher value above .leaflet-marker-pane with z-index 600
+    const overlayPane = document.querySelector(".leaflet-overlay-pane");
+    if (overlayPane) {
+      overlayPane.style.zIndex = 601;
+    }
+
     // --- Create and add the selection outline if enabled ---
     const { outline } = STYLE_CONFIG.path.highlight;
     if (outline.enabled) {

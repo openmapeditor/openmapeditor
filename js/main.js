@@ -1267,8 +1267,9 @@ function initializeMap() {
     });
   });
 
-  // --- START: NEW code for general draw crosshair fix ---
   map.on(L.Draw.Event.DRAWSTART, function (e) {
+    // When any drawing starts deselect current item
+    deselectCurrentItem();
     // When any drawing starts, add a general class to the body.
     L.DomUtil.addClass(document.body, "leaflet-is-drawing");
   });
@@ -1277,7 +1278,6 @@ function initializeMap() {
     // When drawing stops for any reason, remove the class.
     L.DomUtil.removeClass(document.body, "leaflet-is-drawing");
   });
-  // --- END: NEW code for general draw crosshair fix ---
 
   map.on("click", (e) => {
     if (
