@@ -104,63 +104,6 @@ select:focus {
   width: 205px;
 }
 
-/* 3. Define size for each svg icon class */
-.icon-locate,
-.icon-elevation,
-.icon-download,
-.icon-layers,
-.icon-fullscreen-enter,
-.icon-fullscreen-exit,
-.icon-delete-circle {
-  width: 22px;
-  height: 22px;
-}
-
-/* NEW: Settings Icon Size */
-.icon-settings {
-  width: 20px;
-  height: 20px;
-}
-
-.icon-import {
-  width: 20px;
-  height: 20px;
-}
-.icon-plus,
-.icon-minus,
-.icon-draw-path,
-.icon-draw-marker,
-.icon-edit,
-.icon-delete {
-  width: 18px;
-  height: 18px;
-}
-
-/* 4. Define the color for all icons */
-.icon-clear,
-.icon-locate,
-.icon-elevation,
-.icon-download,
-.icon-import,
-.icon-plus,
-.icon-minus,
-.icon-draw-marker,
-.icon-edit,
-.icon-delete,
-.icon-layers,
-.icon-delete-circle,
-.icon-fullscreen-enter,
-.icon-fullscreen-exit,
-.icon-settings /* NEW: Add settings icon to color rule */ {
-  fill: var(--icon-color);
-}
-
-/* Specific rule for path to use stroke color */
-.icon-draw-path {
-  stroke: var(--icon-color);
-  fill: none;
-}
-
 /* Clear style for disabled draw buttons */
 .leaflet-draw-toolbar a.leaflet-disabled {
   background-color: var(--background2-color) !important;
@@ -168,12 +111,6 @@ select:focus {
 }
 .leaflet-draw-toolbar a.leaflet-disabled .icon {
   fill: var(--icon-color); /* Use a faded grey for the icon itself */
-}
-
-/* --- Svg marker icon styling (for map markers, not toolbar) --- */
-.svg-marker-icon .marker-pin-use {
-  fill: var(--marker-color);
-  fill-opacity: var(--marker-opacity);
 }
 
 /* --- Info panel for selected items (MODIFIED) --- */
