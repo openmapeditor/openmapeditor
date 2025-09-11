@@ -158,9 +158,12 @@ function selectItem(layer) {
 
   if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
     // Set the overlay pane's z-index to a higher value above .leaflet-marker-pane with z-index 600
-    const overlayPane = document.querySelector(".leaflet-overlay-pane");
-    if (overlayPane) {
-      overlayPane.style.zIndex = 601;
+    if (layer.pathType !== "route") {
+      // Don't change z-index for routes, as the path would hide its start/end/via markers
+      const overlayPane = document.querySelector(".leaflet-overlay-pane");
+      if (overlayPane) {
+        overlayPane.style.zIndex = 601;
+      }
     }
 
     // --- Create and add the selection outline if enabled ---
