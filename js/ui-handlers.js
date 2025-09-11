@@ -548,7 +548,7 @@ function replaceDefaultIconsWithMaterialSymbols() {
   }
 
   const elevationButton = document.querySelector(
-    '.leaflet-control-custom[title="Toggle elevation profile"]'
+    '.leaflet-control-custom[title="No path selected"]'
   );
   if (elevationButton) {
     elevationButton.querySelector("a").innerHTML =

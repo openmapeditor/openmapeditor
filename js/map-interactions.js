@@ -85,6 +85,7 @@ function deselectCurrentItem() {
   document.getElementById("elevation-div").style.visibility = "hidden";
   isElevationProfileVisible = false;
   updateElevationToggleIconColor();
+  elevationToggleControl.getContainer().title = "No path selected";
   L.DomUtil.addClass(elevationToggleControl.getContainer(), "disabled");
 
   const downloadContainer = downloadControl.getContainer();
@@ -191,6 +192,7 @@ function selectItem(layer) {
     layer.setStyle({ ...STYLE_CONFIG.path.highlight, color: highlightColor });
     layer.bringToFront();
     if (elevationToggleControl) {
+      elevationToggleControl.getContainer().title = "Toggle elevation profile";
       L.DomUtil.removeClass(elevationToggleControl.getContainer(), "disabled");
     }
     const elevationDiv = document.getElementById("elevation-div");

@@ -559,7 +559,7 @@ function initializeMap() {
         "div",
         "leaflet-bar leaflet-control leaflet-control-custom"
       );
-      container.title = "Toggle elevation profile";
+      container.title = "No path selected";
       container.innerHTML = '<a href="#" role="button"></a>';
       L.DomEvent.on(container, "click", (ev) => {
         L.DomEvent.stop(ev);
