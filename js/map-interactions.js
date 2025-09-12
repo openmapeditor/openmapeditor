@@ -9,7 +9,7 @@ function createMarkerIcon(
   anchorOffsetY = 0,
   isOutline = false
 ) {
-  const fillClass = isOutline ? "" : "material-symbols-fill";
+  const fillClass = isOutline ? "material-symbols-map-marker-outline" : "material-symbols-fill";
 
   return L.divIcon({
     html: `<span class="material-symbols ${fillClass} material-symbols-map-marker" style="font-size: ${size}px; color: ${color}; opacity: ${opacity}; line-height: 1;">location_on</span>`,

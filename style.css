@@ -1527,6 +1527,11 @@ button.strava-button-secondary:not(:disabled) {
 
 .material-symbols-map-marker {
   font-size: 50px !important;
+  font-variation-settings: "FILL" 1, "wght" 200, "GRAD" 0, "opsz" 24 !important;
+}
+
+.material-symbols-map-marker-outline {
+  font-variation-settings: "FILL" 0, "wght" 200, "GRAD" 0, "opsz" 24 !important;
 }
 
 /* Forcefully sets the cursor to a crosshair for the marker icon
