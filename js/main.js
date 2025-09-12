@@ -327,7 +327,7 @@ function initializeMap() {
   // Configure the map's attribution control
   map.attributionControl.setPosition("bottomleft");
   map.attributionControl.setPrefix(
-    '<a href="#" id="attribution-link" title="Credits">OpenMapEditor &#x2764;&#xfe0f;</a>'
+    '<a href="#" id="attribution-link" title="Credits">OpenMapEditor &#x2764;&#xfe0f;</a><a href="#" id="install-pwa-link" title="Install App" style="display: none;">Install</a>'
   );
 
   // Add the initial base layer to the map (after configuring attribution control to prevent problems with prefix)
@@ -1599,6 +1599,47 @@ function initializeMap() {
     characterData: true,
   });
   // --- END: NEW - MutationObserver ---
+
+  // --- START: PWA Installation Logic ---
+  let deferredPrompt;
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    const installLink = document.querySelector("#install-pwa-link");
+    if (installLink) {
+      installLink.style.display = "inline";
+
+      installLink.addEventListener("click", (clickEvent) => {
+        clickEvent.preventDefault();
+        installLink.style.display = "none";
+
+        // Check if the prompt is still available before using it
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+
+          deferredPrompt.userChoice.then(({ outcome }) => {
+            console.log(`User response to the install prompt: ${outcome}`);
+          });
+
+          // **THE FIX**: Clear the deferredPrompt immediately after calling prompt().
+          // This prevents it from being used a second time.
+          deferredPrompt = null;
+        }
+      });
+    }
+  });
+
+  window.addEventListener("appinstalled", () => {
+    const installLink = document.querySelector("#install-pwa-link");
+    if (installLink) {
+      installLink.style.display = "none";
+    }
+    deferredPrompt = null;
+    console.log("PWA was installed");
+  });
+  // --- END: PWA Installation Logic ---
 
   // Final ui updates
   setTimeout(updateDrawControlStates, 0);

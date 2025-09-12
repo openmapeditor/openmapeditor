@@ -1086,6 +1086,7 @@ g.x.axis.top.time {
   z-index: 3000;
   border: 1px solid var(--border-color) !important;
   border-radius: 8px 8px 0 0 !important;
+  overflow: hidden;
 }
 .leaflet-container .leaflet-control-attribution {
   border-bottom: none !important;
@@ -1098,6 +1099,22 @@ g.x.axis.top.time {
 .leaflet-container .leaflet-control-attribution a:hover {
   color: var(--highlight-color) !important;
   text-decoration: underline !important;
+}
+
+/* --- PWA Install Button Style --- */
+#install-pwa-link {
+  background-color: var(--color-blue);
+  color: var(--color-white) !important;
+  padding: 10px 10px;
+  text-decoration: none;
+  margin-left: 5px;
+}
+
+/* Selects the attribution container only when it has the install button inside,
+  and that button does NOT have an inline style containing "display: none".
+*/
+.leaflet-control-attribution:has(#install-pwa-link:not([style*="display: none"])) {
+  padding-right: 0;
 }
 
 .leaflet-marker-shadow {

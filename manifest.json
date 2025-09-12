@@ -1,0 +1,22 @@
+{
+  "name": "OpenMapEditor",
+  "short_name": "OpenMapEditor",
+  "description": "A simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "white",
+  "theme_color": "black",
+  "icons": [
+    {
+      "src": "img/pwa-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "img/pwa-icon-512x512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
