@@ -1565,7 +1565,7 @@ function initializeMap() {
           confirmButtonText: "Close",
           width: "500px",
           customClass: {
-            popup: "swal2-no-top-padding-popup",
+            popup: "swal2-credits-popup",
           },
         });
       } catch (error) {

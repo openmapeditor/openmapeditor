@@ -45,37 +45,36 @@
     background-color: var(--highlight-color);
     border-radius: 8px;
     text-decoration: none !important;
-    transition: background-color 0.2s;
   }
-  .attributions-section {
+  .credits-section {
     margin-top: 25px;
     padding-top: 15px;
     border-top: 1px solid var(--border-color);
     text-align: center;
   }
-  .attributions-section h4 {
+  .credits-section h4 {
     margin-top: 0;
     margin-bottom: 15px;
     font-size: 18px;
     font-weight: 500;
   }
-  .attributions-section p {
-    margin: 5px 0;
+  .credits-section li {
+    margin-bottom: 5px;
     font-size: 14px;
   }
   /* Style for the sub-header to make it clear */
   .attribution-subheader {
     font-weight: 500;
-    margin-top: 20px;
+    margin-top: 0;
     margin-bottom: 10px;
     font-size: 16px;
     padding-top: 10px;
   }
-  .attributions-section a {
+  .credits-section a {
     color: var(--highlight-color);
     text-decoration: none; /* This removes the underline by default */
   }
-  .attributions-section a:hover {
+  .credits-section a:hover {
     text-decoration: underline; /* This adds the underline ONLY on hover */
   }
 </style>
@@ -121,39 +120,63 @@
     </a>
   </div>
 
-  <div class="attributions-section">
-    <h4>Data & Technology Attributions</h4>
-
-    <p>Powered by <a href="https://leafletjs.com" target="_blank">Leaflet</a></p>
-
-    <p class="attribution-subheader">Base Maps</p>
-
-    <p>
-      OpenStreetMap: &copy;
-      <a href="https://www.openstreetmap.org/copyright" target="_blank"
-        >OpenStreetMap contributors</a
+  <div class="credits-section">
+    <h4>Privacy First</h4>
+    <div style="display: inline-block; max-width: 450px">
+      <p style="font-size: 14px; margin-top: 0; margin-bottom: 10px">
+        Your files are processed entirely on your local machine and are never uploaded to a server.
+        Only the minimum data necessary is sent to external services for optional features:
+      </p>
+      <ul
+        style="
+          padding-left: 0;
+          margin-top: 0;
+          margin-bottom: 0;
+          list-style-position: inside;
+          list-style-type: none;
+        "
       >
-    </p>
-    <p>Esri World Imagery: &copy; <a href="https://www.esri.com" target="_blank">Esri</a></p>
-    <p>CyclOSM: &copy; <a href="https://www.cyclosm.org/" target="_blank">CyclOSM</a></p>
-    <p>
-      Tracestrack Topo: &copy;
-      <a href="https://www.tracestrack.com/" target="_blank">Tracestrack</a>
-    </p>
-    <p>
-      TopPlusOpen: &copy;
-      <a href="https://www.govdata.de/dl-de/by-2-0" target="_blank">dl-de/by-2-0</a>
-    </p>
-    <p>Swisstopo: &copy; <a href="https://www.swisstopo.admin.ch/" target="_blank">swisstopo</a></p>
+        <li><strong>Search:</strong> Text queries.</li>
+        <li><strong>Elevation Profiles:</strong> Path coordinates.</li>
+        <li><strong>Routing:</strong> Start, end, and via point coordinates.</li>
+        <li><strong>Strava:</strong> Authorization and activity requests.</li>
+      </ul>
+    </div>
+  </div>
 
-    <p class="attribution-subheader">Icons & Fonts</p>
-    <p>
-      Icons (Material Symbols) provided by
-      <a href="https://fonts.google.com/icons" target="_blank">Google Fonts</a>
-    </p>
-    <p>
-      Font (Roboto) provided by
-      <a href="https://fonts.google.com/specimen/Roboto" target="_blank">Google Fonts</a>
-    </p>
+  <div class="credits-section">
+    <h4>Data & Technology Attributions</h4>
+    <ul style="padding-left: 0; list-style-type: none">
+      <li>Powered by <a href="https://leafletjs.com" target="_blank">Leaflet</a></li>
+      <li class="attribution-subheader">Base Maps</li>
+      <li>
+        OpenStreetMap: &copy;
+        <a href="https://www.openstreetmap.org/copyright" target="_blank"
+          >OpenStreetMap contributors</a
+        >
+      </li>
+      <li>Esri World Imagery: &copy; <a href="https://www.esri.com" target="_blank">Esri</a></li>
+      <li>CyclOSM: &copy; <a href="https://www.cyclosm.org/" target="_blank">CyclOSM</a></li>
+      <li>
+        Tracestrack Topo: &copy;
+        <a href="https://www.tracestrack.com/" target="_blank">Tracestrack</a>
+      </li>
+      <li>
+        TopPlusOpen: &copy;
+        <a href="https://www.govdata.de/dl-de/by-2-0" target="_blank">dl-de/by-2-0</a>
+      </li>
+      <li>
+        Swisstopo: &copy; <a href="https://www.swisstopo.admin.ch/" target="_blank">swisstopo</a>
+      </li>
+      <li class="attribution-subheader">Icons & Fonts</li>
+      <li>
+        Icons (Material Symbols) provided by
+        <a href="https://fonts.google.com/icons" target="_blank">Google Fonts</a>
+      </li>
+      <li>
+        Font (Roboto) provided by
+        <a href="https://fonts.google.com/specimen/Roboto" target="_blank">Google Fonts</a>
+      </li>
+    </ul>
   </div>
 </div>

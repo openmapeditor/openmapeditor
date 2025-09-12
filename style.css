@@ -771,9 +771,11 @@ a#info-panel-strava-link:hover {
   color: var(--text-color) !important;
 }
 
-/* Remove top padding from credits popup */
-.swal2-no-top-padding-popup .swal2-html-container {
+/* Style for credits popup */
+.swal2-credits-popup .swal2-html-container {
   padding-top: 0;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 /* Title text */
