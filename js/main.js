@@ -1533,6 +1533,18 @@ function initializeMap() {
       "dblclick mousedown wheel",
       L.DomEvent.stopPropagation
     );
+
+    // --- Privacy Policy Link ---
+    const privacyPolicyContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
+    const privacyPolicyLabel = L.DomUtil.create("label", "", privacyPolicyContainer);
+    privacyPolicyLabel.innerText = "Legal";
+    privacyPolicyLabel.style.color = "var(--text-color)";
+    const privacyPolicyLink = L.DomUtil.create("a", "", privacyPolicyContainer);
+    privacyPolicyLink.href = "privacy.html";
+    privacyPolicyLink.target = "_blank";
+    privacyPolicyLink.innerText = "View Privacy Policy";
+    privacyPolicyLink.style.fontSize = "14px";
+    privacyPolicyLink.style.color = "var(--highlight-color)";
   }
 
   // --- START: MODIFIED code block for clickable attribution using event delegation ---

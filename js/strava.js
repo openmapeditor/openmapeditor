@@ -29,6 +29,10 @@ function showConnectUI() {
     <button id="strava-connect-btn" class="strava-button-link" style="border: none; background: transparent; padding: 0; cursor: pointer;">
       <img src="img/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
     </button>
+    <p style="font-size: 12px; color: var(--text-color); margin-top: 5px;">
+      By connecting, you agree to the OpenMapEditor 
+      <a href="privacy.html" target="_blank" style="color: var(--highlight-color);">Privacy Policy</a>
+    </p>
   `;
 
   document.getElementById("strava-connect-btn").addEventListener("click", () => {

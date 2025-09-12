@@ -1241,7 +1241,8 @@ g.x.axis.top.time {
   box-sizing: border-box;
 }
 
-#settings-panel .settings-control-item label {
+/* MODIFIED: Only apply pointer cursor to labels in items that contain a checkbox */
+#settings-panel .settings-control-item:has(input[type="checkbox"]) label {
   cursor: pointer;
   user-select: none; /* Prevent text selection on click */
 }
@@ -1521,6 +1522,19 @@ button.strava-button-secondary:not(:disabled) {
 
 #overview-panel-list .overview-list-header:first-child {
   border-top: none; /* The very first header doesn't need a top border */
+}
+
+/* --- Fix for Privacy Policy Link Style --- */
+/* This ensures links in these specific panels have no default underline */
+#strava-panel a,
+#settings-panel a {
+  text-decoration: none;
+}
+
+/* This adds the underline only when the user hovers over them */
+#strava-panel a:hover,
+#settings-panel a:hover {
+  text-decoration: underline;
 }
 
 /* --- Material Symbols Styles Start--- */
