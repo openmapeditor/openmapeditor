@@ -250,17 +250,19 @@ function initializeMap() {
           icon: "info",
           iconColor: "var(--swal-color-info)",
           html: `
-            <div style="text-align: left;">
-              <p style="margin-top:0;"><strong>Managing Waypoints</strong></p>
-              <p>The <strong>Start</strong>, <strong>Via</strong>, and <strong>End</strong> markers can be managed with your mouse or finger.</p>
-              <ul style="margin-bottom: 1.5em;">
-                <li><strong>To Move:</strong> Drag the marker to a new position.</li>
-                <li><strong>To Remove:</strong> Long-press the marker.</li>
-              </ul>
-              <p><strong>Adding Extra Via Points</strong></p>
-              <p>After a route appears on the map, you can add extra stops by <strong>long-pressing</strong> anywhere on the route line.</p>
-            </div>
-          `,
+<p style="text-align: left; margin: 0 0 18px 0">
+  <strong>Managing Waypoints:</strong> The <strong>Start</strong>, <strong>Via</strong>, and
+  <strong>End</strong> markers can be managed with your mouse or finger.
+</p>
+<p style="text-align: left"><strong>To Move:</strong> Drag the marker to a new position.</p>
+<p style="text-align: left; margin: 0 0 18px 0">
+  <strong>To Remove:</strong> Long-press the marker.
+</p>
+<p style="text-align: left">
+  <strong>Adding Extra Via Points: </strong>After a route appears on the map, you can add extra
+  stops by <strong>long-pressing</strong> anywhere on the route line.
+</p>
+`,
           confirmButtonText: "Got it!",
         });
       }
@@ -1150,7 +1152,7 @@ function initializeMap() {
     const latlng = e.latlng;
     const coordString = `${latlng.lat}, ${latlng.lng}`;
     const popupContent = document.createElement("div");
-    popupContent.innerHTML = `<span style="font-weight: bold;">Copy coordinates</span><br><span style="font-size: 0.9em;">${latlng.lat.toFixed(
+    popupContent.innerHTML = `<span style="font-weight: bold;">Copy coordinates</span><br><span style="font-size: 12px;">${latlng.lat.toFixed(
       5
     )}, ${latlng.lng.toFixed(5)}</span>`;
     popupContent.style.cursor = "pointer";
@@ -1387,7 +1389,20 @@ function initializeMap() {
         icon: "info",
         iconColor: "var(--swal-color-info)",
         title: "Path Simplification",
-        html: `<p style="text-align: left; margin-bottom: 1em;">This option automatically reduces the number of points in complex imported paths (GPX, KML) and generated routes.</p><p style="text-align: left;"><strong>Enabled (Recommended):</strong> Improves performance and responsiveness, especially with long tracks. The visual change is often unnoticeable.</p><p style="text-align: left;"><strong>Disabled:</strong> Preserves every single point from the original file. Use this if absolute precision is critical and you are not experiencing performance issues.</p>`,
+        html: `
+<p style="text-align: left; margin: 0 0 18px 0">
+  This option automatically reduces the number of points in complex imported paths (GPX, KML) and
+  generated routes.
+</p>
+<p style="text-align: left; margin: 0 0 18px 0">
+  <strong>Enabled (Recommended):</strong> Improves performance and responsiveness, especially with
+  long tracks. The visual change is often unnoticeable.
+</p>
+<p style="text-align: left">
+  <strong>Disabled:</strong> Preserves every single point from the original file. Use this if
+  absolute precision is critical and you are not experiencing performance issues.
+</p>
+`,
         confirmButtonText: "Got it!",
       });
     });

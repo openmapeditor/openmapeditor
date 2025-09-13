@@ -226,6 +226,7 @@ select:focus {
 a#info-panel-strava-link {
   color: var(--strava-color) !important;
   text-decoration: none !important;
+  font-size: 12px;
 }
 
 a#info-panel-strava-link:hover {
@@ -446,6 +447,7 @@ a#info-panel-strava-link:hover {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   background-color: var(--background-color);
+  font-size: 14px;
 }
 .routing-input-group button.active {
   background-color: var(--text-color);
@@ -1252,7 +1254,7 @@ g.x.axis.top.time {
 
 /* NEW: Styles for the info icon in the settings panel */
 .settings-info-icon {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   color: var(--text-color);
   cursor: pointer;
