@@ -30,7 +30,7 @@ function showConnectUI() {
       <img src="img/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
     </button>
     <p style="font-size: 12px; color: var(--text-color); margin-top: 5px;">
-      By connecting, you agree to the OpenMapEditor 
+      By connecting, you agree to the OpenMapEditor<br>
       <a href="privacy.html" target="_blank" style="color: var(--highlight-color);">Privacy Policy</a>
     </p>
   `;
