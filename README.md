@@ -96,8 +96,8 @@ This project utilizes several open-source libraries, which are included in the r
   - Important Info: Changed line 64 in `leaflet-elevation-2.5.1/src/components/marker.js`
   - Important Info: Changed line 161 in `leaflet-elevation-2.5.1/src/components/chart.js`
   - Important Info: In `leaflet-elevation-2.5.1/src/handlers/time.js` the time display was customized using a new function and the label was updated to "Walking Time". The distance calculation logic was refined and the chart tooltips were disabled.
-- **leaflet-geosearch-4.2.0**
-  - Download URL: `https://registry.npmjs.org/leaflet-geosearch/-/leaflet-geosearch-4.2.0.tgz`
+- **leaflet-geosearch-4.2.1**
+  - Download URL: `https://registry.npmjs.org/leaflet-geosearch/-/leaflet-geosearch-4.2.1.tgz`
 - **leaflet-locatecontrol-0.85.1**
   - Download URL: `https://registry.npmjs.org/leaflet.locatecontrol/-/leaflet.locatecontrol-0.85.1.tgz`
 - **leaflet-routing-machine-3.2.12**
