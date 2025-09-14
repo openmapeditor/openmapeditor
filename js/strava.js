@@ -25,7 +25,7 @@ let allFetchedActivities = [];
 function showConnectUI() {
   if (!stravaPanelContent) return;
   stravaPanelContent.innerHTML = `
-    <p>Connect with Strava to see your activities.</p>
+    <p>Connect with Strava to see your activities on the map.</p>
     <button id="strava-connect-btn" class="strava-button-link" style="border: none; background: transparent; padding: 0; cursor: pointer;">
       <img src="img/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
     </button>
