@@ -1523,8 +1523,8 @@ function initializeMap() {
     elevationProviderLabel.innerText = "Elevation Provider";
     const elevationProviderSelect = L.DomUtil.create("select", "", elevationProviderContainer);
     elevationProviderSelect.id = "elevation-provider-select";
-    // elevationProviderSelect.innerHTML = `<option value="google">Google</option><option value="open-topo">Open Topo Data</option><option value="mapbox">Mapbox</option>`;
-    elevationProviderSelect.innerHTML = `<option value="google">Google</option><option value="open-topo">Open Topo Data</option>`; // Removed Mapbox option
+    // elevationProviderSelect.innerHTML = `<option value="google">Google</option><option value="open-topo-data">Open Topo Data</option><option value="mapbox">Mapbox</option>`;
+    elevationProviderSelect.innerHTML = `<option value="google">Google</option><option value="open-topo-data">Open Topo Data</option>`; // Removed Mapbox option
     const savedElevationProvider = localStorage.getItem("elevationProvider") || "google";
     elevationProvider = savedElevationProvider;
     elevationProviderSelect.value = savedElevationProvider;
