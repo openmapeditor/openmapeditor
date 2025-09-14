@@ -41,7 +41,7 @@ This project is self-contained and does not require a package manager (`npm`).
     ```
 
 2.  **Provide API Keys**
-    To enable routing, search, and elevation services, you need to provide your own API keys.
+    To enable features that rely on external services, you need to provide your own API keys.
 
     - Make a copy of the template file `js/secrets.js.example`.
     - Rename the copy to **`js/secrets.js`**.
