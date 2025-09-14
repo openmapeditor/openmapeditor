@@ -50,9 +50,7 @@ This project is self-contained and does not require a package manager (`npm`).
     > **Important:** The `secrets.js` file is listed in `.gitignore` and will not be committed to the repository, keeping your keys safe and private.
 
 3.  **Run the Application**
-    Local development requires running the project from a local web server and using a browser extension to bypass CORS restrictions.
-
-    - **Local Server:** You must serve the project files from a local web server. Opening `index.html` directly from your filesystem will not work correctly.
+    Local development requires running the project from a local web server. Opening `index.html` directly from your filesystem will not work correctly.
 
 ---
 
