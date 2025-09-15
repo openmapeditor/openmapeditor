@@ -904,6 +904,10 @@ g.x.axis.top.time {
   /* display: none; */
 }
 
+.mouse-focus-line {
+  /* display: none; */
+}
+
 /* Hide altitude text below the elevation chart  */
 .legend {
   display: none;
