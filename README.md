@@ -81,8 +81,8 @@ To make the deployment work, you must add your production API keys to your repos
 
 This project utilizes several open-source libraries, which are included in the repository.
 
-- **d3-7.8.4**
-  - Download URL: `https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.4/d3.min.js`
+- **d3-7.9.0**
+  - Download URL: `https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js`
 - **jszip-3.10.1**
   - Download URL: `https://github.com/Stuk/jszip/archive/refs/tags/v3.10.1.zip`
 - **leaflet-1.9.4**
