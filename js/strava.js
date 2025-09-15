@@ -93,12 +93,12 @@ function showFetchUI(activityCount = 0) {
   const exportKmlBtn = document.getElementById("export-strava-kml-btn");
   exportKmlBtn.addEventListener("click", exportStravaActivitiesAsKml);
   exportKmlBtn.disabled = activityCount === 0;
-  // exportKmlBtn.style.display = "none"; // Temporarily hide the KML button
+  exportKmlBtn.style.display = "none"; // Temporarily hide the KML button
 
   const exportJsonBtn = document.getElementById("export-strava-json-btn");
   exportJsonBtn.addEventListener("click", exportStravaActivitiesAsJson);
   exportJsonBtn.disabled = activityCount === 0;
-  // exportJsonBtn.style.display = "none"; // Temporarily hide the JSON button
+  exportJsonBtn.style.display = "none"; // Temporarily hide the JSON button
 }
 
 /**

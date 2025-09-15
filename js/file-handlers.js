@@ -167,15 +167,14 @@ function generateFullKmzZip(docName) {
     }
   });
 
-  // --- NEW: Process Strava activities ---
-  stravaActivitiesLayer.eachLayer(function (layer) {
-    const defaultName = `Strava_Activity_${++featureCounter}`;
-    const kmlSnippet = generateKmlForLayer(layer, defaultName);
-    if (kmlSnippet) {
-      stravaPlacemarks.push(kmlSnippet);
-    }
-  });
-  // --- END NEW ---
+  // --- Process Strava activities ---
+  // stravaActivitiesLayer.eachLayer(function (layer) {
+  //   const defaultName = `Strava_Activity_${++featureCounter}`;
+  //   const kmlSnippet = generateKmlForLayer(layer, defaultName);
+  //   if (kmlSnippet) {
+  //     stravaPlacemarks.push(kmlSnippet);
+  //   }
+  // });
 
   Object.keys(kmlGroups).forEach((path) => {
     if (kmlGroups[path].length > 0) {

@@ -143,7 +143,7 @@ function selectItem(layer) {
     if (layer.pathType === "strava") {
       gpxButton.style.display = "none"; // Hide standard GPX button
       kmlButton.style.display = "none"; // Hide standard KML button
-      stravaGpxButton.style.display = "block"; // Show Strava-specific button
+      stravaGpxButton.style.display = "none"; // Temporarily hide Strava-specific button
     } else {
       gpxButton.style.display = "block";
       kmlButton.style.display = "block";
