@@ -66,7 +66,7 @@ export function Time() {
 			labelX     : () => this._width(),
 			name       : "time",
 			ticks      : () => _.clamp(this._chart._xTicks() / 2, [4, +Infinity]),
-			tickFormat : (d)  => (d == 0 ? '' : opts.xTimeFormat(d)),
+			tickFormat : (d)  => (d == 0 ? '' : formatDurationVerbose(d)),
 			onAxisMount: axis => {
 				axis.select(".domain")
 					.remove();
@@ -81,16 +81,16 @@ export function Time() {
 				}
 		},
 		tooltips: [
-			/* (this.options.time) && {
+			(this.options.time) && {
 				name: 'time',
-				chart: (item) => L._("T: ") + _.formatTime(item.duration || 0),
+				chart: (item) => L._("t: ") + formatDurationVerbose(item.duration || 0),
 				order: 20
 			},
 			(this.options.timestamps) && {
 				name: 'date',
 				chart: (item) => L._("t: ") + this.options.timeFormat(item.time),
 				order: 21,
-			} */
+			}
 		],
 		summary: (this.options.time) && {
 			"tottime"  : {
