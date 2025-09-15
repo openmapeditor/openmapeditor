@@ -429,7 +429,7 @@ function displayActivitiesOnMap(activities) {
   }
 
   updateOverviewList();
-  updateDrawControlStates();
+  // updateDrawControlStates(); // Temporarily prevent download button activation on activity load
 
   showFetchUI(processedCount);
 
