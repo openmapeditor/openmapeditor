@@ -241,7 +241,21 @@ function updateDrawControlStates() {
     editControlContainer = drawControl.getContainer().querySelector(".leaflet-draw-edit");
     deleteControlContainer = drawControl.getContainer().querySelector(".leaflet-draw-edit-remove");
   }
-  const hasLayers = editableLayers.getLayers().length > 0;
+  const hasLayers =
+    editableLayers.getLayers().length > 0 || stravaActivitiesLayer.getLayers().length > 0;
+
+  // Disable the entire download control if there are no layers on the map.
+  const downloadButtonContainer = document.getElementById("main-download-button");
+  if (downloadButtonContainer) {
+    if (hasLayers) {
+      L.DomUtil.removeClass(downloadButtonContainer, "disabled");
+      downloadButtonContainer.title = "Download file"; // Set normal tooltip
+    } else {
+      L.DomUtil.addClass(downloadButtonContainer, "disabled");
+      downloadButtonContainer.title = "No items to download"; // Set disabled tooltip
+    }
+  }
+
   if (editControlContainer && deleteControlContainer) {
     if (hasLayers) {
       L.DomUtil.removeClass(editControlContainer, "leaflet-disabled");

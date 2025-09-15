@@ -542,7 +542,7 @@ function replaceDefaultIconsWithMaterialSymbols() {
     importButton.querySelector("a").innerHTML = '<span class="material-symbols">folder_open</span>';
   }
 
-  const downloadButton = document.querySelector('.leaflet-control-custom[title="Download file"]');
+  const downloadButton = document.getElementById("main-download-button");
   if (downloadButton) {
     downloadButton.querySelector("a").innerHTML = '<span class="material-symbols">download</span>';
   }

@@ -593,7 +593,8 @@ function initializeMap() {
         "div",
         "leaflet-bar leaflet-control leaflet-control-custom"
       );
-      container.title = "Download file";
+      container.title = "No items to download";
+      container.id = "main-download-button";
       container.style.position = "relative";
       container.innerHTML =
         '<a href="#" role="button"></a>' +

@@ -429,6 +429,7 @@ function displayActivitiesOnMap(activities) {
   }
 
   updateOverviewList();
+  updateDrawControlStates();
 
   showFetchUI(processedCount);
 

@@ -248,12 +248,13 @@ function exportKmz() {
 
   const zip = generateFullKmzZip(docName); // Pass the document name to the zip generator
 
-  if (Object.keys(zip.files).length === 0) {
+  // Check if the main doc.kml was created. If not, the zip is effectively empty.
+  if (!zip.files["doc.kml"]) {
     return Swal.fire({
       icon: "info",
       iconColor: "var(--swal-color-info)",
       title: "No Data to Export",
-      text: "There are no drawn or imported paths on the map to export.",
+      text: "There are no items on the map to export.",
     });
   }
 
