@@ -898,6 +898,11 @@ g.x.axis.top.time {
   display: none;
 }
 
+/* Hide tooltip in elevation chart */
+.mouse-focus-label {
+  /* display: none; */
+}
+
 /* Hide altitude text below the elevation chart  */
 .legend {
   display: none;
