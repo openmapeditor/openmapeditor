@@ -10,7 +10,7 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 - **Organic Maps Compatibility:** Smoothly import and export KMZ backups while preserving all 16 of the Organic Maps colors for your paths and markers.
 - **Draw & Edit:** Easily draw new paths and place markers directly on the map, or edit existing items.
 - **File Support:** Full support for importing and exporting GPX, KML, and KMZ files.
-- **Performance Optimized:** To ensure a smooth experience, complex paths from imported files (GPX, KML, KMZ) are automatically simplified. This is enabled by default but can be disabled in the settings if you need to preserve every single point.
+- **Performance Optimized:** To ensure a smooth experience, complex paths are automatically simplified. This is enabled by default but can be disabled in the settings if you need to preserve every single point.
 - **Routing:** Generate routes for driving, biking, or walking. You can then save the generated route as an editable path.
 - **Elevation Profiles:** Instantly visualize the elevation profile for any path.
 - **Strava Integration:** Connect your Strava account to view your activities on the map, download their original high-resolution GPX tracks, or duplicate them for editing.

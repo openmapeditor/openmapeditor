@@ -1392,8 +1392,7 @@ function initializeMap() {
         title: "Path Simplification",
         html: `
 <p style="text-align: left; margin: 0 0 18px 0">
-  This option automatically reduces the number of points in complex imported paths (GPX, KML) and
-  generated routes.
+  This option automatically reduces the number of points in complex imported paths (GPX, KML), generated routes, and duplicated paths.
 </p>
 <p style="text-align: left; margin: 0 0 18px 0">
   <strong>Enabled (Recommended):</strong> Improves performance and responsiveness, especially with

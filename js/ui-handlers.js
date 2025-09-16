@@ -73,26 +73,57 @@ function createOverviewListItem(layer) {
       const colorName = newFeature.properties.omColorName || "Red";
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
       const color = colorData ? colorData.css : "#e51b23";
-      if (layerToDuplicate.pathType === "strava") {
-        const originalCoords = layerToDuplicate
-          .getLatLngs()
-          .map((latlng) => [latlng.lng, latlng.lat]);
-        const simplified = simplifyPath(originalCoords, "LineString", pathSimplificationConfig);
-        newLayer = L.polyline(
-          simplified.coords.map((c) => [c[1], c[0]]),
-          { ...STYLE_CONFIG.path.default, color: color }
-        );
-        newFeature.properties.totalDistance = calculatePathDistance(newLayer);
-      } else if (layerToDuplicate instanceof L.Marker) {
+
+      // --- START: MODIFIED AND REFACTORED DUPLICATION LOGIC ---
+      if (layerToDuplicate instanceof L.Marker) {
         newLayer = L.marker(layerToDuplicate.getLatLng(), {
           icon: createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity),
         });
       } else if (layerToDuplicate instanceof L.Polyline) {
-        newLayer = L.polyline(layerToDuplicate.getLatLngs(), {
-          ...STYLE_CONFIG.path.default,
-          color: color,
-        });
+        const originalCoords = layerToDuplicate
+          .getLatLngs()
+          .map((latlng) => [latlng.lng, latlng.lat]);
+
+        let coordsToUse = originalCoords;
+        let simplificationHappened = false; // Add a flag
+
+        if (enablePathSimplification) {
+          const simplifiedResult = simplifyPath(
+            originalCoords,
+            "LineString",
+            pathSimplificationConfig
+          );
+
+          // Check if the path was actually simplified
+          if (simplifiedResult.simplified) {
+            coordsToUse = simplifiedResult.coords;
+            simplificationHappened = true; // Set the flag to true
+          }
+        }
+
+        // Show a notification if simplification occurred
+        if (simplificationHappened) {
+          Swal.fire({
+            toast: true,
+            position: "center",
+            icon: "info",
+            iconColor: "var(--swal-color-info)",
+            title: "Path Optimized",
+            text: "The duplicated path was simplified for better performance.",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+          });
+        }
+
+        newLayer = L.polyline(
+          coordsToUse.map((c) => [c[1], c[0]]),
+          { ...STYLE_CONFIG.path.default, color: color }
+        );
+        newFeature.properties.totalDistance = calculatePathDistance(newLayer);
       }
+      // --- END: MODIFIED AND REFACTORED DUPLICATION LOGIC ---
+
       if (newLayer) {
         newLayer.feature = newFeature;
         newLayer.pathType = "drawn";
