@@ -86,7 +86,7 @@ This project utilizes several open-source libraries, which are included in the r
 - **jszip-3.10.1**
   - Download URL: `https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz`
 - **leaflet-1.9.4**
-  - Download URL: `https://leafletjs-cdn.s3.amazonaws.com/content/leaflet/v1.9.4/leaflet.zip`
+  - Download URL: `https://github.com/Leaflet/Leaflet/releases/download/v1.9.4/leaflet.zip`
 - **leaflet-draw-0.4.14**
   - Download URL: `https://registry.npmjs.org/leaflet-draw/-/leaflet-draw-1.0.4.tgz`
 - **leaflet-elevation-2.5.1**
