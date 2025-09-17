@@ -437,4 +437,55 @@ function displayActivitiesOnMap(activities) {
   if (progressText) {
     progressText.innerText = `Displayed ${processedCount} activities on the map.`;
   }
+
+  // deauthorizeStravaUser();
+}
+
+/**
+ * Deauthorizes the user from Strava after fetching activities.
+ * This function calls the Strava deauthorize endpoint, clears local session
+ * storage, and then displays a confirmation popup to the user.
+ */
+async function deauthorizeStravaUser() {
+  // Wait a moment so the user can see the map update first.
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  const accessToken = sessionStorage.getItem("strava_access_token");
+  if (accessToken) {
+    const deauthorizeURL = "https://www.strava.com/oauth/deauthorize";
+    try {
+      await fetch(deauthorizeURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ access_token: accessToken }),
+      });
+      console.log("Successfully deauthorized user from Strava for API limit testing.");
+    } catch (error) {
+      console.error("Failed to deauthorize Strava user:", error);
+    } finally {
+      sessionStorage.removeItem("strava_access_token");
+      sessionStorage.removeItem("strava_refresh_token");
+      sessionStorage.removeItem("strava_expires_at");
+      console.log("Cleared local Strava session data.");
+    }
+  }
+
+  // Display the SweetAlert notification.
+  Swal.fire({
+    title: "Activities Imported",
+    html: `
+      <p style="text-align: center;">
+        For this session, your activities have been successfully imported.
+      </p>
+      <p style="text-align: center; font-size: 14px; margin-top: 15px;">
+        To manage API limits, your connection to Strava has been disconnected. You will need to reconnect to fetch activities again in the future.
+      </p>
+    `,
+    icon: "success",
+    iconColor: "var(--swal-color-success)",
+    confirmButtonText: "OK",
+  }).then(() => {
+    // After the user clicks OK, reset the UI to the initial connect screen.
+    showConnectUI();
+  });
 }
