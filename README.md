@@ -104,8 +104,8 @@ This project utilizes several open-source libraries, which are included in the r
 - Download URL: `https://registry.npmjs.org/polyline-encoded/-/polyline-encoded-0.0.9.tgz`
 - **simplify-js-1.2.4**
   - Download URL: `https://registry.npmjs.org/simplify-js/-/simplify-js-1.2.4.tgz`
-- **sweetalert2-11.22.2**
-  - Download URL: `https://registry.npmjs.org/sweetalert2/-/sweetalert2-11.22.2.tgz`
+- **sweetalert2-11.23.0**
+  - Download URL: `https://registry.npmjs.org/sweetalert2/-/sweetalert2-11.23.0.tgz`
 - **togeojson-0.16.2**
   - Download URL: `https://github.com/mapbox/togeojson/archive/refs/tags/0.16.2.zip`
 
