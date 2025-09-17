@@ -84,7 +84,7 @@ This project utilizes several open-source libraries, which are included in the r
 - **d3-7.9.0**
   - Download URL: `https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js`
 - **jszip-3.10.1**
-  - Download URL: `https://github.com/Stuk/jszip/archive/refs/tags/v3.10.1.zip`
+  - Download URL: `https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz`
 - **leaflet-1.9.4**
   - Download URL: `https://leafletjs-cdn.s3.amazonaws.com/content/leaflet/v1.9.4/leaflet.zip`
 - **leaflet-draw-0.4.14**
