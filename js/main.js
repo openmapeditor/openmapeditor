@@ -320,7 +320,7 @@ function initializeMap() {
 
   // Initialize map
   map = L.map("map", {
-    center: [20, 0],
+    center: [0, 0],
     zoom: 2,
     zoomControl: false,
     doubleClickZoom: false,
