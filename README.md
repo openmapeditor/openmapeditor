@@ -83,6 +83,22 @@ To make the deployment work, you must add your production API keys to your repos
 
 ---
 
+## Customizing & Forking
+
+This project is designed to be easily forked and customized. All primary branding can be configured in one place.
+
+1.  **Edit the Configuration File:**
+    Open `js/config.js` and change the values of the `APP_NAME`, `APP_SHORT_NAME`, `APP_DESCRIPTION`, and `APP_DOMAIN` variables to match your project.
+
+2.  **Update Manual Files:**
+    For a complete re-branding, you should also manually update the following files:
+    - **`README.md`**: Update the documentation with your project's information.
+    - **`privacy.html`**: This is a legal document. You **must** review it and update it with your own contact information and policies.
+    - **Contact & Repo URLs**: Change the email and GitHub links in `credits.html` and `privacy.html`.
+    - **Copyright & Author**: Update the copyright headers in the files and the information in `AUTHORS.md`.
+
+---
+
 ## Plugins & Libraries Used
 
 This project utilizes several open-source libraries, which are included in the repository.
