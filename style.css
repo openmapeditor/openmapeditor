@@ -1251,7 +1251,7 @@ g.x.axis.top.time {
 
 /* Make routing and elevation provider select boxes the same width */
 #settings-panel select {
-  width: 120px;
+  width: 130px;
   /* ADDED: Styles to match other dropdowns */
   background-color: var(--background-color);
   color: var(--text-color);
