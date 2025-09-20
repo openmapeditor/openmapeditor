@@ -77,6 +77,8 @@ To make the deployment work, you must add your production API keys to your repos
     - `STRAVA_CLIENT_SECRET`
 5.  Repeat this process for all required keys.
 
+> **Google API Note:** To use the Google elevation service, your `GOOGLE_API_KEY` must have both the **Maps Elevation API** and the **Maps JavaScript API** enabled in your Google Cloud Platform project.
+
 > If the `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` secrets are not provided during deployment, the live application will require users to enter their own personal API keys.
 
 ---
