@@ -50,7 +50,7 @@ async function fetchElevationForPathGoogle(latlngs) {
   // This block runs only once to create and add the script tag to the page.
   // It uses the 'googleApiKey' variable from your config.js file.
   if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
-    if (!googleApiKey || googleApiKey.includes("YOUR")) {
+    if (!googleApiKey) {
       console.error("Google API Key is missing from config.js");
       Swal.fire({
         icon: "error",
@@ -111,7 +111,7 @@ async function fetchElevationForPathMapbox(latlngs) {
   console.log("Fetching elevation data from: Mapbox");
   if (!latlngs || latlngs.length === 0) return null;
 
-  if (!mapboxAccessToken || mapboxAccessToken.includes("YOUR")) {
+  if (!mapboxAccessToken) {
     console.error("Mapbox Access Token is missing or a placeholder.");
     Swal.fire({
       icon: "error",
