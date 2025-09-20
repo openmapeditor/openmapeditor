@@ -47,6 +47,8 @@ This project is self-contained and does not require a package manager (`npm`).
     - Rename the copy to **`js/secrets.js`**.
     - Open the new `js/secrets.js` and fill in your actual API keys.
 
+    > **Note:** If you leave the `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` fields empty, the application will instead prompt end-users to provide their own personal API keys to use the integration.
+
     > **Important:** The `secrets.js` file is listed in `.gitignore` and will not be committed to the repository, keeping your keys safe and private.
 
 3.  **Run the Application**
@@ -74,6 +76,8 @@ To make the deployment work, you must add your production API keys to your repos
     - `STRAVA_CLIENT_ID`
     - `STRAVA_CLIENT_SECRET`
 5.  Repeat this process for all required keys.
+
+> If the `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` secrets are not provided during deployment, the live application will require users to enter their own personal API keys.
 
 ---
 
