@@ -46,10 +46,30 @@ jobs:
           sed -i "s|__APP_SHORT_NAME__|${APP_SHORT_NAME_VALUE}|g" manifest.json
           sed -i "s|__APP_SHORT_DESCRIPTION__|${APP_SHORT_DESC_VALUE}|g" manifest.json
 
+      # Steps for JavaScript Minification ---
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install JavaScript minifier (Terser)
+        run: npm install -g terser
+
+      - name: Bundle, Minify, and Update HTML
+        run: |
+          # 1. Bundle all script files into a single temporary file
+          cat js/config.js js/utils.js js/ui-handlers.js js/map-interactions.js js/file-handlers.js js/elevation.js js/routing.js js/strava.js js/main.js > js/bundle.js
+
+          # 2. Minify the bundled file into app.min.js and create a source map for debugging
+          terser js/bundle.js -c -m -o js/app.min.js --source-map "filename='js/app.min.js.map'"
+
+          # 3. Automatically replace the original script tags in index.html with a single tag for the minified file
+          sed -i '/<script src="js\/config.js"/,/<script src="js\/main.js"/c\    <script src="js/app.min.js"><\/script>' index.html
+
+      # Upload the entire directory
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload the entire directory
           path: "."
 
   # Deploy job: takes the prepared files and deploys them
