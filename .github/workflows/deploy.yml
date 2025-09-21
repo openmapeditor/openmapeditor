@@ -35,15 +35,16 @@ jobs:
           APP_NAME_VALUE=$(grep 'const APP_NAME' js/config.js | cut -d '"' -f 2)
           APP_SHORT_NAME_VALUE=$(grep 'const APP_SHORT_NAME' js/config.js | cut -d '"' -f 2)
           APP_DESC_VALUE=$(grep 'const APP_DESCRIPTION' js/config.js | cut -d '"' -f 2)
+          APP_SHORT_DESC_VALUE=$(grep 'const APP_SHORT_DESCRIPTION' js/config.js | cut -d '"' -f 2)
 
-          # Replace in index.html
+          # Replace in index.html (uses the LONG description)
           sed -i "s|__APP_NAME__|${APP_NAME_VALUE}|g" index.html
           sed -i "s|__APP_DESCRIPTION__|${APP_DESC_VALUE}|g" index.html
 
-          # Replace in manifest.json
+          # Replace in manifest.json (uses the SHORT description)
           sed -i "s|__APP_NAME__|${APP_NAME_VALUE}|g" manifest.json
           sed -i "s|__APP_SHORT_NAME__|${APP_SHORT_NAME_VALUE}|g" manifest.json
-          sed -i "s|__APP_DESCRIPTION__|${APP_DESC_VALUE}|g" manifest.json
+          sed -i "s|__APP_SHORT_DESCRIPTION__|${APP_SHORT_DESC_VALUE}|g" manifest.json
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
