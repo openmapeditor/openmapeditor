@@ -1,7 +1,7 @@
 {
-  "name": "OpenMapEditor",
-  "short_name": "OpenMapEditor",
-  "description": "A simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers",
+  "name": "__APP_NAME__",
+  "short_name": "__APP_SHORT_NAME__",
+  "description": "__APP_DESCRIPTION__",
   "start_url": ".",
   "display": "standalone",
   "background_color": "white",

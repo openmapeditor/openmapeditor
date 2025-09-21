@@ -157,7 +157,7 @@ function showConnectUI() {
         <img src="img/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
       </button>
       <p style="font-size: 12px; color: var(--text-color); margin-top: 5px;">
-        By connecting, you agree to the OpenMapEditor<br>
+        By connecting, you agree to the ${APP_NAME}<br>
         <a href="privacy.html" target="_blank" style="color: var(--highlight-color);">Privacy Policy</a>
       </p>
     </div>
@@ -279,14 +279,14 @@ function addEventListenersForUserKeysPanel() {
         <p style="text-align: left; margin-top: 15px;"><strong>How to get your keys:</strong></p>
         <ol style="text-align: left; padding-left: 20px;">
           <li>Go to your <a href="https://www.strava.com/settings/api" target="_blank" id="strava-api-link" style="color: var(--highlight-color);">Strava API Settings</a>.</li>
-          <li>Create a new app. For "Authorization Callback Domain", enter <strong id="auth-callback-domain-wrapper" style="cursor:pointer; text-decoration: underline;" title="Click to copy">www.openmapeditor.com<span id="auth-callback-domain-copy-icon" class="copy-icon material-symbols">content_copy</span></strong>.</li>
+          <li>Create a new app. For "Authorization Callback Domain", enter <strong id="auth-callback-domain-wrapper" style="cursor:pointer; text-decoration: underline;" title="Click to copy">${APP_DOMAIN}<span id="auth-callback-domain-copy-icon" class="copy-icon material-symbols">content_copy</span></strong>.</li>
           <li>Copy your <strong>Client ID</strong> and <strong>Client Secret</strong> and paste them here.</li>
         </ol>
         <p style="text-align: left; margin-top: 15px;">Your keys are saved securely in your browser's local storage.</p>`,
       confirmButtonText: "Got it!",
       didOpen: () => {
         document.getElementById("auth-callback-domain-wrapper")?.addEventListener("click", () => {
-          copyToClipboard("www.openmapeditor.com").then(() => {
+          copyToClipboard(`${APP_DOMAIN}`).then(() => {
             Swal.fire({
               toast: true,
               position: "center",

@@ -142,6 +142,13 @@ function initializeMap() {
   }
   // --- END: Check for secrets.js ---
 
+  // Update the live page title and description
+  document.title = APP_NAME;
+  const metaDescription = document.querySelector('meta[name="description"]');
+  if (metaDescription) {
+    metaDescription.setAttribute("content", APP_DESCRIPTION);
+  }
+
   // Read saved preference for units setting at the beginning
   useImperialUnits = localStorage.getItem("useImperialUnits") === "true";
 
@@ -329,7 +336,7 @@ function initializeMap() {
   // Configure the map's attribution control
   map.attributionControl.setPosition("bottomleft");
   map.attributionControl.setPrefix(
-    '<a href="#" id="attribution-link" title="Credits">OpenMapEditor &#x2764;&#xfe0f;</a><a href="#" id="install-pwa-link" title="Install App" style="display: none;">Install</a>'
+    `<a href="#" id="attribution-link" title="Credits">${APP_NAME} &#x2764;&#xfe0f;</a><a href="#" id="install-pwa-link" title="Install App" style="display: none;">Install</a>`
   );
 
   // Add the initial base layer to the map (after configuring attribution control to prevent problems with prefix)
@@ -1583,12 +1590,18 @@ function initializeMap() {
         }
         const creditsHtmlContent = await response.text();
 
+        const swalContent = document.createElement("div");
+        swalContent.innerHTML = creditsHtmlContent;
+        swalContent.querySelector("#credits-app-name").textContent = APP_NAME;
+        swalContent.querySelector("#credits-app-short-description").textContent =
+          APP_SHORT_DESCRIPTION;
+
         // Open the SweetAlert with the fetched content
         Swal.fire({
           imageUrl: "img/icon-1024x1024.svg",
           imageWidth: 150,
           imageHeight: "auto",
-          html: creditsHtmlContent, // <-- Use the fetched HTML here
+          html: swalContent, // <-- Use the fetched HTML here
           confirmButtonText: "Close",
           width: "500px",
           customClass: {
