@@ -1278,7 +1278,6 @@ g.x.axis.top.time {
 .settings-info-icon {
   cursor: pointer;
   margin-left: 5px;
-  vertical-align: middle; /* Ensures both are aligned */
 }
 
 /* --- NEW: Styles for the info icon in the settings panel --- */

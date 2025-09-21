@@ -182,9 +182,10 @@ function renderUserKeysPanel() {
 
   const apiKeysHtml = `
     <div style="padding: 0; border-bottom: 1px solid var(--border-color); text-align: center;">
-      <p style="margin-bottom: 5px;">
-        Provide Strava API Keys to connect<span id="strava-info-icon" class="material-symbols" title="Why is this needed?">info</span>
-      </p>
+      <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 5px; font-size: 14px;">
+      <span>Provide Strava API Keys to connect</span>
+      <span id="strava-info-icon" class="material-symbols" title="Why is this needed?">info</span>
+      </div>
       <div class="routing-input-group">
         <input type="password" id="user-strava-client-id" placeholder="Your Strava Client ID" autocomplete="off" value="${userClientId}" />
         <button id="clear-strava-client-id-user" title="Clear Client ID"><span class="material-symbols material-symbols-fill routing-panel-icon">cancel</span></button>
