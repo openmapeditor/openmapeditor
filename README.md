@@ -62,30 +62,36 @@ For the deployment to succeed, you must provide your production API keys as repo
 
 To enable features that rely on external services, you must provide your own API keys.
 
-### Required Keys & Important Notes
-
-- `GOOGLE_API_KEY`
-- `MAPBOX_ACCESS_TOKEN`
-- `TRACESTRACK_API_KEY`
-- `STRAVA_CLIENT_ID` (Optional)
-- `STRAVA_CLIENT_SECRET` (Optional)
-
-> **Google API Note:** To use the Google elevation service, your `GOOGLE_API_KEY` must have both the **Maps Elevation API** and the **Maps JavaScript API** enabled in your Google Cloud Platform project.
-
-> **Strava API Note:** If you leave the `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` fields empty or do not provide them as secrets, the application will instead prompt end-users to provide their own personal API keys to use the integration.
-
 ### A. For Local Development
 
 1.  Make a copy of the template file `js/secrets.js.example`.
 2.  Rename the copy to **`js/secrets.js`**.
-3.  Open the new `js/secrets.js` and fill in your actual API keys.
+3.  Open the new `js/secrets.js` and fill in your actual API keys using the following `camelCase` variable names:
+    - `googleApiKey`
+    - `mapboxAccessToken`
+    - `tracestrackApiKey`
+    - `stravaClientId` (Optional)
+    - `stravaClientSecret` (Optional)
 
 > The `secrets.js` file is listed in `.gitignore` and will not be committed to the repository, keeping your keys safe.
 
 ### B. For Production Deployment
 
+For the deployment to succeed, you must provide your production API keys as GitHub repository secrets.
+
 1.  In your GitHub repository, go to **Settings > Secrets and variables > Actions**.
-2.  Click **New repository secret** for each key listed above, ensuring the names match exactly.
+2.  Click **New repository secret** for each key listed below, ensuring the names match the `SNAKE_CASE` format exactly:
+    - `GOOGLE_API_KEY`
+    - `MAPBOX_ACCESS_TOKEN`
+    - `TRACESTRACK_API_KEY`
+    - `STRAVA_CLIENT_ID` (Optional)
+    - `STRAVA_CLIENT_SECRET` (Optional)
+
+### Important API Notes
+
+> **Google API Note:** To use the Google elevation service, your `GOOGLE_API_KEY` must have both the **Maps Elevation API** and the **Maps JavaScript API** enabled in your Google Cloud Platform project.
+
+> **Strava API Note:** If you leave the `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` fields empty or do not provide them as secrets, the application will instead prompt end-users to provide their own personal API keys to use the integration.
 
 ---
 
