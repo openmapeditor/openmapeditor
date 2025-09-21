@@ -118,32 +118,32 @@ This project is designed to be easily forked and customized. All primary brandin
 This project utilizes several open-source libraries, which are included in the repository.
 
 - **d3-7.9.0**
-  - Download URL: `https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js`
+  - Download URL: <https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js>
 - **jszip-3.10.1**
-  - Download URL: `https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz`
+  - Download URL: <https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz>
 - **leaflet-1.9.4**
-  - Download URL: `https://github.com/Leaflet/Leaflet/releases/download/v1.9.4/leaflet.zip`
+  - Download URL: <https://github.com/Leaflet/Leaflet/releases/download/v1.9.4/leaflet.zip>
 - **leaflet-draw-1.0.4**
-  - Download URL: `https://registry.npmjs.org/leaflet-draw/-/leaflet-draw-1.0.4.tgz`
+  - Download URL: <https://registry.npmjs.org/leaflet-draw/-/leaflet-draw-1.0.4.tgz>
 - **leaflet-elevation-2.5.1**
-  - Download URL: `https://registry.npmjs.org/@raruto/leaflet-elevation/-/leaflet-elevation-2.5.1.tgz`
+  - Download URL: <https://registry.npmjs.org/@raruto/leaflet-elevation/-/leaflet-elevation-2.5.1.tgz>
   - Important Info: Changed line 64 in `leaflet-elevation-2.5.1/src/components/marker.js`
   - Important Info: Changed line 161 in `leaflet-elevation-2.5.1/src/components/chart.js`
   - Important Info: In `leaflet-elevation-2.5.1/src/handlers/time.js` the time display was customized using a new function, the label was updated to "Walking Time," and the distance calculation logic was refined.
 - **leaflet-geosearch-4.2.1**
-  - Download URL: `https://registry.npmjs.org/leaflet-geosearch/-/leaflet-geosearch-4.2.1.tgz`
+  - Download URL: <https://registry.npmjs.org/leaflet-geosearch/-/leaflet-geosearch-4.2.1.tgz>
 - **leaflet-locatecontrol-0.85.1**
-  - Download URL: `https://registry.npmjs.org/leaflet.locatecontrol/-/leaflet.locatecontrol-0.85.1.tgz`
+  - Download URL: <https://registry.npmjs.org/leaflet.locatecontrol/-/leaflet.locatecontrol-0.85.1.tgz>
 - **leaflet-routing-machine-3.2.12**
-  - Download URL: `https://registry.npmjs.org/leaflet-routing-machine/-/leaflet-routing-machine-3.2.12.tgz`
+  - Download URL: <https://registry.npmjs.org/leaflet-routing-machine/-/leaflet-routing-machine-3.2.12.tgz>
 - **polyline-encoded-0.0.9**
-- Download URL: `https://registry.npmjs.org/polyline-encoded/-/polyline-encoded-0.0.9.tgz`
+- Download URL: <https://registry.npmjs.org/polyline-encoded/-/polyline-encoded-0.0.9.tgz>
 - **simplify-js-1.2.4**
-  - Download URL: `https://registry.npmjs.org/simplify-js/-/simplify-js-1.2.4.tgz`
+  - Download URL: <https://registry.npmjs.org/simplify-js/-/simplify-js-1.2.4.tgz>
 - **sweetalert2-11.23.0**
-  - Download URL: `https://registry.npmjs.org/sweetalert2/-/sweetalert2-11.23.0.tgz`
+  - Download URL: <https://registry.npmjs.org/sweetalert2/-/sweetalert2-11.23.0.tgz>
 - **togeojson-0.16.2**
-  - Download URL: `https://github.com/mapbox/togeojson/archive/refs/tags/0.16.2.zip`
+  - Download URL: <https://github.com/mapbox/togeojson/archive/refs/tags/0.16.2.zip>
 
 ---
 
