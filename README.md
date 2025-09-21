@@ -41,15 +41,7 @@ This project is self-contained and does not require a package manager (`npm`).
     ```
 
 2.  **Provide API Keys**
-    To enable features that rely on external services, you need to provide your own API keys.
-
-    - Make a copy of the template file `js/secrets.js.example`.
-    - Rename the copy to **`js/secrets.js`**.
-    - Open the new `js/secrets.js` and fill in your actual API keys.
-
-    > **Note:** If you leave the `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` fields empty, the application will instead prompt end-users to provide their own personal API keys to use the integration.
-
-    > **Important:** The `secrets.js` file is listed in `.gitignore` and will not be committed to the repository, keeping your keys safe and private.
+    See the **"Configuring API Keys"** section below for detailed instructions.
 
 3.  **Run the Application**
     Local development requires running the project from a local web server. Opening `index.html` directly from your filesystem will not work correctly.
@@ -58,28 +50,40 @@ This project is self-contained and does not require a package manager (`npm`).
 
 ## Production Deployment
 
-Deployment to GitHub Pages is handled automatically by the GitHub Action located in `.github/workflows/deploy.yml`. The action creates the `js/secrets.js` file automatically during the deployment process, injecting keys that are stored securely in the repository's settings.
+Deployment to GitHub Pages is handled automatically by the GitHub Action located in `.github/workflows/deploy.yml`. The action runs automatically on every push to the `main` branch.
 
-The deployment action runs automatically on every push to the `main` branch.
+For the deployment to succeed, you must provide your production API keys as repository secrets. See the **"Configuring API Keys"** section below for details.
 
-### Adding Secrets to GitHub
+---
 
-To make the deployment work, you must add your production API keys to your repository's secrets.
+## Configuring API Keys
 
-1.  In your GitHub repository, go to the **Settings** tab.
-2.  In the left sidebar, go to **Secrets and variables > Actions**.
-3.  Click the **New repository secret** button.
-4.  Enter the name and value for each secret. The names must exactly match the ones used in the workflow file:
-    - `GOOGLE_API_KEY`
-    - `MAPBOX_ACCESS_TOKEN`
-    - `TRACESTRACK_API_KEY`
-    - `STRAVA_CLIENT_ID`
-    - `STRAVA_CLIENT_SECRET`
-5.  Repeat this process for all required keys.
+To enable features that rely on external services, you must provide your own API keys.
+
+### Required Keys & Important Notes
+
+- `GOOGLE_API_KEY`
+- `MAPBOX_ACCESS_TOKEN`
+- `TRACESTRACK_API_KEY`
+- `STRAVA_CLIENT_ID` (Optional)
+- `STRAVA_CLIENT_SECRET` (Optional)
 
 > **Google API Note:** To use the Google elevation service, your `GOOGLE_API_KEY` must have both the **Maps Elevation API** and the **Maps JavaScript API** enabled in your Google Cloud Platform project.
 
-> If the `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` secrets are not provided during deployment, the live application will require users to enter their own personal API keys.
+> **Strava API Note:** If you leave the `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` fields empty or do not provide them as secrets, the application will instead prompt end-users to provide their own personal API keys to use the integration.
+
+### A. For Local Development
+
+1.  Make a copy of the template file `js/secrets.js.example`.
+2.  Rename the copy to **`js/secrets.js`**.
+3.  Open the new `js/secrets.js` and fill in your actual API keys.
+
+> The `secrets.js` file is listed in `.gitignore` and will not be committed to the repository, keeping your keys safe.
+
+### B. For Production Deployment
+
+1.  In your GitHub repository, go to **Settings > Secrets and variables > Actions**.
+2.  Click **New repository secret** for each key listed above, ensuring the names match exactly.
 
 ---
 
