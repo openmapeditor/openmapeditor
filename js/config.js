@@ -3,10 +3,10 @@
 
 const APP_NAME = "OpenMapEditor";
 const APP_SHORT_NAME = "OpenMapEditor";
-const APP_DESCRIPTION =
-  "OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, KMZ), routing, elevation profiles, custom styling, and Strava activity integration.";
-const APP_SHORT_DESCRIPTION =
-  "A simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers, built with Leaflet.js.";
+// prettier-ignore
+const APP_DESCRIPTION = "OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, KMZ), routing, elevation profiles, custom styling, and Strava activity integration.";
+// prettier-ignore
+const APP_SHORT_DESCRIPTION = "A simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers, built with Leaflet.js.";
 const APP_DOMAIN = "www.openmapeditor.com"; // Used for Strava setup instructions
 
 // --- START: Organic Maps Color Configuration ---
