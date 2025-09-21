@@ -1,4 +1,3 @@
-// OpenMapEditor - A web-based editor for creating and managing geographic data.
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
 const APP_NAME = "OpenMapEditor";
