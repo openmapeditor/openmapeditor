@@ -10,24 +10,27 @@ const APP_DOMAIN = "www.openmapeditor.com"; // Used for Strava setup instruction
 
 // --- START: Organic Maps Color Configuration ---
 // Centralized configuration for the 16 Organic Maps colors.
-// KML format is AABBGGRR, which we convert to standard CSS #RRGGBB.
+// Maps KML (AABBGGRR) colors to CSS (#RRGGBB).
+// Found the CSS colors here:
+// https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/dark/style.mapcss
+// https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/light/style.mapcss
 const ORGANIC_MAPS_COLORS = [
-  { name: "Red", kml: "ff231be5", css: "#e51b23" },
-  { name: "Blue", kml: "ffc76e00", css: "#006ec7" },
-  { name: "Purple", kml: "ffb0279c", css: "#9c27b0" },
-  { name: "Yellow", kml: "ff00c8ff", css: "#ffc800" },
-  { name: "Pink", kml: "ff8241ff", css: "#ff4182" },
-  { name: "Brown", kml: "ff485579", css: "#795548" },
-  { name: "Green", kml: "ff3c8e38", css: "#388e3c" },
-  { name: "Orange", kml: "ff00a0ff", css: "#ffa000" },
-  { name: "DeepPurple", kml: "ffbf3966", css: "#6639bf" },
-  { name: "LightBlue", kml: "fff29c24", css: "#249cf2" },
-  { name: "Cyan", kml: "ffcdbe14", css: "#14becd" },
-  { name: "Teal", kml: "ff8ca500", css: "#00a58c" },
-  { name: "Lime", kml: "ff39bf93", css: "#93bf39" },
-  { name: "DeepOrange", kml: "ff3264f0", css: "#f06432" },
-  { name: "Gray", kml: "ff737373", css: "#737373" },
-  { name: "BlueGray", kml: "ff807359", css: "#597380" },
+  { name: "Red", kml: "FF231BE5", css: "#E51B23" },
+  { name: "Pink", kml: "FF8241FF", css: "#FF4182" },
+  { name: "Purple", kml: "FFB2249B", css: "#9B24B2" },
+  { name: "DeepPurple", kml: "FFBF3966", css: "#6639BF" },
+  { name: "Blue", kml: "FFCC6600", css: "#0066CC" },
+  { name: "LightBlue", kml: "FFF29C24", css: "#249CF2" },
+  { name: "Cyan", kml: "FFCDBE14", css: "#14BECD" },
+  { name: "Teal", kml: "FF8CA500", css: "#00A58C" },
+  { name: "Green", kml: "FF3C8C3C", css: "#3C8C3C" },
+  { name: "Lime", kml: "FF39BF93", css: "#93BF39" },
+  { name: "Yellow", kml: "FF00C8FF", css: "#FFC800" },
+  { name: "Orange", kml: "FF0096FF", css: "#FF9600" },
+  { name: "DeepOrange", kml: "FF3264F0", css: "#F06432" },
+  { name: "Brown", kml: "FF334680", css: "#804633" },
+  { name: "Gray", kml: "FF737373", css: "#737373" },
+  { name: "BlueGray", kml: "FF807359", css: "#597380" },
 ];
 // --- END: Organic Maps Color Configuration ---
 
