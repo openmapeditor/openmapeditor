@@ -57,14 +57,17 @@ jobs:
 
       - name: Bundle, Minify, and Update HTML
         run: |
-          # 1. Bundle all script files into a single temporary file
-          cat js/config.js js/utils.js js/ui-handlers.js js/map-interactions.js js/file-handlers.js js/elevation.js js/routing.js js/strava.js js/main.js > js/bundle.js
+          # 1. Extract script paths from index.html and bundle them
+          scripts=$(sed -n '/<!-- START-BUNDLE -->/,/<!-- END-BUNDLE -->/p' index.html | grep '<script src' | sed 's/.*src="\([^"]*\)".*/\1/')
+          echo "Bundling scripts:"
+          echo "$scripts"
+          cat $scripts > js/bundle.js
 
-          # 2. Minify the bundled file into app.min.js and create a source map for debugging
+          # 2. Minify the bundled file
           terser js/bundle.js -c -m -o js/app.min.js --source-map "filename='js/app.min.js.map'"
 
-          # 3. Automatically replace the original script tags in index.html with a single tag for the minified file
-          sed -i '/<script src="js\/config.js"/,/<script src="js\/main.js"/c\    <script src="js/app.min.js"><\/script>' index.html
+          # 3. Replace the original script block with the minified script tag
+          sed -i '/<!-- START-BUNDLE -->/,/<!-- END-BUNDLE -->/c\    <script src="js/app.min.js"><\/script>' index.html
 
       # Upload the entire directory
       - name: Upload artifact
