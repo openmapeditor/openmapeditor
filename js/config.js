@@ -8,30 +8,50 @@ const APP_DESCRIPTION = "OpenMapEditor is a simple, powerful web-based editor fo
 const APP_SHORT_DESCRIPTION = "A simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers, built with Leaflet.js.";
 const APP_DOMAIN = "www.openmapeditor.com"; // Used for Strava setup instructions
 
+/**
+ * Converts a CSS hex color (#RRGGBB) to a KML color (AABBGGRR).
+ * This logic is similar to the SaveColorToABGR function in Organic Maps' C++ code:
+ * https://github.com/organicmaps/organicmaps/blob/master/libs/kml/serdes.cpp
+ * It assumes full opacity (AA = FF).
+ * @param {string} cssColor The CSS color string (e.g., "#E51B23").
+ * @returns {string} The KML color string (e.g., "FF231BE5").
+ */
+function cssToKmlColor(cssColor) {
+  const rr = cssColor.substring(1, 3);
+  const gg = cssColor.substring(3, 5);
+  const bb = cssColor.substring(5, 7);
+  return `FF${bb}${gg}${rr}`.toUpperCase();
+}
+
 // --- START: Organic Maps Color Configuration ---
 // Centralized configuration for the 16 Organic Maps colors.
-// Maps KML (AABBGGRR) colors to CSS (#RRGGBB).
-// Found the CSS colors here:
+// KML colors are generated automatically to match the format used by Organic Maps.
+// The source for the CSS hex values can be found here:
 // https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/dark/style.mapcss
 // https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/light/style.mapcss
-const ORGANIC_MAPS_COLORS = [
-  { name: "Red", kml: "FF231BE5", css: "#E51B23" },
-  { name: "Pink", kml: "FF8241FF", css: "#FF4182" },
-  { name: "Purple", kml: "FFB2249B", css: "#9B24B2" },
-  { name: "DeepPurple", kml: "FFBF3966", css: "#6639BF" },
-  { name: "Blue", kml: "FFCC6600", css: "#0066CC" },
-  { name: "LightBlue", kml: "FFF29C24", css: "#249CF2" },
-  { name: "Cyan", kml: "FFCDBE14", css: "#14BECD" },
-  { name: "Teal", kml: "FF8CA500", css: "#00A58C" },
-  { name: "Green", kml: "FF3C8C3C", css: "#3C8C3C" },
-  { name: "Lime", kml: "FF39BF93", css: "#93BF39" },
-  { name: "Yellow", kml: "FF00C8FF", css: "#FFC800" },
-  { name: "Orange", kml: "FF0096FF", css: "#FF9600" },
-  { name: "DeepOrange", kml: "FF3264F0", css: "#F06432" },
-  { name: "Brown", kml: "FF334680", css: "#804633" },
-  { name: "Gray", kml: "FF737373", css: "#737373" },
-  { name: "BlueGray", kml: "FF807359", css: "#597380" },
+const ORGANIC_MAPS_COLORS_DATA = [
+  { name: "Red", css: "#E51B23" },
+  { name: "Pink", css: "#FF4182" },
+  { name: "Purple", css: "#9B24B2" },
+  { name: "DeepPurple", css: "#6639BF" },
+  { name: "Blue", css: "#0066CC" },
+  { name: "LightBlue", css: "#249CF2" },
+  { name: "Cyan", css: "#14BECD" },
+  { name: "Teal", css: "#00A58C" },
+  { name: "Green", css: "#3C8C3C" },
+  { name: "Lime", css: "#93BF39" },
+  { name: "Yellow", css: "#FFC800" },
+  { name: "Orange", css: "#FF9600" },
+  { name: "DeepOrange", css: "#F06432" },
+  { name: "Brown", css: "#804633" },
+  { name: "Gray", css: "#737373" },
+  { name: "BlueGray", css: "#597380" },
 ];
+
+const ORGANIC_MAPS_COLORS = ORGANIC_MAPS_COLORS_DATA.map((color) => ({
+  ...color,
+  kml: cssToKmlColor(color.css),
+}));
 // --- END: Organic Maps Color Configuration ---
 
 // --- START: Elevation API Configuration ---
