@@ -52,7 +52,7 @@ This project is self-contained and does not require a package manager (`npm`).
 
 Deployment to GitHub Pages is handled automatically by the GitHub Action located in `.github/workflows/deploy.yml`. The action runs automatically on every push to the `main` branch.
 
-**In addition to deploying the site, the workflow also performs critical performance optimizations. It bundles all JavaScript files into a single script, minifies it to reduce its size, and updates `index.html` to load the final optimized file (`app.min.js`).**
+**In addition to deploying the site, the workflow also performs critical performance optimizations. It bundles all JavaScript files located between the `<!-- START-BUNDLE -->` and `<!-- END-BUNDLE -->` comments in `index.html` into a single script, minifies it to reduce its size, and updates `index.html` to load the final optimized file (`app.min.js`).**
 
 For the deployment to succeed, you must provide your production API keys as repository secrets. See the **"Configuring API Keys"** section below for details.
 
