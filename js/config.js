@@ -80,7 +80,7 @@ const ELEVATION_PROVIDER_CONFIG = {
 // --- END: Elevation API Configuration ---
 
 // Global settings
-let enablePathSimplification = true;
+let enablePathSimplification = localStorage.getItem("enablePathSimplification") !== "false";
 
 // --- NEW: Centralized Style Configuration ---
 const STYLE_CONFIG = {

@@ -1381,6 +1381,7 @@ function initializeMap() {
     checkbox.checked = enablePathSimplification;
     L.DomEvent.on(checkbox, "change", (e) => {
       enablePathSimplification = e.target.checked;
+      localStorage.setItem("enablePathSimplification", enablePathSimplification);
       Swal.fire({
         toast: true,
         position: "center",
