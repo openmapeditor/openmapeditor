@@ -137,7 +137,7 @@ This project utilizes several open-source libraries, which are included in the r
 - **leaflet-routing-machine-3.2.12**
   - Download URL: <https://registry.npmjs.org/leaflet-routing-machine/-/leaflet-routing-machine-3.2.12.tgz>
 - **polyline-encoded-0.0.9**
-- Download URL: <https://registry.npmjs.org/polyline-encoded/-/polyline-encoded-0.0.9.tgz>
+  - Download URL: <https://registry.npmjs.org/polyline-encoded/-/polyline-encoded-0.0.9.tgz>
 - **simplify-js-1.2.4**
   - Download URL: <https://registry.npmjs.org/simplify-js/-/simplify-js-1.2.4.tgz>
 - **sweetalert2-11.23.0**
