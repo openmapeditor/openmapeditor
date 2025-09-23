@@ -76,7 +76,7 @@ async function fetchElevationForPathGoogle(latlngs) {
 
   let pointsToSend = latlngs;
   if (enablePreFetchDownsampling) {
-    pointsToSend = downsamplePath(latlngs, MAX_DOWNSAMPLE_POINTS);
+    pointsToSend = downsamplePath(latlngs, ELEVATION_PROVIDER_CONFIG.google.limit);
   }
 
   for (let i = 0; i < pointsToSend.length; i += BATCH_SIZE) {
@@ -121,8 +121,10 @@ async function fetchElevationForPathMapbox(latlngs) {
     return null;
   }
 
-  const MAX_POINTS_MAPBOX = 100;
-  let pointsToSend = downsamplePath(latlngs, MAX_POINTS_MAPBOX);
+  let pointsToSend = latlngs;
+  if (enablePreFetchDownsampling) {
+    pointsToSend = downsamplePath(latlngs, ELEVATION_PROVIDER_CONFIG.mapbox.limit);
+  }
 
   const promises = pointsToSend.map((p) => {
     // CORRECTED: Added &layers=contour and &limit=50 to the URL.
@@ -165,9 +167,9 @@ async function fetchElevationForPathMapbox(latlngs) {
   }
 }
 
-// Fetches elevation data for a path from opentopodata.
-async function fetchElevationForPathOpenTopo(latlngs) {
-  console.log("Fetching elevation data from: OpenTopoData");
+// Fetches elevation data for a path from Open Topo Data.
+async function fetchElevationForPathOpenTopoData(latlngs) {
+  console.log("Fetching elevation data from: Open Topo Data");
   if (!latlngs || latlngs.length < 2) {
     if (latlngs && latlngs.length === 1)
       console.warn("Only one point provided for elevation, cannot draw profile.");
@@ -185,8 +187,10 @@ async function fetchElevationForPathOpenTopo(latlngs) {
     }
   });
 
-  const maxPointsOpenTopo = 100;
-  let pointsToSend = downsamplePath(uniquePoints, maxPointsOpenTopo);
+  let pointsToSend = uniquePoints;
+  if (enablePreFetchDownsampling) {
+    pointsToSend = downsamplePath(uniquePoints, ELEVATION_PROVIDER_CONFIG.openTopo.limit);
+  }
 
   const locations = pointsToSend.map((p) => `${p.lat},${p.lng}`).join("|");
   // We prepend a CORS proxy to the original URL to bypass the browser's security block.
@@ -205,15 +209,15 @@ async function fetchElevationForPathOpenTopo(latlngs) {
     ) {
       return pointsToSend.map((p, i) => L.latLng(p.lat, p.lng, apiResponse.results[i].elevation));
     } else {
-      console.warn("OpenTopoData: API returned non-OK status or data mismatch.", apiResponse);
+      console.warn("Open Topo Data: API returned non-OK status or data mismatch.", apiResponse);
       return null;
     }
   } catch (error) {
-    console.error("Error fetching elevation data from OpenTopoData:", error);
+    console.error("Error fetching elevation data from Open Topo Data:", error);
     Swal.fire({
       icon: "error",
       iconColor: "var(--swal-color-error)",
-      title: "OpenTopoData Error",
+      title: "Open Topo Data Error",
       text: "Failed to fetch elevation data.",
     });
     return null;
@@ -235,7 +239,7 @@ async function fetchElevationForPath(latlngs) {
   } else if (elevationProvider === "mapbox") {
     pointsWithElev = await fetchElevationForPathMapbox(latlngs);
   } else {
-    pointsWithElev = await fetchElevationForPathOpenTopo(latlngs);
+    pointsWithElev = await fetchElevationForPathOpenTopoData(latlngs);
   }
 
   if (pointsWithElev) {

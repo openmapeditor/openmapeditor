@@ -58,11 +58,25 @@ const ORGANIC_MAPS_COLORS = ORGANIC_MAPS_COLORS_DATA.map((color) => ({
 // This variable will be dynamically set from localStorage in initializeMap()
 let elevationProvider;
 
-// Global setting to downsample long paths BEFORE sending to the elevation service.
-// This can help avoid hitting API limits and reduce costs. Set to false if you want
-// to send all points of a path to the provider (up to provider limits).
+// Global setting to optionally downsample long paths for providers that support it (like Google).
 const enablePreFetchDownsampling = true;
-const MAX_DOWNSAMPLE_POINTS = 500; // Max points after downsampling (Google's hard limit is 512 per request)
+
+// Provider-specific point limits for downsampling.
+// These are maximums to prevent API errors.
+const ELEVATION_PROVIDER_CONFIG = {
+  google: {
+    // Google's hard limit is 512, 500 provides a safe buffer.
+    limit: 500,
+  },
+  openTopo: {
+    // OpenTopoData has URL length limits, 100 is a safe maximum.
+    limit: 100,
+  },
+  mapbox: {
+    // Mapbox Tilequery API is rate-limited, 100 is a safe maximum.
+    limit: 100,
+  },
+};
 // --- END: Elevation API Configuration ---
 
 // Global settings
