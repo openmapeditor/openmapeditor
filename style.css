@@ -278,7 +278,7 @@ a#info-panel-strava-link:hover {
 #overview-panel {
   width: 100%; /* MODIFIED: Take full width */
   background-color: var(--background-color);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: 0 0 8px 8px;
   flex-direction: column;
   margin: 0;
@@ -409,7 +409,7 @@ a#info-panel-strava-link:hover {
   box-sizing: border-box;
   flex-direction: column;
   background-color: var(--background-color);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: 0 0 8px 8px;
   padding: 0;
 }
@@ -541,8 +541,7 @@ a#info-panel-strava-link:hover {
 
 /* --- Strava Panel Style --- */
 #strava-panel {
-  /* padding: 10px; */ /* This line should be removed or commented out */
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: 0 0 8px 8px;
   background-color: var(--background-color);
   gap: 10px;
@@ -752,6 +751,8 @@ a#info-panel-strava-link:hover {
 #tab-content {
   background-color: transparent;
   padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 8px 8px;
 }
 
 .tab-panel {
@@ -767,7 +768,7 @@ a#info-panel-strava-link:hover {
 /* --- NEW: Settings Panel Style --- */
 #settings-panel {
   padding: 10px;
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: 0 0 8px 8px;
   background-color: var(--background-color);
   gap: 10px;
