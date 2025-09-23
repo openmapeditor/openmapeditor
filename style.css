@@ -136,7 +136,7 @@ select:focus {
   width: 250px;
   max-width: 100%;
   margin-bottom: 5px;
-  background-color: var(--background-color2);
+  background-color: var(--background-color);
   border: 2px dashed var(--text-color);
   border-radius: 0;
   color: var(--text-color);
