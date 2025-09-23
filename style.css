@@ -1562,7 +1562,7 @@ button.strava-button-secondary:not(:disabled) {
   text-decoration: underline;
 }
 
-/* --- Material Symbols Styles Start--- */
+/* --- Material Symbols Styles Start --- */
 
 /* For self hosting the font */
 /* @font-face {
@@ -1640,4 +1640,4 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 .leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-enter-span {
   display: none;
 }
-/* --- Material Symbols Styles End--- */
+/* --- Material Symbols Styles End --- */
