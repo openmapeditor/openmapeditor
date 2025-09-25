@@ -1692,7 +1692,7 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   }
 
   #main-right-container.hidden {
-    top: calc(100% - 30px);
+    top: calc(100% - 40px);
   }
 
   .leaflet-control-toggle-panels {
@@ -1702,7 +1702,6 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   #sheet-handle {
     display: flex;
     justify-content: center;
-    padding: 12px 0;
     cursor: pointer;
     width: 100%;
     -webkit-tap-highlight-color: transparent;
@@ -1710,10 +1709,28 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   }
 
   .grabber {
-    width: 40px;
-    height: 5px;
-    background-color: var(--background2-color);
-    border-radius: 2.5px;
+    display: none; /* This hides the old grabber bar */
+  }
+
+  /* These styles are for the new arrow icons in the sheet handle */
+  #sheet-handle .material-symbols {
+    font-size: 24px !important;
+  }
+
+  #main-right-container .sheet-arrow-up {
+    display: none;
+  }
+
+  #main-right-container .sheet-arrow-down {
+    display: block;
+  }
+
+  #main-right-container.hidden .sheet-arrow-up {
+    display: block;
+  }
+
+  #main-right-container.hidden .sheet-arrow-down {
+    display: none;
   }
 
   #info-panel {
@@ -1740,6 +1757,25 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   }
   #tab-buttons button:last-child {
     border-top-right-radius: 0;
+  }
+
+  /* These styles are for the new arrows in the top-right toggle button */
+  .leaflet-control-toggle-panels .icon-chevron-right-span,
+  .leaflet-control-toggle-panels .icon-chevron-left-span {
+    display: none !important;
+  }
+
+  .leaflet-control-toggle-panels a::before {
+    font-family: "Material Symbols Outlined" !important;
+    font-size: 24px !important;
+    line-height: 1;
+    color: var(--icon-color);
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24 !important;
+    content: "keyboard_arrow_down";
+  }
+
+  .leaflet-control-toggle-panels.panels-hidden a::before {
+    content: "keyboard_arrow_up";
   }
   /* --- Mobile Bottom Sheet Styles End --- */
 }
