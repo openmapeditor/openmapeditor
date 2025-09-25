@@ -1549,6 +1549,7 @@ button.strava-button-secondary:not(:disabled) {
   font-weight: bold;
   background-color: var(--text-color);
   color: var(--background-color);
+  border: none;
 }
 
 /* --- Styles for Overview Panel Group Headers --- */
