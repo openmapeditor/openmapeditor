@@ -820,8 +820,8 @@ function initializeMap() {
       // Both icons are present in the HTML, their visibility is controlled by CSS
       container.innerHTML =
         '<a href="#" role="button">' +
-        '<span class="icon-chevron-right-span material-symbols">chevron_right</span>' +
-        '<span class="icon-chevron-left-span material-symbols">chevron_left</span>' +
+        '<span class="icon-chevron-right-span material-symbols">keyboard_arrow_right</span>' +
+        '<span class="icon-chevron-left-span material-symbols">keyboard_arrow_left</span>' +
         "</a>";
 
       L.DomEvent.on(container, "click", (ev) => {
