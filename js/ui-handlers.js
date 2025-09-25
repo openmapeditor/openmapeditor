@@ -195,8 +195,7 @@ function createOverviewListItem(layer) {
 function updateOverviewList() {
   const listContainer = document.getElementById("overview-panel-list");
   if (!listContainer) return;
-
-  listContainer.innerHTML = ""; // Clear existing list
+  const overviewPanel = document.getElementById("overview-panel"); // Get the parent panel
 
   // 1. Collect all items into a single array
   const allItems = [...editableLayers.getLayers(), ...stravaActivitiesLayer.getLayers()];
@@ -206,10 +205,15 @@ function updateOverviewList() {
 
   // Handle the empty state
   if (allItems.length === 0) {
+    overviewPanel.classList.add("is-empty"); // Add the class to the panel
     listContainer.innerHTML =
-      '<div class="overview-list-item" style="color: grey; cursor: default;">No items on map</div>';
+      '<div class="overview-list-item overview-list-empty-message" style="color: grey; cursor: default;">No items on map</div>';
     return;
   }
+
+  // If we get here, the list is not empty, so remove the class and clear the list
+  overviewPanel.classList.remove("is-empty");
+  listContainer.innerHTML = "";
 
   // 2. Group all items by their type
   const groupedItems = {};

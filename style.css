@@ -274,9 +274,9 @@ a#info-panel-strava-link:hover {
   border: 2px solid var(--text-color);
 }
 
-/* --- Overview panel styles (MODIFIED) --- */
+/* --- Overview panel styles --- */
 #overview-panel {
-  width: 100%; /* MODIFIED: Take full width */
+  width: 100%;
   background-color: var(--background-color);
   border: none;
   border-radius: 0 0 8px 8px;
@@ -285,7 +285,11 @@ a#info-panel-strava-link:hover {
   padding: 0;
   overflow: hidden;
   box-sizing: border-box;
-  /* REMOVED display: flex; to allow tab controller to work */
+  padding-top: 10px;
+}
+
+#overview-panel.is-empty {
+  padding-top: 0;
 }
 
 #overview-panel-list {
@@ -701,8 +705,7 @@ a#info-panel-strava-link:hover {
   cursor: pointer;
   border: 1px solid var(--border-color);
   background-color: var(--background2-color);
-  border-bottom: none; /* All tabs have no bottom border */
-  border-right: none; /* All tabs but the last have no right border */
+  border-right: none;
   outline: none;
   color: var(--text-color);
   min-width: 0;
@@ -718,6 +721,7 @@ a#info-panel-strava-link:hover {
 }
 .tab-button.active {
   /* color: var(--text-color); */
+  border-bottom: none;
 }
 
 #tab-btn-overview {
@@ -752,6 +756,7 @@ a#info-panel-strava-link:hover {
   background-color: transparent;
   padding: 0;
   border: 1px solid var(--border-color);
+  border-top: none;
   border-radius: 0 0 8px 8px;
 }
 
