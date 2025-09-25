@@ -1659,6 +1659,11 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 
 /* --- Mobile Specific Styles Start --- */
 @media (max-width: 768px) {
+  :root {
+    --sheet-open-top: 200px;
+    --mobile-attribution-bottom: 50px;
+  }
+
   /* Hide tooltips on mobile to improve UX for drawing and routing. */
   .leaflet-draw-tooltip {
     display: none !important;
@@ -1669,11 +1674,17 @@ body.leaflet-is-drawing .leaflet-marker-icon {
     display: none !important;
   }
 
-  /* --- Mobile Bottom Sheet Styles Start --- */
-  :root {
-    --sheet-open-top: 200px;
+  /* Move the attribution and scale up on mobile */
+  .leaflet-container .leaflet-control-attribution {
+    bottom: var(--mobile-attribution-bottom);
+    border-radius: 8px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+  }
+  .leaflet-bottom .leaflet-control-scale {
+    margin-bottom: calc(var(--mobile-attribution-bottom) + 5px);
   }
 
+  /* --- Mobile Bottom Sheet Styles Start --- */
   #main-right-container {
     display: flex !important;
     position: fixed;
