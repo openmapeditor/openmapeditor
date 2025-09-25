@@ -1685,17 +1685,6 @@ function initializeMap() {
     const panelContainer = document.getElementById("main-right-container");
     const toggleButton = document.querySelector(".leaflet-control-toggle-panels");
 
-    // This part runs once on page load to set the initial state.
-    if (window.innerWidth <= 768) {
-      // On mobile, start with the panel hidden.
-      panelContainer.classList.add("hidden");
-      // Sync the desktop chevron button's state to match.
-      if (toggleButton) {
-        toggleButton.classList.add("panels-hidden");
-        toggleButton.classList.remove("panels-visible");
-      }
-    }
-
     // This part sets up the click listener for future interactions.
     sheetHandle.addEventListener("click", () => {
       // 1. Toggle the panel's visibility
