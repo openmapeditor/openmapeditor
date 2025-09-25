@@ -932,8 +932,6 @@ function initializeMap() {
     // Add some basic styling to make it look like a button
     saveButton.style.cssText =
       "padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background-color: #f0f0f0;";
-    saveButton.onmouseover = () => (saveButton.style.backgroundColor = "#e0e0e0");
-    saveButton.onmouseout = () => (saveButton.style.backgroundColor = "#f0f0f0");
     popupContent.appendChild(saveButton);
     // --- End Popup Content ---
 
