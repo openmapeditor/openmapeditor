@@ -1761,13 +1761,23 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 
   #tab-content {
     overflow-y: auto;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
   }
 
   #tab-buttons button:first-child {
     border-top-left-radius: 0;
+    border-left: none;
   }
   #tab-buttons button:last-child {
     border-top-right-radius: 0;
+    border-right: none;
+  }
+
+  #tab-content,
+  #overview-panel {
+    border-radius: 0 !important;
   }
 
   /* These styles are for the new arrows in the top-right toggle button */
