@@ -24,7 +24,7 @@
   /* Light Theme Variables */
   --icon-color: var(--color-black);
   --border-color: var(--color-black);
-  --divider-color: var(--color-black);
+  --divider-color: var(--border-color);
   --background-color: var(--color-white);
   --background2-color: var(--color-grey);
   --text-color: var(--color-black);
@@ -36,7 +36,7 @@ body.dark-mode {
   /* Dark Theme Variables */
   --icon-color: var(--color-white);
   --border-color: var(--color-white);
-  --divider-color: var(--color-white);
+  --divider-color: var(--border-color);
   --background-color: #1b1c1d;
   --background2-color: #575b5f;
   --text-color: var(--color-white);
