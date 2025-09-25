@@ -1046,7 +1046,6 @@ g.x.axis.top.time {
 
 #search-input::placeholder {
   color: var(--text-color);
-  opacity: 0.7;
 }
 
 /* The dropdown container for suggestions */
