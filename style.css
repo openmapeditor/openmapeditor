@@ -861,6 +861,7 @@ a#info-panel-strava-link:hover {
   visibility: hidden;
   width: 100%;
   z-index: 500;
+  border-top: 1px solid var(--border-color);
 }
 
 .elevation-control .background {
