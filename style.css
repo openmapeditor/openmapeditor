@@ -1493,21 +1493,6 @@ body.route-point-select-mode * {
   display: none;
 }
 
-/* ============================================= */
-/* --- Mobile-Specific Overrides --- */
-/* ============================================= */
-@media (max-width: 768px) {
-  /* Hide tooltips on mobile to improve UX for drawing and routing. */
-  .leaflet-draw-tooltip {
-    display: none !important;
-  }
-
-  /* Prevent the floating custom cursor from appearing on touch devices. */
-  .custom-cursor {
-    display: none !important;
-  }
-}
-
 /* --- Strava Panel Button Styles (MODIFIED) --- */
 /* Base styles to match routing panel controls */
 .strava-button-primary,
@@ -1666,3 +1651,17 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   display: none;
 }
 /* --- Material Symbols Styles End --- */
+
+/* --- Mobile Specific Styles Start --- */
+@media (max-width: 768px) {
+  /* Hide tooltips on mobile to improve UX for drawing and routing. */
+  .leaflet-draw-tooltip {
+    display: none !important;
+  }
+
+  /* Prevent the floating custom cursor from appearing on touch devices. */
+  .custom-cursor {
+    display: none !important;
+  }
+}
+/* --- Mobile Specific Styles End --- */
