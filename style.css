@@ -1689,6 +1689,11 @@ body.leaflet-is-drawing .leaflet-marker-icon {
     display: none !important;
   }
 
+  /* Make sure elevation summary is above the sheet handle */
+  .elevation-summary {
+    padding-bottom: var(--mobile-attribution-bottom);
+  }
+
   /* --- Mobile Bottom Sheet Styles Start --- */
   #main-right-container {
     display: flex !important;
