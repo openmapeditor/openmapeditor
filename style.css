@@ -1770,7 +1770,7 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   }
 
   #tab-content {
-    overflow-y: auto;
+    overflow: visible;
     border-left: none;
     border-right: none;
     border-bottom: none;
