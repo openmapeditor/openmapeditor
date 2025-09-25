@@ -1684,6 +1684,11 @@ body.leaflet-is-drawing .leaflet-marker-icon {
     margin-bottom: calc(var(--mobile-attribution-bottom) + 5px);
   }
 
+  /* Hide attribution when elevation is visible on mobile */
+  body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-attribution {
+    display: none !important;
+  }
+
   /* --- Mobile Bottom Sheet Styles Start --- */
   #main-right-container {
     display: flex !important;
