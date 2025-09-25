@@ -1652,6 +1652,11 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 }
 /* --- Material Symbols Styles End --- */
 
+#sheet-handle {
+  /* Hide sheet-handle on desktop */
+  display: none;
+}
+
 /* --- Mobile Specific Styles Start --- */
 @media (max-width: 768px) {
   /* Hide tooltips on mobile to improve UX for drawing and routing. */
@@ -1663,5 +1668,79 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   .custom-cursor {
     display: none !important;
   }
+
+  /* --- Mobile Bottom Sheet Styles Start --- */
+  :root {
+    --sheet-open-top: 200px;
+  }
+
+  #main-right-container {
+    display: flex !important;
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100vw;
+    background-color: var(--background-color);
+    border-radius: 20px 20px 0 0;
+    gap: 0;
+    z-index: 1001;
+    top: var(--sheet-open-top);
+    bottom: 0;
+    transition: top 0.3s ease-in-out;
+    border-top: 1px solid var(--border-color);
+  }
+
+  #main-right-container.hidden {
+    top: calc(100% - 30px);
+  }
+
+  .leaflet-control-toggle-panels {
+    /* display: none !important; */
+  }
+
+  #sheet-handle {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0;
+    cursor: pointer;
+    width: 100%;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+  }
+
+  .grabber {
+    width: 40px;
+    height: 5px;
+    background-color: var(--background2-color);
+    border-radius: 2.5px;
+  }
+
+  #info-panel {
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    flex-shrink: 0;
+  }
+
+  #tab-container {
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  #tab-content {
+    overflow-y: auto;
+  }
+
+  #tab-buttons button:first-child {
+    border-top-left-radius: 0;
+  }
+  #tab-buttons button:last-child {
+    border-top-right-radius: 0;
+  }
+  /* --- Mobile Bottom Sheet Styles End --- */
 }
 /* --- Mobile Specific Styles End --- */

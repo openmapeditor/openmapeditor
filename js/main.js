@@ -1679,6 +1679,37 @@ function initializeMap() {
   });
   // --- END: PWA Installation Logic ---
 
+  // --- Bottom Sheet Handle Logic ---
+  const sheetHandle = document.getElementById("sheet-handle");
+  if (sheetHandle) {
+    const panelContainer = document.getElementById("main-right-container");
+    const toggleButton = document.querySelector(".leaflet-control-toggle-panels");
+
+    // This part runs once on page load to set the initial state.
+    if (window.innerWidth <= 768) {
+      // On mobile, start with the panel hidden.
+      panelContainer.classList.add("hidden");
+      // Sync the desktop chevron button's state to match.
+      if (toggleButton) {
+        toggleButton.classList.add("panels-hidden");
+        toggleButton.classList.remove("panels-visible");
+      }
+    }
+
+    // This part sets up the click listener for future interactions.
+    sheetHandle.addEventListener("click", () => {
+      // 1. Toggle the panel's visibility
+      panelContainer.classList.toggle("hidden");
+
+      // 2. ALSO toggle the desktop chevron button's state for perfect sync
+      if (toggleButton) {
+        toggleButton.classList.toggle("panels-visible");
+        toggleButton.classList.toggle("panels-hidden");
+      }
+    });
+  }
+  // --- End Bottom Sheet Handle Logic ---
+
   // Final ui updates
   setTimeout(updateDrawControlStates, 0);
   setTimeout(replaceDefaultIconsWithMaterialSymbols, 0);
