@@ -209,7 +209,7 @@ select:focus {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 1px solid var(--border-color);
+  border: none;
   cursor: pointer;
   transition: transform 0.1s ease-in-out;
   position: absolute;
@@ -261,7 +261,7 @@ a#info-panel-strava-link:hover {
   height: 24px;
   border-radius: 50%;
   cursor: pointer;
-  border: 1px solid var(--border-color);
+  border: none;
   transition: transform 0.1s ease-in-out;
   box-sizing: border-box;
 }
@@ -271,7 +271,7 @@ a#info-panel-strava-link:hover {
 }
 
 .color-swatch.selected {
-  border: 2px solid var(--border-color);
+  border: 2px solid var(--text-color);
 }
 
 /* --- Overview panel styles (MODIFIED) --- */
