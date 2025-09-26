@@ -1781,12 +1781,29 @@ body.leaflet-is-drawing .leaflet-marker-icon {
     min-height: 0;
   }
 
+  /* START: SCROLLING FIX */
   #tab-content {
-    overflow: visible;
+    flex-grow: 1;
+    display: flex;
+    overflow: hidden;
     border-left: none;
     border-right: none;
     border-bottom: none;
   }
+
+  .tab-panel.active {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
+  #overview-panel-list {
+    max-height: none;
+  }
+
+  #directions-list {
+    max-height: none;
+  }
+  /* END: SCROLLING FIX */
 
   #tab-buttons button:first-child {
     border-top-left-radius: 0;
