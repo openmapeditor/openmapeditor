@@ -1728,22 +1728,22 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   }
 
   #sheet-toggle {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  width: 100px;
-  height: 30px;
-  margin: 5px auto 0 auto;
-  background-color: var(--highlight-color);
-  /* border: 1px solid var(--border-color); */
-  border-radius: 15px;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-}
-#sheet-toggle .material-symbols {
-  color: var(--background-color);
-}
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    width: 100px;
+    height: 30px;
+    margin: 5px auto 0 auto;
+    background-color: var(--highlight-color);
+    /* border: 1px solid var(--border-color); */
+    border-radius: 15px;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+  }
+  #sheet-toggle .material-symbols {
+    color: var(--color-white);
+  }
 
   /* These styles are for the new arrow icons in the sheet handle */
   #sheet-toggle .material-symbols {
