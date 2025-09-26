@@ -1736,10 +1736,6 @@ body.leaflet-is-drawing .leaflet-marker-icon {
     flex-shrink: 0;
   }
 
-  .grabber {
-    display: none; /* This hides the old grabber bar */
-  }
-
   /* These styles are for the new arrow icons in the sheet handle */
   #sheet-handle .material-symbols {
     font-size: 24px !important;
