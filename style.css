@@ -1476,9 +1476,10 @@ body.route-point-select-mode * {
   fill: var(--icon-color);
 }
 
-/* Hides the scale control when the elevation chart is visible */
-.leaflet-control-scale.hidden-by-elevation {
-  display: none;
+/* Hide the scale control and attribution when the elevation chart is visible */
+body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-scale,
+body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-attribution {
+  display: none !important;
 }
 
 /* Panels Toggle: Hide left icon by default */
@@ -1696,11 +1697,6 @@ body.leaflet-is-drawing .leaflet-marker-icon {
     }
     .leaflet-bottom .leaflet-control-scale {
       margin-bottom: calc(var(--mobile-attribution-bottom) + 5px);
-    }
-
-    /* Hide attribution when elevation is visible on mobile */
-    body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-attribution {
-      display: none !important;
     }
 
     /* Make sure elevation summary is above the sheet handle */

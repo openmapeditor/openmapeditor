@@ -594,7 +594,6 @@ function initializeMap() {
           elevationControl.clear();
         }
         updateElevationToggleIconColor();
-        updateScaleControlVisibility();
       });
       return container;
     },
@@ -1480,7 +1479,6 @@ function initializeMap() {
       }
 
       updateAllDynamicUnitDisplays();
-      updateScaleControlVisibility();
 
       Swal.fire({
         toast: true,
@@ -1782,7 +1780,6 @@ function initializeMap() {
   setTimeout(updateDrawControlStates, 0);
   setTimeout(replaceDefaultIconsWithMaterialSymbols, 0);
   resetInfoPanel();
-  updateScaleControlVisibility();
 
   // --- START: Preload key images to prevent flash on modal/panel open ---
   // This waits for the window to be fully loaded, then downloads the images
