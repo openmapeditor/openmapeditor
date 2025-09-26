@@ -1673,7 +1673,7 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 /* --- Mobile Specific Styles Start --- */
 @media (max-width: 768px) {
   :root {
-    --sheet-open-top: 200px;
+    --sheet-open-top: 190px;
     --mobile-attribution-bottom: 50px;
   }
 
