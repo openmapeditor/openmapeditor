@@ -1680,7 +1680,7 @@ function initializeMap() {
   // --- END: PWA Installation Logic ---
 
   // --- Bottom Sheet Handle Logic ---
-  const sheetHandle = document.getElementById("sheet-handle");
+  const sheetHandle = document.getElementById("sheet-toggle");
   if (sheetHandle) {
     const panelContainer = document.getElementById("main-right-container");
     const toggleButton = document.querySelector(".leaflet-control-toggle-panels");
