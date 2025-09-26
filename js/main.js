@@ -1721,17 +1721,60 @@ function initializeMap() {
     const panelContainer = document.getElementById("main-right-container");
     const toggleButton = document.querySelector(".leaflet-control-toggle-panels");
 
-    // This part sets up the click listener for future interactions.
-    sheetHandle.addEventListener("click", () => {
-      // 1. Toggle the panel's visibility
-      panelContainer.classList.toggle("hidden");
-
-      // 2. ALSO toggle the desktop chevron button's state for perfect sync
+    // Helper function to open the sheet and sync the desktop button
+    const openSheet = () => {
+      panelContainer.classList.remove("hidden");
       if (toggleButton) {
-        toggleButton.classList.toggle("panels-visible");
-        toggleButton.classList.toggle("panels-hidden");
+        toggleButton.classList.add("panels-visible");
+        toggleButton.classList.remove("panels-hidden");
+      }
+    };
+
+    // Helper function to close the sheet and sync the desktop button
+    const closeSheet = () => {
+      panelContainer.classList.add("hidden");
+      if (toggleButton) {
+        toggleButton.classList.remove("panels-visible");
+        toggleButton.classList.add("panels-hidden");
+      }
+    };
+
+    // Keep the original click handler for accessibility and convenience
+    sheetHandle.addEventListener("click", () => {
+      if (panelContainer.classList.contains("hidden")) {
+        openSheet();
+      } else {
+        closeSheet();
       }
     });
+
+    // --- START: NEW SWIPE LOGIC ---
+    let touchStartY = 0;
+    const swipeThreshold = 50; // Min pixels to swipe to trigger an action
+
+    sheetHandle.addEventListener(
+      "touchstart",
+      (e) => {
+        touchStartY = e.changedTouches[0].clientY;
+      },
+      { passive: true }
+    );
+
+    sheetHandle.addEventListener("touchend", (e) => {
+      const touchEndY = e.changedTouches[0].clientY;
+      const deltaY = touchEndY - touchStartY;
+
+      // If swiped down more than the threshold, close the sheet
+      if (deltaY > swipeThreshold) {
+        closeSheet();
+      }
+
+      // If swiped up more than the threshold, open the sheet
+      if (deltaY < -swipeThreshold) {
+        openSheet();
+      }
+    });
+    // --- END: NEW SWIPE LOGIC ---
   }
   // --- End Bottom Sheet Handle Logic ---
 
