@@ -564,7 +564,12 @@ a#info-panel-strava-link:hover {
   text-align: center;
 }
 
-/* REMOVED .strava-button rule */
+.strava-export-buttons {
+  flex-basis: 100%;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
 
 /* Link containing the official 'Connect with Strava' SVG image */
 .strava-button-link {

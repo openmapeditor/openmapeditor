@@ -228,9 +228,11 @@ function _getFetchControlsHTML(activityCount = 0) {
           <option value="100">Latest 100</option>
           <option value="all" selected>All Activities</option>
         </select>
-        <button id="fetch-strava-btn" class="strava-button-primary" style="flex: 1; min-width: 80px;">Fetch</button>
-        <button id="export-strava-kml-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export KML</button>
-        <button id="export-strava-json-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export JSON</button>
+        <button id="fetch-strava-btn" class="strava-button-primary" style="flex: 1; min-width: 80px;">Fetch</button>        
+        <div class="strava-export-buttons">
+          <button id="export-strava-kml-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export KML</button>
+          <button id="export-strava-json-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export JSON</button>
+        </div>
       </div>
       <p id="strava-progress" style="display: none;"></p>
     `;
