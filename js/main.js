@@ -1,6 +1,6 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
-// --- START: NEW code block to apply saved theme on load ---
+// --- START: Apply saved theme on load ---
 // Immediately-invoked function to set theme on initial load.
 // It only applies dark mode if it was explicitly saved, otherwise the default is light.
 (function () {
@@ -9,7 +9,16 @@
     document.body.classList.add("dark-mode");
   }
 })();
-// --- END: NEW code block ---
+// --- END: Apply saved theme on load ---
+
+// --- START: Apply saved layout on load ---
+(function () {
+  const forceDesktopLayout = localStorage.getItem("forceDesktopLayout") === "true";
+  if (forceDesktopLayout) {
+    document.body.classList.add("force-desktop-layout");
+  }
+})();
+// --- END: Apply saved layout on load ---
 
 // Global variables
 let map,
@@ -1486,6 +1495,33 @@ function initializeMap() {
 
     L.DomEvent.on(imperialUnitsContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
     // --- END: Imperial Units Toggle ---
+
+    // --- START: Force Desktop Layout Toggle ---
+    const forceDesktopLayoutContainer = L.DomUtil.create(
+      "div",
+      "settings-control-item",
+      settingsPanel
+    );
+    const forceDesktopLayoutLabel = L.DomUtil.create("label", "", forceDesktopLayoutContainer);
+    forceDesktopLayoutLabel.htmlFor = "force-desktop-toggle";
+    forceDesktopLayoutLabel.innerText = "Force Desktop Layout";
+    const forceDesktopLayoutCheckbox = L.DomUtil.create("input", "", forceDesktopLayoutContainer);
+    forceDesktopLayoutCheckbox.type = "checkbox";
+    forceDesktopLayoutCheckbox.id = "force-desktop-toggle";
+    // Check localStorage for the saved preference
+    forceDesktopLayoutCheckbox.checked = localStorage.getItem("forceDesktopLayout") === "true";
+
+    L.DomEvent.on(forceDesktopLayoutCheckbox, "change", (e) => {
+      const forceDesktopLayout = e.target.checked;
+      localStorage.setItem("forceDesktopLayout", forceDesktopLayout);
+
+      if (forceDesktopLayout) {
+        document.body.classList.add("force-desktop-layout");
+      } else {
+        document.body.classList.remove("force-desktop-layout");
+      }
+    });
+    // --- END: Force Desktop Layout Toggle ---
 
     // --- Routing Provider Setting ---
     const routingProviderContainer = L.DomUtil.create(
