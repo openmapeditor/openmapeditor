@@ -1793,11 +1793,20 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 
   .tab-panel.active {
     flex-grow: 1;
-    overflow-y: auto;
   }
 
+  /* For the Contents tab, add padding directly to the list */
   #overview-panel-list {
     max-height: none;
+    padding-bottom: 20px;
+    box-sizing: border-box;
+  }
+
+  /* For all OTHER tabs, make the whole panel scrollable and add ONLY bottom padding */
+  .tab-panel.active:not(#overview-panel) {
+    overflow-y: auto;
+    padding-bottom: 20px; /* Only add the buffer at the bottom */
+    box-sizing: border-box;
   }
 
   #directions-list {
