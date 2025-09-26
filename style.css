@@ -1664,8 +1664,8 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 }
 /* --- Material Symbols Styles End --- */
 
-#sheet-toggle {
-  /* Hide sheet-toggle on desktop */
+#sheet-handle {
+  /* Hide sheet-handle on desktop */
   display: none;
 }
 
@@ -1734,7 +1734,7 @@ body.leaflet-is-drawing .leaflet-marker-icon {
       /* display: none !important; */
     }
 
-    #sheet-toggle {
+    #sheet-handle {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -1748,12 +1748,12 @@ body.leaflet-is-drawing .leaflet-marker-icon {
       -webkit-tap-highlight-color: transparent;
       flex-shrink: 0;
     }
-    #sheet-toggle .material-symbols {
+    #sheet-handle .material-symbols {
       color: var(--color-white);
     }
 
     /* These styles are for the new arrow icons in the sheet handle */
-    #sheet-toggle .material-symbols {
+    #sheet-handle .material-symbols {
       font-size: 24px !important;
     }
 
