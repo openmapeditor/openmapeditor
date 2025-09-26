@@ -1739,7 +1739,7 @@ body.leaflet-is-drawing .leaflet-marker-icon {
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      width: 100px;
+      width: 125px;
       height: 30px;
       margin: 5px auto 0 auto;
       background-color: var(--highlight-color);
