@@ -509,6 +509,7 @@ a#info-panel-strava-link:hover {
   font-weight: bold;
   background-color: var(--text-color);
   color: var(--background-color);
+  border: none;
 }
 
 #clear-route-btn:disabled {
@@ -531,6 +532,7 @@ a#info-panel-strava-link:hover {
   font-weight: bold;
   background-color: var(--text-color);
   color: var(--background-color);
+  border: none;
 }
 
 #save-route-btn:disabled {
