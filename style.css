@@ -1674,7 +1674,7 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 @media (max-width: 768px) {
   :root {
     --sheet-tab-container-top: calc(100vh - 300px);
-    --mobile-attribution-bottom: 50px;
+    --mobile-attribution-bottom: 45px;
   }
 
   /* Hide tooltips on mobile to improve UX for drawing and routing. */
@@ -1780,6 +1780,11 @@ body.leaflet-is-drawing .leaflet-marker-icon {
       flex-shrink: 0;
       min-height: 0;
       padding: 5px;
+    }
+
+    /* Hides the info panel when no item is selected */
+    #info-panel:has(#info-panel-name[style*="display: none"]) {
+      display: none;
     }
 
     #tab-container {
