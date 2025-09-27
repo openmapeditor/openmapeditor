@@ -1715,7 +1715,7 @@ body.leaflet-is-drawing .leaflet-marker-icon {
       background-color: var(--background-color);
       border-radius: 20px 20px 0 0;
       gap: 0;
-      z-index: 1001;
+      z-index: 1000;
       top: var(--sheet-tab-container-top);
       bottom: 0;
       transition: top 0.3s ease-in-out;
