@@ -1677,18 +1677,18 @@ body.leaflet-is-drawing .leaflet-marker-icon {
     --mobile-attribution-bottom: 50px;
   }
 
+  /* Hide tooltips on mobile to improve UX for drawing and routing. */
+  .leaflet-draw-tooltip {
+    display: none !important;
+  }
+
+  /* Prevent the floating custom cursor from appearing on touch devices. */
+  .custom-cursor {
+    display: none !important;
+  }
+
   /* Ignore following styles if desktop layout is forced */
   body:not(.force-desktop-layout) {
-    /* Hide tooltips on mobile to improve UX for drawing and routing. */
-    .leaflet-draw-tooltip {
-      display: none !important;
-    }
-
-    /* Prevent the floating custom cursor from appearing on touch devices. */
-    .custom-cursor {
-      display: none !important;
-    }
-
     /* Move the attribution and scale up on mobile */
     .leaflet-container .leaflet-control-attribution {
       bottom: var(--mobile-attribution-bottom);
