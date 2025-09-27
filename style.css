@@ -1670,11 +1670,38 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   display: none;
 }
 
+#info-panel-collapse-toggle {
+  display: none;
+}
+
 /* --- Mobile Specific Styles Start --- */
 @media (max-width: 768px) {
   :root {
-    --sheet-open-top: 190px;
+    /* NEW: Define a fixed top for the tab container, leaving space for the info panel above. */
+    --sheet-tab-container-top: calc(100vh - 300px);
     --mobile-attribution-bottom: 50px;
+  }
+
+  #info-panel-collapse-toggle {
+    display: block;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    cursor: pointer;
+    z-index: 10; /* Ensure it's above other panel content */
+  }
+
+  #info-panel.collapsed {
+    /* Shrink the panel to a minimal size, just enough for padding and the button */
+    min-height: 44px !important;
+    height: 44px !important;
+    overflow: hidden;
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* When collapsed, hide all direct children except for the toggle button itself */
+  #info-panel.collapsed > *:not(#info-panel-collapse-toggle) {
+    display: none;
   }
 
   /* Hide tooltips on mobile to improve UX for drawing and routing. */
@@ -1716,14 +1743,15 @@ body.leaflet-is-drawing .leaflet-marker-icon {
       border-radius: 20px 20px 0 0;
       gap: 0;
       z-index: 1001;
-      top: var(--sheet-open-top);
+      /* NEW: Use the new variable to position the top of the tab container */
+      top: var(--sheet-tab-container-top);
       bottom: 0;
       transition: top 0.3s ease-in-out;
       border-top: 1px solid var(--border-color);
     }
 
     #main-right-container.hidden {
-      top: calc(100% - 45px);
+      top: calc(100% - 40px);
     }
 
     .leaflet-control-toggle-panels {
@@ -1737,7 +1765,7 @@ body.leaflet-is-drawing .leaflet-marker-icon {
       cursor: pointer;
       width: 125px;
       height: 30px;
-      margin: 5px auto 0 auto;
+      margin: 5px auto 5px;
       background-color: var(--highlight-color);
       /* border: 1px solid var(--border-color); */
       border-radius: 15px;
@@ -1770,9 +1798,16 @@ body.leaflet-is-drawing .leaflet-marker-icon {
     }
 
     #info-panel {
-      width: 100%;
-      border: none;
-      border-radius: 0;
+      /* NEW: Convert info-panel to a floating element positioned above the sheet */
+      position: absolute;
+      bottom: 100%; /* Position its bottom edge at the top of its parent */
+      left: 10px;
+      right: 10px;
+      width: auto; /* Allow left/right properties to set the width */
+
+      /* Restore the border and radius now that it's a separate element */
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
       flex-shrink: 0;
     }
 
