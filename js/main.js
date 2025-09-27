@@ -53,8 +53,7 @@ let map,
   temporarySearchMarker = null,
   preservedKmzFiles = [], // For preserving empty KMLs from KMZ imports
   useImperialUnits = false,
-  scaleControl,
-  infoPanelCollapseToggle;
+  scaleControl;
 
 /**
  * Adjusts the height of the info panel's name textarea to fit its content,
@@ -166,7 +165,6 @@ function initializeMap() {
 
   // Initialize ui elements
   infoPanel = document.getElementById("info-panel");
-  infoPanelCollapseToggle = document.getElementById("info-panel-collapse-toggle");
   infoPanelName = document.getElementById("info-panel-name");
   infoPanelDetails = document.getElementById("info-panel-details");
   infoPanelStyleRow = document.getElementById("info-panel-style-row");
@@ -180,21 +178,6 @@ function initializeMap() {
   const mainRightContainer = document.getElementById("main-right-container");
   L.DomEvent.disableClickPropagation(mainRightContainer);
   L.DomEvent.disableScrollPropagation(mainRightContainer);
-
-  infoPanelCollapseToggle.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isCollapsed = infoPanel.classList.toggle("collapsed");
-    const icon = infoPanelCollapseToggle; // The span is the button now
-    if (isCollapsed) {
-      icon.textContent = "keyboard_arrow_up";
-      icon.title = "Expand Panel";
-    } else {
-      icon.textContent = "keyboard_arrow_down";
-      icon.title = "Collapse Panel";
-      // When expanding, re-run the height check in case content changed while collapsed
-      adjustInfoPanelNameHeight(infoPanelName);
-    }
-  });
 
   infoPanelName.addEventListener("blur", () => {
     updateLayerName();
