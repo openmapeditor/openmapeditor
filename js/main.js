@@ -379,6 +379,30 @@ function initializeMap() {
     doubleClickZoom: false,
   });
 
+  // --- START: Set initial view via IP geolocation ---
+  fetch("https://ipinfo.io/json")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Response not OK");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data && data.loc) {
+        // ipinfo.io returns location as a "lat,lon" string
+        const [lat, lon] = data.loc.split(",").map(Number);
+        if (lat && lon) {
+          console.log(`Centering map on ${data.city}, ${data.country} via IP Geolocation.`);
+          map.setView([lat, lon], 6);
+        }
+      }
+    })
+    .catch((error) => {
+      console.error("IP Geolocation fetch failed, using default map view.", error);
+      // The map will just keep its default [0, 0] view if the API call fails
+    });
+  // --- END: Set initial view via IP geolocation ---
+
   // Configure the map's attribution control
   map.attributionControl.setPosition("bottomleft");
   map.attributionControl.setPrefix(
