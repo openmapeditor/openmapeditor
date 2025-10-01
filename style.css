@@ -780,7 +780,7 @@ a#info-panel-strava-link:hover {
 
 .tab-button.active {
   /* color: var(--text-color); */
-  border-bottom: none;
+  border-bottom-color: var(--background-color);
 }
 
 #tab-btn-overview {
