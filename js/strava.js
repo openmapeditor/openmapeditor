@@ -180,7 +180,7 @@ function renderUserKeysPanel() {
   const accessToken = sessionStorage.getItem("strava_access_token");
 
   const apiKeysHtml = `
-    <div style="padding: 0; border-bottom: 1px solid var(--border-color); text-align: center;">
+    <div style="padding: 0; text-align: center;">
       <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 5px; font-size: 14px;">
       <span>Provide Strava API Keys to connect</span>
       <span id="strava-info-icon" class="material-symbols" title="Why is this needed?" style="font-size: 14px; line-height: 1;">info</span>
@@ -193,13 +193,13 @@ function renderUserKeysPanel() {
         <input type="password" id="user-strava-client-secret" placeholder="Your Strava Client Secret" autocomplete="off" value="${userClientSecret}" />
         <button id="clear-strava-client-secret-user" title="Clear Client Secret"><span class="material-symbols material-symbols-fill routing-panel-icon">cancel</span></button>
       </div>
-      <button id="strava-connect-btn-user" class="strava-button-primary" style="width: 100%; margin-top: 10px; margin-bottom: 10px;">Save & Connect with Strava</button>
+      <button id="strava-connect-btn-user" class="strava-button-primary" style="width: 100%; margin-top: 10px; margin-bottom: 0;">Save & Connect with Strava</button>
     </div>
   `;
 
   let actionHtml = accessToken
     ? _getFetchControlsHTML(stravaActivitiesLayer.getLayers().length)
-    : `<div style="padding: 0; text-align: center;"><p>Enter your API keys above and connect.</p></div>`;
+    : "";
 
   stravaPanelContent.innerHTML = apiKeysHtml + actionHtml;
   addEventListenersForUserKeysPanel();
@@ -228,9 +228,11 @@ function _getFetchControlsHTML(activityCount = 0) {
           <option value="100">Latest 100</option>
           <option value="all" selected>All Activities</option>
         </select>
-        <button id="fetch-strava-btn" class="strava-button-primary" style="flex: 1; min-width: 80px;">Fetch</button>
-        <button id="export-strava-kml-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export KML</button>
-        <button id="export-strava-json-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export JSON</button>
+        <button id="fetch-strava-btn" class="strava-button-primary" style="flex: 1; min-width: 80px;">Fetch</button>        
+        <div class="strava-export-buttons">
+          <button id="export-strava-kml-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export KML</button>
+          <button id="export-strava-json-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export JSON</button>
+        </div>
       </div>
       <p id="strava-progress" style="display: none;"></p>
     `;
@@ -267,6 +269,9 @@ function showFetchUI(activityCount = 0) {
 function addEventListenersForUserKeysPanel() {
   const clientIdInput = document.getElementById("user-strava-client-id");
   const clientSecretInput = document.getElementById("user-strava-client-secret");
+
+  clientIdInput.addEventListener("focus", () => clientIdInput.select());
+  clientSecretInput.addEventListener("focus", () => clientSecretInput.select());
 
   document.getElementById("strava-info-icon").addEventListener("click", () => {
     const mainAlertOptions = {

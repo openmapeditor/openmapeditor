@@ -49,7 +49,7 @@
       rel="stylesheet"
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,altitude,arrow_left_alt,arrow_right_alt,cancel,chevron_left,chevron_right,content_copy,delete,diagonal_line,download,edit,elevation,folder_open,fullscreen,fullscreen_exit,heart_smile,help,info,landscape,layers,location_on,my_location,polyline,remove,settings,stacks,upload,visibility,visibility_off&display=block"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,altitude,arrow_left_alt,arrow_right_alt,cancel,content_copy,delete,diagonal_line,directions_bike,directions_car,directions_walk,download,edit,elevation,favorite,folder_open,fullscreen,fullscreen_exit,heart_smile,help,info,keyboard_arrow_down,keyboard_arrow_left,keyboard_arrow_right,keyboard_arrow_up,landscape,layers,location_on,my_location,polyline,remove,settings,stacks,upload,visibility,visibility_off&display=block"
       rel="stylesheet"
     />
   </head>
@@ -60,6 +60,10 @@
         <div id="search-suggestions" class="autocomplete-suggestions"></div>
       </div>
       <div id="main-right-container">
+        <div id="sheet-handle">
+          <span class="sheet-arrow-up material-symbols">keyboard_arrow_up</span>
+          <span class="sheet-arrow-down material-symbols">keyboard_arrow_down</span>
+        </div>
         <div id="info-panel">
           <textarea id="info-panel-name" rows="1"></textarea>
           <p id="info-panel-details"></p>
@@ -91,6 +95,9 @@
               title="Settings"
             >
               <span class="material-symbols material-symbols-fill">settings</span>
+            </button>
+            <button id="tab-btn-heart" class="js-show-credits" title="View Credits">
+              <span class="material-symbols material-symbols-fill">favorite</span>
             </button>
           </div>
 
@@ -173,14 +180,18 @@
                   <div id="route-end-suggestions" class="autocomplete-suggestions"></div>
                 </div>
                 <div class="routing-input-group">
-                  <select id="route-profile" title="Select routing mode">
-                    <option value="driving" selected>Car</option>
-                    <option value="bike">Bike</option>
-                    <option value="foot">Foot</option>
-                  </select>
-                  <button id="save-route-btn" title="Save current route to the map">
-                    Save Route
-                  </button>
+                  <div id="routing-profile-selector" class="routing-profile-selector">
+                    <button class="profile-btn active" data-profile="driving" title="Driving">
+                      <span class="material-symbols">directions_car</span>
+                    </button>
+                    <button class="profile-btn" data-profile="bike" title="Cycling">
+                      <span class="material-symbols">directions_bike</span>
+                    </button>
+                    <button class="profile-btn" data-profile="foot" title="Walking">
+                      <span class="material-symbols">directions_walk</span>
+                    </button>
+                  </div>
+                  <button id="save-route-btn" title="Save current route to the map">Save</button>
                   <button id="clear-route-btn" title="Clear the current route and all points">
                     Clear
                   </button>

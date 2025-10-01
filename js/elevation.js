@@ -24,52 +24,24 @@ function clearElevationCache() {
   }
 }
 
-// This promise acts as a signal. It will resolve when the API script is ready.
-let resolveGoogleMapsApi;
-const googleMapsApiPromise = new Promise((resolve) => {
-  resolveGoogleMapsApi = resolve;
-});
-
-/**
- * This is our callback function. Google's script will call this function by name
- * once all its internal modules, including ElevationService, are loaded and ready.
- */
-function onGoogleMapsApiReady() {
-  resolveGoogleMapsApi(); // This gives the "green light" by resolving the promise.
-}
-
-/**
- * REPAIRED: Fetches elevation data by dynamically loading the Google Maps script
- * using the key from config.js and waiting for the callback.
- */
 async function fetchElevationForPathGoogle(latlngs) {
   console.log("Fetching elevation data from: Google");
   if (!latlngs || latlngs.length < 2) return latlngs;
 
-  // This block runs only once to create and add the script tag to the page.
-  // It uses the 'googleApiKey' variable from your config.js file.
-  if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
-    if (!googleApiKey) {
-      console.error("Google API Key is missing from config.js");
-      Swal.fire({
-        icon: "error",
-        iconColor: "var(--swal-color-error)",
-        title: "API Key Missing",
-        text: "Google API key is not configured in config.js.",
-      });
-      return null;
-    }
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${googleApiKey}&loading=async&libraries=elevation&callback=onGoogleMapsApiReady`;
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
+  try {
+    // We just ask our central manager to make sure the API is ready.
+    await ensureGoogleApiIsLoaded();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      iconColor: "var(--swal-color-error)",
+      title: "API Error",
+      text: error.message,
+    });
+    return null;
   }
 
-  // The code will pause here and wait for the "green light" from onGoogleMapsApiReady.
-  await googleMapsApiPromise;
-
-  // By the time this line runs, we are 100% sure that google.maps.ElevationService exists.
+  // By the time this line runs, the API is guaranteed to be ready.
   const elevator = new google.maps.ElevationService();
   const BATCH_SIZE = 512;
   let allResults = [];

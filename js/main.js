@@ -1,6 +1,6 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
-// --- START: NEW code block to apply saved theme on load ---
+// --- START: Apply saved theme on load ---
 // Immediately-invoked function to set theme on initial load.
 // It only applies dark mode if it was explicitly saved, otherwise the default is light.
 (function () {
@@ -9,7 +9,16 @@
     document.body.classList.add("dark-mode");
   }
 })();
-// --- END: NEW code block ---
+// --- END: Apply saved theme on load ---
+
+// --- START: Apply saved layout on load ---
+(function () {
+  const forceDesktopLayout = localStorage.getItem("forceDesktopLayout") === "true";
+  if (forceDesktopLayout) {
+    document.body.classList.add("force-desktop-layout");
+  }
+})();
+// --- END: Apply saved layout on load ---
 
 // Global variables
 let map,
@@ -122,6 +131,52 @@ function updateAllDynamicUnitDisplays() {
   }
 }
 
+// --- START: Reusable function to show the credits popup ---
+/**
+ * Fetches the credits content from an HTML file and displays it in a SweetAlert modal.
+ * This function is designed to be called by any UI element that needs to show the credits.
+ */
+async function showCreditsPopup() {
+  try {
+    // Fetch the content from the HTML file
+    const response = await fetch("credits.html");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const creditsHtmlContent = await response.text();
+
+    // Create a container and populate it with the fetched HTML
+    const swalContent = document.createElement("div");
+    swalContent.innerHTML = creditsHtmlContent;
+
+    // Dynamically update placeholder text with app-specific info
+    swalContent.querySelector("#credits-app-name").textContent = APP_NAME;
+    swalContent.querySelector("#credits-app-short-description").textContent = APP_SHORT_DESCRIPTION;
+
+    // Open the SweetAlert with the fetched and populated content
+    Swal.fire({
+      imageUrl: "img/icon-1024x1024.svg",
+      imageWidth: 150,
+      imageHeight: "auto",
+      html: swalContent,
+      confirmButtonText: "Close",
+      width: "500px",
+      customClass: {
+        popup: "swal2-credits-popup",
+      },
+    });
+  } catch (error) {
+    console.error("Could not load credits.html:", error);
+    Swal.fire({
+      icon: "error",
+      iconColor: "var(--swal-color-error)",
+      title: "Error",
+      text: "Could not load the credits information.",
+    });
+  }
+}
+// --- END: Reusable function to show the credits popup ---
+
 // Main function to initialize the map and all its components.
 function initializeMap() {
   // --- START: Add this check for secrets.js ---
@@ -163,13 +218,6 @@ function initializeMap() {
   infoPanelLayerName = document.getElementById("info-panel-layer-name");
   colorPicker = document.getElementById("color-picker");
 
-  // Isolate the entire right-side UI panel from the map.
-  // This prevents clicks, drags, and scrolls within the panel from
-  // accidentally panning or zooming the map underneath it.
-  const mainRightContainer = document.getElementById("main-right-container");
-  L.DomEvent.disableClickPropagation(mainRightContainer);
-  L.DomEvent.disableScrollPropagation(mainRightContainer);
-
   infoPanelName.addEventListener("blur", () => {
     updateLayerName();
     adjustInfoPanelNameHeight(infoPanelName);
@@ -185,7 +233,6 @@ function initializeMap() {
 
   // This makes the textarea grow and shrink as you type.
   infoPanelName.addEventListener("input", () => adjustInfoPanelNameHeight(infoPanelName));
-  infoPanelName.addEventListener("focus", () => infoPanelName.select());
 
   // Toggle color picker on swatch click
   infoPanelColorSwatch.addEventListener("click", () => {
@@ -238,7 +285,7 @@ function initializeMap() {
     });
   });
 
-  // --- NEW: Routing Info Icon Logic ---
+  // --- Routing Info Icon Logic ---
   if (routingInfoIcon) {
     // Set initial visual state for the info icon on page load
     if (!document.getElementById("tab-btn-routing").classList.contains("active")) {
@@ -335,7 +382,7 @@ function initializeMap() {
   // Configure the map's attribution control
   map.attributionControl.setPosition("bottomleft");
   map.attributionControl.setPrefix(
-    `<a href="#" id="attribution-link" title="Credits">${APP_NAME} &#x2764;&#xfe0f;</a><a href="#" id="install-pwa-link" title="Install App" style="display: none;">Install</a>`
+    `<a href="#" id="credits-link-bottom-left" class="js-show-credits" title="Credits">${APP_NAME} &#x2764;&#xfe0f;</a><a href="#" id="install-pwa-link" title="Install App" style="display: none;">Install</a>`
   );
 
   // Add the initial base layer to the map (after configuring attribution control to prevent problems with prefix)
@@ -585,7 +632,6 @@ function initializeMap() {
           elevationControl.clear();
         }
         updateElevationToggleIconColor();
-        updateScaleControlVisibility();
       });
       return container;
     },
@@ -820,8 +866,8 @@ function initializeMap() {
       // Both icons are present in the HTML, their visibility is controlled by CSS
       container.innerHTML =
         '<a href="#" role="button">' +
-        '<span class="icon-chevron-right-span material-symbols">chevron_right</span>' +
-        '<span class="icon-chevron-left-span material-symbols">chevron_left</span>' +
+        '<span class="icon-chevron-right-span material-symbols">keyboard_arrow_right</span>' +
+        '<span class="icon-chevron-left-span material-symbols">keyboard_arrow_left</span>' +
         "</a>";
 
       L.DomEvent.on(container, "click", (ev) => {
@@ -1202,7 +1248,18 @@ function initializeMap() {
     });
   };
 
-  map.on("contextmenu", showCopyCoordsPopup);
+  // --- START: Unified Context Menu / Right-Click Handler ---
+  map.on("contextmenu", (e) => {
+    // Check if the click happened on a UI element. If so, do nothing.
+    const clickedOnUi = e.originalEvent.target.closest(
+      "#main-right-container, #search-container, .leaflet-control, .leaflet-popup, #custom-layers-panel, #elevation-div"
+    );
+
+    if (!clickedOnUi) {
+      showCopyCoordsPopup(e);
+    }
+  });
+  // --- END: Unified Context Menu / Right-Click Handler ---
 
   // --- FINAL: Reworked long-press logic for stability ---
   let pressTimer;
@@ -1471,7 +1528,6 @@ function initializeMap() {
       }
 
       updateAllDynamicUnitDisplays();
-      updateScaleControlVisibility();
 
       Swal.fire({
         toast: true,
@@ -1486,6 +1542,33 @@ function initializeMap() {
 
     L.DomEvent.on(imperialUnitsContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
     // --- END: Imperial Units Toggle ---
+
+    // --- START: Force Desktop Layout Toggle ---
+    const forceDesktopLayoutContainer = L.DomUtil.create(
+      "div",
+      "settings-control-item",
+      settingsPanel
+    );
+    const forceDesktopLayoutLabel = L.DomUtil.create("label", "", forceDesktopLayoutContainer);
+    forceDesktopLayoutLabel.htmlFor = "force-desktop-toggle";
+    forceDesktopLayoutLabel.innerText = "Force Desktop Layout";
+    const forceDesktopLayoutCheckbox = L.DomUtil.create("input", "", forceDesktopLayoutContainer);
+    forceDesktopLayoutCheckbox.type = "checkbox";
+    forceDesktopLayoutCheckbox.id = "force-desktop-toggle";
+    // Check localStorage for the saved preference
+    forceDesktopLayoutCheckbox.checked = localStorage.getItem("forceDesktopLayout") === "true";
+
+    L.DomEvent.on(forceDesktopLayoutCheckbox, "change", (e) => {
+      const forceDesktopLayout = e.target.checked;
+      localStorage.setItem("forceDesktopLayout", forceDesktopLayout);
+
+      if (forceDesktopLayout) {
+        document.body.classList.add("force-desktop-layout");
+      } else {
+        document.body.classList.remove("force-desktop-layout");
+      }
+    });
+    // --- END: Force Desktop Layout Toggle ---
 
     // --- Routing Provider Setting ---
     const routingProviderContainer = L.DomUtil.create(
@@ -1565,59 +1648,51 @@ function initializeMap() {
     privacyPolicyLink.innerText = "View Privacy Policy";
     privacyPolicyLink.style.fontSize = "14px";
     privacyPolicyLink.style.color = "var(--highlight-color)";
+
+    // --- START: About/Credits Link ---
+    const aboutContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
+    const aboutLabel = L.DomUtil.create("label", "", aboutContainer);
+    aboutLabel.innerText = "About";
+    aboutLabel.style.color = "var(--text-color)";
+    const creditsLink = L.DomUtil.create("a", "", aboutContainer);
+    creditsLink.href = "#"; // Use # to make it behave like a link
+    creditsLink.innerText = "View Credits";
+    creditsLink.classList.add("credits-link");
+
+    // Add a click event listener to call the centralized popup function
+    L.DomEvent.on(creditsLink, "click", (e) => {
+      L.DomEvent.stop(e); // Prevent the link from navigating
+      showCreditsPopup();
+    });
+    // --- END: About/Credits Link ---
   }
 
-  // --- START: MODIFIED code block for clickable attribution using event delegation ---
+  // --- START: MODIFIED code block for clickable credits using event delegation ---
   // Use event delegation on the map container to handle clicks on the attribution link.
   // This is robust and works even if Leaflet redraws the attribution control.
-  map.getContainer().addEventListener("click", async (e) => {
-    // <-- Note the 'async' keyword
-    // Use .closest() to check if the click was on the link or an element inside it.
-    const attributionLink = e.target.closest("#attribution-link");
+  map.getContainer().addEventListener("click", (e) => {
+    // Use .closest() to check if the click was on a link with our generic class.
+    const creditsTrigger = e.target.closest(".js-show-credits");
 
-    if (attributionLink) {
+    if (creditsTrigger) {
       // Prevent the link's default behavior (e.g., navigating to '#')
       e.preventDefault();
       e.stopPropagation();
-
-      try {
-        // Fetch the content from the new HTML file
-        const response = await fetch("credits.html");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const creditsHtmlContent = await response.text();
-
-        const swalContent = document.createElement("div");
-        swalContent.innerHTML = creditsHtmlContent;
-        swalContent.querySelector("#credits-app-name").textContent = APP_NAME;
-        swalContent.querySelector("#credits-app-short-description").textContent =
-          APP_SHORT_DESCRIPTION;
-
-        // Open the SweetAlert with the fetched content
-        Swal.fire({
-          imageUrl: "img/icon-1024x1024.svg",
-          imageWidth: 150,
-          imageHeight: "auto",
-          html: swalContent, // <-- Use the fetched HTML here
-          confirmButtonText: "Close",
-          width: "500px",
-          customClass: {
-            popup: "swal2-credits-popup",
-          },
-        });
-      } catch (error) {
-        console.error("Could not load credits.html:", error);
-        Swal.fire({
-          icon: "error",
-          iconColor: "var(--swal-color-error)",
-          title: "Error",
-          text: "Could not load the credits information.",
-        });
-      }
+      // Call the centralized function to show the popup.
+      showCreditsPopup();
     }
   });
   // --- END: MODIFIED code block ---
+
+  // --- Event listener for the heart/credits button in the tab bar ---
+  const heartButton = document.getElementById("tab-btn-heart");
+  if (heartButton) {
+    heartButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation(); // Prevent tab switching logic from running
+      showCreditsPopup(); // Call the centralized function
+    });
+  }
 
   // --- START: NEW - MutationObserver to auto-resize textarea on selection ---
   // This observer watches for changes in the info panel. When details are
@@ -1679,11 +1754,93 @@ function initializeMap() {
   });
   // --- END: PWA Installation Logic ---
 
+  // --- Bottom Sheet Handle Logic ---
+  const sheetHandle = document.getElementById("sheet-handle");
+  if (sheetHandle) {
+    const panelContainer = document.getElementById("main-right-container");
+    const toggleButton = document.querySelector(".leaflet-control-toggle-panels");
+
+    // Helper function to open the sheet and sync the desktop button
+    const openSheet = () => {
+      panelContainer.classList.remove("hidden");
+      if (toggleButton) {
+        toggleButton.classList.add("panels-visible");
+        toggleButton.classList.remove("panels-hidden");
+      }
+    };
+
+    // Helper function to close the sheet and sync the desktop button
+    const closeSheet = () => {
+      panelContainer.classList.add("hidden");
+      if (toggleButton) {
+        toggleButton.classList.remove("panels-visible");
+        toggleButton.classList.add("panels-hidden");
+      }
+    };
+
+    // Keep the original click handler for accessibility and convenience
+    sheetHandle.addEventListener("click", () => {
+      if (panelContainer.classList.contains("hidden")) {
+        openSheet();
+      } else {
+        closeSheet();
+      }
+    });
+
+    // --- START: NEW SWIPE LOGIC ---
+    let touchStartY = 0;
+    const swipeThreshold = 50; // Min pixels to swipe to trigger an action
+
+    sheetHandle.addEventListener(
+      "touchstart",
+      (e) => {
+        touchStartY = e.changedTouches[0].clientY;
+      },
+      { passive: true }
+    );
+
+    sheetHandle.addEventListener("touchend", (e) => {
+      const touchEndY = e.changedTouches[0].clientY;
+      const deltaY = touchEndY - touchStartY;
+
+      // If swiped down more than the threshold, close the sheet
+      if (deltaY > swipeThreshold) {
+        closeSheet();
+      }
+
+      // If swiped up more than the threshold, open the sheet
+      if (deltaY < -swipeThreshold) {
+        openSheet();
+      }
+    });
+    // --- END: NEW SWIPE LOGIC ---
+  }
+  // --- End Bottom Sheet Handle Logic ---
+
+  // --- START: Unified UI Interaction Blocker ---
+  // This single, centralized block prevents clicks, drags, and scrolls within any
+  // UI panel from accidentally panning or zooming the map underneath.
+  const uiContainers = [
+    document.getElementById("main-right-container"),
+    document.getElementById("search-container"),
+    document.getElementById("custom-layers-panel"),
+    document.getElementById("elevation-div"),
+    // Also include the container for all of Leaflet's default controls
+    ...document.querySelectorAll(".leaflet-control-container"),
+  ];
+
+  uiContainers.forEach((container) => {
+    if (container) {
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+    }
+  });
+  // --- END: Unified UI Interaction Blocker ---
+
   // Final ui updates
   setTimeout(updateDrawControlStates, 0);
   setTimeout(replaceDefaultIconsWithMaterialSymbols, 0);
   resetInfoPanel();
-  updateScaleControlVisibility();
 
   // --- START: Preload key images to prevent flash on modal/panel open ---
   // This waits for the window to be fully loaded, then downloads the images

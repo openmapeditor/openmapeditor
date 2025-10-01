@@ -104,7 +104,6 @@ function deselectCurrentItem() {
   kmlButton.textContent = "KML (Selected Item)";
 
   resetInfoPanel();
-  updateScaleControlVisibility();
 }
 
 function selectItem(layer) {
@@ -231,7 +230,6 @@ function selectItem(layer) {
   }
 
   updateElevationToggleIconColor();
-  updateScaleControlVisibility();
 }
 
 function updateDrawControlStates() {

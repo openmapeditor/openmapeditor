@@ -509,24 +509,6 @@ function updateColorPickerSelection(colorName) {
   });
 }
 
-/**
- * Toggles the visibility of the map's scale control based on whether
- * the elevation profile chart is currently visible.
- */
-function updateScaleControlVisibility() {
-  const scaleControl = document.querySelector(".leaflet-control-scale");
-  const elevationDiv = document.getElementById("elevation-div");
-
-  if (scaleControl && elevationDiv) {
-    const isElevationVisible = elevationDiv.style.visibility === "visible";
-    if (isElevationVisible) {
-      L.DomUtil.addClass(scaleControl, "hidden-by-elevation");
-    } else {
-      L.DomUtil.removeClass(scaleControl, "hidden-by-elevation");
-    }
-  }
-}
-
 // Replaces default leaflet icons with Material Symbols
 function replaceDefaultIconsWithMaterialSymbols() {
   const layersButton = document.querySelector('.leaflet-control-custom[title="Layers"]');

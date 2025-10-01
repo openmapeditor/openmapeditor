@@ -32,6 +32,35 @@ function initializeRouting() {
     // suppressDemoServerWarning: true,
   });
 
+  // --- START: NEW Scalable Provider Configuration Object ---
+  // This object centralizes all settings for each routing provider,
+  // making it easy to add new providers or modify existing ones.
+  const PROVIDER_CONFIG = {
+    mapbox: {
+      router: mapboxRouter,
+      // Mapbox-specific profile names required by their API
+      profiles: {
+        driving: "driving",
+        bike: "cycling",
+        foot: "walking",
+      },
+      // Function to format the final profile string for the API call
+      profileFormatter: (profile) => `mapbox/${profile}`,
+    },
+    osrm: {
+      router: osrmRouter,
+      // OSRM uses the same names as our UI, so no translation is needed
+      profiles: {
+        driving: "driving",
+        bike: "bike",
+        foot: "foot",
+      },
+      // OSRM doesn't need a special prefix
+      profileFormatter: (profile) => profile,
+    },
+  };
+  // --- END: NEW Scalable Provider Configuration Object ---
+
   // --- Helper function to clear just the route line and summary ---
   const clearRouteLine = () => {
     if (currentRoutePath) {
@@ -66,25 +95,27 @@ function initializeRouting() {
     intermediateViaMarkers = [];
     saveRouteBtn.disabled = true;
 
-    const selectedProfile = profileSelect.value;
+    // --- START: REFACTORED Logic using the configuration object ---
+    const selectedProfile = document.querySelector("#routing-profile-selector .profile-btn.active")
+      .dataset.profile;
     const currentProvider = localStorage.getItem("routingProvider") || "mapbox";
 
-    if (currentProvider === "mapbox") {
-      let mapboxProfile;
-      switch (selectedProfile) {
-        case "bike":
-          mapboxProfile = "cycling";
-          break;
-        case "foot":
-          mapboxProfile = "walking";
-          break;
-        default:
-          mapboxProfile = "driving";
-      }
-      routingControl.getRouter().options.profile = "mapbox/" + mapboxProfile;
-    } else {
-      routingControl.getRouter().options.profile = selectedProfile;
+    // 1. Get the configuration for the current provider
+    const config = PROVIDER_CONFIG[currentProvider];
+    if (!config) {
+      console.error(`No configuration found for provider: ${currentProvider}`);
+      return; // Exit if the provider is invalid
     }
+
+    // 2. Look up the correct API profile name from the config
+    const apiProfile = config.profiles[selectedProfile] || config.profiles["driving"];
+
+    // 3. Format the profile string using the provider-specific function
+    const finalProfile = config.profileFormatter(apiProfile);
+
+    // 4. Set the profile on the router
+    routingControl.getRouter().options.profile = finalProfile;
+    // --- END: REFACTORED Logic ---
 
     const waypoints = [L.latLng(currentStartLatLng)];
     if (currentViaLatLng) {
@@ -175,7 +206,9 @@ function initializeRouting() {
       map.removeControl(routingControl);
       routingControl = null;
     }
-    const router = provider === "osrm" ? osrmRouter : mapboxRouter;
+    // --- REFACTORED: Get router instance from the config object ---
+    const router = PROVIDER_CONFIG[provider]?.router || PROVIDER_CONFIG["mapbox"].router;
+
     routingControl = L.Routing.control({
       waypoints: [],
       router: router,
@@ -379,7 +412,7 @@ function initializeRouting() {
   const clearRouteBtn = document.getElementById("clear-route-btn");
   saveRouteBtn = document.getElementById("save-route-btn");
   saveRouteBtn.disabled = true;
-  const profileSelect = document.getElementById("route-profile");
+  const profileButtons = document.querySelectorAll("#routing-profile-selector .profile-btn");
   const selectStartBtn = document.getElementById("select-start-on-map");
   const selectEndBtn = document.getElementById("select-end-on-map");
   const selectViaBtn = document.getElementById("select-via-on-map");
@@ -396,10 +429,21 @@ function initializeRouting() {
 
   clearRouteBtn.disabled = true;
 
-  profileSelect.addEventListener("change", () => {
-    if (startMarker && endMarker) {
-      calculateNewRoute();
-    }
+  profileButtons.forEach((button) => {
+    button.addEventListener("click", (e) => {
+      L.DomEvent.stop(e); // Prevent any unwanted default button behavior
+
+      // Remove 'active' class from all buttons
+      profileButtons.forEach((btn) => btn.classList.remove("active"));
+
+      // Add 'active' class to the clicked button
+      button.classList.add("active");
+
+      // If we can calculate a route, do it now
+      if (startMarker && endMarker) {
+        calculateNewRoute();
+      }
+    });
   });
 
   const directionsHeader = document.getElementById("directions-panel-header");
@@ -586,9 +630,9 @@ function initializeRouting() {
     clearRouting();
   });
 
-  // --- MODIFIED: Generalized function to handle start, via, or end ---
+  // --- Generalized function to handle start, via, or end ---
   const updateRoutingPoint = (latlng, type) => {
-    const locationString = `Current Location (${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)})`;
+    const locationString = `Your location`;
 
     if (type === "start") {
       currentStartLatLng = latlng;
@@ -724,22 +768,42 @@ function initializeRouting() {
     if (btn) {
       btn.addEventListener("click", (e) => {
         L.DomEvent.stop(e);
+        document.getElementById(`route-${type}-suggestions`).style.display = "none";
         clearRoutingPoint(type);
       });
     }
   });
 
-  startInput.addEventListener("input", () => {
-    if (startInput.value.indexOf("Current Location") === -1) {
-      currentStartLatLng = null;
-    }
-  });
+  // --- START: NEW Input Change Handler ---
+  // This robustly handles manual input changes. It lets the autocomplete
+  // utility handle coordinate parsing and only intervenes if the user
+  // completely clears an input field.
+  const handleManualInputChange = (type) => {
+    let input, currentLatLngValue;
 
-  endInput.addEventListener("input", () => {
-    if (endInput.value.indexOf("Current Location") === -1) {
-      currentEndLatLng = null;
+    if (type === "start") {
+      input = startInput;
+      currentLatLngValue = currentStartLatLng;
+    } else if (type === "via") {
+      input = viaInput;
+      currentLatLngValue = currentViaLatLng;
+    } else {
+      // 'end'
+      input = endInput;
+      currentLatLngValue = currentEndLatLng;
     }
-  });
+
+    // If the input field is cleared by the user, and it previously had a
+    // valid coordinate, we need to clear that point from the routing state.
+    if (input.value.trim() === "" && currentLatLngValue) {
+      clearRoutingPoint(type);
+    }
+  };
+
+  startInput.addEventListener("input", () => handleManualInputChange("start"));
+  viaInput.addEventListener("input", () => handleManualInputChange("via"));
+  endInput.addEventListener("input", () => handleManualInputChange("end"));
+  // --- END: NEW Input Change Handler ---
 
   function updateCustomCursorPosition(e) {
     if (!routePointSelectionMode) return;

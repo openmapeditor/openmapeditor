@@ -187,7 +187,7 @@ select:focus {
 #info-panel-edit-hint {
   font-size: 12px;
   color: var(--text-color);
-  margin-top: 8px;
+  margin-top: 5px;
   max-width: 100%;
   box-sizing: border-box;
 }
@@ -198,7 +198,7 @@ select:focus {
   align-items: center;
   justify-content: center;
   width: 200px;
-  margin-top: 8px;
+  margin-top: 5px;
   /* REMOVED: position: relative; */
   min-height: 22px;
 }
@@ -251,7 +251,7 @@ a#info-panel-strava-link:hover {
   background-color: var(--background-color);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  margin-top: 10px; /* Space it from the info panel content */
+  margin-top: 5px; /* Space it from the info panel content */
 }
 
 .color-swatch {
@@ -466,6 +466,59 @@ a#info-panel-strava-link:hover {
   border-color: var(--border-color);
 }
 
+/* --- Routing Profile Button Group Styles --- */
+
+/* The container for the buttons */
+.routing-profile-selector {
+  display: flex; /* Aligns buttons horizontally */
+  flex: 1; /* Allows the group to take up available space like the other buttons */
+}
+
+/* Individual profile buttons */
+.routing-profile-selector .profile-btn {
+  flex: 1; /* Each button takes an equal share of the space */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 30px;
+  padding: 6px;
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  margin: 0;
+  box-sizing: border-box;
+  border-radius: 0;
+}
+
+/* Remove the right border from buttons that are not the last one */
+.routing-profile-selector .profile-btn:not(:last-child) {
+  border-right: none;
+}
+
+/* Round the corners only on the outer edges of the group */
+.routing-profile-selector .profile-btn:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.routing-profile-selector .profile-btn:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+/* Style for the active/selected button */
+.routing-profile-selector .profile-btn.active {
+  background-color: var(--text-color);
+  border-color: var(--text-color);
+}
+
+/* Change the icon color to match the button's text color */
+.routing-profile-selector .profile-btn .material-symbols {
+  color: var(--text-color);
+}
+
+/* On the active button, make the icon match the background color */
+.routing-profile-selector .profile-btn.active .material-symbols {
+  color: var(--background-color);
+}
+
 #routing-panel-content > .routing-input-group:last-child {
   display: flex;
   justify-content: center; /* Center items horizontally */
@@ -509,6 +562,7 @@ a#info-panel-strava-link:hover {
   font-weight: bold;
   background-color: var(--text-color);
   color: var(--background-color);
+  border: none;
 }
 
 #clear-route-btn:disabled {
@@ -531,6 +585,7 @@ a#info-panel-strava-link:hover {
   font-weight: bold;
   background-color: var(--text-color);
   color: var(--background-color);
+  border: none;
 }
 
 #save-route-btn:disabled {
@@ -562,7 +617,12 @@ a#info-panel-strava-link:hover {
   text-align: center;
 }
 
-/* REMOVED .strava-button rule */
+.strava-export-buttons {
+  flex-basis: 100%;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
 
 /* Link containing the official 'Connect with Strava' SVG image */
 .strava-button-link {
@@ -584,7 +644,7 @@ a#info-panel-strava-link:hover {
   color: var(--strava-color);
   font-size: 13px;
   font-weight: bold;
-  margin-top: 8px;
+  margin-top: 5px;
   padding: 4px 8px;
   border-radius: 4px;
   transition: background-color 0.2s ease-in-out;
@@ -602,8 +662,13 @@ a#info-panel-strava-link:hover {
   border-top: none;
   z-index: 1002;
   border-radius: 0 0 8px 8px;
-  width: 157px;
   padding-bottom: 5px;
+}
+
+#routing-panel .autocomplete-suggestions {
+  /* This value is the calculated space for the 3 buttons. */
+  /* It aligns the suggestion box with the input field above it. */
+  right: 99px;
 }
 
 .autocomplete-suggestion-item {
@@ -713,10 +778,6 @@ a#info-panel-strava-link:hover {
   height: 35px;
 }
 
-/* Add the right border back ONLY to the last button */
-#tab-buttons button:last-child {
-  border-right: 1px solid var(--border-color);
-}
 .tab-button.active {
   /* color: var(--text-color); */
   border-bottom: none;
@@ -744,10 +805,15 @@ a#info-panel-strava-link:hover {
   flex: 0 0 40px; /* Don't grow, fixed width */
   padding: 8px;
   border-radius: 0 8px 0 0;
+  border-right: 1px solid var(--border-color);
 }
 
 .tab-button.active {
   background-color: var(--background-color);
+}
+
+#tab-btn-heart {
+  display: none; /* Hidden by default on desktop */
 }
 
 #tab-content {
@@ -879,7 +945,7 @@ a#info-panel-strava-link:hover {
   padding-top: 0;
   padding-left: 10px;
   padding-right: 10px;
-  padding-bottom: 25px;
+  padding-bottom: 20px;
 }
 
 .elevation-summary .summaryvalue {
@@ -1413,7 +1479,21 @@ body.route-point-select-mode * {
   margin-left: 0 !important;
 }
 
+/* Minimal version of the scale control */
 .leaflet-control-scale-line {
+  height: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  border: 1px solid var(--color-black);
+  border-top: none;
+  background: none;
+  text-shadow: none;
+  color: var(--color-black);
+}
+
+/* Styled version of the scale control */
+/* .leaflet-control-scale-line {
   border: 1px solid var(--border-color);
   background: var(--background-color);
   text-shadow: none;
@@ -1424,7 +1504,7 @@ body.route-point-select-mode * {
 .leaflet-control-scale-line:not(:first-child) {
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
-}
+} */
 
 .leaflet-editing-icon,
 .leaflet-middle-icon {
@@ -1464,9 +1544,10 @@ body.route-point-select-mode * {
   fill: var(--icon-color);
 }
 
-/* Hides the scale control when the elevation chart is visible */
-.leaflet-control-scale.hidden-by-elevation {
-  display: none;
+/* Hide the scale control and attribution when the elevation chart is visible */
+body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-scale,
+body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-attribution {
+  display: none !important;
 }
 
 /* Panels Toggle: Hide left icon by default */
@@ -1572,6 +1653,17 @@ button.strava-button-secondary:not(:disabled) {
   text-decoration: underline;
 }
 
+/* --- Style for credits link in settings panel --- */
+.credits-link {
+  font-size: 14px;
+  color: var(--highlight-color) !important;
+  text-decoration: none;
+}
+
+.credits-link:hover {
+  text-decoration: underline;
+}
+
 /* --- Material Symbols Styles Start --- */
 
 /* For self hosting the font */
@@ -1652,8 +1744,39 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 }
 /* --- Material Symbols Styles End --- */
 
+#sheet-handle {
+  /* Hide sheet-handle on desktop */
+  display: none;
+}
+
 /* --- Mobile Specific Styles Start --- */
 @media (max-width: 768px) {
+  :root {
+    --sheet-handle-height: 40px; /* sheet-handle haight plus its vertical margin */
+    --mobile-main-right-container-visible-height: 260px;
+    --mobile-main-right-container-top: calc(
+      100vh - var(--mobile-main-right-container-visible-height)
+    ); /* Fallback */
+    --mobile-main-right-container-top: calc(
+      100dvh - var(--mobile-main-right-container-visible-height)
+    ); /* Correct unit */
+    --mobile-scale-bottom: calc(var(--mobile-main-right-container-visible-height) - 30px);
+    --mobile-elevation-summary-padding-bottom: calc(var(--mobile-scale-bottom) + 30px);
+  }
+
+  /* When the sheet is hidden, change the variable's value */
+  body:not(.force-desktop-layout):has(#main-right-container.hidden) {
+    --mobile-main-right-container-top: calc(100vh - var(--sheet-handle-height)); /* Fallback */
+    --mobile-main-right-container-top: calc(100dvh - var(--sheet-handle-height)); /* Correct unit */
+    --mobile-scale-bottom: calc(var(--sheet-handle-height) - 30px);
+    --mobile-elevation-summary-padding-bottom: calc(var(--mobile-scale-bottom) + 30px);
+  }
+
+  /* Hide the info panel when the elevation chart is visible */
+  body:not(.force-desktop-layout):has(#elevation-div[style*="visibility: visible"]) #info-panel {
+    display: none !important;
+  }
+
   /* Hide tooltips on mobile to improve UX for drawing and routing. */
   .leaflet-draw-tooltip {
     display: none !important;
@@ -1662,6 +1785,230 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   /* Prevent the floating custom cursor from appearing on touch devices. */
   .custom-cursor {
     display: none !important;
+  }
+
+  /* Ignore following styles if desktop layout is forced */
+  body:not(.force-desktop-layout) {
+    /* Move the attribution and scale up on mobile */
+    .leaflet-container .leaflet-control-attribution {
+      bottom: var(--mobile-scale-bottom);
+      transition: bottom 0.3s ease-in-out;
+      border-radius: 8px !important;
+      border: none !important;
+      /* Move to the right */
+      position: fixed !important;
+      right: 10px;
+    }
+    .leaflet-bottom .leaflet-control-scale {
+      position: absolute;
+      bottom: var(--mobile-scale-bottom);
+      transition: bottom 0.3s ease-in-out;
+      margin-bottom: 0px;
+    }
+
+    /* Hide credits link only show install button */
+    #credits-link-bottom-left {
+      display: none;
+    }
+    #install-pwa-link {
+      margin-left: 0;
+    }
+    .leaflet-control-attribution:has(#install-pwa-link:not([style*="display: none"])) {
+      padding-left: 0;
+    }
+
+    /* Make sure elevation summary is above the sheet handle */
+    .elevation-summary {
+      padding-bottom: var(--mobile-elevation-summary-padding-bottom);
+      transition: padding-bottom 0.3s ease-in-out;
+    }
+
+    /* --- Mobile Bottom Sheet Styles Start --- */
+    #main-right-container {
+      display: flex !important;
+      position: fixed;
+      left: 0;
+      right: 0;
+      width: 100%;
+      max-width: 100vw;
+      /* background-color: var(--background-color); */
+      border-radius: 20px 20px 0 0;
+      gap: 0;
+      z-index: 1000;
+      top: var(--mobile-main-right-container-top);
+      bottom: 0;
+      transition: top 0.3s ease-in-out;
+      /* border-top: 1px solid var(--border-color); */
+    }
+
+    #main-right-container.hidden {
+      top: var(--mobile-main-right-container-top);
+    }
+
+    .leaflet-control-toggle-panels {
+      /* display: none !important; */
+    }
+
+    #sheet-handle {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      width: 100px;
+      height: 30px;
+      margin: 5px auto 5px auto;
+      background-color: var(--highlight-color);
+      /* border: 1px solid var(--border-color); */
+      border-radius: 15px;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+    #sheet-handle .material-symbols {
+      color: var(--color-white);
+    }
+
+    /* These styles are for the new arrow icons in the sheet handle */
+    #sheet-handle .material-symbols {
+      font-size: 24px !important;
+    }
+
+    #main-right-container .sheet-arrow-up {
+      display: none;
+    }
+
+    #main-right-container .sheet-arrow-down {
+      display: block;
+    }
+
+    #main-right-container.hidden .sheet-arrow-up {
+      display: block;
+    }
+
+    #main-right-container.hidden .sheet-arrow-down {
+      display: none;
+    }
+
+    #info-panel {
+      position: absolute;
+      bottom: 100%; /* Position its bottom edge at the top of its parent */
+      left: 50px;
+      right: 50px;
+      width: auto; /* Allow left/right properties to set the width */
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      flex-shrink: 0;
+      min-height: 0;
+      padding: 5px;
+    }
+
+    /* Hide the info panel when no item is selected */
+    #info-panel:has(#info-panel-name[style*="display: none"]) {
+      display: none;
+    }
+
+    #tab-container {
+      width: 100%;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    /* START: SCROLLING FIX */
+    #tab-content {
+      flex-grow: 1;
+      display: flex;
+      overflow: hidden;
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .tab-panel.active {
+      flex-grow: 1;
+      border-radius: 0 !important;
+    }
+
+    /* For the Contents tab, add padding directly to the list */
+    #overview-panel-list {
+      max-height: none;
+      padding-bottom: 20px;
+      box-sizing: border-box;
+    }
+
+    /* For all OTHER tabs, make the whole panel scrollable and add ONLY bottom padding */
+    .tab-panel.active:not(#overview-panel) {
+      overflow-y: auto;
+      padding-bottom: 20px; /* Only add the buffer at the bottom */
+      box-sizing: border-box;
+    }
+
+    #directions-list {
+      max-height: none;
+    }
+    /* END: SCROLLING FIX */
+
+    .tab-button {
+      border-radius: 0 !important;
+    }
+
+    #tab-buttons button:first-child {
+      border-top-left-radius: 0;
+      border-left: none;
+    }
+    #tab-buttons button:last-child {
+      border-top-right-radius: 0;
+      border-right: none;
+    }
+
+    #tab-btn-settings {
+      border-right: none;
+    }
+
+    #tab-content,
+    #overview-panel {
+      border-radius: 0 !important;
+    }
+
+    /* These styles are for the new arrows in the top-right toggle button */
+    .leaflet-control-toggle-panels .icon-chevron-right-span,
+    .leaflet-control-toggle-panels .icon-chevron-left-span {
+      display: none !important;
+    }
+
+    .leaflet-control-toggle-panels a::before {
+      font-family: "Material Symbols Outlined" !important;
+      font-size: 24px !important;
+      line-height: 1;
+      color: var(--icon-color);
+      font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24 !important;
+      content: "keyboard_arrow_down";
+    }
+
+    .leaflet-control-toggle-panels.panels-hidden a::before {
+      content: "keyboard_arrow_up";
+    }
+
+    #tab-btn-heart {
+      display: flex;
+      flex: 0 0 40px;
+      padding: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      background-color: var(--background2-color);
+      border-right: none;
+      outline: none;
+      min-width: 0;
+      justify-content: center;
+      align-items: center;
+      height: 35px;
+    }
+    #tab-btn-heart .material-symbols {
+      color: var(--text-color);
+    }
+    /* --- Mobile Bottom Sheet Styles End --- */
   }
 }
 /* --- Mobile Specific Styles End --- */

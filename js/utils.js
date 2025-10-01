@@ -1,5 +1,117 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
+// This is our "manager" function. It ensures the Google Maps API is loaded only once.
+function ensureGoogleApiIsLoaded() {
+  // If another part of the app is already loading the API, just wait for it to finish.
+  if (window.googleMapsApiPromise) {
+    return window.googleMapsApiPromise;
+  }
+
+  // If this is the first time, create a new promise to manage the loading process.
+  window.googleMapsApiPromise = new Promise((resolve, reject) => {
+    // This is the function Google will call when the script is ready.
+    window.onGoogleMapsApiReady = () => {
+      resolve(); // Signal that loading is complete and successful.
+      delete window.onGoogleMapsApiReady; // Clean up.
+    };
+
+    if (!googleApiKey) {
+      const errorMsg = "Google API key is not configured.";
+      console.error(errorMsg);
+      return reject(new Error(errorMsg));
+    }
+
+    const script = document.createElement("script");
+    // CRITICAL: We request ALL libraries (elevation AND maps) in one call.
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${googleApiKey}&loading=async&libraries=elevation,maps&callback=onGoogleMapsApiReady`;
+    script.async = true;
+    script.defer = true;
+    script.onerror = () => reject(new Error("Failed to load the Google Maps script."));
+    document.head.appendChild(script);
+  });
+
+  return window.googleMapsApiPromise;
+}
+
+/**
+ * --- START: OpenStreetMap-inspired Coordinate Parsing Function ---
+ * Parses a string to determine if it represents valid geographic coordinates.
+ * This logic is inspired by the implementation found in the OpenStreetMap website controller:
+ * https://github.com/openstreetmap/openstreetmap-website/blob/master/app/controllers/searches_controller.rb
+ *
+ * It supports two main formats:
+ * 1. Decimal Degrees (DD):
+ * - Two numbers (integer or decimal) separated by a comma, space, or slash.
+ * - Numbers can have an optional +/- prefix.
+ * - Examples: "47.5, 8.5", "-34.60 -58.38", "+40.7128 / -74.0060"
+ *
+ * 2. Degrees, Minutes, Seconds (DMS):
+ * - Can use N, S, E, W indicators at the start or end.
+ * - Supports degree (°), minute (', ′), and second (", ″) symbols, but they are optional.
+ * - Examples: "N 47° 28' 41.75"", "47 28 41.75 N 7 41 37.13 E"
+ *
+ * @param {string} inputString - The string to parse.
+ * @returns {L.LatLng|null} A Leaflet LatLng object if parsing is successful and
+ * coordinates are valid, otherwise null.
+ */
+function parseCoordinateString(inputString) {
+  const dmsToDecimal = (captures, Hemi) => {
+    const degrees = parseFloat(captures[`${Hemi}d`] || 0);
+    const minutes = parseFloat(captures[`${Hemi}m`] || 0);
+    const seconds = parseFloat(captures[`${Hemi}s`] || 0);
+    const sign =
+      captures[Hemi].toLowerCase() === "s" || captures[Hemi].toLowerCase() === "w" ? -1 : 1;
+    return sign * (degrees + minutes / 60 + seconds / 3600);
+  };
+
+  const dmsSubPattern = (prefix) => {
+    return (
+      `(?:(?<${prefix}d>\\d{1,3}(?:\\.\\d+)?)[°]?)` +
+      `|(?:(?<${prefix}d>\\d{1,3})[°]?\\s*(?<${prefix}m>\\d{1,2}(?:\\.\\d+)?)[\\'′]?)` +
+      `|(?:(?<${prefix}d>\\d{1,3})[°]?\\s*(?<${prefix}m>\\d{1,2})[\\'′]?\\s*(?<${prefix}s>\\d{1,2}(?:\\.\\d+)?)[\\"″]?)`
+    );
+  };
+
+  const query = inputString.trim();
+  let lat, lon;
+  let match = null;
+
+  const dmsRegex1 = new RegExp(
+    `^(?<ns>[NS])\\s*(${dmsSubPattern("ns")})\\W+(?<ew>[EW])\\s*(${dmsSubPattern("ew")})$`,
+    "i"
+  );
+  match = query.match(dmsRegex1);
+
+  if (!match) {
+    const dmsRegex2 = new RegExp(
+      `^(${dmsSubPattern("ns")})\\s*(?<ns>[NS])\\W+(${dmsSubPattern("ew")})\\s*(?<ew>[EW])$`,
+      "i"
+    );
+    match = query.match(dmsRegex2);
+  }
+
+  if (match && match.groups) {
+    lat = dmsToDecimal(match.groups, "ns");
+    lon = dmsToDecimal(match.groups, "ew");
+  } else {
+    const decimalRegex = /^(?<lat>[+-]?\d+(?:\.\d+)?)(?:\s+|\s*[,/]\s*)(?<lon>[+-]?\d+(?:\.\d+)?)$/;
+    match = query.match(decimalRegex);
+    if (match && match.groups) {
+      lat = parseFloat(match.groups.lat);
+      lon = parseFloat(match.groups.lon);
+    }
+  }
+
+  if (typeof lat !== "undefined" && typeof lon !== "undefined") {
+    if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      return L.latLng(lat, lon);
+    }
+  }
+
+  return null; // Return null if no valid coordinates were found
+}
+// --- END: OpenStreetMap-inspired Coordinate Parsing Function ---
+
 /**
  * Simplifies a geometry's coordinates (LineString or MultiLineString) using a provided configuration.
  *
@@ -162,12 +274,26 @@ function downsamplePath(latlngs, maxPoints) {
  * @param {HTMLElement} suggestionsEl The container element to display suggestions in.
  * @param {function(L.LatLng, string): void} callback The function to call when a location is selected. It receives the LatLng object and the location's label.
  */
-function setupAutocomplete(inputEl, suggestionsEl, callback) {
+async function setupAutocomplete(inputEl, suggestionsEl, callback) {
+  // OpenStreetMap Provider
   const geocoder = new GeoSearch.OpenStreetMapProvider({
-    // params: {
-    //   email: "your-email@example.com",
-    // },
+    // https://nominatim.org/release-docs/develop/api/Search/#parameters
+    params: {
+      // email: "your-email@example.com",
+      // countrycodes: "ch",
+      limit: 3,
+    },
   });
+
+  // Google Provider
+  // Wait for our manager to confirm the Google API is ready.
+  // await ensureGoogleApiIsLoaded();
+  // const geocoder = new GeoSearch.GoogleProvider({
+  //   apiKey: googleApiKey,
+  // language: "nl", // render results in Dutch
+  // region: "nl", // prioritize matches within The Netherlands
+  // });
+
   let debounceTimeout;
   let activeSuggestionIndex = -1;
 
@@ -179,9 +305,28 @@ function setupAutocomplete(inputEl, suggestionsEl, callback) {
   }
 
   inputEl.addEventListener("input", () => {
+    const query = inputEl.value.trim();
+
+    // --- MODIFIED: Use the new standalone parsing function ---
+    const latLng = parseCoordinateString(query);
+
+    if (latLng) {
+      // It's a valid coordinate pair!
+      clearTimeout(debounceTimeout);
+      suggestionsEl.innerHTML = "";
+      suggestionsEl.style.display = "none";
+
+      // Call the callback to trigger the map action.
+      // We format the found coordinates as the label.
+      callback(latLng, `${latLng.lat.toFixed(5)}, ${latLng.lng.toFixed(5)}`);
+
+      return; // Stop further processing
+    }
+    // --- END MODIFICATION ---
+
+    // If it wasn't valid coordinates, proceed with the original geocoding logic...
     clearTimeout(debounceTimeout);
     activeSuggestionIndex = -1; // Reset on new input
-    const query = inputEl.value;
     if (query.length < 3) {
       suggestionsEl.innerHTML = "";
       suggestionsEl.style.display = "none";
@@ -240,6 +385,14 @@ function setupAutocomplete(inputEl, suggestionsEl, callback) {
   document.addEventListener("click", (e) => {
     if (!inputEl.contains(e.target) && !suggestionsEl.contains(e.target)) {
       suggestionsEl.style.display = "none";
+
+      // This input-clearing behavior is ONLY intended for the main map search bar,
+      // which uses a temporarySearchMarker to confirm a selection. The routing
+      // inputs should persist their text value. We identify the main search
+      // bar by its unique ID to apply this logic correctly.
+      if (inputEl.id === "search-input" && !temporarySearchMarker) {
+        inputEl.value = "";
+      }
     }
   });
 }
