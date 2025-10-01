@@ -1823,6 +1823,11 @@ body.leaflet-is-drawing .leaflet-marker-icon {
       transition: padding-bottom 0.3s ease-in-out;
     }
 
+    /* --- Hide the Via input group on mobile --- */
+    #routing-via-group {
+      display: none;
+    }
+
     /* --- Mobile Bottom Sheet Styles Start --- */
     #main-right-container {
       display: flex !important;
