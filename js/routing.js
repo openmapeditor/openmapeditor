@@ -225,6 +225,14 @@ function initializeRouting() {
         const route = routes[0];
         let processedCoordinates = route.coordinates;
 
+        // --- START: NEW CODE to get location names ---
+        const startInput = document.getElementById("route-start");
+        const endInput = document.getElementById("route-end");
+        const startName = startInput.value.trim() || "Start";
+        const endName = endInput.value.trim() || "End";
+        const newRouteName = `Route: ${startName} to ${endName}`;
+        // --- END: NEW CODE ---
+
         if (enablePathSimplification) {
           const geoJsonCoords = processedCoordinates.map((latlng) => [latlng.lng, latlng.lat]);
           const simplificationResult = simplifyPath(
@@ -281,15 +289,12 @@ function initializeRouting() {
           map.fitBounds(L.latLngBounds(processedCoordinates), { padding: [50, 50] });
         }
 
-        // --- START: MODIFIED In-Place Route Update ---
-        // If a route already exists on the map, we update it in-place to prevent
-        // it from being deselected, which would incorrectly close the elevation panel.
         if (currentRoutePath) {
           currentRoutePath.setLatLngs(processedCoordinates);
-          currentRoutePath.feature.properties.name = route.name || "Calculated Route";
+          // --- MODIFIED: Use the new dynamic name here ---
+          currentRoutePath.feature.properties.name = newRouteName;
           currentRoutePath.feature.properties.totalDistance = route.summary.totalDistance;
         } else {
-          // If no route exists, this is the first calculation, so we create the layer.
           const routeColorName = "Yellow";
           const routeColor = ORGANIC_MAPS_COLORS.find((c) => c.name === routeColorName).css;
           const newRoutePath = L.polyline(processedCoordinates, {
@@ -299,14 +304,14 @@ function initializeRouting() {
 
           newRoutePath.feature = {
             properties: {
-              name: route.name || "Calculated Route",
+              // --- MODIFIED: Use the new dynamic name here ---
+              name: newRouteName,
               omColorName: routeColorName,
               totalDistance: route.summary.totalDistance,
             },
           };
           newRoutePath.pathType = "route";
 
-          // --- START: FINAL Click and Long-Press Logic for Route ---
           let pressTimer = null;
           let wasLongPress = false;
 
@@ -340,24 +345,20 @@ function initializeRouting() {
               addIntermediateViaPoint(e.latlng);
             }
           });
-          // --- END: FINAL Click and Long-Press Logic for Route ---
 
           drawnItems.addLayer(newRoutePath);
           newRoutePath.addTo(map);
-          currentRoutePath = newRoutePath; // Assign the new path to the global variable
+          currentRoutePath = newRoutePath;
         }
-        // --- END: MODIFIED In-Place Route Update ---
 
         updateOverviewList();
         updateDrawControlStates();
 
-        // Re-select the route if it was selected before a unit change,
-        // or select it if it's a brand new calculation.
         if (wasRouteSelectedOnUnitRefresh || !isUnitRefreshInProgress) {
           selectItem(currentRoutePath);
         }
-        isUnitRefreshInProgress = false; // Always reset the flag
-        wasRouteSelectedOnUnitRefresh = false; // Always reset the flag
+        isUnitRefreshInProgress = false;
+        wasRouteSelectedOnUnitRefresh = false;
 
         saveRouteBtn.disabled = false;
       }
