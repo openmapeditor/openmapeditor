@@ -281,7 +281,7 @@ async function setupAutocomplete(inputEl, suggestionsEl, callback) {
     params: {
       // email: "your-email@example.com",
       // countrycodes: "ch",
-      limit: 3,
+      limit: 5,
     },
   });
 
