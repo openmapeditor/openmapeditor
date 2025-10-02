@@ -382,18 +382,18 @@ async function setupAutocomplete(inputEl, suggestionsEl, callback) {
   });
   // END: ADDED KEYDOWN LISTENER
 
-  document.addEventListener("click", (e) => {
-    if (!inputEl.contains(e.target) && !suggestionsEl.contains(e.target)) {
+  // This robustly hides suggestions when the input loses focus for any reason.
+  inputEl.addEventListener("blur", () => {
+    // A short delay is crucial. It gives the browser time to process a
+    // click on a suggestion item before the list is hidden.
+    setTimeout(() => {
       suggestionsEl.style.display = "none";
 
-      // This input-clearing behavior is ONLY intended for the main map search bar,
-      // which uses a temporarySearchMarker to confirm a selection. The routing
-      // inputs should persist their text value. We identify the main search
-      // bar by its unique ID to apply this logic correctly.
+      // This preserves the logic to clear the search bar if no selection was made.
       if (inputEl.id === "search-input" && !temporarySearchMarker) {
         inputEl.value = "";
       }
-    }
+    }, 150);
   });
 }
 
