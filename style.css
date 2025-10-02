@@ -1094,8 +1094,8 @@ g.x.axis.top.time {
 #search-container {
   position: absolute;
   top: 10px;
-  right: 90px; /* Aligns with other right-side controls */
-  width: 200px; /* A bit wider for better usability */
+  right: 90px;
+  width: 240px;
   z-index: 1001;
   max-width: calc(100vw - 140px);
 }
@@ -1419,7 +1419,7 @@ body.route-point-select-mode * {
   position: absolute;
   top: 50px;
   right: 10px;
-  width: 280px;
+  width: 320px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
