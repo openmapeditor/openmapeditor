@@ -393,7 +393,7 @@ function initializeMap() {
         const [lat, lon] = data.loc.split(",").map(Number);
         if (lat && lon) {
           console.log(`Centering map on ${data.city}, ${data.country} via IP Geolocation.`);
-          map.setView([lat, lon], 6);
+          map.setView([lat, lon], 5);
         }
       }
     })
