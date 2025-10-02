@@ -1828,6 +1828,26 @@ body.leaflet-is-drawing .leaflet-marker-icon {
       display: none;
     }
 
+    /* --- Dynamic Mobile Search Bar --- */
+    #search-container {
+      left: 50px;
+      right: 90px;
+      width: auto; /* Allow left/right to determine width */
+      max-width: none;
+    }
+
+    #search-input {
+      /* Start with a smaller width, aligned to the right */
+      width: 100px;
+      float: right;
+      transition: width 0.3s ease-in-out; /* Smooth expansion animation */
+    }
+
+    #search-input:focus {
+      /* Expand to fill the container when the user taps on it */
+      width: 100%;
+    }
+
     /* --- Mobile Bottom Sheet Styles Start --- */
     #main-right-container {
       display: flex !important;
