@@ -1223,42 +1223,50 @@ function initializeMap() {
     updateOverviewList();
   });
 
-  const showCopyCoordsPopup = (e) => {
+  const showMapContextMenu = (e) => {
     const latlng = e.latlng;
-    const coordString = `${latlng.lat}, ${latlng.lng}`;
+    const displayedCoordString = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
+    const fullCoordString = `${latlng.lat}, ${latlng.lng}`;
+
     const popupContent = document.createElement("div");
-    popupContent.innerHTML = `<span style="font-weight: bold;">Copy coordinates</span><br><span style="font-size: 12px;">${latlng.lat.toFixed(
-      5
-    )}, ${latlng.lng.toFixed(5)}</span>`;
-    popupContent.style.cursor = "pointer";
     popupContent.style.textAlign = "center";
-    popupContent.style.margin = "5px";
+    popupContent.style.cursor = "default";
 
-    const popup = L.popup({
-      closeButton: false,
-    })
-      .setLatLng(latlng)
-      .setContent(popupContent)
-      .openOn(map);
+    // 1. Coordinates display at the top
+    const coordsDiv = document.createElement("div");
+    coordsDiv.innerHTML = `<span style="font-size: 13px;">${displayedCoordString}</span>`;
+    popupContent.appendChild(coordsDiv);
 
-    popupContent.addEventListener("click", () => {
-      copyToClipboard(coordString)
+    // 2. Divider line
+    const divider = document.createElement("hr");
+    divider.style.margin = "5px 0";
+    divider.style.border = "none";
+    divider.style.borderTop = "1px solid var(--divider-color)";
+    popupContent.appendChild(divider);
+
+    // 3. "Copy Coordinates" option
+    const copyDiv = document.createElement("div");
+    copyDiv.textContent = "Copy Coordinates";
+    copyDiv.style.cursor = "pointer";
+    copyDiv.style.padding = "4px 0";
+    copyDiv.addEventListener("click", () => {
+      copyToClipboard(fullCoordString)
         .then(() => {
-          map.closePopup(popup);
+          map.closePopup();
           Swal.fire({
             toast: true,
             position: "center",
             icon: "success",
             iconColor: "var(--swal-color-success)",
             title: "Coordinates Copied!",
-            html: coordString,
+            html: fullCoordString,
             showConfirmButton: false,
             timer: 1500,
           });
         })
         .catch((err) => {
           console.error("Could not copy text: ", err);
-          map.closePopup(popup);
+          map.closePopup();
           Swal.fire({
             toast: true,
             position: "center",
@@ -1270,6 +1278,27 @@ function initializeMap() {
           });
         });
     });
+    popupContent.appendChild(copyDiv);
+
+    // 4. "Edit on OpenStreetMap" option
+    const editOsmDiv = document.createElement("div");
+    editOsmDiv.textContent = "Edit on OpenStreetMap";
+    editOsmDiv.style.cursor = "pointer";
+    editOsmDiv.style.padding = "4px 0";
+    editOsmDiv.addEventListener("click", () => {
+      const zoom = map.getZoom();
+      const url = `https://www.openstreetmap.org/edit?editor=id#map=${zoom}/${latlng.lat}/${latlng.lng}`;
+      window.open(url, "_blank");
+      map.closePopup();
+    });
+    popupContent.appendChild(editOsmDiv);
+
+    const popup = L.popup({
+      closeButton: false,
+    })
+      .setLatLng(latlng)
+      .setContent(popupContent)
+      .openOn(map);
   };
 
   // --- START: Unified Context Menu / Right-Click Handler ---
@@ -1280,7 +1309,7 @@ function initializeMap() {
     );
 
     if (!clickedOnUi) {
-      showCopyCoordsPopup(e);
+      showMapContextMenu(e);
     }
   });
   // --- END: Unified Context Menu / Right-Click Handler ---
@@ -1312,7 +1341,7 @@ function initializeMap() {
 
     pressTimer = setTimeout(() => {
       map.closePopup();
-      showCopyCoordsPopup(e);
+      showMapContextMenu(e);
     }, 800);
   });
 
