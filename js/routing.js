@@ -632,8 +632,9 @@ function initializeRouting() {
   });
 
   // --- Generalized function to handle start, via, or end ---
-  const updateRoutingPoint = (latlng, type) => {
-    const locationString = `Your location`;
+  const updateRoutingPoint = (latlng, type, label) => {
+    // If a label is provided, use it. Otherwise, format the coordinates as a fallback.
+    const locationString = label || `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
 
     if (type === "start") {
       currentStartLatLng = latlng;
@@ -698,7 +699,8 @@ function initializeRouting() {
         });
         return;
       }
-      updateRoutingPoint(latlng, type);
+      // Pass the specific label for "Use my current location"
+      updateRoutingPoint(latlng, type, "Your location");
       map.flyTo(latlng, map.getZoom() < 16 ? 16 : map.getZoom());
     };
     const isLocateActive = locateControl.getContainer()?.classList.contains("locate-active");
@@ -995,4 +997,5 @@ function initializeRouting() {
   window.app.setupRoutingControl = setupRoutingControl;
   window.app.clearRouting = clearRouting;
   window.app.redisplayCurrentRoute = redisplayCurrentRoute;
+  window.app.updateRoutingPoint = updateRoutingPoint;
 }

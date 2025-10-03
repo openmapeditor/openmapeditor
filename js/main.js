@@ -1232,66 +1232,104 @@ function initializeMap() {
     popupContent.style.textAlign = "center";
     popupContent.style.cursor = "default";
 
-    // 1. Coordinates display at the top
+    // Helper function to show the routing panel and close the popup
+    const showRoutingPanel = () => {
+      document.getElementById("main-right-container").classList.remove("hidden");
+      const toggleButton = document.querySelector(".leaflet-control-toggle-panels");
+      if (toggleButton) {
+        toggleButton.classList.add("panels-visible");
+        toggleButton.classList.remove("panels-hidden");
+      }
+      document.getElementById("tab-btn-routing").click();
+      map.closePopup();
+    };
+
+    // Coordinates display at the top
     const coordsDiv = document.createElement("div");
     coordsDiv.innerHTML = `<span style="font-size: 13px;">${displayedCoordString}</span>`;
     popupContent.appendChild(coordsDiv);
 
-    // 2. Divider line
+    // Divider line
     const divider = document.createElement("hr");
     divider.style.margin = "5px 0";
     divider.style.border = "none";
     divider.style.borderTop = "1px solid var(--divider-color)";
     popupContent.appendChild(divider);
 
-    // 3. "Copy Coordinates" option
-    const copyDiv = document.createElement("div");
-    copyDiv.textContent = "Copy Coordinates";
-    copyDiv.style.cursor = "pointer";
-    copyDiv.style.padding = "4px 0";
-    copyDiv.addEventListener("click", () => {
-      copyToClipboard(fullCoordString)
-        .then(() => {
-          map.closePopup();
-          Swal.fire({
-            toast: true,
-            position: "center",
-            icon: "success",
-            iconColor: "var(--swal-color-success)",
-            title: "Coordinates Copied!",
-            html: fullCoordString,
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        })
-        .catch((err) => {
-          console.error("Could not copy text: ", err);
-          map.closePopup();
-          Swal.fire({
-            toast: true,
-            position: "center",
-            icon: "error",
-            iconColor: "var(--swal-color-error)",
-            title: "Failed to Copy",
-            showConfirmButton: false,
-            timer: 2000,
-          });
-        });
-    });
-    popupContent.appendChild(copyDiv);
+    // --- START: Context Menu Options ---
+    // Helper function to create styled menu items and reduce code repetition
+    const createMenuItem = (text, onClick) => {
+      const div = document.createElement("div");
+      div.textContent = text;
+      div.style.cursor = "pointer";
+      div.style.padding = "5px 0";
+      div.addEventListener("click", onClick);
+      return div;
+    };
 
-    // 4. "Edit on OpenStreetMap" option
-    const editOsmDiv = document.createElement("div");
-    editOsmDiv.textContent = "Edit on OpenStreetMap";
-    editOsmDiv.style.cursor = "pointer";
-    editOsmDiv.style.padding = "4px 0";
-    editOsmDiv.addEventListener("click", () => {
-      const zoom = map.getZoom();
-      const url = `https://www.openstreetmap.org/edit?editor=id#map=${zoom}/${latlng.lat}/${latlng.lng}`;
-      window.open(url, "_blank");
-      map.closePopup();
-    });
-    popupContent.appendChild(editOsmDiv);
+    // "Copy Coordinates" option
+    popupContent.appendChild(
+      createMenuItem("Copy Coordinates", () => {
+        copyToClipboard(fullCoordString)
+          .then(() => {
+            map.closePopup();
+            Swal.fire({
+              toast: true,
+              position: "center",
+              icon: "success",
+              iconColor: "var(--swal-color-success)",
+              title: "Coordinates Copied!",
+              html: fullCoordString,
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          })
+          .catch((err) => {
+            console.error("Could not copy text: ", err);
+            map.closePopup();
+            Swal.fire({
+              toast: true,
+              position: "center",
+              icon: "error",
+              iconColor: "var(--swal-color-error)",
+              title: "Failed to Copy",
+              showConfirmButton: false,
+              timer: 2000,
+            });
+          });
+      })
+    );
+
+    // "Route from here" option
+    popupContent.appendChild(
+      createMenuItem("Route from here", () => {
+        if (window.app && typeof window.app.updateRoutingPoint === "function") {
+          window.app.updateRoutingPoint(latlng, "start");
+        }
+        showRoutingPanel();
+      })
+    );
+
+    // "Route to here" option
+    popupContent.appendChild(
+      createMenuItem("Route to here", () => {
+        if (window.app && typeof window.app.updateRoutingPoint === "function") {
+          window.app.updateRoutingPoint(latlng, "end");
+        }
+        showRoutingPanel();
+      })
+    );
+
+    // "Edit on OpenStreetMap" option
+    popupContent.appendChild(
+      createMenuItem("Edit on OpenStreetMap", () => {
+        const zoom = map.getZoom();
+        const url = `https://www.openstreetmap.org/edit?editor=id#map=${zoom}/${latlng.lat}/${latlng.lng}`;
+        window.open(url, "_blank");
+        map.closePopup();
+      })
+    );
+    // --- END: Context Menu Options ---
 
     const popup = L.popup({
       closeButton: false,
@@ -1437,7 +1475,7 @@ function initializeMap() {
   });
 
   map.on(L.Draw.Event.EDITSTART, () => {
-    isEditMode = true;
+    isDeleteMode = true;
     deselectCurrentItem();
     if (selectedPathOutline) map.removeLayer(selectedPathOutline);
     if (selectedMarkerOutline) map.removeLayer(selectedMarkerOutline);
