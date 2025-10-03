@@ -95,9 +95,9 @@ function createAndAddElevationControl(useImperial) {
     imperial: useImperial, // The parameter is used here
     margins: {
       top: 30,
-      right: 30,
+      right: 0,
       bottom: -10,
-      left: 60,
+      left: 0,
     },
   });
 
