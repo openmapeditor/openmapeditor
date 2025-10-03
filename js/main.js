@@ -177,6 +177,23 @@ async function showCreditsPopup() {
 }
 // --- END: Reusable function to show the credits popup ---
 
+/**
+ * Parses a URL hash string to extract map view parameters.
+ * @param {string} hashString The hash string from window.location.hash.
+ * @returns {{zoom: number, lat: number, lon: number}|null} An object with map parameters or null if the hash is invalid.
+ */
+function parseMapHash(hashString) {
+  const match = hashString.match(/^#map=(\d{1,2})\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)$/);
+  if (match) {
+    return {
+      zoom: parseInt(match[1], 10),
+      lat: parseFloat(match[2]),
+      lon: parseFloat(match[3]),
+    };
+  }
+  return null;
+}
+
 // Main function to initialize the map and all its components.
 function initializeMap() {
   // --- START: Add this check for secrets.js ---
@@ -379,29 +396,72 @@ function initializeMap() {
     doubleClickZoom: false,
   });
 
-  // --- START: Set initial view via IP geolocation ---
-  fetch("https://ipinfo.io/json")
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Response not OK");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (data && data.loc) {
-        // ipinfo.io returns location as a "lat,lon" string
-        const [lat, lon] = data.loc.split(",").map(Number);
-        if (lat && lon) {
-          console.log(`Centering map on ${data.city}, ${data.country} via IP Geolocation.`);
-          map.setView([lat, lon], 5);
+  // --- START: URL Hash Logic ---
+  // This block handles the initial view, updates the hash on move, and listens for manual changes.
+
+  // Set the initial view from the URL hash, with a fallback to IP geolocation.
+  const initialView = parseMapHash(window.location.hash);
+  let isUpdatingUrl = false; // A flag to prevent event loops
+
+  if (initialView) {
+    isUpdatingUrl = true; // Prevent the initial 'moveend' from overwriting the hash
+    map.setView([initialView.lat, initialView.lon], initialView.zoom);
+    isUpdatingUrl = false; // Reset the flag
+  } else {
+    // Fallback to IP geolocation if no valid hash is found
+    fetch("https://ipinfo.io/json")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Response not OK");
         }
+        return response.json();
+      })
+      .then((data) => {
+        if (data && data.loc) {
+          const [lat, lon] = data.loc.split(",").map(Number);
+          if (lat && lon) {
+            console.log(`Centering map on ${data.city}, ${data.country} via IP Geolocation.`);
+            map.setView([lat, lon], 5);
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("IP Geolocation fetch failed, using default map view.", error);
+        // The map will just keep its default [0, 0] view if the API call fails
+      });
+  }
+
+  // This function updates the URL hash with the current map view when the map moves.
+  const updateUrlHash = () => {
+    if (isUpdatingUrl) return; // Don't update the URL if we are already setting the view from it
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+    const lat = center.lat.toFixed(5);
+    const lng = center.lng.toFixed(5);
+    window.location.hash = `map=${zoom}/${lat}/${lng}`;
+  };
+
+  map.on("moveend", updateUrlHash);
+
+  // This function runs whenever the user manually changes the hash in the URL bar.
+  const handleHashChange = () => {
+    const newView = parseMapHash(window.location.hash);
+    if (newView) {
+      const currentCenter = map.getCenter();
+      const currentZoom = map.getZoom();
+      // To prevent a feedback loop, only update the map if the new view is different from the current one.
+      if (
+        currentZoom !== newView.zoom ||
+        currentCenter.lat.toFixed(5) !== newView.lat.toFixed(5) ||
+        currentCenter.lng.toFixed(5) !== newView.lon.toFixed(5)
+      ) {
+        map.setView([newView.lat, newView.lon], newView.zoom);
       }
-    })
-    .catch((error) => {
-      console.error("IP Geolocation fetch failed, using default map view.", error);
-      // The map will just keep its default [0, 0] view if the API call fails
-    });
-  // --- END: Set initial view via IP geolocation ---
+    }
+  };
+
+  window.addEventListener("hashchange", handleHashChange, false);
+  // --- END: URL Hash Logic ---
 
   // Configure the map's attribution control
   map.attributionControl.setPosition("bottomleft");
