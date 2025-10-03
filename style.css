@@ -1170,6 +1170,12 @@ g.x.axis.top.time {
   border-radius: 0 !important;
   box-shadow: none !important;
 }
+/* Style disabled Leaflet zoom controls */
+.leaflet-bar a.leaflet-disabled {
+  color: var(--text-color);
+  background-color: var(--background2-color);
+  cursor: not-allowed;
+}
 /* This rule targets the first custom control to round its top corners */
 .leaflet-left > .leaflet-control-custom:first-child a {
   border-radius: 50px 50px 0 0 !important;
