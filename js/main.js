@@ -827,7 +827,7 @@ function initializeMap() {
     .locate({
       position: "topleft",
       flyTo: true,
-      locateOptions: { maxZoom: 16 },
+      locateOptions: { maxZoom: 19 },
       drawCircle: false,
       showPopup: false,
       showCompass: true,
