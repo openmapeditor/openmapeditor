@@ -182,7 +182,7 @@ function renderUserKeysPanel() {
   const apiKeysHtml = `
     <div style="padding: 0; text-align: center;">
       <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 5px; font-size: 14px;">
-      <span>Provide Strava API Keys to connect</span>
+      <span>Provide Strava API Keys to see your activities on the map.</span>
       <span id="strava-info-icon" class="material-symbols" title="Why is this needed?" style="font-size: 14px; line-height: 1;">info</span>
       </div>
       <div class="routing-input-group">
