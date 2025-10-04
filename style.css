@@ -929,7 +929,7 @@ a#info-panel-strava-link:hover {
   text-align: center;
   visibility: hidden;
   width: 100%;
-  z-index: 500;
+  z-index: 1000;
   border-top: 1px solid var(--border-color);
 }
 
@@ -1821,6 +1821,11 @@ body.leaflet-is-drawing .leaflet-marker-icon {
     }
     .leaflet-control-attribution:has(#install-pwa-link:not([style*="display: none"])) {
       padding-left: 0;
+    }
+
+    /* Make sure elevation div is behind main right container on mobiles */
+    #elevation-div {
+      z-index: 500;
     }
 
     /* Make sure elevation summary is above the sheet handle */
