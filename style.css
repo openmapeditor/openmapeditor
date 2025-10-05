@@ -1255,68 +1255,6 @@ g.x.axis.top.time {
   display: none !important;
 }
 
-/* Divider lines for controls */
-/*
-#map
-  > div.leaflet-control-container
-  > div.leaflet-top.leaflet-left
-  > div.leaflet-control-custom:first-child::after,
-#map
-  > div.leaflet-control-container
-  > div.leaflet-top.leaflet-left
-  > div.leaflet-control-locate.leaflet-bar.leaflet-control::after,
-#map
-  > div.leaflet-control-container
-  > div.leaflet-top.leaflet-left
-  > div.leaflet-control-zoom.leaflet-bar.leaflet-control
-  > a.leaflet-control-zoom-out::after,
-#map
-  > div.leaflet-control-container
-  > div.leaflet-top.leaflet-left
-  > div.leaflet-draw.leaflet-control
-  > div:nth-child(1)
-  > div
-  > a.leaflet-draw-draw-marker::after,
-#map > div.leaflet-control-container > div.leaflet-top.leaflet-left > div:nth-child(4)::after,
-#map > div.leaflet-control-container > div.leaflet-top.leaflet-left > div:nth-child(5)::after,
-#map > div.leaflet-control-container > div.leaflet-top.leaflet-left > div:nth-child(6)::after {
-  background-color: var(--divider-color);
-  bottom: 0;
-  content: "";
-  height: 1px;
-  left: 0px;
-  position: absolute;
-  right: 0px;
-}
-#map
-  > div.leaflet-control-container
-  > div.leaflet-top.leaflet-left
-  > div.leaflet-control-zoom.leaflet-bar.leaflet-control
-  > a.leaflet-control-zoom-in::after,
-#map
-  > div.leaflet-control-container
-  > div.leaflet-top.leaflet-left
-  > div.leaflet-draw.leaflet-control
-  > div:nth-child(1)
-  > div
-  > a.leaflet-draw-draw-polyline::after,
-#map
-  > div.leaflet-control-container
-  > div.leaflet-top.leaflet-left
-  > div.leaflet-draw.leaflet-control
-  > div:nth-child(2)
-  > div
-  > a.leaflet-draw-edit-edit::after {
-  background-color: var(--divider-color);
-  bottom: 50%;
-  content: "";
-  height: 1px;
-  left: 0px;
-  position: absolute;
-  right: 0px;
-}
-*/
-
 /* Style for disabled custom buttons */
 .leaflet-control-custom.disabled > a {
   background-color: var(--background2-color);
