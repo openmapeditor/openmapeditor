@@ -394,6 +394,7 @@ function initializeMap() {
     zoom: 2,
     zoomControl: false,
     doubleClickZoom: false,
+    worldCopyJump: true,
   });
 
   // --- START: URL Hash Logic ---
