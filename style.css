@@ -72,21 +72,6 @@ select:focus {
   position: relative; /* Needed for absolute positioning of children */
 }
 
-/* --- Prevent Annoying Text Selection on UI Elements --- */
-/* This globally disables text selection on buttons, panels, and popups.
-   It's primarily to fix the annoying default behavior on iPad/touch devices
-   where a long-press incorrectly selects UI text instead of activating a control. */
-.leaflet-control,
-.leaflet-popup-content-wrapper,
-#main-right-container,
-#custom-layers-panel,
-#search-container {
-  -webkit-user-select: none; /* Safari on iOS/iPadOS */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Standard */
-}
-
 /* --- Unified icon styling --- */
 
 /* 1. Center all icons in their button containers using flexbox */
@@ -1708,6 +1693,8 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   display: none;
 }
 
+/* --- Mobile Specific Styles Start --- */
+
 /* Prevent the floating custom cursor from appearing on devices where the primary input is not precise (like a finger) */
 @media (pointer: coarse) {
   .custom-cursor {
@@ -1715,7 +1702,15 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   }
 }
 
-/* --- Mobile Specific Styles Start --- */
+/* Fix the behavior on iPad devices where a long-press incorrectly selects UI text */
+.leaflet-control,
+.leaflet-popup-content-wrapper {
+  -webkit-user-select: none; /* Safari on iOS/iPadOS */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Standard */
+}
+
 @media (max-width: 768px) {
   :root {
     --sheet-handle-height: 40px; /* sheet-handle haight plus its vertical margin */
