@@ -935,6 +935,12 @@ a#info-panel-strava-link:hover {
 
 .elevation-control .background {
   height: 200px !important;
+  /* For testing: position the elevation chart more to the left */
+  /*
+  position: relative;
+  left: 45px;
+  width: calc(100vw - 385px);
+  */
 }
 
 .elevation-summary {
