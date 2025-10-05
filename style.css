@@ -1701,20 +1701,20 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 
 /* --- Mobile Specific Styles Start --- */
 
-/* Prevent the floating custom cursor from appearing on devices where the primary input is not precise (like a finger) */
+/* Applies styles for devices with a coarse pointer (e.g., a finger on a touchscreen). */
 @media (pointer: coarse) {
+  /* Prevent the floating custom cursor from appearing on touch devices */
   .custom-cursor {
     display: none !important;
   }
-}
 
-/* Fix the behavior on iPad devices where a long-press incorrectly selects UI text */
-.leaflet-control,
-.leaflet-popup-content-wrapper {
-  -webkit-user-select: none; /* Safari on iOS/iPadOS */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Standard */
+  /* Fix the behavior where a long-press incorrectly selects UI text on touch devices */
+  * {
+    -webkit-user-select: none; /* Safari on iOS/iPadOS */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Standard */
+  }
 }
 
 @media (max-width: 768px) {
