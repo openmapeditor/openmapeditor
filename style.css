@@ -1770,6 +1770,13 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   display: none;
 }
 
+/* Prevent the floating custom cursor from appearing on devices where the primary input is not precise (like a finger) */
+@media (pointer: coarse) {
+  .custom-cursor {
+    display: none !important;
+  }
+}
+
 /* --- Mobile Specific Styles Start --- */
 @media (max-width: 768px) {
   :root {
@@ -1800,11 +1807,6 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 
   /* Hide tooltips on mobile to improve UX for drawing and routing. */
   .leaflet-draw-tooltip {
-    display: none !important;
-  }
-
-  /* Prevent the floating custom cursor from appearing on touch devices. */
-  .custom-cursor {
     display: none !important;
   }
 
