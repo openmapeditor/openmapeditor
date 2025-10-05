@@ -72,6 +72,21 @@ select:focus {
   position: relative; /* Needed for absolute positioning of children */
 }
 
+/* --- Prevent Annoying Text Selection on UI Elements --- */
+/* This globally disables text selection on buttons, panels, and popups.
+   It's primarily to fix the annoying default behavior on iPad/touch devices
+   where a long-press incorrectly selects UI text instead of activating a control. */
+.leaflet-control,
+.leaflet-popup-content-wrapper,
+#main-right-container,
+#custom-layers-panel,
+#search-container {
+  -webkit-user-select: none; /* Safari on iOS/iPadOS */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Standard */
+}
+
 /* --- Unified icon styling --- */
 
 /* 1. Center all icons in their button containers using flexbox */
