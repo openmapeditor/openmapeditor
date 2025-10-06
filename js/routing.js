@@ -155,48 +155,38 @@ function initializeRouting() {
       title: ROUTING_MARKER_HINT,
     }).addTo(map);
 
-    let pressTimer = null; // Timer for long-press detection
-
-    // Specific deletion logic for an intermediate via marker
     const deleteMarkerAction = () => {
       map.removeLayer(newViaMarker);
-      // Filter this specific marker out of the array
       intermediateViaMarkers = intermediateViaMarkers.filter((m) => m !== newViaMarker);
       updateRouteWithIntermediateVias();
     };
 
-    // --- START: Add the new long-press logic ---
+    // --- START: CORRECTED Long-press & Right-click Logic ---
+    let pressTimer = null;
+
     newViaMarker.on("mousedown", (e) => {
+      // This timer is for a long LEFT-CLICK on desktop only.
       if (e.originalEvent.pointerType === "touch" || e.originalEvent.button === 2) {
         return;
       }
-      pressTimer = setTimeout(() => {
-        deleteMarkerAction();
-      }, 800);
+      pressTimer = setTimeout(deleteMarkerAction, 800);
     });
 
-    const clearPressTimer = () => {
-      if (pressTimer) {
-        clearTimeout(pressTimer);
-        pressTimer = null;
-      }
+    const cancelPressTimer = () => {
+      clearTimeout(pressTimer);
     };
 
-    newViaMarker.on("mouseup", clearPressTimer);
-    newViaMarker.on("dragstart", clearPressTimer);
+    newViaMarker.on("mouseup", cancelPressTimer);
+    newViaMarker.on("dragstart", cancelPressTimer);
 
+    // This handles the mobile long-press and desktop right-click.
     newViaMarker.on("contextmenu", (e) => {
       L.DomEvent.stop(e);
-      if (e.originalEvent.pointerType === "touch") {
-        deleteMarkerAction();
-      }
+      deleteMarkerAction();
     });
-    // --- END: Add the new long-press logic ---
+    // --- END: CORRECTED Long-press & Right-click Logic ---
 
-    // Keep the original dragend handler
     newViaMarker.on("dragend", updateRouteWithIntermediateVias);
-
-    // Add the new marker to the array and update the route
     intermediateViaMarkers.push(newViaMarker);
     updateRouteWithIntermediateVias();
   };
@@ -524,9 +514,8 @@ function initializeRouting() {
     const isStart = type === "start";
     const isVia = type === "via";
     const input = isStart ? startInput : isVia ? viaInput : endInput;
-    let pressTimer = null; // Timer for long-press detection
+    let pressTimer = null;
 
-    // Centralized deletion logic
     const deleteMarkerAction = () => {
       clearRoutingPoint(type);
     };
@@ -538,49 +527,34 @@ function initializeRouting() {
       else currentEndLatLng = newLatLng;
       input.value = `${newLatLng.lat.toFixed(5)}, ${newLatLng.lng.toFixed(5)}`;
       input.style.color = "var(--color-black)";
-
       if (startMarker && endMarker) {
-        // MODIFIED: Always use the update function for dragging
-        // to preserve intermediate via points for a better user experience.
         updateRouteWithIntermediateVias();
       }
     });
 
-    // --- START: Long-press logic for deletion ---
+    // --- START: CORRECTED Long-press & Right-click Logic ---
     marker.on("mousedown", (e) => {
-      // Touch events are handled by contextmenu.
-      if (e.originalEvent.pointerType === "touch") {
+      // This timer is for a long LEFT-CLICK on desktop only.
+      // It ignores touch events and right-clicks.
+      if (e.originalEvent.pointerType === "touch" || e.originalEvent.button === 2) {
         return;
       }
-      // A right-click shouldn't start a long-press timer.
-      if (e.originalEvent.button === 2) {
-        return;
-      }
-      pressTimer = setTimeout(() => {
-        deleteMarkerAction();
-      }, 800);
+      pressTimer = setTimeout(deleteMarkerAction, 800);
     });
 
-    const clearPressTimer = () => {
-      if (pressTimer) {
-        clearTimeout(pressTimer);
-        pressTimer = null;
-      }
+    const cancelPressTimer = () => {
+      clearTimeout(pressTimer);
     };
 
-    marker.on("mouseup", clearPressTimer);
-    marker.on("dragstart", clearPressTimer); // Important: cancel on drag
+    marker.on("mouseup", cancelPressTimer);
+    marker.on("dragstart", cancelPressTimer);
 
+    // This handles the mobile long-press and desktop right-click.
     marker.on("contextmenu", (e) => {
-      L.DomEvent.stop(e); // Prevent default map context menu.
-
-      // On touch devices, this is our long-press.
-      if (e.originalEvent.pointerType === "touch") {
-        deleteMarkerAction();
-      }
-      // For mouse right-click, we do nothing, effectively disabling it.
+      L.DomEvent.stop(e);
+      deleteMarkerAction();
     });
-    // --- END: Long-press logic for deletion ---
+    // --- END: CORRECTED Long-press & Right-click Logic ---
   }
 
   const clearRouting = () => {
