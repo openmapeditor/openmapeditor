@@ -81,7 +81,7 @@ function deselectCurrentItem() {
   globallySelectedItem = null;
   selectedElevationPath = null;
   elevationControl.clear();
-  document.getElementById("elevation-div").style.visibility = "hidden";
+  document.getElementById("elevation-div").style.display = "none";
   isElevationProfileVisible = false;
   updateElevationToggleIconColor();
   elevationToggleControl.getContainer().title = "No path selected";
@@ -194,8 +194,8 @@ function selectItem(layer) {
       L.DomUtil.removeClass(elevationToggleControl.getContainer(), "disabled");
     }
     const elevationDiv = document.getElementById("elevation-div");
-    if (isElevationProfileVisible || elevationDiv.style.visibility === "visible") {
-      elevationDiv.style.visibility = "visible";
+    if (isElevationProfileVisible || elevationDiv.style.display === "block") {
+      elevationDiv.style.display = "block";
       isElevationProfileVisible = true;
     }
   } else if (layer instanceof L.Marker) {

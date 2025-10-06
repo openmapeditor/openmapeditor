@@ -17,7 +17,7 @@ function clearElevationCache() {
     // Also, hide the elevation div if it's visible
     const elevationDiv = document.getElementById("elevation-div");
     if (elevationDiv) {
-      elevationDiv.style.visibility = "hidden";
+      elevationDiv.style.display = "none";
       isElevationProfileVisible = false;
     }
     updateElevationToggleIconColor();

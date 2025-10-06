@@ -706,8 +706,8 @@ function initializeMap() {
         if (L.DomUtil.hasClass(container, "disabled")) return;
         const elevationDiv = document.getElementById("elevation-div");
         isElevationProfileVisible =
-          elevationDiv.style.visibility === "hidden" || elevationDiv.style.visibility === "";
-        elevationDiv.style.visibility = isElevationProfileVisible ? "visible" : "hidden";
+          elevationDiv.style.display === "none" || elevationDiv.style.display === "";
+        elevationDiv.style.display = isElevationProfileVisible ? "block" : "none";
         if (isElevationProfileVisible) {
           if (elevationControl && selectedElevationPath) {
             elevationControl.clear();

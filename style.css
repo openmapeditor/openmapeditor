@@ -927,7 +927,7 @@ a#info-panel-strava-link:hover {
   left: 0px;
   position: absolute;
   text-align: center;
-  visibility: hidden;
+  display: none;
   width: 100%;
   z-index: 1000;
   border-top: 1px solid var(--border-color);
@@ -1495,8 +1495,8 @@ body.route-point-select-mode * {
 }
 
 /* Hide the scale control and attribution when the elevation chart is visible */
-body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-scale,
-body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-attribution {
+body:has(#elevation-div[style*="display: block"]) .leaflet-control-scale,
+body:has(#elevation-div[style*="display: block"]) .leaflet-control-attribution {
   display: none !important;
 }
 
@@ -1740,7 +1740,7 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   }
 
   /* Hide the info panel when the elevation chart is visible */
-  body:not(.force-desktop-layout):has(#elevation-div[style*="visibility: visible"]) #info-panel {
+  body:not(.force-desktop-layout):has(#elevation-div[style*="display: block"]) #info-panel {
     display: none !important;
   }
 
