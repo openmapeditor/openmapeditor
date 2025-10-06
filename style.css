@@ -933,6 +933,13 @@ a#info-panel-strava-link:hover {
   border-top: 1px solid var(--border-color);
 }
 
+/* Collapse the elevation panel's height when it's hidden via its inline style.
+   This removes the element from the layout flow, which is crucial for preventing
+   it from capturing touch events on mobile when invisible. */
+#elevation-div[style*="visibility: hidden"] {
+  height: 0;
+}
+
 .elevation-control .background {
   height: 200px !important;
   /* For testing: position the elevation chart more to the left */

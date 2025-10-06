@@ -1140,6 +1140,11 @@ function initializeMap() {
 
   // Add elevationControl
   elevationControl = createAndAddElevationControl(useImperialUnits);
+  // Set the initial state for the elevation panel.
+  // This ensures the panel is hidden via an inline `style` attribute on page load.
+  // This is necessary to trigger the corresponding CSS rule which collapses the
+  // div's height to 0, preventing it from blocking map interactions on mobile.
+  document.getElementById("elevation-div").style.visibility = "hidden";
 
   // Configure draw control
   const defaultDrawColorName = "Red";
