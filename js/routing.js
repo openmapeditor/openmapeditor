@@ -315,10 +315,14 @@ function initializeRouting() {
           let pressTimer = null;
           let wasLongPress = false;
 
+          // We modify the mousedown handler to IGNORE right-clicks.
+          // A mouse event's 'button' property is 2 for a right-click.
           newRoutePath.on("mousedown", (e) => {
-            if (e.originalEvent.pointerType === "touch") {
+            // If it's a right-click, let the contextmenu handler deal with it.
+            if (e.originalEvent.button === 2) {
               return;
             }
+            // The timer for a long LEFT-click remains the same.
             wasLongPress = false;
             pressTimer = setTimeout(() => {
               wasLongPress = true;
@@ -330,6 +334,7 @@ function initializeRouting() {
             clearTimeout(pressTimer);
           });
 
+          // The click handler is still correct.
           newRoutePath.on("click", (e) => {
             L.DomEvent.stop(e);
             if (!wasLongPress) {
@@ -338,12 +343,13 @@ function initializeRouting() {
             wasLongPress = false;
           });
 
+          // The contextmenu handler now works for both iOS long-press and desktop right-click.
+          // We remove the conditional check as you discovered.
+          // This is now safe because the mousedown handler above ignores right-clicks, preventing the double-add bug.
           newRoutePath.on("contextmenu", (e) => {
             L.DomEvent.stop(e);
-            if (e.originalEvent.pointerType === "touch") {
-              wasLongPress = true;
-              addIntermediateViaPoint(e.latlng);
-            }
+            wasLongPress = true; // Prevents the 'click' event from also firing.
+            addIntermediateViaPoint(e.latlng);
           });
 
           drawnItems.addLayer(newRoutePath);
