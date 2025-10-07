@@ -745,6 +745,10 @@ function initializeMap() {
 
       L.DomEvent.on(container, "click", (ev) => {
         L.DomEvent.stop(ev);
+        // If the container is disabled, exit the function immediately.
+        if (L.DomUtil.hasClass(container, "disabled")) {
+          return;
+        }
         const isVisible = subMenu.style.display === "block";
         subMenu.style.display = isVisible ? "none" : "block";
       });
