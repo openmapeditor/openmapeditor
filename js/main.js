@@ -20,6 +20,28 @@
 })();
 // --- END: Apply saved layout on load ---
 
+async function requestiOSCompassPermission() {
+  // Check if the API exists (it only does on iOS 13+)
+  if (typeof DeviceOrientationEvent.requestPermission === "function") {
+    try {
+      // Request permission from the user
+      const permissionState = await DeviceOrientationEvent.requestPermission();
+
+      if (permissionState === "granted") {
+        // Permission was granted, no further action is needed here.
+        // The browser will now start sending orientation events automatically.
+        console.log("Compass permission granted.");
+      } else {
+        // Permission was denied
+        console.warn("Compass permission denied.");
+      }
+    } catch (error) {
+      // The user may have dismissed the prompt or an error occurred.
+      console.error("Error requesting compass permission:", error);
+    }
+  }
+}
+
 // Global variables
 let map,
   drawnItems,
@@ -929,9 +951,14 @@ function initializeMap() {
     })
     .addTo(map);
 
-  // Change background of locate button on locationfound/locationerror
+  // Change background of locate button and handle iOS permissions
   const locateButtonContainer = locateControl.getContainer();
-  map.on("locateactivate", function () {
+  map.on("locateactivate", async function () {
+    // 1. First, request compass permissions if on iOS.
+    // This function will only do something on compatible iOS devices.
+    await requestiOSCompassPermission();
+
+    // 2. Then, apply the visual feedback as before.
     L.DomUtil.addClass(locateButtonContainer, "locate-active");
   });
   map.on("locatedeactivate", function () {
