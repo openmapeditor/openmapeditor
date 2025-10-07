@@ -326,11 +326,10 @@ function initializeMap() {
 </p>
 <p style="text-align: left"><strong>To Move:</strong> Drag the marker to a new position.</p>
 <p style="text-align: left; margin: 0 0 18px 0">
-  <strong>To Remove:</strong> Long-press the marker.
+  <strong>To Remove:</strong> Long-press or right-click the marker.
 </p>
 <p style="text-align: left">
-  <strong>Adding Extra Via Points: </strong>After a route appears on the map, you can add extra
-  stops by <strong>long-pressing</strong> anywhere on the route line.
+  <strong>Adding Extra Via Points: </strong>You can add extra stops by <strong>long-pressing or right-clicking</strong> anywhere on the route line.
 </p>
 `,
           confirmButtonText: "Got it!",
