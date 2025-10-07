@@ -108,10 +108,20 @@ function initializeContextMenu(map) {
 
   // This single event listener handles both desktop right-click and mobile long-press
   map.on("contextmenu", (e) => {
-    // Prevent the menu from opening over UI elements
-    const clickedOnUi = e.originalEvent.target.closest(
-      "#main-right-container, #search-container, .leaflet-control, .leaflet-popup, #custom-layers-panel, #elevation-div"
-    );
+    // A list of UI container selectors where the context menu should NOT appear.
+    const uiSelectors = [
+      "#search-container",
+      "#main-right-container",
+      "#custom-layers-panel",
+      "#elevation-div",
+      ".leaflet-control-container",
+      ".leaflet-popup-pane",
+      //   ".leaflet-overlay-pane",
+      //   ".leaflet-marker-pane",
+    ];
+
+    // Check if the click originated inside any of the specified UI containers.
+    const clickedOnUi = e.originalEvent.target.closest(uiSelectors.join(", "));
 
     if (!clickedOnUi) {
       // It's also good practice to close any existing popups before opening a new one
