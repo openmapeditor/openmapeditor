@@ -444,7 +444,8 @@ function initializeMap() {
     const zoom = map.getZoom();
     const lat = center.lat.toFixed(5);
     const lng = center.lng.toFixed(5);
-    window.location.hash = `map=${zoom}/${lat}/${lng}`;
+    const newHash = `#map=${zoom}/${lat}/${lng}`;
+    history.replaceState(null, "", newHash);
   };
 
   map.on("moveend", updateUrlHash);
