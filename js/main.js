@@ -487,11 +487,11 @@ function initializeMap() {
 
   // Combine all overlays into a single object for the custom control
   const allOverlayMaps = {
-    ...staticOverlayMaps, // Add static tile overlays
-    "&#9999;&#65039; Drawn Items": drawnItems,
-    "&#128193; Imported GPX/KML": importedItems,
-    "&#128193; Imported KMZ": kmzLayer,
-    "&#129505; Strava Activities": stravaActivitiesLayer,
+    ...staticOverlayMaps,
+    DrawnItems: drawnItems,
+    ImportedGPXKML: importedItems,
+    ImportedKMZ: kmzLayer,
+    StravaActivities: stravaActivitiesLayer,
   };
 
   // Start functionality for swisstopo layers
