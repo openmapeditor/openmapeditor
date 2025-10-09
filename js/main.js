@@ -344,17 +344,18 @@ function initializeMap() {
   // For using the flags inline with text add the classes .fi and .fi-xx (where xx is the ISO 3166-1-alpha-2 code of a country) to an empty <span>.
   // If you want to have a squared version flag then add the class fis as well.
   const layerDisplayNames = {
-    OpenStreetMap: "&#127757; OpenStreetMap",
-    EsriWorldImagery: "&#127757; Esri World Imagery",
-    CyclOSM: "&#127757; CyclOSM",
-    TracestrackTopo: "&#127757; Tracestrack Topo",
+    OpenStreetMap: '<span class="material-symbols layer-icon">globe</span> OpenStreetMap',
+    EsriWorldImagery: '<span class="material-symbols layer-icon">globe</span> Esri World Imagery',
+    CyclOSM: '<span class="material-symbols layer-icon">globe</span> CyclOSM',
+    TracestrackTopo: '<span class="material-symbols layer-icon">globe</span> Tracestrack Topo',
     TopPlusOpen: '<span class="fi fi-de fis"></span> TopPlusOpen',
     Swisstopo: '<span class="fi fi-ch fis"></span> Swisstopo',
     SwissHikingTrails: '<span class="fi fi-ch fis"></span> Swiss Hiking Trails',
-    DrawnItems: "&#9999;&#65039; Drawn Items",
-    ImportedGPXKML: "&#128193; Imported GPX/KML",
-    ImportedKMZ: "&#128193; Imported KMZ",
-    StravaActivities: "&#129505; Strava Activities",
+    DrawnItems: '<span class="material-symbols layer-icon">edit</span> Drawn Items',
+    ImportedGPXKML: '<span class="material-symbols layer-icon">folder_open</span> Imported GPX/KML',
+    ImportedKMZ: '<span class="material-symbols layer-icon">folder_open</span> Imported KMZ',
+    StravaActivities:
+      '<span class="material-symbols layer-icon">directions_run</span> Strava Activities',
   };
 
   // Define base and overlay layers with SIMPLE keys

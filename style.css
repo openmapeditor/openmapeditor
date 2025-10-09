@@ -364,7 +364,17 @@ a#info-panel-strava-link:hover {
   transform: rotate(45deg);
 }
 
-/* --- Custom Layers Panel Styles (NEW) --- */
+/* --- Custom Layers Panel Styles --- */
+.layer-icon {
+  vertical-align: middle;
+  margin-right: 0;
+  padding: 0 !important;
+}
+
+.material-symbols.layer-icon {
+  font-size: 16px !important;
+}
+
 #custom-layers-panel {
   display: none; /* Hidden by default */
   position: absolute;
@@ -389,13 +399,18 @@ a#info-panel-strava-link:hover {
   background-color: var(--border-color);
   margin: 5px 0;
 }
-#custom-layers-panel label {
+#custom-layers-panel label div {
   display: flex;
   align-items: center;
-  padding: 2px 0;
+  height: 25px;
 }
 #custom-layers-panel span {
   padding-left: 5px;
+}
+.leaflet-control-layers-selector {
+  margin-top: 0;
+  position: relative;
+  top: 0;
 }
 
 /* Remove default Leaflet control styling from the content inside our panel */
