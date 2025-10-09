@@ -340,47 +340,53 @@ function initializeMap() {
     });
   }
 
-  // Define base and overlay layers
+  // An object to map layer keys to their display HTML.
+  // For using the flags inline with text add the classes .fi and .fi-xx (where xx is the ISO 3166-1-alpha-2 code of a country) to an empty <span>.
+  // If you want to have a squared version flag then add the class fis as well.
+  const layerDisplayNames = {
+    OpenStreetMap: "&#127757; OpenStreetMap",
+    EsriWorldImagery: "&#127757; Esri World Imagery",
+    CyclOSM: "&#127757; CyclOSM",
+    TracestrackTopo: "&#127757; Tracestrack Topo",
+    TopPlusOpen: '<span class="fi fi-de fis"></span> TopPlusOpen',
+    Swisstopo: '<span class="fi fi-ch fis"></span> Swisstopo',
+    SwissHikingTrails: '<span class="fi fi-ch fis"></span> Swiss Hiking Trails',
+    DrawnItems: "&#9999;&#65039; Drawn Items",
+    ImportedGPXKML: "&#128193; Imported GPX/KML",
+    ImportedKMZ: "&#128193; Imported KMZ",
+    StravaActivities: "&#129505; Strava Activities",
+  };
+
+  // Define base and overlay layers with SIMPLE keys
   const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
   });
+
   const baseMaps = {
-    "&#127757; OpenStreetMap": osmLayer,
-    "&#127757; Esri World Imagery": L.tileLayer(
+    OpenStreetMap: osmLayer,
+    EsriWorldImagery: L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      {
-        maxZoom: 19,
-      }
+      { maxZoom: 19 }
     ),
-    // "&#127757; Google Satellite": L.tileLayer("http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
-    //   maxZoom: 19,
-    //   subdomains: ["mt0", "mt1", "mt2", "mt3"],
-    // }),
-    "&#127757; CyclOSM": L.tileLayer(
-      "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png",
-      {
-        maxZoom: 19,
-      }
-    ),
-    "&#127757; Tracestrack Topo": L.tileLayer(
+    CyclOSM: L.tileLayer("https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+    }),
+    TracestrackTopo: L.tileLayer(
       `https://tile.tracestrack.com/topo__/{z}/{x}/{y}.webp?key=${tracestrackApiKey}`,
-      {
-        maxZoom: 19,
-      }
+      { maxZoom: 19 }
     ),
-    "&#127465;&#127466; TopPlusOpen": L.tileLayer(
+    TopPlusOpen: L.tileLayer(
       "http://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web/default/WEBMERCATOR/{z}/{y}/{x}.png",
-      {
-        maxZoom: 19,
-      }
+      { maxZoom: 19 }
     ),
-    "&#127464;&#127469; Swisstopo": L.tileLayer.wms("https://wms.geo.admin.ch/", {
+    Swisstopo: L.tileLayer.wms("https://wms.geo.admin.ch/", {
       layers: "ch.swisstopo.pixelkarte-farbe",
       format: "image/jpeg",
     }),
   };
+
   const staticOverlayMaps = {
-    "&#127464;&#127469; Swiss Hiking Trails": L.tileLayer.wms("https://wms.geo.admin.ch/", {
+    SwissHikingTrails: L.tileLayer.wms("https://wms.geo.admin.ch/", {
       layers: "ch.swisstopo.swisstlm3d-wanderwege",
       format: "image/png",
       transparent: true,
@@ -547,7 +553,10 @@ function initializeMap() {
     const layer = baseMaps[name];
     const layerId = L.Util.stamp(layer);
     const isChecked = firstBaseLayer ? 'checked="checked"' : "";
-    formContent += `<label><div><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers" ${isChecked} data-layer-id="${layerId}" data-layer-name="${name}"><span> ${name}</span></div></label>`;
+    const displayName = layerDisplayNames[name] || name; // Fallback to the key if no display name is found
+    // The 'name' (the simple key) goes in the data attribute.
+    // The 'displayName' (with HTML) goes in the span.
+    formContent += `<label><div><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers" ${isChecked} data-layer-id="${layerId}" data-layer-name="${name}"><span> ${displayName}</span></div></label>`;
     firstBaseLayer = false;
   }
   formContent += "</div>";
@@ -560,7 +569,10 @@ function initializeMap() {
     const layer = allOverlayMaps[name];
     const layerId = L.Util.stamp(layer);
     const isChecked = map.hasLayer(layer) ? 'checked="checked"' : "";
-    formContent += `<label><div><input type="checkbox" class="leaflet-control-layers-selector" ${isChecked} data-layer-id="${layerId}" data-layer-name="${name}"><span> ${name}</span></div></label>`;
+    const displayName = layerDisplayNames[name] || name;
+    // The 'name' (the simple key) goes in the data attribute.
+    // The 'displayName' (with HTML) goes in the span.
+    formContent += `<label><div><input type="checkbox" class="leaflet-control-layers-selector" ${isChecked} data-layer-id="${layerId}" data-layer-name="${name}"><span> ${displayName}</span></div></label>`;
   }
   formContent += "</div></form>";
 
