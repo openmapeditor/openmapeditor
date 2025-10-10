@@ -23,6 +23,7 @@ jobs:
 
       - name: Create secrets.js
         run: |
+          mkdir -p js # Ensure the js directory exists
           echo "const googleApiKey = \"${{ secrets.GOOGLE_API_KEY }}\";" > js/secrets.js
           echo "const mapboxAccessToken = \"${{ secrets.MAPBOX_ACCESS_TOKEN }}\";" >> js/secrets.js
           echo "const tracestrackApiKey = \"${{ secrets.TRACESTRACK_API_KEY }}\";" >> js/secrets.js
@@ -57,17 +58,22 @@ jobs:
 
       - name: Bundle, Minify, and Update HTML
         run: |
-          # 1. Extract script paths from index.html and bundle them
-          scripts=$(sed -n '/<!-- START-BUNDLE -->/,/<!-- END-BUNDLE -->/p' index.html | grep '<script src' | sed 's/.*src="\([^"]*\)".*/\1/')
-          echo "Bundling scripts:"
+          # 1. Extract script paths. The "| sed 's|^/||'" is the CRITICAL FIX.
+          # It removes the leading '/' from paths like "/js/main.js" to make them "js/main.js"
+          # so that the 'cat' command can find the files correctly.
+          scripts=$(sed -n '/<!-- START-BUNDLE -->/,/<!-- END-BUNDLE -->/p' index.html | grep '<script src' | sed 's/.*src="\([^"]*\)".*/\1/' | sed 's|^/||')
+          echo "Found scripts to bundle:"
           echo "$scripts"
+
+          # 2. Concatenate the scripts into a single file
           cat $scripts > js/bundle.js
 
-          # 2. Minify the bundled file
+          # 3. Minify the bundled file
           terser js/bundle.js -c -m -o js/app.min.js --source-map "filename='js/app.min.js.map'"
 
-          # 3. Replace the original script block with the minified script tag
-          sed -i '/<!-- START-BUNDLE -->/,/<!-- END-BUNDLE -->/c\    <script src="js/app.min.js"><\/script>' index.html
+          # 4. Replace the original script block with the single minified script tag.
+          # The path now correctly starts with a '/' to match your HTML style.
+          sed -i '/<!-- START-BUNDLE -->/,/<!-- END-BUNDLE -->/c\    <script src="/js/app.min.js"><\/script>' index.html
 
       # Upload the entire directory
       - name: Upload artifact
