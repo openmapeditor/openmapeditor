@@ -474,7 +474,7 @@ function initializeMap() {
   // Configure the map's attribution control
   map.attributionControl.setPosition("bottomleft");
   map.attributionControl.setPrefix(
-    `<a href="#" id="credits-link-bottom-left" class="js-show-credits" title="Credits">${APP_NAME} &#x2764;&#xfe0f;</a><a href="#" id="install-pwa-link" title="Install App" style="display: none;">Install</a>`
+    `<a href="#" id="credits-link-bottom-left" class="js-show-credits" title="Credits">${APP_NAME} <span class="material-symbols material-symbols-fill attribution-heart-icon">favorite</span></a><a href="#" id="install-pwa-link" title="Install App" style="display: none;">Install</a>`
   );
 
   // Add the initial base layer to the map (after configuring attribution control to prevent problems with prefix)

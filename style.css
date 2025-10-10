@@ -1248,11 +1248,17 @@ g.x.axis.top.time {
   text-decoration: underline !important;
 }
 
+.material-symbols.attribution-heart-icon {
+  font-size: 16px !important;
+  color: var(--color-red) !important;
+  vertical-align: middle !important;
+}
+
 /* --- PWA Install Button Style --- */
 #install-pwa-link {
   background-color: var(--color-blue);
   color: var(--color-white) !important;
-  padding: 10px 10px;
+  padding: 20px 10px;
   text-decoration: none;
   margin-left: 5px;
 }
