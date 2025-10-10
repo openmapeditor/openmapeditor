@@ -153,11 +153,11 @@ function showConnectUI() {
     <div style="display: flex; flex-direction: column; align-items: center;">
       <p>Connect with Strava to see your activities on the map.</p>
       <button id="strava-connect-btn" class="strava-button-link" style="border: none; background: transparent; padding: 0; cursor: pointer;">
-        <img src="img/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
+        <img src="/img/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
       </button>
       <p style="font-size: 12px; color: var(--text-color); margin-top: 5px;">
         By connecting, you agree to the ${APP_NAME}<br>
-        <a href="privacy.html" target="_blank" style="color: var(--highlight-color);">Privacy Policy</a>
+        <a href="/privacy.html" target="_blank" style="color: var(--highlight-color);">Privacy Policy</a>
       </p>
     </div>
   `;

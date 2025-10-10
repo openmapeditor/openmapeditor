@@ -139,7 +139,7 @@ function updateAllDynamicUnitDisplays() {
 async function showCreditsPopup() {
   try {
     // Fetch the content from the HTML file
-    const response = await fetch("credits.html");
+    const response = await fetch("/credits.html");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -155,7 +155,7 @@ async function showCreditsPopup() {
 
     // Open the SweetAlert with the fetched and populated content
     Swal.fire({
-      imageUrl: "img/icon-1024x1024.svg",
+      imageUrl: "/img/icon-1024x1024.svg",
       imageWidth: 150,
       imageHeight: "auto",
       html: swalContent,
@@ -815,7 +815,7 @@ function initializeMap() {
   const CUSTOM_LOCATE_ICON_SIZE = 50;
 
   const locationArrowIcon = L.divIcon({
-    html: `<img src="img/location-arrow.svg" style="width: ${CUSTOM_LOCATE_ICON_SIZE}px; height: ${CUSTOM_LOCATE_ICON_SIZE}px;">`,
+    html: `<img src="/img/location-arrow.svg" style="width: ${CUSTOM_LOCATE_ICON_SIZE}px; height: ${CUSTOM_LOCATE_ICON_SIZE}px;">`,
     className: "custom-locate-icon",
     iconSize: [CUSTOM_LOCATE_ICON_SIZE, CUSTOM_LOCATE_ICON_SIZE],
     // Calculate anchor based on the SVG's dimensions relative to its viewBox.
@@ -887,7 +887,7 @@ function initializeMap() {
      */
     _getIconSVG(options, style) {
       const size = CUSTOM_LOCATE_ICON_SIZE;
-      const imgContent = `<img src="img/location-arrow.svg" style="width:${size}px; height:${size}px;">`;
+      const imgContent = `<img src="/img/location-arrow.svg" style="width:${size}px; height:${size}px;">`;
 
       return {
         className: "leaflet-control-locate-heading",
@@ -1655,7 +1655,7 @@ function initializeMap() {
     privacyPolicyLabel.innerText = "Legal";
     privacyPolicyLabel.style.color = "var(--text-color)";
     const privacyPolicyLink = L.DomUtil.create("a", "", privacyPolicyContainer);
-    privacyPolicyLink.href = "privacy.html";
+    privacyPolicyLink.href = "/privacy.html";
     privacyPolicyLink.target = "_blank";
     privacyPolicyLink.innerText = "View Privacy Policy";
     privacyPolicyLink.style.fontSize = "14px";
@@ -1862,11 +1862,11 @@ function initializeMap() {
     () => {
       // Preload credits icon
       const creditsIcon = new Image();
-      creditsIcon.src = "img/icon-1024x1024.svg";
+      creditsIcon.src = "/img/icon-1024x1024.svg";
 
       // Preload Strava connect button
       const stravaButton = new Image();
-      stravaButton.src = "img/btn_strava_connect_with_orange.svg";
+      stravaButton.src = "/img/btn_strava_connect_with_orange.svg";
     },
     { once: true }
   );
