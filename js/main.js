@@ -1167,6 +1167,15 @@ function initializeMap() {
   const defaultDrawColorName = "Red";
   const defaultDrawColor = ORGANIC_MAPS_COLORS.find((c) => c.name === defaultDrawColorName).css;
 
+  // --- START: Fix for Leaflet.draw Toolbar on iPad with Mouse ---
+  // Overrides the internal _detectIOS function to force 'click' events instead
+  // of 'touchstart'. This corrects a bug where toolbar buttons are not
+  // clickable with a mouse in Chrome on iPadOS.
+  if (L.Toolbar) {
+    L.Toolbar.prototype._detectIOS = () => false;
+  }
+  // --- END: Fix ---
+
   L.drawLocal.draw.toolbar.buttons.polyline = "Draw path";
   L.drawLocal.draw.toolbar.buttons.marker = "Place marker";
   L.drawLocal.edit.toolbar.buttons.edit = "Edit";
