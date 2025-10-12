@@ -1875,3 +1875,6 @@ function initializeMap() {
 
 // Initialize the application once the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", initializeMap);
+
+// console.log("User Agent:", navigator.userAgent);
+// console.log("Leaflet Version:", L.version);
