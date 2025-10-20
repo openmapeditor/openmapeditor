@@ -20,6 +20,40 @@
 })();
 // --- END: Apply saved layout on load ---
 
+// --- START: Dynamic Input Type Tracking ---
+(function () {
+  // Default to touch, as it's the safer default for hybrid devices.
+  let lastInputType = "touch";
+  document.body.classList.add("using-touch");
+
+  function updateInputType(event) {
+    const currentInputType = event.pointerType; // 'mouse', 'touch', 'pen'
+
+    // Only run if the input type has actually changed
+    if (currentInputType === lastInputType) {
+      return;
+    }
+
+    // console.log(`Input switched from '${lastInputType}' to '${currentInputType}'`);
+
+    if (currentInputType === "mouse") {
+      // Mouse is being used: REMOVE the class
+      document.body.classList.remove("using-touch");
+    } else {
+      // Touch or pen is being used: ADD the class
+      document.body.classList.add("using-touch");
+    }
+
+    // Remember the new input type for the next event
+    lastInputType = currentInputType;
+  }
+
+  // Listen for both movement and clicks/taps
+  window.addEventListener("pointermove", updateInputType, { passive: true });
+  window.addEventListener("pointerdown", updateInputType, { passive: true });
+})();
+// --- END: Dynamic Input Type Tracking ---
+
 // Global variables
 let map,
   drawnItems,

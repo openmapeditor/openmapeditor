@@ -1727,15 +1727,30 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   display: none;
 }
 
+/* Styles for mouse input */
+body:not(.using-touch) {
+}
+
+/* Styles for touch input */
+body.using-touch {
+  /* This line resets the cursor, overriding 'cursor: none'. */
+  cursor: auto !important;
+
+  /* Hide the routing marker cursors on touch devices without mouse */
+  .custom-cursor {
+    display: none !important;
+  }
+  
+  /* Hide the leaflet draw tooltips on touch devices without mouse */
+  .leaflet-draw-tooltip {
+    display: none !important;
+  }
+}
+
 /* --- Mobile Specific Styles Start --- */
 
 /* Applies styles for devices with a coarse pointer (e.g., a finger on a touchscreen). */
 @media (pointer: coarse) {
-  /* Prevent the floating custom cursor from appearing on touch devices */
-  .custom-cursor {
-    display: none !important;
-  }
-
   /* Fix the behavior where a long-press incorrectly selects UI text on touch devices */
   * {
     -webkit-user-select: none; /* Safari on iOS/iPadOS */
@@ -1769,11 +1784,6 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 
   /* Hide the info panel when the elevation chart is visible */
   body:not(.force-desktop-layout):has(#elevation-div[style*="visibility: visible"]) #info-panel {
-    display: none !important;
-  }
-
-  /* Hide tooltips on mobile to improve UX for drawing and routing. */
-  .leaflet-draw-tooltip {
     display: none !important;
   }
 
