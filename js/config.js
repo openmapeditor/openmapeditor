@@ -58,9 +58,6 @@ const ORGANIC_MAPS_COLORS = ORGANIC_MAPS_COLORS_DATA.map((color) => ({
 // This variable will be dynamically set from localStorage in initializeMap()
 let elevationProvider;
 
-// Global setting to optionally downsample long paths for providers that support it (like Google).
-const enablePreFetchDownsampling = true;
-
 // Provider-specific point limits for downsampling.
 // These are maximums to prevent API errors.
 const ELEVATION_PROVIDER_CONFIG = {

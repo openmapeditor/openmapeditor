@@ -46,10 +46,7 @@ async function fetchElevationForPathGoogle(latlngs) {
   const BATCH_SIZE = 512;
   let allResults = [];
 
-  let pointsToSend = latlngs;
-  if (enablePreFetchDownsampling) {
-    pointsToSend = downsamplePath(latlngs, ELEVATION_PROVIDER_CONFIG.google.limit);
-  }
+  let pointsToSend = resamplePath(latlngs, ELEVATION_PROVIDER_CONFIG.google.limit);
 
   for (let i = 0; i < pointsToSend.length; i += BATCH_SIZE) {
     const batch = pointsToSend.slice(i, i + BATCH_SIZE);
@@ -93,10 +90,7 @@ async function fetchElevationForPathMapbox(latlngs) {
     return null;
   }
 
-  let pointsToSend = latlngs;
-  if (enablePreFetchDownsampling) {
-    pointsToSend = downsamplePath(latlngs, ELEVATION_PROVIDER_CONFIG.mapbox.limit);
-  }
+  let pointsToSend = resamplePath(latlngs, ELEVATION_PROVIDER_CONFIG.mapbox.limit);
 
   const promises = pointsToSend.map((p) => {
     // CORRECTED: Added &layers=contour and &limit=50 to the URL.
@@ -159,10 +153,7 @@ async function fetchElevationForPathOpenTopoData(latlngs) {
     }
   });
 
-  let pointsToSend = uniquePoints;
-  if (enablePreFetchDownsampling) {
-    pointsToSend = downsamplePath(uniquePoints, ELEVATION_PROVIDER_CONFIG.openTopo.limit);
-  }
+  let pointsToSend = resamplePath(uniquePoints, ELEVATION_PROVIDER_CONFIG.openTopo.limit);
 
   const locations = pointsToSend.map((p) => `${p.lat},${p.lng}`).join("|");
   // We prepend a CORS proxy to the original URL to bypass the browser's security block.

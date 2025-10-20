@@ -247,25 +247,83 @@ function calculatePathDistance(path) {
 }
 
 /**
- * Downsamples a path to a maximum number of points using a step interval.
+ * Resamples a path to have exactly `maxPoints` by interpolating new,
+ * evenly-spaced points along the original path's geometry.
  *
  * @param {Array<L.LatLng>} latlngs The original array of points.
- * @param {number} maxPoints The maximum number of points for the output array.
- * @returns {Array<L.LatLng>} The downsampled array of points, or the original if it's within the limit.
+ * @param {number} maxPoints The target number of points for the new path (e.g., 500).
+ * @returns {Array<L.LatLng>} The new, resampled array of points.
  */
-function downsamplePath(latlngs, maxPoints) {
-  if (!latlngs || latlngs.length <= maxPoints) {
-    return latlngs;
+function resamplePath(latlngs, maxPoints) {
+  // 1. Guard clauses for invalid paths
+  if (!latlngs || latlngs.length < 2) {
+    return latlngs; // Not enough points to create a path
   }
 
-  console.warn(`Path has ${latlngs.length} points. Downsampling to ${maxPoints}.`);
-  const pointsToSend = [];
-  const step = Math.floor(latlngs.length / (maxPoints - 1));
-  for (let i = 0; i < maxPoints - 1; i++) {
-    pointsToSend.push(latlngs[i * step]);
+  // 2. Calculate total distance and store cumulative distance at each vertex
+  let totalDistance = 0;
+  const cumulativeDistances = [0]; // Start with 0 distance at the first point
+  for (let i = 1; i < latlngs.length; i++) {
+    totalDistance += latlngs[i].distanceTo(latlngs[i - 1]);
+    cumulativeDistances.push(totalDistance);
   }
-  pointsToSend.push(latlngs[latlngs.length - 1]); // Always include the last point
-  return pointsToSend;
+
+  // 3. Handle 0-distance paths (e.g., multiple identical points)
+  if (totalDistance === 0) {
+    const firstPoint = latlngs[0];
+    const newPoints = [];
+    for (let i = 0; i < maxPoints; i++) {
+      newPoints.push(L.latLng(firstPoint.lat, firstPoint.lng));
+    }
+    return newPoints;
+  }
+
+  // 4. Calculate the new, regular distance interval
+  // We want `maxPoints`, which means `maxPoints - 1` equal segments.
+  const intervalDistance = totalDistance / (maxPoints - 1);
+
+  const newPoints = [];
+  let currentVertexIndex = 1; // Index of the *next* vertex in the original path
+
+  // 5. Loop to create exactly maxPoints
+  for (let i = 0; i < maxPoints; i++) {
+    // Calculate the target distance for this new point
+    const targetDistance = intervalDistance * i;
+
+    // Handle the last point explicitly to avoid float errors
+    if (i === maxPoints - 1) {
+      const lastOriginalPoint = latlngs[latlngs.length - 1];
+      newPoints.push(L.latLng(lastOriginalPoint.lat, lastOriginalPoint.lng));
+      continue;
+    }
+
+    // Find the original segment that contains our targetDistance
+    while (
+      cumulativeDistances[currentVertexIndex] < targetDistance &&
+      currentVertexIndex < latlngs.length - 1
+    ) {
+      currentVertexIndex++;
+    }
+
+    // 6. Interpolate the new point within this segment
+    const prevVertex = latlngs[currentVertexIndex - 1];
+    const nextVertex = latlngs[currentVertexIndex];
+
+    const distanceOfSegment =
+      cumulativeDistances[currentVertexIndex] - cumulativeDistances[currentVertexIndex - 1];
+    const distanceFromPrevVertex = targetDistance - cumulativeDistances[currentVertexIndex - 1];
+
+    // Calculate the fraction (percentage) of how far along this *specific segment* we are
+    const fraction = distanceOfSegment === 0 ? 0 : distanceFromPrevVertex / distanceOfSegment;
+
+    // Calculate the interpolated lat and lng
+    const newLat = prevVertex.lat + (nextVertex.lat - prevVertex.lat) * fraction;
+    const newLng = prevVertex.lng + (nextVertex.lng - prevVertex.lng) * fraction;
+
+    newPoints.push(L.latLng(newLat, newLng));
+  }
+
+  return newPoints;
 }
 
 /**
