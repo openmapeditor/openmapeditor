@@ -92,7 +92,9 @@ function createAndAddElevationControl(useImperial) {
     closeBtn: false,
     distance: false,
     time: true,
-    imperial: useImperial, // The parameter is used here
+    imperial: useImperial,
+    // slope: "summary", // Displays minslope, maxslope, avgslope, ascent, descent
+    // We can hide minslope, maxslope, avgslope in css like this: .minslope, .maxslope, .avgslope { display: none; }
     margins: {
       top: 30,
       right: 0,
