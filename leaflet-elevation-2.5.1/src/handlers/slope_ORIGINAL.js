@@ -43,27 +43,27 @@ export function Slope() {
 			strokeOpacity: "0.5",
 			fillOpacity  : "0.25",
 		},
-		// tooltip: {
-		// 	chart: (item) => L._("m: ") + item.slope + slope.label,
-		// 	marker: (item) => Math.round(item.slope) + slope.label,
-		// 	order: 40,
-		// },
+		tooltip: {
+			chart: (item) => L._("m: ") + item.slope + slope.label,
+			marker: (item) => Math.round(item.slope) + slope.label,
+			order: 40,
+		},
 		summary: {
-			// "minslope": {
-			// 	label: "Min Slope: ",
-			// 	value: (track, unit) => Math.round(track.slope_min || 0) + '&nbsp;' + unit,
-			// 	order: 40
-			// },
-			// "maxslope": {
-			// 	label: "Max Slope: ",
-			// 	value: (track, unit) => Math.round(track.slope_max || 0) + '&nbsp;' + unit,
-			// 	order: 41
-			// },
-			// "avgslope": {
-			// 	label: "Avg Slope: ",
-			// 	value: (track, unit) => Math.round(track.slope_avg || 0) + '&nbsp;' + unit,
-			// 	order: 42
-			// },
+			"minslope": {
+				label: "Min Slope: ",
+				value: (track, unit) => Math.round(track.slope_min || 0) + '&nbsp;' + unit,
+				order: 40
+			},
+			"maxslope": {
+				label: "Max Slope: ",
+				value: (track, unit) => Math.round(track.slope_max || 0) + '&nbsp;' + unit,
+				order: 41
+			},
+			"avgslope": {
+				label: "Avg Slope: ",
+				value: (track, unit) => Math.round(track.slope_avg || 0) + '&nbsp;' + unit,
+				order: 42
+			},
 			"ascent"  : {
 				label: "Total Ascent: ",
 				value: (track, unit) => Math.round(track.ascent || 0) + '&nbsp;' + (this.options.imperial ? 'ft' : 'm'),

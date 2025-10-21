@@ -127,8 +127,9 @@ function createAndAddElevationControl(useImperial) {
     distance: false,
     time: true,
     imperial: useImperial,
-    // slope: "summary", // Displays minslope, maxslope, avgslope, ascent, descent
-    // We can hide minslope, maxslope, avgslope in css like this: .minslope, .maxslope, .avgslope { display: none; }
+    slope: "summary", // Displays minslope, maxslope, avgslope, ascent, descent
+    // We hide slope tooltips, minslope, maxslope, avgslope in leaflet-elevation/src/handlers/slope.js
+    // We hide avgele in css like this: .avgele { display: none; }
     margins: {
       top: 30,
       right: 0,

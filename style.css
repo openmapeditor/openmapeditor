@@ -1022,6 +1022,11 @@ g.x.axis.top.time {
   display: none;
 }
 
+/* Hide avg elevation in elevation summary */
+.avgele {
+  display: none;
+}
+
 .custom-theme.elevation-control .area path.altitude,
 .custom-theme .legend-altitude rect.area {
   fill: var(--color-red);
@@ -1740,7 +1745,7 @@ body.using-touch {
   .custom-cursor {
     display: none !important;
   }
-  
+
   /* Hide the leaflet draw tooltips on touch devices without mouse */
   .leaflet-draw-tooltip {
     display: none !important;
