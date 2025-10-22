@@ -174,6 +174,13 @@ function handleResize() {
   const newTotalWidth = targetDiv.clientWidth;
   const newTotalHeight = targetDiv.clientHeight;
 
+  // --- *** MODIFICATION: Guard Clause *** ---
+  // If the chart is hidden (height: 0), don't recalculate.
+  if (newTotalHeight === 0) {
+    return;
+  }
+  // --- *** END MODIFICATION *** ---
+
   // --- MODIFICATION: Update bottom margin ---
   updateBottomMargin(newTotalWidth);
   // --- END MODIFICATION ---
@@ -220,10 +227,10 @@ function drawElevationProfile(pointsWithElev) {
   // --- 1. Update domain (min/max) of our scales ---
   const maxDistance = currentData[currentData.length - 1].distance;
   const [minElev, maxElev] = d3.extent(currentData, (d) => d.elevation);
-  const elevPadding = (maxElev - minElev) * 0.1; // 10% padding
+  // const elevPadding = (maxElev - minElev) * 0.1; // 10% padding // MODIFICATION: Removed padding
 
   x.domain([0, maxDistance]);
-  y.domain([minElev - elevPadding, maxElev + elevPadding]);
+  y.domain([minElev, maxElev]); // MODIFICATION: Use exact min/max
 
   // --- 2. Create the "Area Generator" ---
   const areaGenerator = d3
@@ -261,7 +268,28 @@ function drawElevationProfile(pointsWithElev) {
   });
   // --- END X-Axis ---
 
-  yAxis.call(d3.axisRight(y).ticks(4).tickFormat(elevationFormatter));
+  // --- MODIFICATION: Update Y-Axis with custom ticks and alignment ---
+  // Use the minElev and maxElev variables we already found
+  const yTickValues = [minElev, (minElev + maxElev) / 2, maxElev];
+
+  yAxis.call(d3.axisRight(y).tickValues(yTickValues).tickFormat(elevationFormatter));
+
+  // Apply custom vertical text alignment
+  // Note: 'text-anchor' is already 'start' (left-aligned) by default for axisRight
+  yAxis
+    .selectAll(".tick text")
+    .attr("dy", null) // <-- Remove D3's default vertical nudge
+    .style("dominant-baseline", (d) => {
+      // Check against the tick value 'd'
+      if (d === minElev) {
+        return "baseline"; // Aligns text so its baseline is on the tick
+      } else if (d === maxElev) {
+        return "hanging"; // Aligns text so it "hangs" from the tick
+      } else {
+        return "middle"; // "centered" alignment
+      }
+    });
+  // --- END MODIFICATION ---
 
   // --- 5. Update Summary Text ---
   const ascent = d3.sum(currentData, (d, i) => {
