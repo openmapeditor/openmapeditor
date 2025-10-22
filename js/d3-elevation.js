@@ -306,7 +306,13 @@ function drawElevationProfile(pointsWithElev) {
 
   chartGroup
     .select("#d3-summary-text")
-    .text(`Ascent: ${elevationFormatter(ascent)} · Descent: ${elevationFormatter(descent)}`);
+    .text(
+      `Ascent: ${elevationFormatter(ascent)} · Descent: ${elevationFormatter(
+        descent
+      )} · Highest point: ${elevationFormatter(maxElev)} · Lowest point: ${elevationFormatter(
+        minElev
+      )}`
+    );
 }
 
 /**
