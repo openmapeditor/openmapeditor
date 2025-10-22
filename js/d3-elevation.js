@@ -21,9 +21,9 @@ const MARGIN_BOTTOM_WIDE = 30;
 
 const margin = {
   top: 30,
-  right: 75,
+  right: 55,
   bottom: MARGIN_BOTTOM_WIDE, // Default to wide margin
-  left: 75,
+  left: 55,
 };
 
 /**
