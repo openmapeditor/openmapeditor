@@ -11,9 +11,20 @@ let x, y, xAxis, yAxis; // D3 scales and axes
 let width, height; // Chart dimensions
 let currentData = [];
 let useImperial = false;
-let chartTargetDivId; // MODIFIED: Add this variable
+let chartTargetDivId;
 
-const margin = { top: 30, right: 75, bottom: 10, left: 75 };
+// --- MODIFICATION: Responsive & Margin constants ---
+const BREAKPOINT_NARROW = 768; // 768px matches your style.css
+const MARGIN_BOTTOM_NARROW = 60;
+const MARGIN_BOTTOM_WIDE = 30;
+// --- END MODIFICATION ---
+
+const margin = {
+  top: 30,
+  right: 75,
+  bottom: MARGIN_BOTTOM_WIDE, // Default to wide margin
+  left: 75,
+};
 
 /**
  * --- 2. Data Formatting Helper ---
@@ -52,6 +63,16 @@ function formatDataForD3(pointsWithElev) {
 }
 
 /**
+ * --- (NEW HELPER) 2.5. Margin Helper ---
+ * Updates the chart's bottom margin based on the container width.
+ * @param {number} containerWidth The current width of the target div.
+ */
+function updateBottomMargin(containerWidth) {
+  const isNarrow = containerWidth < BREAKPOINT_NARROW;
+  margin.bottom = isNarrow ? MARGIN_BOTTOM_NARROW : MARGIN_BOTTOM_WIDE;
+}
+
+/**
  * --- 3. The Public API ---
  * These are the functions we'll call from our other files.
  */
@@ -63,16 +84,15 @@ function formatDataForD3(pointsWithElev) {
  */
 function createElevationChart(targetDivId, isImperial) {
   useImperial = isImperial;
-  chartTargetDivId = targetDivId; // MODIFIED: Store the ID
+  chartTargetDivId = targetDivId;
   const targetDiv = document.getElementById(targetDivId);
 
   // Get dimensions from the container
   const totalWidth = targetDiv.clientWidth;
-  const totalHeight = targetDiv.clientHeight; // MODIFIED: Read height from container
+  const totalHeight = targetDiv.clientHeight;
 
-  // --- MODIFIED: Run responsive check on initial load ---
-  const isNarrow = totalWidth < 768; // 768px matches your style.css
-  margin.bottom = isNarrow ? 40 : 10; // Set correct margin before first draw
+  // --- MODIFICATION: Set initial bottom margin ---
+  updateBottomMargin(totalWidth);
   // --- END MODIFICATION ---
 
   width = totalWidth - margin.left - margin.right;
@@ -104,11 +124,11 @@ function createElevationChart(targetDivId, isImperial) {
   y = d3.scaleLinear().range([height, 0]);
 
   // --- Initialize Axes ---
-  // X axis (at the top, as per your old plugin style)
+  // X axis (at the bottom)
   xAxis = chartGroup
     .append("g")
-    .attr("class", "x axis top time") // Use old class names to get some style
-    .attr("transform", `translate(0, 0)`); // Position at top
+    .attr("class", "x axis")
+    .attr("transform", `translate(0, ${height})`); // Position at bottom
 
   // Y axis (at the right)
   yAxis = chartGroup
@@ -117,10 +137,9 @@ function createElevationChart(targetDivId, isImperial) {
     .attr("transform", `translate(${width}, 0)`); // Position at right
 
   // Add a <path> element for our area chart.
-  // It's empty now, but we'll add data to it later.
   chartGroup.append("path").attr("class", "altitude-area");
 
-  // Add summary text element (replaces the old summary div)
+  // Add summary text element
   chartGroup
     .append("text")
     .attr("id", "d3-summary-text")
@@ -130,11 +149,10 @@ function createElevationChart(targetDivId, isImperial) {
     .attr("fill", "var(--text-color)")
     .attr("font-size", "12px");
 
-  // --- MODIFIED: Add Resize Listener ---
+  // --- Add Resize Listener ---
   let debounceTimer;
   window.addEventListener("resize", () => {
     clearTimeout(debounceTimer);
-    // Debounce to avoid rapid re-renders
     debounceTimer = setTimeout(handleResize, 100);
   });
 }
@@ -154,45 +172,36 @@ function handleResize() {
   if (!targetDiv) return;
 
   const newTotalWidth = targetDiv.clientWidth;
-  const newTotalHeight = targetDiv.clientHeight; // Read it again
+  const newTotalHeight = targetDiv.clientHeight;
 
-  const isNarrow = newTotalWidth < 768; // 768px matches your style.css
-  margin.bottom = isNarrow ? 40 : 10; // 100px on narrow, 10px otherwise
+  // --- MODIFICATION: Update bottom margin ---
+  updateBottomMargin(newTotalWidth);
+  // --- END MODIFICATION ---
 
   // Update module-level dimensions
   width = newTotalWidth - margin.left - margin.right;
   height = newTotalHeight - margin.top - margin.bottom;
 
   // --- 2. Update SVG and Scales ---
-  // Update the viewBox to the new pixel dimensions
   svg.attr("viewBox", `0 0 ${newTotalWidth} ${newTotalHeight}`);
-
-  // Update the ranges of our scales
   x.range([0, width]);
   y.range([height, 0]);
 
   // --- 3. Reposition static elements ---
-  // Move the Y-axis group
   yAxis.attr("transform", `translate(${width}, 0)`);
-  // Move the summary text
+  xAxis.attr("transform", `translate(0, ${height})`);
   chartGroup.select("#d3-summary-text").attr("x", width / 2);
 
   // --- 4. Redraw data ---
   if (currentData.length > 0) {
-    // Re-run the draw function with existing data
     drawElevationProfile(currentData.map((d) => d.latlng));
   } else {
-    // If no data, just clear/update the axes to the new scale
-    const distanceFormatter = (meters) => formatDistance(meters);
     const elevationFormatter = (meters) => {
       const feet = meters * 3.28084;
       return useImperial ? `${Math.round(feet)} ft` : `${Math.round(meters)} m`;
     };
-    xAxis.call(d3.axisTop(x).ticks(5).tickFormat(distanceFormatter));
+    xAxis.call(d3.axisBottom(x).ticks(0).tickFormat(""));
     yAxis.call(d3.axisRight(y).ticks(4).tickFormat(elevationFormatter));
-
-    // Clear the axes text if no data
-    xAxis.selectAll("text").text("");
     yAxis.selectAll("text").text("");
   }
 }
@@ -204,7 +213,7 @@ function handleResize() {
 function drawElevationProfile(pointsWithElev) {
   currentData = formatDataForD3(pointsWithElev);
   if (currentData.length < 2) {
-    clearElevationProfile(); // Not enough data to draw
+    clearElevationProfile();
     return;
   }
 
@@ -217,7 +226,6 @@ function drawElevationProfile(pointsWithElev) {
   y.domain([minElev - elevPadding, maxElev + elevPadding]);
 
   // --- 2. Create the "Area Generator" ---
-  // This is a D3 function that turns our data array into an SVG path string
   const areaGenerator = d3
     .area()
     .x((d) => x(d.distance))
@@ -225,14 +233,10 @@ function drawElevationProfile(pointsWithElev) {
     .y1((d) => y(d.elevation)); // Top of the area
 
   // --- 3. Bind the data and draw the path ---
-  chartGroup
-    .select(".altitude-area")
-    .datum(currentData) // Bind the *entire* array as one object
-    .attr("d", areaGenerator);
+  chartGroup.select(".altitude-area").datum(currentData).attr("d", areaGenerator);
 
   // --- 4. Update the Axes ---
   const distanceFormatter = (meters) => {
-    // We can reuse our global formatter
     return formatDistance(meters);
   };
 
@@ -241,7 +245,22 @@ function drawElevationProfile(pointsWithElev) {
     return useImperial ? `${Math.round(feet)} ft` : `${Math.round(meters)} m`;
   };
 
-  xAxis.call(d3.axisTop(x).ticks(5).tickFormat(distanceFormatter));
+  // --- X-Axis with custom ticks and alignment ---
+  const tickValues = [0, maxDistance / 2, maxDistance];
+
+  xAxis.call(d3.axisBottom(x).tickValues(tickValues).tickFormat(distanceFormatter));
+
+  xAxis.selectAll(".tick text").style("text-anchor", (d, i, nodes) => {
+    if (i === 0) {
+      return "start"; // First tick (0)
+    } else if (i === nodes.length - 1) {
+      return "end"; // Last tick (max distance)
+    } else {
+      return "middle"; // Middle tick
+    }
+  });
+  // --- END X-Axis ---
+
   yAxis.call(d3.axisRight(y).ticks(4).tickFormat(elevationFormatter));
 
   // --- 5. Update Summary Text ---
@@ -267,12 +286,9 @@ function drawElevationProfile(pointsWithElev) {
  */
 function clearElevationProfile() {
   currentData = [];
-  // Clear the path
   chartGroup.select(".altitude-area").attr("d", null);
-  // Clear the axes
-  xAxis.call(d3.axisTop(x).ticks(0).tickFormat(""));
+  xAxis.call(d3.axisBottom(x).ticks(0).tickFormat(""));
   yAxis.call(d3.axisRight(y).ticks(0).tickFormat(""));
-  // Clear the summary text
   chartGroup.select("#d3-summary-text").text("");
 }
 
@@ -282,9 +298,7 @@ function clearElevationProfile() {
  */
 function updateElevationChartUnits(isImperial) {
   useImperial = isImperial;
-  // If we have data, just redraw it to update the axes and summary
   if (currentData.length > 0) {
-    // Re-call draw with the *unformatted* data
     drawElevationProfile(currentData.map((d) => d.latlng));
   }
 }
