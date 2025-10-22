@@ -11,9 +11,9 @@ let x, y, xAxis, yAxis; // D3 scales and axes
 let width, height; // Chart dimensions
 let currentData = [];
 let useImperial = false;
+let chartTargetDivId; // MODIFIED: Add this variable
 
-// We can get these from main.js or define them here.
-const margin = { top: 30, right: 0, bottom: -10, left: 0 };
+const margin = { top: 30, right: 75, bottom: 10, left: 75 };
 
 /**
  * --- 2. Data Formatting Helper ---
@@ -63,11 +63,17 @@ function formatDataForD3(pointsWithElev) {
  */
 function createElevationChart(targetDivId, isImperial) {
   useImperial = isImperial;
+  chartTargetDivId = targetDivId; // MODIFIED: Store the ID
   const targetDiv = document.getElementById(targetDivId);
 
   // Get dimensions from the container
-  const totalWidth = document.getElementById("map").clientWidth;
-  const totalHeight = 200; // You can set a fixed height
+  const totalWidth = targetDiv.clientWidth;
+  const totalHeight = targetDiv.clientHeight; // MODIFIED: Read height from container
+
+  // --- MODIFIED: Run responsive check on initial load ---
+  const isNarrow = totalWidth < 768; // 768px matches your style.css
+  margin.bottom = isNarrow ? 40 : 10; // Set correct margin before first draw
+  // --- END MODIFICATION ---
 
   width = totalWidth - margin.left - margin.right;
   height = totalHeight - margin.top - margin.bottom;
@@ -79,13 +85,17 @@ function createElevationChart(targetDivId, isImperial) {
   svg = d3
     .select(targetDiv)
     .append("svg")
-    .attr("width", "50%") // Make SVG responsive
-    .attr("height", totalHeight)
-    .attr("viewBox", `0 0 ${totalWidth} ${totalHeight}`) // For responsive scaling
-    .attr("preserveAspectRatio", "xMidYMid meet");
+    .attr("class", "d3-elevation-svg")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .attr("viewBox", `0 0 ${totalWidth} ${totalHeight}`) // Set initial coordinate system
+    .attr("preserveAspectRatio", "xMinYMin meet");
 
   // Create a 'g' (group) element to hold the chart, applying margins
-  chartGroup = svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`);
+  chartGroup = svg
+    .append("g")
+    .attr("class", "d3-chart-group")
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
   // --- Initialize Scales ---
   // X scale (distance)
@@ -119,6 +129,72 @@ function createElevationChart(targetDivId, isImperial) {
     .attr("text-anchor", "middle")
     .attr("fill", "var(--text-color)")
     .attr("font-size", "12px");
+
+  // --- MODIFIED: Add Resize Listener ---
+  let debounceTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(debounceTimer);
+    // Debounce to avoid rapid re-renders
+    debounceTimer = setTimeout(handleResize, 100);
+  });
+}
+
+/**
+ * --- 4. Resize Handler ---
+ * Recalculates dimensions and redraws the chart when the window size changes.
+ */
+function handleResize() {
+  // Guard clause: Do nothing if the chart hasn't been created yet
+  if (!svg || !chartTargetDivId) {
+    return;
+  }
+
+  // --- 1. Get new dimensions ---
+  const targetDiv = document.getElementById(chartTargetDivId);
+  if (!targetDiv) return;
+
+  const newTotalWidth = targetDiv.clientWidth;
+  const newTotalHeight = targetDiv.clientHeight; // Read it again
+
+  const isNarrow = newTotalWidth < 768; // 768px matches your style.css
+  margin.bottom = isNarrow ? 40 : 10; // 100px on narrow, 10px otherwise
+
+  // Update module-level dimensions
+  width = newTotalWidth - margin.left - margin.right;
+  height = newTotalHeight - margin.top - margin.bottom;
+
+  // --- 2. Update SVG and Scales ---
+  // Update the viewBox to the new pixel dimensions
+  svg.attr("viewBox", `0 0 ${newTotalWidth} ${newTotalHeight}`);
+
+  // Update the ranges of our scales
+  x.range([0, width]);
+  y.range([height, 0]);
+
+  // --- 3. Reposition static elements ---
+  // Move the Y-axis group
+  yAxis.attr("transform", `translate(${width}, 0)`);
+  // Move the summary text
+  chartGroup.select("#d3-summary-text").attr("x", width / 2);
+
+  // --- 4. Redraw data ---
+  if (currentData.length > 0) {
+    // Re-run the draw function with existing data
+    drawElevationProfile(currentData.map((d) => d.latlng));
+  } else {
+    // If no data, just clear/update the axes to the new scale
+    const distanceFormatter = (meters) => formatDistance(meters);
+    const elevationFormatter = (meters) => {
+      const feet = meters * 3.28084;
+      return useImperial ? `${Math.round(feet)} ft` : `${Math.round(meters)} m`;
+    };
+    xAxis.call(d3.axisTop(x).ticks(5).tickFormat(distanceFormatter));
+    yAxis.call(d3.axisRight(y).ticks(4).tickFormat(elevationFormatter));
+
+    // Clear the axes text if no data
+    xAxis.selectAll("text").text("");
+    yAxis.selectAll("text").text("");
+  }
 }
 
 /**
