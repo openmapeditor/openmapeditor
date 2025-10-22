@@ -123,6 +123,9 @@ function createElevationChart(targetDivId, isImperial) {
   // Y scale (elevation)
   y = d3.scaleLinear().range([height, 0]);
 
+  // Add a <path> element for our area chart.
+  chartGroup.append("path").attr("class", "altitude-area");
+
   // --- Initialize Axes ---
   // X axis (at the bottom)
   xAxis = chartGroup
@@ -135,9 +138,6 @@ function createElevationChart(targetDivId, isImperial) {
     .append("g")
     .attr("class", "y axis")
     .attr("transform", `translate(${width}, 0)`); // Position at right
-
-  // Add a <path> element for our area chart.
-  chartGroup.append("path").attr("class", "altitude-area");
 
   // Add summary text element
   chartGroup
