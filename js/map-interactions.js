@@ -80,7 +80,7 @@ function deselectCurrentItem() {
 
   globallySelectedItem = null;
   selectedElevationPath = null;
-  elevationControl.clear();
+  window.d3Elevation.clearElevationProfile();
   document.getElementById("elevation-div").style.visibility = "hidden";
   isElevationProfileVisible = false;
   updateElevationToggleIconColor();
@@ -185,7 +185,7 @@ function selectItem(layer) {
     // --- END ---
 
     selectedElevationPath = layer;
-    elevationControl.clear();
+    window.d3Elevation.clearElevationProfile();
     addElevationProfileForLayer(layer);
     layer.setStyle({ ...STYLE_CONFIG.path.highlight, color: highlightColor });
     layer.bringToFront();

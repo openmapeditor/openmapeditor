@@ -118,7 +118,7 @@ This project is designed to be easily forked and customized. All primary brandin
 This project utilizes several open-source libraries, which are included in the repository.
 
 - **d3-7.9.0**
-  - Download URL: <https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js>
+  - Download URL: <https://d3js.org/d3.v7.min.js>
 - **jszip-3.10.1**
   - Download URL: <https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz>
 - **leaflet-1.9.4**

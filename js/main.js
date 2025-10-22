@@ -759,12 +759,12 @@ function initializeMap() {
           elevationDiv.style.visibility === "hidden" || elevationDiv.style.visibility === "";
         elevationDiv.style.visibility = isElevationProfileVisible ? "visible" : "hidden";
         if (isElevationProfileVisible) {
-          if (elevationControl && selectedElevationPath) {
-            elevationControl.clear();
+          if (selectedElevationPath) {
+            window.d3Elevation.clearElevationProfile();
             addElevationProfileForLayer(selectedElevationPath);
           }
         } else {
-          elevationControl.clear();
+          window.d3Elevation.clearElevationProfile();
         }
         updateElevationToggleIconColor();
       });
@@ -1192,8 +1192,9 @@ function initializeMap() {
   setupAutocomplete(searchInput, searchSuggestions, onSearchResult);
   // --- END: NEW Custom Search Bar Setup ---
 
-  // Add elevationControl
-  elevationControl = createAndAddElevationControl(useImperialUnits);
+  // Create elevation chart
+  window.d3Elevation.createElevationChart("elevation-div", useImperialUnits);
+
   // Set the initial state for the elevation panel.
   // This ensures the panel is hidden via an inline `style` attribute on page load.
   // This is necessary to trigger the corresponding CSS rule which collapses the
@@ -1574,16 +1575,8 @@ function initializeMap() {
         })
         .addTo(map);
 
-      if (elevationControl) {
-        map.removeControl(elevationControl);
-      }
-      elevationControl = createAndAddElevationControl(useImperialUnits);
-
-      const isProfileVisible =
-        document.getElementById("elevation-div").style.visibility === "visible";
-      if (selectedElevationPath && isProfileVisible) {
-        await addElevationProfileForLayer(selectedElevationPath);
-      }
+      // Update elevation chart units
+      window.d3Elevation.updateElevationChartUnits(useImperialUnits);
 
       updateAllDynamicUnitDisplays();
 
