@@ -147,9 +147,7 @@ function redrawChartData() {
   const [minElev, maxElev] = d3.extent(currentData, (d) => d.elevation);
 
   x.domain([0, maxDistance]);
-  // Add a small buffer to the y-domain so the line doesn't touch the top/bottom edges
-  const yBuffer = (maxElev - minElev) * 0.05 || 1; // 5% buffer, minimum 1 unit
-  y.domain([minElev - yBuffer, maxElev + yBuffer]);
+  y.domain([minElev, maxElev]);
 
   // 2. Create the "Area Generator"
   const areaGenerator = d3
@@ -177,16 +175,17 @@ function redrawChartData() {
     return "middle";
   });
 
-  // Y-Axis - Use more ticks for better readability
-  const numYTicks = 5;
-  const yTickValues = d3.ticks(minElev, maxElev, numYTicks);
+  // Y-Axis
+  const yTickValues = [minElev, (minElev + maxElev) / 2, maxElev];
   yAxis.call(d3.axisRight(y).tickValues(yTickValues).tickFormat(elevationFormatter));
-  // Adjust y-axis tick label vertical alignment for top/bottom ticks
-  yAxis.selectAll(".tick text").attr("dy", (d) => {
-    if (d === yTickValues[0]) return "0.9em"; // Align bottom tick slightly up
-    if (d === yTickValues[yTickValues.length - 1]) return "-0.2em"; // Align top tick slightly down
-    return "0.32em"; // Default middle alignment
-  });
+  yAxis
+    .selectAll(".tick text")
+    .attr("dy", null)
+    .style("dominant-baseline", (d) => {
+      if (d === minElev) return "baseline";
+      if (d === maxElev) return "hanging";
+      return "middle";
+    });
 }
 
 /**
