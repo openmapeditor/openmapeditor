@@ -392,8 +392,9 @@ function updateElevationChartUnits(isImperial) {
 // --- Event Handlers for Chart Hover ---
 
 /**
- * Handles mousemove and touchmove events on the chart.
+ * Handles mousemove and touchmove events on the chart overlay.
  * Finds the corresponding data point and shows the marker and line.
+ * Clamps the visual feedback to the chart boundaries.
  * @param {Event} event The mouse or touch event
  */
 function onHoverMove(event) {
@@ -404,54 +405,64 @@ function onHoverMove(event) {
 
   if (!currentData || currentData.length === 0) return;
 
-  // Get the X coordinate of the pointer relative to the chartGroup
-  const [pointerX] = d3.pointer(event, chartGroup.node());
+  let pointerX;
 
-  // --- Clamp pointerX to the chart bounds [0, width] ---
+  // Explicit Touch Coordinate Handling
+  if (event.touches && event.touches.length > 0) {
+    const touch = event.touches[0];
+    const [xCoord] = d3.pointer(touch, chartGroup.node());
+    pointerX = xCoord;
+  } else if (event.changedTouches && event.changedTouches.length > 0) {
+    // Handle cases like touchend that might use changedTouches
+    const touch = event.changedTouches[0];
+    const [xCoord] = d3.pointer(touch, chartGroup.node());
+    pointerX = xCoord;
+  } else {
+    // Assume mouse event or other pointer type
+    const [xCoord] = d3.pointer(event, chartGroup.node());
+    pointerX = xCoord;
+  }
+
+  // --- Clamp pointerX to the visual chart bounds [0, width] ---
   const clampedPointerX = Math.max(0, Math.min(width, pointerX));
 
-  // Convert the *clamped* X coordinate back to a "distance" value
+  // Convert the *clamped* X coordinate back to a "distance" value within the domain
   const hoverDistance = x.invert(clampedPointerX);
 
-  // Use D3's bisector to find the *index* of the closest data point
+  // Use D3's bisector to find the *index* of the closest actual data point
   const bisector = d3.bisector((d) => d.distance).left;
-  let index = bisector(currentData, hoverDistance);
+  let index = bisector(currentData, hoverDistance, 1); // Start searching from index 1
 
-  // Ensure index stays within bounds [0, currentData.length - 1]
-  // and handle potential edge cases with bisector results.
-  if (index >= currentData.length) {
+  // Determine the closest point: the one before or the one at the bisector index
+  const d0 = currentData[index - 1];
+  const d1 = currentData[index];
+
+  // Check if d1 exists before accessing its distance property
+  if (d0 && d1) {
+    index = hoverDistance - d0.distance > d1.distance - hoverDistance ? index : index - 1;
+  } else if (d0) {
+    // Only d0 exists, must be the last point
     index = currentData.length - 1;
-  } else if (index > 0) {
-    // Standard bisector check: is the previous point actually closer?
-    const distA = hoverDistance - currentData[index - 1].distance;
-    const distB = currentData[index].distance - hoverDistance;
-    if (distA < distB) {
-      index = index - 1;
-    }
   } else {
-    // If index is 0, ensure it's not actually closer to index 1 (unlikely with clamping, but safe)
-    if (currentData.length > 1) {
-      const distA = hoverDistance - currentData[0].distance; // Should be >= 0
-      const distB = currentData[1].distance - hoverDistance;
-      if (distB < distA) {
-        index = 1;
-      } else {
-        index = 0; // Stick to the first point
-      }
-    } else {
-      index = 0; // Only one point
-    }
+    // Neither exists or only d1 exists, must be the first point
+    index = 0;
   }
+
+  // Clamp index just in case (shouldn't be needed with proper bisect logic but safe)
+  index = Math.max(0, Math.min(currentData.length - 1, index));
 
   const dataPoint = currentData[index];
 
   if (dataPoint) {
-    // Update the vertical line's position and show it
+    // Update the vertical line's position using the *actual* data point's distance
+    // This ensures it snaps precisely to the start/end points.
+    const lineX = x(dataPoint.distance);
+
     verticalLine
-      .attr("x1", x(dataPoint.distance)) // Use the actual data point's distance
-      .attr("x2", x(dataPoint.distance)) // Use the actual data point's distance
-      .attr("y1", 0) // <<<<< MODIFICATION: Start at top >>>>>
-      .attr("y2", height) // <<<<< MODIFICATION: End at bottom >>>>>
+      .attr("x1", lineX)
+      .attr("x2", lineX)
+      .attr("y1", 0) // Full height
+      .attr("y2", height) // Full height
       .style("display", "block");
 
     // Tell the map to show the marker at this point's lat/lng
@@ -459,13 +470,14 @@ function onHoverMove(event) {
       window.mapInteractions.showElevationMarker(dataPoint.latlng);
     }
   } else {
-    // Should not happen with clamping, but hide just in case
-    onHoverEnd();
+    // Fallback if no data point is found (shouldn't happen with clamping)
+    console.warn("Could not find dataPoint in onHoverMove");
+    onHoverEnd(); // Hide if something went wrong
   }
 }
 
 /**
- * Handles mouseout and touchend events on the chart.
+ * Handles mouseout and touchend events *leaving the overlay rectangle*.
  * Hides the marker and the vertical line.
  */
 function onHoverEnd() {
