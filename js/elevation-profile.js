@@ -306,7 +306,6 @@ function drawElevationProfile(pointsWithElev) {
   // - 'margin: 0 4px': Adds horizontal spacing (replaces &nbsp;)
   const summaryDiv = svg.select("#d3-summary-html");
   if (summaryDiv) {
-    // --- *** THIS IS THE FIX *** ---
     const itemStyle = "display: inline-block; white-space: nowrap; margin: 0 4px;";
 
     // We no longer use &nbsp;&nbsp; at all.
@@ -317,7 +316,14 @@ function drawElevationProfile(pointsWithElev) {
         `<span style="${itemStyle}">Highest point: ${elevationFormatter(maxElev)}</span>` +
         `<span style="${itemStyle}">Lowest point: ${elevationFormatter(minElev)}</span>`
     );
-    // --- *** END OF FIX *** ---
+
+    // With material symbols instead of text
+    // summaryDiv.html(
+    //   `<span style="${itemStyle}"><span class="material-symbols">north_east</span> ${elevationFormatter(ascent)}</span>` +
+    //     `<span style="${itemStyle}"><span class="material-symbols">south_east</span> ${elevationFormatter(descent)}</span>` +
+    //     `<span style="${itemStyle}"><span class="material-symbols">vertical_align_top</span> ${elevationFormatter(maxElev)}</span>` +
+    //     `<span style="${itemStyle}"><span class="material-symbols">vertical_align_bottom</span> ${elevationFormatter(minElev)}</span>`
+    // );
   }
 
   // --- 3. Update Layout & Redraw Chart ---
