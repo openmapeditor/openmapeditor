@@ -935,7 +935,7 @@ a#info-panel-strava-link:hover {
   z-index: 4000;
 }
 
-/* Style for the elevation chart container */
+/* --- START: Elevation Profile Styles --- */
 #elevation-div {
   bottom: 0px;
   height: 250px;
@@ -985,6 +985,7 @@ a#info-panel-strava-link:hover {
 .d3-chart-group {
   /* This element is positioned by the 'margin' object in d3-elevation.js */
 }
+/* --- END: Elevation Profile Styles --- */
 
 /* Style for the download submenu */
 .leaflet-control-custom .download-submenu {
