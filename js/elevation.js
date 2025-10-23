@@ -13,7 +13,7 @@ const elevationCache = new Map();
 function clearElevationCache() {
   elevationCache.clear();
   if (elevationControl) {
-    window.d3Elevation.clearElevationProfile();
+    window.elevationProfile.clearElevationProfile();
     // Also, hide the elevation div if it's visible
     const elevationDiv = document.getElementById("elevation-div");
     if (elevationDiv) {
@@ -237,10 +237,10 @@ async function addElevationProfileForLayer(layer) {
   if (latlngs?.length > 0) {
     const pointsWithElev = await fetchElevationForPath(latlngs);
     if (pointsWithElev?.length > 0) {
-      window.d3Elevation.drawElevationProfile(pointsWithElev);
+      window.elevationProfile.drawElevationProfile(pointsWithElev);
     } else {
       console.warn("No valid elevation data.");
-      window.d3Elevation.clearElevationProfile();
+      window.elevationProfile.clearElevationProfile();
     }
   }
 }

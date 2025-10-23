@@ -338,7 +338,7 @@ function updateElevationChartUnits(isImperial) {
 }
 
 // Export the functions we want other files to use
-window.d3Elevation = {
+window.elevationProfile = {
   createElevationChart,
   drawElevationProfile,
   clearElevationProfile,

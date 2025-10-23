@@ -760,11 +760,11 @@ function initializeMap() {
         elevationDiv.style.visibility = isElevationProfileVisible ? "visible" : "hidden";
         if (isElevationProfileVisible) {
           if (selectedElevationPath) {
-            window.d3Elevation.clearElevationProfile();
+            window.elevationProfile.clearElevationProfile();
             addElevationProfileForLayer(selectedElevationPath);
           }
         } else {
-          window.d3Elevation.clearElevationProfile();
+          window.elevationProfile.clearElevationProfile();
         }
         updateElevationToggleIconColor();
       });
@@ -1193,7 +1193,7 @@ function initializeMap() {
   // --- END: NEW Custom Search Bar Setup ---
 
   // Create elevation chart
-  window.d3Elevation.createElevationChart("elevation-div", useImperialUnits);
+  window.elevationProfile.createElevationChart("elevation-div", useImperialUnits);
 
   // Set the initial state for the elevation panel.
   // This ensures the panel is hidden via an inline `style` attribute on page load.
@@ -1576,7 +1576,7 @@ function initializeMap() {
         .addTo(map);
 
       // Update elevation chart units
-      window.d3Elevation.updateElevationChartUnits(useImperialUnits);
+      window.elevationProfile.updateElevationChartUnits(useImperialUnits);
 
       updateAllDynamicUnitDisplays();
 
