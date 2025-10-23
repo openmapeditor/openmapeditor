@@ -261,10 +261,32 @@ function createElevationChart(targetDivId, isImperial) {
     .attr("class", "elevation-hover-line")
     .style("stroke", "var(--text-color)")
     .style("stroke-width", 1)
-    // .style("stroke-dasharray", "3,3") // <<<<< MODIFICATION: Removed this line >>>>>
     .style("display", "none")
     .style("pointer-events", "none");
   // --- END Add Vertical Line ---
+
+  // --- START: Add the hover tooltip "flag" (initially hidden) ---
+  const hoverTooltipGroup = chartGroup
+    .append("g")
+    .attr("class", "elevation-hover-tooltip-group")
+    .style("display", "none")
+    .style("pointer-events", "none");
+
+  // The flag's path (shape)
+  hoverTooltipGroup.append("path").attr("class", "elevation-hover-tooltip-path");
+
+  // Text for Distance
+  hoverTooltipGroup
+    .append("text")
+    .attr("class", "elevation-hover-tooltip-text")
+    .attr("id", "tooltip-distance-text");
+
+  // Text for Elevation
+  hoverTooltipGroup
+    .append("text")
+    .attr("class", "elevation-hover-tooltip-text")
+    .attr("id", "tooltip-elevation-text");
+  // --- END: Add Tooltip ---
 
   // --- Initialize Axes (position set by layout) ---
   xAxis = chartGroup.append("g").attr("class", "x axis");
@@ -363,6 +385,7 @@ function clearElevationProfile() {
 
   // Hide hover elements
   if (verticalLine) verticalLine.style("display", "none");
+  if (chartGroup) chartGroup.select(".elevation-hover-tooltip-group").style("display", "none"); // Hide tooltip
   if (window.mapInteractions) window.mapInteractions.hideElevationMarker();
 
   // Update layout to shrink margin
@@ -453,10 +476,89 @@ function onHoverMove(event) {
   const dataPoint = currentData[index];
 
   if (dataPoint) {
-    // Update the vertical line's position using the *actual* data point's distance
-    // This ensures it snaps precisely to the start/end points.
-    const lineX = x(dataPoint.distance);
+    // --- START: MODIFIED TOOLTIP LOGIC ---
 
+    // 1. Format text
+    const distanceText = `Distance: ${formatDistance(dataPoint.distance)}`;
+    const elevationFormatter = (meters) => {
+      const feet = meters * 3.28084;
+      return useImperial ? `${Math.round(feet)} ft` : `${Math.round(meters)} m`;
+    };
+    const elevationText = `Elevation: ${elevationFormatter(dataPoint.elevation)}`;
+
+    // 2. Update text elements
+    const textDist = chartGroup.select("#tooltip-distance-text").text(distanceText);
+    const textElev = chartGroup.select("#tooltip-elevation-text").text(elevationText);
+
+    // 3. Get text dimensions (must be done *after* setting text)
+    const distBBox = textDist.node().getBBox();
+    const elevBBox = textElev.node().getBBox();
+    const textWidth = Math.max(distBBox.width, elevBBox.width);
+
+    // Use a fixed line height for stable calculations
+    const singleLineHeight = 12; // A bit more than 10px font size
+
+    // 4. Define flag parameters
+    const padding = 5;
+    const flagWidth = textWidth + 2 * padding;
+    const flagHeight = singleLineHeight * 2 + 2 * padding; // 2 lines of text
+    const textY1 = padding + singleLineHeight - 2; // -2 for font alignment
+    const textY2 = textY1 + singleLineHeight + 2; // +2 for line spacing
+    let textX = padding; // Default for right-pointing flag
+    let flagPathD = "";
+    const lineX = x(dataPoint.distance);
+    let groupTransformX = lineX; // Default X position
+    const groupTransformY = 0; // At the top of the chart
+
+    // 5. Check direction (left/right half)
+    const pointsRight = lineX < width / 2;
+
+    if (pointsRight) {
+      // Flag is on the left (at lineX), points right
+      textX = padding;
+      groupTransformX = lineX;
+
+      // Draw path: Simple rectangle starting at (0,0) and extending right
+      flagPathD = [
+        `M 0,0`, // Top-left (at lineX)
+        `h ${flagWidth}`, // Top-right
+        `v ${flagHeight}`, // Bottom-right
+        `h ${-flagWidth}`, // Bottom-left
+        `Z`, // Close
+      ].join(" ");
+    } else {
+      // Flag is on the right (at lineX), points left
+      textX = -flagWidth + padding;
+      groupTransformX = lineX;
+
+      // Draw path: Simple rectangle starting at (0,0) and extending left
+      flagPathD = [
+        `M 0,0`, // Top-right (at lineX)
+        `h ${-flagWidth}`, // Top-left
+        `v ${flagHeight}`, // Bottom-left
+        `h ${flagWidth}`, // Bottom-right
+        `Z`, // Close
+      ].join(" ");
+    }
+
+    // 6. Apply updates to D3 elements
+    const tooltip = chartGroup.select(".elevation-hover-tooltip-group");
+
+    tooltip
+      .attr("transform", `translate(${groupTransformX}, ${groupTransformY})`)
+      .style("display", "block");
+
+    tooltip.select(".elevation-hover-tooltip-path").attr("d", flagPathD);
+
+    // --- START: MODIFIED LINES ---
+    // Swapped textY1 and textY2 to show Elevation first
+    textElev.attr("x", textX).attr("y", textY1);
+    textDist.attr("x", textX).attr("y", textY2);
+    // --- END: MODIFIED LINES ---
+
+    // --- END: MODIFIED TOOLTIP LOGIC ---
+
+    // Update the vertical line's position
     verticalLine
       .attr("x1", lineX)
       .attr("x2", lineX)
@@ -484,6 +586,14 @@ function onHoverEnd() {
   if (verticalLine) {
     verticalLine.style("display", "none");
   }
+
+  // --- START: NEW ---
+  // Hide the tooltip flag
+  if (chartGroup) {
+    chartGroup.select(".elevation-hover-tooltip-group").style("display", "none");
+  }
+  // --- END: NEW ---
+
   // Tell the map to hide the marker
   if (window.mapInteractions) {
     window.mapInteractions.hideElevationMarker();

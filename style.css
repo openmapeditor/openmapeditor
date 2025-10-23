@@ -985,6 +985,23 @@ a#info-panel-strava-link:hover {
 .d3-chart-group {
   /* This element is positioned by the 'margin' object in d3-elevation.js */
 }
+
+.elevation-hover-tooltip-path {
+  fill: var(--background-color);
+  stroke: var(--text-color);
+  stroke-width: 1px;
+}
+
+.elevation-hover-tooltip-text {
+  fill: var(--text-color);
+  font-family: "Roboto", sans-serif !important; /* Override D3 defaults */
+  font-size: 10px;
+  /* Prevent text from being selected on drag */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 /* --- END: Elevation Profile Styles --- */
 
 /* Style for the download submenu */
