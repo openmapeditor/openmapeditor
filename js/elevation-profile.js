@@ -14,6 +14,9 @@ let useImperial = false;
 let chartTargetDivId;
 let totalWidth, totalHeight; // Container dimensions
 
+// --- D3 elements for hover interaction ---
+let verticalLine, hoverOverlay;
+
 // --- Responsive & Margin constants ---
 const BREAKPOINT_NARROW = 768; // 768px matches your style.css
 const MARGIN_BOTTOM_NARROW = 60;
@@ -31,7 +34,7 @@ const margin = {
 /**
  * --- 2. Data Formatting Helper ---
  * Converts our Leaflet data (L.latLng(lat, lng, alt)) into what D3 needs.
- * [ {distance: 0, elevation: 100}, {distance: 50, elevation: 110}, ... ]
+ * [ {distance: 0, elevation: 100, latlng: L.LatLng}, {distance: 50, elevation: 110, latlng: L.LatLng}, ... ]
  */
 function formatDataForD3(pointsWithElev) {
   let cumulativeDistance = 0;
@@ -45,7 +48,7 @@ function formatDataForD3(pointsWithElev) {
   formattedData.push({
     distance: 0,
     elevation: pointsWithElev[0].alt || 0,
-    latlng: pointsWithElev[0],
+    latlng: pointsWithElev[0], // Store the original LatLng
   });
 
   // Loop through the rest of the points
@@ -57,7 +60,7 @@ function formatDataForD3(pointsWithElev) {
     formattedData.push({
       distance: cumulativeDistance,
       elevation: p2.alt || 0,
-      latlng: p2,
+      latlng: p2, // Store the original LatLng
     });
   }
   return formattedData;
@@ -123,6 +126,11 @@ function updateChartLayout() {
 
   yAxis.attr("transform", `translate(${width}, 0)`);
   xAxis.attr("transform", `translate(0, ${height})`);
+
+  // Update the hover overlay to match the chart size
+  if (hoverOverlay) {
+    hoverOverlay.attr("width", width).attr("height", height);
+  }
 }
 
 /**
@@ -139,7 +147,9 @@ function redrawChartData() {
   const [minElev, maxElev] = d3.extent(currentData, (d) => d.elevation);
 
   x.domain([0, maxDistance]);
-  y.domain([minElev, maxElev]);
+  // Add a small buffer to the y-domain so the line doesn't touch the top/bottom edges
+  const yBuffer = (maxElev - minElev) * 0.05 || 1; // 5% buffer, minimum 1 unit
+  y.domain([minElev - yBuffer, maxElev + yBuffer]);
 
   // 2. Create the "Area Generator"
   const areaGenerator = d3
@@ -167,17 +177,16 @@ function redrawChartData() {
     return "middle";
   });
 
-  // Y-Axis
-  const yTickValues = [minElev, (minElev + maxElev) / 2, maxElev];
+  // Y-Axis - Use more ticks for better readability
+  const numYTicks = 5;
+  const yTickValues = d3.ticks(minElev, maxElev, numYTicks);
   yAxis.call(d3.axisRight(y).tickValues(yTickValues).tickFormat(elevationFormatter));
-  yAxis
-    .selectAll(".tick text")
-    .attr("dy", null)
-    .style("dominant-baseline", (d) => {
-      if (d === minElev) return "baseline";
-      if (d === maxElev) return "hanging";
-      return "middle";
-    });
+  // Adjust y-axis tick label vertical alignment for top/bottom ticks
+  yAxis.selectAll(".tick text").attr("dy", (d) => {
+    if (d === yTickValues[0]) return "0.9em"; // Align bottom tick slightly up
+    if (d === yTickValues[yTickValues.length - 1]) return "-0.2em"; // Align top tick slightly down
+    return "0.32em"; // Default middle alignment
+  });
 }
 
 /**
@@ -191,7 +200,7 @@ function drawEmptyAxes() {
   xAxis.call(d3.axisBottom(x).ticks(0).tickFormat(""));
   // Draw an empty Y axis to maintain layout
   yAxis.call(d3.axisRight(y).ticks(4).tickFormat(elevationFormatter));
-  yAxis.selectAll("text").text("");
+  yAxis.selectAll("text").text(""); // Clear labels
 }
 
 /**
@@ -221,7 +230,6 @@ function createElevationChart(targetDivId, isImperial) {
     .attr("preserveAspectRatio", "xMinYMin meet");
 
   // --- Add HTML Summary Container ---
-  // We add this *before* the chartGroup
   svg
     .append("foreignObject")
     .attr("id", "d3-summary-container")
@@ -233,14 +241,13 @@ function createElevationChart(targetDivId, isImperial) {
     .attr("id", "d3-summary-html")
     .style("color", "var(--text-color)")
     .style("font-size", "12px")
-    .style("line-height", "1.4") // A bit of space between lines
+    .style("line-height", "1.4")
     .style("text-align", "center")
-    .style("width", "100%") // Ensure it fills the foreignObject
+    .style("width", "100%")
     .style("padding-top", "5px");
 
   // Create a 'g' (group) element to hold the chart
   chartGroup = svg.append("g").attr("class", "d3-chart-group");
-  // transform is set by updateChartLayout
 
   // --- Initialize Scales (range set by layout) ---
   x = d3.scaleLinear();
@@ -249,9 +256,34 @@ function createElevationChart(targetDivId, isImperial) {
   // Add a <path> element for our area chart.
   chartGroup.append("path").attr("class", "altitude-area");
 
+  // --- Add the vertical hover line (initially hidden) ---
+  verticalLine = chartGroup
+    .append("line")
+    .attr("class", "elevation-hover-line")
+    .style("stroke", "var(--text-color)")
+    .style("stroke-width", 1)
+    // .style("stroke-dasharray", "3,3") // <<<<< MODIFICATION: Removed this line >>>>>
+    .style("display", "none")
+    .style("pointer-events", "none");
+  // --- END Add Vertical Line ---
+
   // --- Initialize Axes (position set by layout) ---
   xAxis = chartGroup.append("g").attr("class", "x axis");
   yAxis = chartGroup.append("g").attr("class", "y axis");
+
+  // --- Add the hover/touch capture rectangle ---
+  hoverOverlay = chartGroup
+    .append("rect")
+    .attr("class", "elevation-hover-overlay")
+    .attr("x", 0)
+    .attr("y", 0)
+    .style("fill", "none")
+    .style("pointer-events", "all")
+    .on("mousemove", onHoverMove)
+    .on("touchmove", onHoverMove)
+    .on("mouseout", onHoverEnd)
+    .on("touchend", onHoverEnd);
+  // --- END Add Overlay ---
 
   // --- Perform initial layout ---
   updateChartLayout();
@@ -299,36 +331,18 @@ function drawElevationProfile(pointsWithElev) {
   };
 
   // --- 2. Update Summary HTML ---
-  // This is what makes the solution flexible.
-  // Each item is in a span with:
-  // - 'display: inline-block': Allows margins and wrapping
-  // - 'white-space: nowrap': Keeps the content of the span ("Ascent: 123 m") together
-  // - 'margin: 0 4px': Adds horizontal spacing (replaces &nbsp;)
   const summaryDiv = svg.select("#d3-summary-html");
   if (summaryDiv) {
     const itemStyle = "display: inline-block; white-space: nowrap; margin: 0 4px;";
-
-    // We no longer use &nbsp;&nbsp; at all.
-    // The browser will now wrap the <span> blocks.
     summaryDiv.html(
       `<span style="${itemStyle}">Ascent: ${elevationFormatter(ascent)}</span>` +
         `<span style="${itemStyle}">Descent: ${elevationFormatter(descent)}</span>` +
         `<span style="${itemStyle}">Highest point: ${elevationFormatter(maxElev)}</span>` +
         `<span style="${itemStyle}">Lowest point: ${elevationFormatter(minElev)}</span>`
     );
-
-    // With material symbols instead of text
-    // summaryDiv.html(
-    //   `<span style="${itemStyle}"><span class="material-symbols">north_east</span> ${elevationFormatter(ascent)}</span>` +
-    //     `<span style="${itemStyle}"><span class="material-symbols">south_east</span> ${elevationFormatter(descent)}</span>` +
-    //     `<span style="${itemStyle}"><span class="material-symbols">vertical_align_top</span> ${elevationFormatter(maxElev)}</span>` +
-    //     `<span style="${itemStyle}"><span class="material-symbols">vertical_align_bottom</span> ${elevationFormatter(minElev)}</span>`
-    // );
   }
 
   // --- 3. Update Layout & Redraw Chart ---
-  // This is CRITICAL: We update the layout *after* setting the text,
-  // so the margin can be calculated based on the new text height.
   updateChartLayout();
   redrawChartData();
 }
@@ -347,6 +361,10 @@ function clearElevationProfile() {
 
   // Clear chart area
   chartGroup.select(".altitude-area").attr("d", null);
+
+  // Hide hover elements
+  if (verticalLine) verticalLine.style("display", "none");
+  if (window.mapInteractions) window.mapInteractions.hideElevationMarker();
 
   // Update layout to shrink margin
   updateChartLayout();
@@ -370,6 +388,97 @@ function updateElevationChartUnits(isImperial) {
     drawEmptyAxes();
   }
 }
+
+// --- Event Handlers for Chart Hover ---
+
+/**
+ * Handles mousemove and touchmove events on the chart.
+ * Finds the corresponding data point and shows the marker and line.
+ * @param {Event} event The mouse or touch event
+ */
+function onHoverMove(event) {
+  // Prevent default behavior like page scrolling on touch
+  event.preventDefault();
+  // Stop the event from bubbling up to the map (important for touch drag)
+  event.stopPropagation();
+
+  if (!currentData || currentData.length === 0) return;
+
+  // Get the X coordinate of the pointer relative to the chartGroup
+  const [pointerX] = d3.pointer(event, chartGroup.node());
+
+  // --- Clamp pointerX to the chart bounds [0, width] ---
+  const clampedPointerX = Math.max(0, Math.min(width, pointerX));
+
+  // Convert the *clamped* X coordinate back to a "distance" value
+  const hoverDistance = x.invert(clampedPointerX);
+
+  // Use D3's bisector to find the *index* of the closest data point
+  const bisector = d3.bisector((d) => d.distance).left;
+  let index = bisector(currentData, hoverDistance);
+
+  // Ensure index stays within bounds [0, currentData.length - 1]
+  // and handle potential edge cases with bisector results.
+  if (index >= currentData.length) {
+    index = currentData.length - 1;
+  } else if (index > 0) {
+    // Standard bisector check: is the previous point actually closer?
+    const distA = hoverDistance - currentData[index - 1].distance;
+    const distB = currentData[index].distance - hoverDistance;
+    if (distA < distB) {
+      index = index - 1;
+    }
+  } else {
+    // If index is 0, ensure it's not actually closer to index 1 (unlikely with clamping, but safe)
+    if (currentData.length > 1) {
+      const distA = hoverDistance - currentData[0].distance; // Should be >= 0
+      const distB = currentData[1].distance - hoverDistance;
+      if (distB < distA) {
+        index = 1;
+      } else {
+        index = 0; // Stick to the first point
+      }
+    } else {
+      index = 0; // Only one point
+    }
+  }
+
+  const dataPoint = currentData[index];
+
+  if (dataPoint) {
+    // Update the vertical line's position and show it
+    verticalLine
+      .attr("x1", x(dataPoint.distance)) // Use the actual data point's distance
+      .attr("x2", x(dataPoint.distance)) // Use the actual data point's distance
+      .attr("y1", 0) // <<<<< MODIFICATION: Start at top >>>>>
+      .attr("y2", height) // <<<<< MODIFICATION: End at bottom >>>>>
+      .style("display", "block");
+
+    // Tell the map to show the marker at this point's lat/lng
+    if (window.mapInteractions) {
+      window.mapInteractions.showElevationMarker(dataPoint.latlng);
+    }
+  } else {
+    // Should not happen with clamping, but hide just in case
+    onHoverEnd();
+  }
+}
+
+/**
+ * Handles mouseout and touchend events on the chart.
+ * Hides the marker and the vertical line.
+ */
+function onHoverEnd() {
+  // Hide the vertical line
+  if (verticalLine) {
+    verticalLine.style("display", "none");
+  }
+  // Tell the map to hide the marker
+  if (window.mapInteractions) {
+    window.mapInteractions.hideElevationMarker();
+  }
+}
+// --- END Event Handlers ---
 
 // Export the functions we want other files to use
 window.elevationProfile = {

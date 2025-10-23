@@ -1,5 +1,46 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
+// --- Marker for elevation profile hover ---
+let elevationHoverMarker = null;
+window.mapInteractions = {};
+
+/**
+ * Displays or moves a temporary circle marker on the map, usually
+ * triggered by hovering over the elevation profile.
+ * @param {L.LatLng} latlng The geographical coordinate to show the marker at.
+ */
+window.mapInteractions.showElevationMarker = function (latlng) {
+  if (!latlng) return;
+
+  const markerStyle = {
+    color: "var(--color-white)",
+    weight: 2,
+    fillColor: "var(--color-red)",
+    fillOpacity: 1,
+    radius: 6,
+  };
+
+  if (elevationHoverMarker) {
+    // If it already exists, just move it
+    elevationHoverMarker.setLatLng(latlng);
+  } else {
+    // Otherwise, create it and add it to the map
+    elevationHoverMarker = L.circleMarker(latlng, markerStyle).addTo(map);
+  }
+  // Ensure it's always on top
+  elevationHoverMarker.bringToFront();
+};
+
+/**
+ * Hides and removes the temporary elevation hover marker from the map.
+ */
+window.mapInteractions.hideElevationMarker = function () {
+  if (elevationHoverMarker) {
+    map.removeLayer(elevationHoverMarker);
+    elevationHoverMarker = null;
+  }
+};
+
 // Creates a marker icon
 function createMarkerIcon(
   color,
@@ -26,6 +67,9 @@ function updateMarkerOutlinePosition() {
 }
 
 function deselectCurrentItem() {
+  // Hide the elevation hover marker
+  if (window.mapInteractions) window.mapInteractions.hideElevationMarker();
+
   if (temporarySearchMarker) {
     map.removeLayer(temporarySearchMarker);
     temporarySearchMarker = null;
