@@ -1,26 +1,28 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
-//
-// --- NEW: D3 Elevation Chart Module ---
-//
-// This module will contain all logic for our custom D3 elevation chart.
+
+// --- D3 Elevation Chart Module ---
+// This module contains all logic for our custom D3 elevation chart.
+// It uses an HTML <foreignObject> to render the summary text,
+// allowing for dynamic text wrapping and automatic margin adjustment.
 
 // --- 1. Module-level variables ---
-// We define these here so all functions in this file can access them.
 let svg, chartGroup;
 let x, y, xAxis, yAxis; // D3 scales and axes
-let width, height; // Chart dimensions
+let width, height; // Chart dimensions (dynamically calculated)
 let currentData = [];
 let useImperial = false;
 let chartTargetDivId;
+let totalWidth, totalHeight; // Container dimensions
 
-// --- MODIFICATION: Responsive & Margin constants ---
+// --- Responsive & Margin constants ---
 const BREAKPOINT_NARROW = 768; // 768px matches your style.css
 const MARGIN_BOTTOM_NARROW = 60;
 const MARGIN_BOTTOM_WIDE = 30;
-// --- END MODIFICATION ---
+const SUMMARY_PADDING_BOTTOM = 10; // Space between summary text and chart
+const MIN_TOP_MARGIN = 10; // Minimum top margin even if text is empty
 
 const margin = {
-  top: 30,
+  // top is now set dynamically
   right: 65,
   bottom: MARGIN_BOTTOM_WIDE, // Default to wide margin
   left: 55,
@@ -29,7 +31,6 @@ const margin = {
 /**
  * --- 2. Data Formatting Helper ---
  * Converts our Leaflet data (L.latLng(lat, lng, alt)) into what D3 needs.
- * D3 works best with simple objects, like:
  * [ {distance: 0, elevation: 100}, {distance: 50, elevation: 110}, ... ]
  */
 function formatDataForD3(pointsWithElev) {
@@ -63,8 +64,11 @@ function formatDataForD3(pointsWithElev) {
 }
 
 /**
- * --- (NEW HELPER) 2.5. Margin Helper ---
- * Updates the chart's bottom margin based on the container width.
+ * --- 3. Layout & Drawing Helpers ---
+ */
+
+/**
+ * (HELPER) Updates the chart's bottom margin based on the container width.
  * @param {number} containerWidth The current width of the target div.
  */
 function updateBottomMargin(containerWidth) {
@@ -73,8 +77,125 @@ function updateBottomMargin(containerWidth) {
 }
 
 /**
- * --- 3. The Public API ---
- * These are the functions we'll call from our other files.
+ * (HELPER) Measures the summary text and recalculates ALL chart dimensions.
+ * This is the core of the dynamic layout.
+ */
+function updateChartLayout() {
+  if (!svg || !chartTargetDivId) return;
+
+  const targetDiv = document.getElementById(chartTargetDivId);
+  if (!targetDiv) return;
+
+  totalWidth = targetDiv.clientWidth;
+  totalHeight = targetDiv.clientHeight;
+
+  if (totalHeight === 0 || totalWidth === 0) return;
+
+  // 1. Update bottom margin based on width
+  updateBottomMargin(totalWidth);
+
+  // 2. Calculate available width for chart & summary
+  width = totalWidth - margin.left - margin.right;
+  if (width < 0) width = 0;
+
+  // 3. Update the summary container's width to match the chart
+  const summaryContainer = svg.select("#d3-summary-container");
+  summaryContainer.attr("width", width);
+
+  // 4. Measure the *actual* height of the HTML text inside
+  const summaryDiv = svg.select("#d3-summary-html").node();
+  const summaryHeight = summaryDiv ? summaryDiv.getBoundingClientRect().height : 0;
+
+  // 5. Set dynamic top margin based on text height
+  margin.top = Math.max(MIN_TOP_MARGIN, summaryHeight + SUMMARY_PADDING_BOTTOM);
+
+  // 6. Calculate final chart height
+  height = totalHeight - margin.top - margin.bottom;
+  if (height < 0) height = 0;
+
+  // 7. Update ALL SVG/D3 components with new dimensions
+  svg.attr("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
+  chartGroup.attr("transform", `translate(${margin.left}, ${margin.top})`);
+  summaryContainer.attr("height", margin.top); // Make FO container fit content
+
+  x.range([0, width]);
+  y.range([height, 0]);
+
+  yAxis.attr("transform", `translate(${width}, 0)`);
+  xAxis.attr("transform", `translate(0, ${height})`);
+}
+
+/**
+ * (HELPER) Draws the chart area path and axes based on currentData.
+ */
+function redrawChartData() {
+  if (currentData.length < 2) {
+    drawEmptyAxes();
+    return;
+  }
+
+  // 1. Update domain (min/max) of our scales
+  const maxDistance = currentData[currentData.length - 1].distance;
+  const [minElev, maxElev] = d3.extent(currentData, (d) => d.elevation);
+
+  x.domain([0, maxDistance]);
+  y.domain([minElev, maxElev]);
+
+  // 2. Create the "Area Generator"
+  const areaGenerator = d3
+    .area()
+    .x((d) => x(d.distance))
+    .y0(height) // Bottom of the area
+    .y1((d) => y(d.elevation)); // Top of the area
+
+  // 3. Bind the data and draw the path
+  chartGroup.select(".altitude-area").datum(currentData).attr("d", areaGenerator);
+
+  // 4. Update the Axes
+  const distanceFormatter = (meters) => formatDistance(meters);
+  const elevationFormatter = (meters) => {
+    const feet = meters * 3.28084;
+    return useImperial ? `${Math.round(feet)} ft` : `${Math.round(meters)} m`;
+  };
+
+  // X-Axis
+  const tickValues = [0, maxDistance / 2, maxDistance];
+  xAxis.call(d3.axisBottom(x).tickValues(tickValues).tickFormat(distanceFormatter));
+  xAxis.selectAll(".tick text").style("text-anchor", (d, i, nodes) => {
+    if (i === 0) return "start";
+    if (i === nodes.length - 1) return "end";
+    return "middle";
+  });
+
+  // Y-Axis
+  const yTickValues = [minElev, (minElev + maxElev) / 2, maxElev];
+  yAxis.call(d3.axisRight(y).tickValues(yTickValues).tickFormat(elevationFormatter));
+  yAxis
+    .selectAll(".tick text")
+    .attr("dy", null)
+    .style("dominant-baseline", (d) => {
+      if (d === minElev) return "baseline";
+      if (d === maxElev) return "hanging";
+      return "middle";
+    });
+}
+
+/**
+ * (HELPER) Draws empty axes when no data is present.
+ */
+function drawEmptyAxes() {
+  const elevationFormatter = (meters) => {
+    const feet = meters * 3.28084;
+    return useImperial ? `${Math.round(feet)} ft` : `${Math.round(meters)} m`;
+  };
+  xAxis.call(d3.axisBottom(x).ticks(0).tickFormat(""));
+  // Draw an empty Y axis to maintain layout
+  yAxis.call(d3.axisRight(y).ticks(4).tickFormat(elevationFormatter));
+  yAxis.selectAll("text").text("");
+}
+
+/**
+ * --- 4. The Public API ---
  */
 
 /**
@@ -87,18 +208,7 @@ function createElevationChart(targetDivId, isImperial) {
   chartTargetDivId = targetDivId;
   const targetDiv = document.getElementById(targetDivId);
 
-  // Get dimensions from the container
-  const totalWidth = targetDiv.clientWidth;
-  const totalHeight = targetDiv.clientHeight;
-
-  // --- MODIFICATION: Set initial bottom margin ---
-  updateBottomMargin(totalWidth);
-  // --- END MODIFICATION ---
-
-  width = totalWidth - margin.left - margin.right;
-  height = totalHeight - margin.top - margin.bottom;
-
-  // Clear any old content (like the old plugin's SVG)
+  // Clear any old content
   d3.select(targetDiv).html("");
 
   // Create the main SVG element
@@ -108,113 +218,59 @@ function createElevationChart(targetDivId, isImperial) {
     .attr("class", "d3-elevation-svg")
     .attr("width", "100%")
     .attr("height", "100%")
-    .attr("viewBox", `0 0 ${totalWidth} ${totalHeight}`) // Set initial coordinate system
     .attr("preserveAspectRatio", "xMinYMin meet");
 
-  // Create a 'g' (group) element to hold the chart, applying margins
-  chartGroup = svg
-    .append("g")
-    .attr("class", "d3-chart-group")
-    .attr("transform", `translate(${margin.left}, ${margin.top})`);
+  // --- Add HTML Summary Container ---
+  // We add this *before* the chartGroup
+  svg
+    .append("foreignObject")
+    .attr("id", "d3-summary-container")
+    .attr("x", margin.left) // Align with chart group
+    .attr("y", 0) // Start at the very top
+    .attr("width", 1) // Temp, will be set by updateChartLayout
+    .attr("height", 1) // Temp, will be set by updateChartLayout
+    .append("xhtml:div")
+    .attr("id", "d3-summary-html")
+    .style("color", "var(--text-color)")
+    .style("font-size", "12px")
+    .style("line-height", "1.4") // A bit of space between lines
+    .style("text-align", "center")
+    .style("width", "100%") // Ensure it fills the foreignObject
+    .style("padding-top", "5px");
 
-  // --- Initialize Scales ---
-  // X scale (distance)
-  x = d3.scaleLinear().range([0, width]);
-  // Y scale (elevation)
-  y = d3.scaleLinear().range([height, 0]);
+  // Create a 'g' (group) element to hold the chart
+  chartGroup = svg.append("g").attr("class", "d3-chart-group");
+  // transform is set by updateChartLayout
+
+  // --- Initialize Scales (range set by layout) ---
+  x = d3.scaleLinear();
+  y = d3.scaleLinear();
 
   // Add a <path> element for our area chart.
   chartGroup.append("path").attr("class", "altitude-area");
 
-  // --- Initialize Axes ---
-  // X axis (at the bottom)
-  xAxis = chartGroup
-    .append("g")
-    .attr("class", "x axis")
-    .attr("transform", `translate(0, ${height})`); // Position at bottom
+  // --- Initialize Axes (position set by layout) ---
+  xAxis = chartGroup.append("g").attr("class", "x axis");
+  yAxis = chartGroup.append("g").attr("class", "y axis");
 
-  // Y axis (at the right)
-  yAxis = chartGroup
-    .append("g")
-    .attr("class", "y axis")
-    .attr("transform", `translate(${width}, 0)`); // Position at right
-
-  // Add summary text element
-  chartGroup
-    .append("text")
-    .attr("id", "d3-summary-text")
-    .attr("x", width / 2) // Center it
-    .attr("y", -10) // Position above the chart
-    .attr("text-anchor", "middle")
-    .attr("fill", "var(--text-color)")
-    .attr("font-size", "12px");
+  // --- Perform initial layout ---
+  updateChartLayout();
+  drawEmptyAxes();
 
   // --- Add Resize Listener ---
   let debounceTimer;
   window.addEventListener("resize", () => {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(handleResize, 100);
+    debounceTimer = setTimeout(() => {
+      updateChartLayout();
+      redrawChartData();
+    }, 100);
   });
 }
 
 /**
- * --- 4. Resize Handler ---
- * Recalculates dimensions and redraws the chart when the window size changes.
- */
-function handleResize() {
-  // Guard clause: Do nothing if the chart hasn't been created yet
-  if (!svg || !chartTargetDivId) {
-    return;
-  }
-
-  // --- 1. Get new dimensions ---
-  const targetDiv = document.getElementById(chartTargetDivId);
-  if (!targetDiv) return;
-
-  const newTotalWidth = targetDiv.clientWidth;
-  const newTotalHeight = targetDiv.clientHeight;
-
-  // --- *** MODIFICATION: Guard Clause *** ---
-  // If the chart is hidden (height: 0), don't recalculate.
-  if (newTotalHeight === 0) {
-    return;
-  }
-  // --- *** END MODIFICATION *** ---
-
-  // --- MODIFICATION: Update bottom margin ---
-  updateBottomMargin(newTotalWidth);
-  // --- END MODIFICATION ---
-
-  // Update module-level dimensions
-  width = newTotalWidth - margin.left - margin.right;
-  height = newTotalHeight - margin.top - margin.bottom;
-
-  // --- 2. Update SVG and Scales ---
-  svg.attr("viewBox", `0 0 ${newTotalWidth} ${newTotalHeight}`);
-  x.range([0, width]);
-  y.range([height, 0]);
-
-  // --- 3. Reposition static elements ---
-  yAxis.attr("transform", `translate(${width}, 0)`);
-  xAxis.attr("transform", `translate(0, ${height})`);
-  chartGroup.select("#d3-summary-text").attr("x", width / 2);
-
-  // --- 4. Redraw data ---
-  if (currentData.length > 0) {
-    drawElevationProfile(currentData.map((d) => d.latlng));
-  } else {
-    const elevationFormatter = (meters) => {
-      const feet = meters * 3.28084;
-      return useImperial ? `${Math.round(feet)} ft` : `${Math.round(meters)} m`;
-    };
-    xAxis.call(d3.axisBottom(x).ticks(0).tickFormat(""));
-    yAxis.call(d3.axisRight(y).ticks(4).tickFormat(elevationFormatter));
-    yAxis.selectAll("text").text("");
-  }
-}
-
-/**
  * Draws the elevation profile on the chart.
+ * This is the main function to call when data changes.
  * @param {Array<L.LatLng>} pointsWithElev The raw data from fetchElevationForPath
  */
 function drawElevationProfile(pointsWithElev) {
@@ -224,95 +280,51 @@ function drawElevationProfile(pointsWithElev) {
     return;
   }
 
-  // --- 1. Update domain (min/max) of our scales ---
-  const maxDistance = currentData[currentData.length - 1].distance;
+  // --- 1. Calculate Summary Stats ---
   const [minElev, maxElev] = d3.extent(currentData, (d) => d.elevation);
-  // const elevPadding = (maxElev - minElev) * 0.1; // 10% padding // MODIFICATION: Removed padding
-
-  x.domain([0, maxDistance]);
-  y.domain([minElev, maxElev]); // MODIFICATION: Use exact min/max
-
-  // --- 2. Create the "Area Generator" ---
-  const areaGenerator = d3
-    .area()
-    .x((d) => x(d.distance))
-    .y0(height) // Bottom of the area
-    .y1((d) => y(d.elevation)); // Top of the area
-
-  // --- 3. Bind the data and draw the path ---
-  chartGroup.select(".altitude-area").datum(currentData).attr("d", areaGenerator);
-
-  // --- 4. Update the Axes ---
-  const distanceFormatter = (meters) => {
-    return formatDistance(meters);
-  };
-
-  const elevationFormatter = (meters) => {
-    const feet = meters * 3.28084;
-    return useImperial ? `${Math.round(feet)} ft` : `${Math.round(meters)} m`;
-  };
-
-  // --- X-Axis with custom ticks and alignment ---
-  const tickValues = [0, maxDistance / 2, maxDistance];
-
-  xAxis.call(d3.axisBottom(x).tickValues(tickValues).tickFormat(distanceFormatter));
-
-  xAxis.selectAll(".tick text").style("text-anchor", (d, i, nodes) => {
-    if (i === 0) {
-      return "start"; // First tick (0)
-    } else if (i === nodes.length - 1) {
-      return "end"; // Last tick (max distance)
-    } else {
-      return "middle"; // Middle tick
-    }
-  });
-  // --- END X-Axis ---
-
-  // --- MODIFICATION: Update Y-Axis with custom ticks and alignment ---
-  // Use the minElev and maxElev variables we already found
-  const yTickValues = [minElev, (minElev + maxElev) / 2, maxElev];
-
-  yAxis.call(d3.axisRight(y).tickValues(yTickValues).tickFormat(elevationFormatter));
-
-  // Apply custom vertical text alignment
-  // Note: 'text-anchor' is already 'start' (left-aligned) by default for axisRight
-  yAxis
-    .selectAll(".tick text")
-    .attr("dy", null) // <-- Remove D3's default vertical nudge
-    .style("dominant-baseline", (d) => {
-      // Check against the tick value 'd'
-      if (d === minElev) {
-        return "baseline"; // Aligns text so its baseline is on the tick
-      } else if (d === maxElev) {
-        return "hanging"; // Aligns text so it "hangs" from the tick
-      } else {
-        return "middle"; // "centered" alignment
-      }
-    });
-  // --- END MODIFICATION ---
-
-  // --- 5. Update Summary Text ---
   const ascent = d3.sum(currentData, (d, i) => {
     if (i === 0) return 0;
     const diff = d.elevation - currentData[i - 1].elevation;
     return diff > 0 ? diff : 0;
   });
-
   const descent = d3.sum(currentData, (d, i) => {
     if (i === 0) return 0;
     const diff = d.elevation - currentData[i - 1].elevation;
     return diff < 0 ? -diff : 0;
   });
 
-  chartGroup
-    .select("#d3-summary-text")
-    .text(
-      `Ascent: ${elevationFormatter(ascent)} · Descent: ${elevationFormatter(
-        descent
-      )} · Highest point: ${elevationFormatter(maxElev)} · Lowest point: ${elevationFormatter(
-        minElev
-      )}`
+  const elevationFormatter = (meters) => {
+    const feet = meters * 3.28084;
+    return useImperial ? `${Math.round(feet)} ft` : `${Math.round(meters)} m`;
+  };
+
+  // --- 2. Update Summary HTML ---
+  // This is what makes the solution flexible.
+  // Each item is in a span with:
+  // - 'display: inline-block': Allows margins and wrapping
+  // - 'white-space: nowrap': Keeps the content of the span ("Ascent: 123 m") together
+  // - 'margin: 0 4px': Adds horizontal spacing (replaces &nbsp;)
+  const summaryDiv = svg.select("#d3-summary-html");
+  if (summaryDiv) {
+    // --- *** THIS IS THE FIX *** ---
+    const itemStyle = "display: inline-block; white-space: nowrap; margin: 0 4px;";
+
+    // We no longer use &nbsp;&nbsp; at all.
+    // The browser will now wrap the <span> blocks.
+    summaryDiv.html(
+      `<span style="${itemStyle}">Ascent: ${elevationFormatter(ascent)}</span>` +
+        `<span style="${itemStyle}">Descent: ${elevationFormatter(descent)}</span>` +
+        `<span style="${itemStyle}">Highest point: ${elevationFormatter(maxElev)}</span>` +
+        `<span style="${itemStyle}">Lowest point: ${elevationFormatter(minElev)}</span>`
     );
+    // --- *** END OF FIX *** ---
+  }
+
+  // --- 3. Update Layout & Redraw Chart ---
+  // This is CRITICAL: We update the layout *after* setting the text,
+  // so the margin can be calculated based on the new text height.
+  updateChartLayout();
+  redrawChartData();
 }
 
 /**
@@ -320,10 +332,21 @@ function drawElevationProfile(pointsWithElev) {
  */
 function clearElevationProfile() {
   currentData = [];
+
+  // Clear summary text
+  const summaryDiv = svg.select("#d3-summary-html");
+  if (summaryDiv) {
+    summaryDiv.html("");
+  }
+
+  // Clear chart area
   chartGroup.select(".altitude-area").attr("d", null);
-  xAxis.call(d3.axisBottom(x).ticks(0).tickFormat(""));
-  yAxis.call(d3.axisRight(y).ticks(0).tickFormat(""));
-  chartGroup.select("#d3-summary-text").text("");
+
+  // Update layout to shrink margin
+  updateChartLayout();
+
+  // Draw empty axes
+  drawEmptyAxes();
 }
 
 /**
@@ -333,7 +356,12 @@ function clearElevationProfile() {
 function updateElevationChartUnits(isImperial) {
   useImperial = isImperial;
   if (currentData.length > 0) {
+    // Re-run the full draw function to update text and scales
     drawElevationProfile(currentData.map((d) => d.latlng));
+  } else {
+    // Just redraw the empty axes with the new unit format
+    updateChartLayout();
+    drawEmptyAxes();
   }
 }
 
