@@ -13,6 +13,7 @@ let currentData = [];
 let useImperial = false;
 let chartTargetDivId;
 let totalWidth, totalHeight; // Container dimensions
+let currentRealDistance = 0;
 
 // --- D3 elements for hover interaction ---
 let verticalLine, hoverOverlay;
@@ -325,13 +326,32 @@ function createElevationChart(targetDivId, isImperial) {
  * Draws the elevation profile on the chart.
  * This is the main function to call when data changes.
  * @param {Array<L.LatLng>} pointsWithElev The raw data from fetchElevationForPath
+ * @param {number} [realDistance] The optional, true distance from the original path
  */
-function drawElevationProfile(pointsWithElev) {
+function drawElevationProfile(pointsWithElev, realDistance) {
+  // <-- MODIFIED SIGNATURE
   currentData = formatDataForD3(pointsWithElev);
   if (currentData.length < 2) {
     clearElevationProfile();
     return;
   }
+
+  // --- START: SCALING LOGIC ---
+  currentRealDistance = realDistance || 0; // Store the real distance
+  const calculatedMaxDistance =
+    currentData.length > 0 ? currentData[currentData.length - 1].distance : 0;
+
+  // Scale the distance of all points in currentData if a valid realDistance was provided
+  if (currentRealDistance > 0 && calculatedMaxDistance > 0) {
+    const scaleFactor = currentRealDistance / calculatedMaxDistance;
+    if (scaleFactor !== 1) {
+      // Only scale if necessary
+      for (let i = 1; i < currentData.length; i++) {
+        currentData[i].distance *= scaleFactor;
+      }
+    }
+  }
+  // --- END: SCALING LOGIC ---
 
   // --- 1. Calculate Summary Stats ---
   const [minElev, maxElev] = d3.extent(currentData, (d) => d.elevation);
@@ -373,6 +393,7 @@ function drawElevationProfile(pointsWithElev) {
  */
 function clearElevationProfile() {
   currentData = [];
+  currentRealDistance = 0;
 
   // Clear summary text
   const summaryDiv = svg.select("#d3-summary-html");
@@ -403,7 +424,11 @@ function updateElevationChartUnits(isImperial) {
   useImperial = isImperial;
   if (currentData.length > 0) {
     // Re-run the full draw function to update text and scales
-    drawElevationProfile(currentData.map((d) => d.latlng));
+    // Pass the original latlngs AND our stored, correct distance
+    drawElevationProfile(
+      currentData.map((d) => d.latlng),
+      currentRealDistance
+    );
   } else {
     // Just redraw the empty axes with the new unit format
     updateChartLayout();

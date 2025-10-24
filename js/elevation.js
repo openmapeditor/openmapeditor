@@ -235,9 +235,15 @@ async function addElevationProfileForLayer(layer) {
 
   let latlngs = layer instanceof L.Polyline ? layer.getLatLngs() : layer.getLatLngs()[0];
   if (latlngs?.length > 0) {
+    // 1. Calculate the REAL distance using the same function as the info panel
+    const realDistance = calculatePathDistance(layer);
+
+    // 2. Fetch the elevation data (using the downsampled path)
     const pointsWithElev = await fetchElevationForPath(latlngs);
+
     if (pointsWithElev?.length > 0) {
-      window.elevationProfile.drawElevationProfile(pointsWithElev);
+      // 3. Pass BOTH the elevation points AND the real distance to the chart
+      window.elevationProfile.drawElevationProfile(pointsWithElev, realDistance);
     } else {
       console.warn("No valid elevation data.");
       window.elevationProfile.clearElevationProfile();
