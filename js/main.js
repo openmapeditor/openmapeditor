@@ -1399,7 +1399,7 @@ function initializeMap() {
   });
 
   map.on(L.Draw.Event.EDITSTART, () => {
-    isDeleteMode = true;
+    isEditMode = true;
     deselectCurrentItem();
     if (selectedPathOutline) map.removeLayer(selectedPathOutline);
     if (selectedMarkerOutline) map.removeLayer(selectedMarkerOutline);
