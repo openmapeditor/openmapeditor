@@ -12,19 +12,18 @@ const elevationCache = new Map();
  */
 function clearElevationCache() {
   elevationCache.clear();
-  if (elevationControl) {
-    elevationControl.clear();
-    // Also, hide the elevation div if it's visible
-    const elevationDiv = document.getElementById("elevation-div");
-    if (elevationDiv) {
-      elevationDiv.style.visibility = "hidden";
-      isElevationProfileVisible = false;
-    }
-    updateElevationToggleIconColor();
+  window.elevationProfile.clearElevationProfile();
+  // Also, hide the elevation div if it's visible
+  const elevationDiv = document.getElementById("elevation-div");
+  if (elevationDiv) {
+    elevationDiv.style.visibility = "hidden";
+    isElevationProfileVisible = false;
   }
+  updateElevationToggleIconColor();
 }
 
-async function fetchElevationForPathGoogle(latlngs) {
+async function fetchElevationForPathGoogle(latlngs, realDistance) {
+  // <-- 1. Accept realDistance
   console.log("Fetching elevation data from: Google");
   if (!latlngs || latlngs.length < 2) return latlngs;
 
@@ -46,8 +45,45 @@ async function fetchElevationForPathGoogle(latlngs) {
   const BATCH_SIZE = 512;
   let allResults = [];
 
-  let pointsToSend = resamplePath(latlngs, ELEVATION_PROVIDER_CONFIG.google.limit);
+  // --- START: "SMARTER" HYBRID LOGIC (FIXED) ---
 
+  // 1. Define our desired resolution. 0.04 = 1 point every 25 meters.
+  const POINTS_PER_METER = 0.04;
+
+  // 2. Set a safety cap. We won't resample to more than 10,000 points.
+  const MAX_RESAMPLE_POINTS = 10000;
+
+  // 3. Use the passed-in realDistance
+  const totalDistance = realDistance; // <-- 2. Use the passed-in value
+  const desiredPoints = Math.floor(totalDistance * POINTS_PER_METER);
+  const actualPoints = latlngs.length;
+
+  let pointsToSend;
+
+  // 4. Compare and Decide
+  if (actualPoints < desiredPoints && desiredPoints > 2) {
+    // Path is SIMPLE. We need to upsample it.
+    const pointsToCreate = Math.min(desiredPoints, MAX_RESAMPLE_POINTS);
+
+    console.log(
+      `[Elevation] Path is simple (${actualPoints} points over ${formatDistance(
+        totalDistance
+      )}). Upsampling to ${pointsToCreate} points (1 per ~${(
+        totalDistance / pointsToCreate
+      ).toFixed(1)}m).`
+    );
+
+    pointsToSend = resamplePath(latlngs, pointsToCreate);
+  } else {
+    // Path is COMPLEX or very short. Send all original points.
+    console.log(
+      `[Elevation] Path is complex (${actualPoints} points). Sending all original points in batches for maximum accuracy.`
+    );
+    pointsToSend = latlngs;
+  }
+  // --- END: "SMARTER" HYBRID LOGIC (FIXED) ---
+
+  // This batching loop now works for all cases.
   for (let i = 0; i < pointsToSend.length; i += BATCH_SIZE) {
     const batch = pointsToSend.slice(i, i + BATCH_SIZE);
     try {
@@ -90,7 +126,10 @@ async function fetchElevationForPathMapbox(latlngs) {
     return null;
   }
 
-  let pointsToSend = resamplePath(latlngs, ELEVATION_PROVIDER_CONFIG.mapbox.limit);
+  // This provider does not support batching, so we MUST always resample.
+  const limit = ELEVATION_PROVIDER_CONFIG.mapbox.limit;
+  console.log(`[Elevation] Resampling path to ${limit} points for Mapbox API limit.`);
+  let pointsToSend = resamplePath(latlngs, limit);
 
   const promises = pointsToSend.map((p) => {
     // CORRECTED: Added &layers=contour and &limit=50 to the URL.
@@ -153,7 +192,10 @@ async function fetchElevationForPathOpenTopoData(latlngs) {
     }
   });
 
-  let pointsToSend = resamplePath(uniquePoints, ELEVATION_PROVIDER_CONFIG.openTopo.limit);
+  // This provider has URL length limits and no batching, so we MUST always resample.
+  const limit = ELEVATION_PROVIDER_CONFIG.openTopo.limit;
+  console.log(`[Elevation] Resampling path to ${limit} points for OpenTopoData API limit.`);
+  let pointsToSend = resamplePath(uniquePoints, limit);
 
   const locations = pointsToSend.map((p) => `${p.lat},${p.lng}`).join("|");
   // We prepend a CORS proxy to the original URL to bypass the browser's security block.
@@ -188,7 +230,8 @@ async function fetchElevationForPathOpenTopoData(latlngs) {
 }
 
 // Main dispatcher function for fetching elevation data.
-async function fetchElevationForPath(latlngs) {
+async function fetchElevationForPath(latlngs, realDistance) {
+  // <-- 3. Accept realDistance
   const cacheKey = JSON.stringify(latlngs.map((p) => [p.lat.toFixed(5), p.lng.toFixed(5)]));
 
   if (elevationCache.has(cacheKey)) {
@@ -198,7 +241,7 @@ async function fetchElevationForPath(latlngs) {
 
   let pointsWithElev;
   if (elevationProvider === "google") {
-    pointsWithElev = await fetchElevationForPathGoogle(latlngs);
+    pointsWithElev = await fetchElevationForPathGoogle(latlngs, realDistance); // <-- 4. Pass it
   } else if (elevationProvider === "mapbox") {
     pointsWithElev = await fetchElevationForPathMapbox(latlngs);
   } else {
@@ -235,12 +278,18 @@ async function addElevationProfileForLayer(layer) {
 
   let latlngs = layer instanceof L.Polyline ? layer.getLatLngs() : layer.getLatLngs()[0];
   if (latlngs?.length > 0) {
-    const pointsWithElev = await fetchElevationForPath(latlngs);
+    // 1. Calculate the REAL distance using the same function as the info panel
+    const realDistance = calculatePathDistance(layer);
+
+    // 2. Fetch the elevation data (this will now use the hybrid logic)
+    const pointsWithElev = await fetchElevationForPath(latlngs, realDistance); // <-- 5. Pass it here
+
     if (pointsWithElev?.length > 0) {
-      elevationControl.addData(L.polyline(pointsWithElev).toGeoJSON());
+      // 3. Pass BOTH the elevation points AND the real distance to the chart
+      window.elevationProfile.drawElevationProfile(pointsWithElev, realDistance);
     } else {
-      console.warn("No valid elevation data. Adding flat profile.");
-      elevationControl.addData(layer.toGeoJSON());
+      console.warn("No valid elevation data.");
+      window.elevationProfile.clearElevationProfile();
     }
   }
 }

@@ -935,10 +935,10 @@ a#info-panel-strava-link:hover {
   z-index: 4000;
 }
 
-/* Style for the elevation chart container */
+/* --- START: Elevation Profile Styles --- */
 #elevation-div {
   bottom: 0px;
-  height: auto;
+  height: 250px;
   left: 0px;
   position: absolute;
   text-align: center;
@@ -946,6 +946,7 @@ a#info-panel-strava-link:hover {
   width: 100%;
   z-index: 1000;
   border-top: 1px solid var(--border-color);
+  background-color: var(--background-color);
 }
 
 /* Collapse the elevation panel's height when it's hidden via its inline style.
@@ -955,108 +956,53 @@ a#info-panel-strava-link:hover {
   height: 0;
 }
 
-.elevation-control .background {
-  height: 200px !important;
-  /* For testing: position the elevation chart more to the left */
-  /*
-  position: relative;
-  left: 45px;
-  width: calc(100vw - 385px);
-  */
-}
-
-.elevation-summary {
-  background-color: var(--background-color);
-  color: var(--text-color);
-  height: auto;
-  margin: 0;
-  padding-top: 0;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-bottom: 20px;
-}
-
-.elevation-summary .summaryvalue {
-  font-weight: normal;
-}
-
-/* Styles for the graphics in the elevation chart background SVG */
-.elevation-control .ruler {
-  display: none;
-}
-
-.elevation-control .grid .tick line {
-  stroke: var(--background2-color);
-  stroke-width: 1;
-}
-
-.elevation-control .axis path,
-.elevation-control .axis line,
-.elevation-control .mouse-focus-line {
-  stroke: var(--text-color);
-  stroke-width: 1;
-}
-
-.elevation-control .axis text {
-  fill: var(--text-color);
-  stroke: none;
-  opacity: 1;
-}
-
-/* Hide time axis at top of elevation chart */
-g.x.axis.top.time {
-  display: none;
-}
-
-/* Hide tooltip in elevation chart */
-.mouse-focus-label {
-  /* display: none; */
-}
-
-.mouse-focus-line {
-  /* display: none; */
-}
-
-/* Hide altitude text below the elevation chart  */
-.legend {
-  display: none;
-}
-
-/* Hide avg elevation in elevation summary */
-.avgele {
-  display: none;
-}
-
-.custom-theme.elevation-control .area path.altitude,
-.custom-theme .legend-altitude rect.area {
+/* Styles for d3 elevation chart */
+.altitude-area {
   fill: var(--color-red);
   fill-opacity: 0.5;
   stroke: var(--color-red);
   stroke-width: 1.5;
 }
-.custom-theme.elevation-control .area path.slope,
-.custom-theme .legend-slope rect {
-  fill-opacity: 1;
-  stroke: var(--color-black);
-  stroke-width: 1.5;
+
+.axis path,
+.axis line {
+  stroke: var(--text-color);
+  stroke-width: 1;
 }
-.custom-theme.height-focus.circle-lower {
-  fill: var(--color-white);
+
+.axis text {
+  fill: var(--text-color);
+  font-size: 10px;
 }
-.custom-theme.elevation-polyline {
-  stroke: var(--color-red);
-  stroke-opacity: 1;
-  stroke-width: 2;
+
+/* This class is on the <svg> element itself */
+.d3-elevation-svg {
+  /* You can add styles like background or border here */
+  /* example: background-color: rgba(0, 0, 255, 0.1); */
 }
-.custom-theme.elevation-polyline--segments {
-  stroke: var(--color-yellow);
-  stroke-dasharray: 4;
-  stroke-width: 2;
+
+/* This class is on the <g> element that contains the chart */
+.d3-chart-group {
+  /* This element is positioned by the 'margin' object in d3-elevation.js */
 }
-#elevation-div,
-.elevation-control .background {
-  background-color: var(--background-color);
+
+.elevation-hover-tooltip-path {
+  fill: var(--background-color);
+  stroke: var(--text-color);
+  stroke-width: 1px;
 }
+
+.elevation-hover-tooltip-text {
+  fill: var(--text-color);
+  font-family: "Roboto", sans-serif !important; /* Override D3 defaults */
+  font-size: 10px;
+  /* Prevent text from being selected on drag */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+/* --- END: Elevation Profile Styles --- */
 
 /* Style for the download submenu */
 .leaflet-control-custom .download-submenu {
@@ -1822,15 +1768,10 @@ body.using-touch {
       padding-left: 0;
     }
 
-    /* Make sure elevation div is behind main right container on mobiles */
     #elevation-div {
-      z-index: 500;
-    }
-
-    /* Make sure elevation summary is above the sheet handle */
-    .elevation-summary {
-      padding-bottom: var(--mobile-elevation-summary-padding-bottom);
-      transition: padding-bottom 0.3s ease-in-out;
+      z-index: 500; /* Make sure elevation div is behind main right container on mobiles */
+      bottom: calc(var(--mobile-elevation-summary-padding-bottom) - var(--sheet-handle-height));
+      transition: bottom 0.3s ease-in-out;
     }
 
     /* --- Hide the Via input group on mobile --- */
