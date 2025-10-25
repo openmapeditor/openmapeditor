@@ -12,16 +12,14 @@ const elevationCache = new Map();
  */
 function clearElevationCache() {
   elevationCache.clear();
-  if (elevationControl) {
-    window.elevationProfile.clearElevationProfile();
-    // Also, hide the elevation div if it's visible
-    const elevationDiv = document.getElementById("elevation-div");
-    if (elevationDiv) {
-      elevationDiv.style.visibility = "hidden";
-      isElevationProfileVisible = false;
-    }
-    updateElevationToggleIconColor();
+  window.elevationProfile.clearElevationProfile();
+  // Also, hide the elevation div if it's visible
+  const elevationDiv = document.getElementById("elevation-div");
+  if (elevationDiv) {
+    elevationDiv.style.visibility = "hidden";
+    isElevationProfileVisible = false;
   }
+  updateElevationToggleIconColor();
 }
 
 async function fetchElevationForPathGoogle(latlngs, realDistance) {

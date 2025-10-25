@@ -61,7 +61,6 @@ let map,
   kmzLayer,
   stravaActivitiesLayer,
   editableLayers,
-  elevationControl,
   selectedElevationPath = null,
   globallySelectedItem = null,
   selectedPathOutline = null,
@@ -109,46 +108,6 @@ function adjustInfoPanelNameHeight(textarea) {
 
   // MODIFIED: Add this line to ensure the text is scrolled to the top
   textarea.scrollTop = 0;
-}
-
-/**
- * Creates, configures, and adds the Leaflet Elevation control to the map.
- * @param {boolean} useImperial - If true, the control will use imperial units (feet/miles).
- * @returns {L.Control.Elevation} The newly created elevation control instance.
- */
-function createAndAddElevationControl(useImperial) {
-  const control = L.control.elevation({
-    position: "bottomright",
-    theme: "custom-theme",
-    detached: true,
-    elevationDiv: "#elevation-div",
-    collapsed: false,
-    closeBtn: false,
-    distance: false,
-    time: true,
-    imperial: useImperial,
-    slope: "summary", // Displays minslope, maxslope, avgslope, ascent, descent
-    // We hide slope tooltips, minslope, maxslope, avgslope in leaflet-elevation/src/handlers/slope.js
-    // We hide avgele in css like this: .avgele { display: none; }
-    margins: {
-      top: 30,
-      right: 0,
-      bottom: -10,
-      left: 0,
-    },
-  });
-
-  control.on("eledata_added", ({ track_info }) => {
-    // console.log("Elevation data added!", track_info);
-    // console.log("Elevation data distance", track_info.distance);
-    // console.log("Elevation data elevation_min", track_info.elevation_min);
-    // console.log("Elevation data elevation_max", track_info.elevation_max);
-    // console.log("Elevation data elevation_avg", track_info.elevation_avg);
-    // console.log("Elevation data time", track_info.time);
-  });
-
-  control.addTo(map);
-  return control;
 }
 
 /**

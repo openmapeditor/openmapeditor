@@ -1774,12 +1774,6 @@ body.using-touch {
       transition: bottom 0.3s ease-in-out;
     }
 
-    /* Make sure elevation summary is above the sheet handle */
-    /* .elevation-summary {
-      padding-bottom: var(--mobile-elevation-summary-padding-bottom);
-      transition: padding-bottom 0.3s ease-in-out;
-    } */
-
     /* --- Hide the Via input group on mobile --- */
     #routing-via-group {
       display: none;
