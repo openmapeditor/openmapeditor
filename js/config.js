@@ -54,28 +54,6 @@ const ORGANIC_MAPS_COLORS = ORGANIC_MAPS_COLORS_DATA.map((color) => ({
 }));
 // --- END: Organic Maps Color Configuration ---
 
-// --- START: Elevation API Configuration ---
-// This variable will be dynamically set from localStorage in initializeMap()
-let elevationProvider;
-
-// Provider-specific point limits for downsampling.
-// These are maximums to prevent API errors.
-const ELEVATION_PROVIDER_CONFIG = {
-  google: {
-    // Google's hard limit is 512, 500 provides a safe buffer.
-    limit: 500,
-  },
-  openTopo: {
-    // OpenTopoData has URL length limits, 100 is a safe maximum.
-    limit: 100,
-  },
-  mapbox: {
-    // Mapbox Tilequery API is rate-limited, 100 is a safe maximum.
-    limit: 100,
-  },
-};
-// --- END: Elevation API Configuration ---
-
 // Global settings
 let enablePathSimplification = localStorage.getItem("enablePathSimplification") !== "false";
 

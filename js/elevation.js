@@ -110,125 +110,6 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
   return allResults;
 }
 
-// Fetches elevation data for a path from Mapbox Tilequery API.
-async function fetchElevationForPathMapbox(latlngs) {
-  console.log("Fetching elevation data from: Mapbox");
-  if (!latlngs || latlngs.length === 0) return null;
-
-  if (!mapboxAccessToken) {
-    console.error("Mapbox Access Token is missing or a placeholder.");
-    Swal.fire({
-      icon: "error",
-      iconColor: "var(--swal-color-error)",
-      title: "API Key Missing",
-      text: "Mapbox Access Token is not configured. Please add it to the script.",
-    });
-    return null;
-  }
-
-  // This provider does not support batching, so we MUST always resample.
-  const limit = ELEVATION_PROVIDER_CONFIG.mapbox.limit;
-  console.log(`[Elevation] Resampling path to ${limit} points for Mapbox API limit.`);
-  let pointsToSend = resamplePath(latlngs, limit);
-
-  const promises = pointsToSend.map((p) => {
-    // CORRECTED: Added &layers=contour and &limit=50 to the URL.
-    const url = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${p.lng},${p.lat}.json?layers=contour&limit=50&access_token=${mapboxAccessToken}`;
-    return fetch(url).then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    });
-  });
-
-  try {
-    const results = await Promise.all(promises);
-    const pointsWithElev = results.map((result, index) => {
-      const originalPoint = pointsToSend[index];
-
-      // CORRECTED: Find the highest elevation from all returned features.
-      if (result.features && result.features.length > 0) {
-        // Get all elevation values from the returned features.
-        const elevations = result.features.map((feature) => feature.properties.ele);
-        // Find the highest elevation value among them.
-        const highestElevation = Math.max(...elevations);
-        return L.latLng(originalPoint.lat, originalPoint.lng, highestElevation);
-      }
-
-      // If no features were returned, use 0 as a fallback.
-      return L.latLng(originalPoint.lat, originalPoint.lng, 0);
-    });
-    return pointsWithElev;
-  } catch (error) {
-    console.error("Error fetching elevation data from Mapbox:", error);
-    Swal.fire({
-      icon: "error",
-      iconColor: "var(--swal-color-error)",
-      title: "Mapbox Elevation Error",
-      text: `Failed to fetch elevation data: ${error.message}`,
-    });
-    return null;
-  }
-}
-
-// Fetches elevation data for a path from Open Topo Data.
-async function fetchElevationForPathOpenTopoData(latlngs) {
-  console.log("Fetching elevation data from: Open Topo Data");
-  if (!latlngs || latlngs.length < 2) {
-    if (latlngs && latlngs.length === 1)
-      console.warn("Only one point provided for elevation, cannot draw profile.");
-    return null;
-  }
-
-  // Remove duplicates first
-  const uniquePoints = [];
-  const seen = new Set();
-  latlngs.forEach((p) => {
-    const key = `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`;
-    if (!seen.has(key)) {
-      uniquePoints.push(p);
-      seen.add(key);
-    }
-  });
-
-  // This provider has URL length limits and no batching, so we MUST always resample.
-  const limit = ELEVATION_PROVIDER_CONFIG.openTopo.limit;
-  console.log(`[Elevation] Resampling path to ${limit} points for OpenTopoData API limit.`);
-  let pointsToSend = resamplePath(uniquePoints, limit);
-
-  const locations = pointsToSend.map((p) => `${p.lat},${p.lng}`).join("|");
-  // We prepend a CORS proxy to the original URL to bypass the browser's security block.
-  // WARNING: Public proxies are not for production use.
-  const originalUrl = `https://api.opentopodata.org/v1/srtm90m?locations=${locations}`;
-  const url = `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`;
-
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const apiResponse = await response.json();
-    if (
-      apiResponse.status === "OK" &&
-      apiResponse.results &&
-      apiResponse.results.length === pointsToSend.length
-    ) {
-      return pointsToSend.map((p, i) => L.latLng(p.lat, p.lng, apiResponse.results[i].elevation));
-    } else {
-      console.warn("Open Topo Data: API returned non-OK status or data mismatch.", apiResponse);
-      return null;
-    }
-  } catch (error) {
-    console.error("Error fetching elevation data from Open Topo Data:", error);
-    Swal.fire({
-      icon: "error",
-      iconColor: "var(--swal-color-error)",
-      title: "Open Topo Data Error",
-      text: "Failed to fetch elevation data.",
-    });
-    return null;
-  }
-}
-
 // Main dispatcher function for fetching elevation data.
 async function fetchElevationForPath(latlngs, realDistance) {
   // <-- 3. Accept realDistance
@@ -239,14 +120,8 @@ async function fetchElevationForPath(latlngs, realDistance) {
     return Promise.resolve(elevationCache.get(cacheKey));
   }
 
-  let pointsWithElev;
-  if (elevationProvider === "google") {
-    pointsWithElev = await fetchElevationForPathGoogle(latlngs, realDistance); // <-- 4. Pass it
-  } else if (elevationProvider === "mapbox") {
-    pointsWithElev = await fetchElevationForPathMapbox(latlngs);
-  } else {
-    pointsWithElev = await fetchElevationForPathOpenTopoData(latlngs);
-  }
+  // Simplified: Always use Google.
+  const pointsWithElev = await fetchElevationForPathGoogle(latlngs, realDistance); // <-- 4. Pass it
 
   if (pointsWithElev) {
     elevationCache.set(cacheKey, pointsWithElev);

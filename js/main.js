@@ -1610,43 +1610,6 @@ function initializeMap() {
     });
     L.DomEvent.on(routingProviderContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
 
-    // --- Elevation Provider Setting ---
-    const elevationProviderContainer = L.DomUtil.create(
-      "div",
-      "settings-control-item",
-      settingsPanel
-    );
-    const elevationProviderLabel = L.DomUtil.create("label", "", elevationProviderContainer);
-    elevationProviderLabel.htmlFor = "elevation-provider-select";
-    elevationProviderLabel.innerText = "Elevation Provider";
-    const elevationProviderSelect = L.DomUtil.create("select", "", elevationProviderContainer);
-    elevationProviderSelect.id = "elevation-provider-select";
-    // elevationProviderSelect.innerHTML = `<option value="google">Google</option><option value="open-topo-data">Open Topo Data</option><option value="mapbox">Mapbox</option>`;
-    elevationProviderSelect.innerHTML = `<option value="google">Google</option><option value="open-topo-data">Open Topo Data</option>`; // Removed Mapbox option
-    const savedElevationProvider = localStorage.getItem("elevationProvider") || "google";
-    elevationProvider = savedElevationProvider;
-    elevationProviderSelect.value = savedElevationProvider;
-    L.DomEvent.on(elevationProviderSelect, "change", (e) => {
-      const newProvider = e.target.value;
-      elevationProvider = newProvider;
-      localStorage.setItem("elevationProvider", newProvider);
-      clearElevationCache();
-      Swal.fire({
-        toast: true,
-        position: "center",
-        icon: "info",
-        iconColor: "var(--swal-color-info)",
-        title: `Elevation Provider set to ${e.target.options[e.target.selectedIndex].text}`,
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    });
-    L.DomEvent.on(
-      elevationProviderContainer,
-      "dblclick mousedown wheel",
-      L.DomEvent.stopPropagation
-    );
-
     // --- Privacy Policy Link ---
     const privacyPolicyContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
     const privacyPolicyLabel = L.DomUtil.create("label", "", privacyPolicyContainer);
