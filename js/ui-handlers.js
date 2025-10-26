@@ -31,6 +31,8 @@ function createOverviewListItem(layer) {
     const layerToToggle =
       editableLayers.getLayer(layerId) ||
       stravaActivitiesLayer.getLayer(layerId) ||
+      importedItems.getLayer(layerId) ||
+      kmzLayer.getLayer(layerId) ||
       (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
     if (!layerToToggle) return;
     const isCurrentlyVisible = map.hasLayer(layerToToggle);
@@ -62,7 +64,10 @@ function createOverviewListItem(layer) {
     duplicateBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       const layerToDuplicate =
-        editableLayers.getLayer(layerId) || stravaActivitiesLayer.getLayer(layerId);
+        editableLayers.getLayer(layerId) ||
+        stravaActivitiesLayer.getLayer(layerId) ||
+        importedItems.getLayer(layerId) ||
+        kmzLayer.getLayer(layerId);
       if (!layerToDuplicate) return;
       let newLayer;
       const newFeature = JSON.parse(JSON.stringify(layerToDuplicate.feature || { properties: {} }));
@@ -149,6 +154,8 @@ function createOverviewListItem(layer) {
     const layerToDelete =
       editableLayers.getLayer(layerId) ||
       stravaActivitiesLayer.getLayer(layerId) ||
+      importedItems.getLayer(layerId) ||
+      kmzLayer.getLayer(layerId) ||
       (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
     if (layerToDelete) {
       deleteLayerImmediately(layerToDelete);
@@ -174,6 +181,8 @@ function createOverviewListItem(layer) {
     const targetLayer =
       editableLayers.getLayer(layerId) ||
       stravaActivitiesLayer.getLayer(layerId) ||
+      importedItems.getLayer(layerId) ||
+      kmzLayer.getLayer(layerId) ||
       (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
     if (targetLayer) {
       if (targetLayer instanceof L.Polyline || targetLayer instanceof L.Polygon) {
@@ -198,7 +207,12 @@ function updateOverviewList() {
   const overviewPanel = document.getElementById("overview-panel"); // Get the parent panel
 
   // 1. Collect all items into a single array
-  const allItems = [...editableLayers.getLayers(), ...stravaActivitiesLayer.getLayers()];
+  const allItems = [
+    ...editableLayers.getLayers(),
+    ...stravaActivitiesLayer.getLayers(),
+    ...importedItems.getLayers(),
+    ...kmzLayer.getLayers(),
+  ];
   if (currentRoutePath) {
     allItems.unshift(currentRoutePath);
   }
@@ -371,9 +385,13 @@ function showInfoPanel(layer) {
     case "gpx":
     case "kml":
       layerTypeName = "Imported GPX/KML";
+      editHint.innerHTML = "To edit, duplicate item in <b>Contents</b> tab.";
+      editHint.style.display = "block";
       break;
     case "kmz":
       layerTypeName = "Imported KMZ";
+      editHint.innerHTML = "To edit, duplicate item in <b>Contents</b> tab.";
+      editHint.style.display = "block";
       break;
     case "route":
       layerTypeName = "Route";

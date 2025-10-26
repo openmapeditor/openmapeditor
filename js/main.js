@@ -1472,15 +1472,21 @@ function initializeMap() {
         title: "Path Simplification",
         html: `
 <p style="text-align: left; margin: 0 0 18px 0">
-  This option automatically reduces the number of points in complex imported paths (GPX, KML), generated routes, and duplicated paths.
+  When enabled, this option automatically reduces the number of points in paths to improve performance. This simplification happens at specific times:
+</p>
+<ul style="text-align: left; padding-left: 20px; margin: 0 0 18px 0;">
+  <li style="margin-bottom: 5px;">When an <strong>imported track</strong> is duplicated.</li>
+  <li style="margin-bottom: 5px;">When a <strong>generated route</strong> is saved.</li>
+  <li>When a <strong>Strava activity</strong> is duplicated.</li>
+</ul>
+<p style="text-align: left; margin: 0 0 18px 0">
+  The original, high-detail files are never modified.
 </p>
 <p style="text-align: left; margin: 0 0 18px 0">
-  <strong>Enabled (Recommended):</strong> Improves performance and responsiveness, especially with
-  long tracks. The visual change is often unnoticeable.
+  <strong>Enabled (Recommended):</strong> Improves performance and makes paths easier to edit. The visual change is often unnoticeable.
 </p>
 <p style="text-align: left">
-  <strong>Disabled:</strong> Preserves every single point from the original file. Use this if
-  absolute precision is critical and you are not experiencing performance issues.
+  <strong>Disabled:</strong> Preserves every single point when duplicating or saving. Use this if absolute precision is critical.
 </p>
 `,
         confirmButtonText: "Got it!",

@@ -215,25 +215,11 @@ function initializeRouting() {
         const route = routes[0];
         let processedCoordinates = route.coordinates;
 
-        // --- START: NEW CODE to get location names ---
         const startInput = document.getElementById("route-start");
         const endInput = document.getElementById("route-end");
         const startName = startInput.value.trim() || "Start";
         const endName = endInput.value.trim() || "End";
         const newRouteName = `Route: ${startName} to ${endName}`;
-        // --- END: NEW CODE ---
-
-        if (enablePathSimplification) {
-          const geoJsonCoords = processedCoordinates.map((latlng) => [latlng.lng, latlng.lat]);
-          const simplificationResult = simplifyPath(
-            geoJsonCoords,
-            "LineString",
-            routeSimplificationConfig
-          );
-          if (simplificationResult.simplified) {
-            processedCoordinates = simplificationResult.coords.map((c) => L.latLng(c[1], c[0]));
-          }
-        }
 
         const summaryContainer = document.getElementById("routing-summary-container");
         if (route.summary && summaryContainer) {
@@ -930,7 +916,27 @@ function initializeRouting() {
     if (!currentRoutePath) {
       return;
     }
-    const newPath = L.polyline(currentRoutePath.getLatLngs(), {
+
+    // --- START: SIMPLIFICATION LOGIC ON SAVE ---
+    let coordsToUse = currentRoutePath.getLatLngs();
+    let simplificationHappened = false;
+
+    if (enablePathSimplification) {
+      const originalCoords = coordsToUse.map((latlng) => [latlng.lng, latlng.lat]);
+      const simplifiedResult = simplifyPath(
+        originalCoords,
+        "LineString",
+        routeSimplificationConfig // Use routeSimplificationConfig
+      );
+
+      if (simplifiedResult.simplified) {
+        coordsToUse = simplifiedResult.coords.map((c) => L.latLng(c[1], c[0]));
+        simplificationHappened = true;
+      }
+    }
+    // --- END: SIMPLIFICATION LOGIC ON SAVE ---
+
+    const newPath = L.polyline(coordsToUse, {
       ...STYLE_CONFIG.path.default,
       color: currentRoutePath.options.color,
     });
@@ -946,14 +952,26 @@ function initializeRouting() {
     clearRouting();
     updateOverviewList();
     updateDrawControlStates();
-    Swal.fire({
-      icon: "success",
-      iconColor: "var(--swal-color-success)",
-      title: "Route Saved!",
-      text: 'The route has been added to the "Drawn Items" layer.',
-      timer: 2500,
-      showConfirmButton: false,
-    });
+
+    if (simplificationHappened) {
+      Swal.fire({
+        icon: "success",
+        iconColor: "var(--swal-color-success)",
+        title: "Route Saved & Optimized!",
+        text: 'The route was simplified and added to the "Drawn Items" layer.',
+        timer: 2500,
+        showConfirmButton: false,
+      });
+    } else {
+      Swal.fire({
+        icon: "success",
+        iconColor: "var(--swal-color-success)",
+        title: "Route Saved!",
+        text: 'The route has been added to the "Drawn Items" layer.',
+        timer: 2500,
+        showConfirmButton: false,
+      });
+    }
   });
 
   // This function will be called from main.js when the user toggles the unit setting.

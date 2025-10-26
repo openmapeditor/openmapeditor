@@ -282,8 +282,12 @@ function updateDrawControlStates() {
     editControlContainer = drawControl.getContainer().querySelector(".leaflet-draw-edit");
     deleteControlContainer = drawControl.getContainer().querySelector(".leaflet-draw-edit-remove");
   }
+
   const hasLayers =
-    editableLayers.getLayers().length > 0 || stravaActivitiesLayer.getLayers().length > 0;
+    editableLayers.getLayers().length > 0 ||
+    stravaActivitiesLayer.getLayers().length > 0 ||
+    importedItems.getLayers().length > 0 ||
+    kmzLayer.getLayers().length > 0;
 
   // Disable the entire download control if there are no layers on the map.
   const downloadButtonContainer = document.getElementById("main-download-button");
@@ -297,8 +301,10 @@ function updateDrawControlStates() {
     }
   }
 
+  const hasEditableLayers = editableLayers.getLayers().length > 0;
+
   if (editControlContainer && deleteControlContainer) {
-    if (hasLayers) {
+    if (hasEditableLayers) {
       L.DomUtil.removeClass(editControlContainer, "leaflet-disabled");
       L.DomUtil.removeClass(deleteControlContainer, "leaflet-disabled");
     } else {

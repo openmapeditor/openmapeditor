@@ -138,7 +138,13 @@ function generateFullKmzZip(docName) {
   const importedPlacemarks = [];
   const stravaPlacemarks = [];
 
-  editableLayers.eachLayer(function (layer) {
+  const allLayers = [
+    ...editableLayers.getLayers(),
+    ...importedItems.getLayers(),
+    ...kmzLayer.getLayers(),
+  ];
+
+  allLayers.forEach(function (layer) {
     const defaultName =
       layer instanceof L.Marker ? `Marker_${++featureCounter}` : `Path_${++featureCounter}`;
     const kmlSnippet = generateKmlForLayer(layer, defaultName);
@@ -372,37 +378,6 @@ function getColorNameFromKmlStyle(properties) {
 
 // Adds GeoJSON data to the map, applying appropriate styles.
 function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
-  let simplificationHappened = false;
-
-  // Use the new simplification logic with the config for IMPORTED PATHS.
-  if (enablePathSimplification) {
-    geoJsonData.features.forEach((feature) => {
-      if (feature.geometry && feature.geometry.coordinates) {
-        const { coordinates, type: geomType } = feature.geometry;
-        // Pass the specific config for paths
-        const result = simplifyPath(coordinates, geomType, pathSimplificationConfig);
-        if (result.simplified) {
-          feature.geometry.coordinates = result.coords;
-          simplificationHappened = true;
-        }
-      }
-    });
-  }
-
-  if (simplificationHappened) {
-    Swal.fire({
-      toast: true,
-      position: "center",
-      icon: "info",
-      iconColor: "var(--swal-color-info)",
-      title: "Path Optimized",
-      text: "The imported path was simplified for better performance.",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-    });
-  }
-
   const targetGroup = fileType === "kmz" ? kmzLayer : importedItems;
 
   const layerGroup = L.geoJSON(geoJsonData, {
@@ -429,7 +404,6 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
         layer.originalKmzPath = originalPath; // Store the source file path
       }
 
-      editableLayers.addLayer(layer);
       layer.on("click", (e) => {
         L.DomEvent.stopPropagation(e);
         selectItem(layer);
