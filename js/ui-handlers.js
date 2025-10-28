@@ -359,12 +359,15 @@ function showInfoPanel(layer) {
     };
   } else if (layer instanceof L.Polyline) {
     name = name || "Path";
-    let totalDistance = 0;
 
-    if (layer.feature?.properties?.totalDistance) {
-      totalDistance = layer.feature.properties.totalDistance;
-    } else {
-      totalDistance = calculatePathDistance(layer);
+    // ALWAYS recalculate the distance from the geometry, just like the elevation panel does.
+    // This ensures the value is always consistent between the two panels.
+    const totalDistance = calculatePathDistance(layer);
+
+    // (Optional but good practice) We can also update the cached property
+    // in case anything else ever uses it.
+    if (layer.feature && layer.feature.properties) {
+      layer.feature.properties.totalDistance = totalDistance;
     }
 
     details = `Length: ${formatDistance(totalDistance)}`;
