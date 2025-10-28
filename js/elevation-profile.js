@@ -68,6 +68,40 @@ function formatDataForD3(pointsWithElev) {
 }
 
 /**
+ * Applies a simple moving average to the elevation data.
+ * @param {Array} data The data array (from formatDataForD3)
+ * @param {number} windowSize The number of points to average (e.g., 5 or 7). Must be an odd number.
+ * @returns {Array} A new array with smoothed elevation data.
+ */
+function applyMovingAverage(data, windowSize) {
+  if (windowSize <= 1) return data;
+
+  const smoothedData = [];
+  const halfWindow = Math.floor(windowSize / 2);
+
+  for (let i = 0; i < data.length; i++) {
+    let sum = 0;
+    let count = 0;
+    // Look at points in the "window" around the current point
+    for (let j = -halfWindow; j <= halfWindow; j++) {
+      const index = i + j;
+      if (index >= 0 && index < data.length) {
+        sum += data[index].elevation;
+        count++;
+      }
+    }
+
+    // Create a new data point, copying original properties
+    // but replacing elevation with the smoothed average.
+    smoothedData.push({
+      ...data[i],
+      elevation: sum / count,
+    });
+  }
+  return smoothedData;
+}
+
+/**
  * --- 3. Layout & Drawing Helpers ---
  */
 
@@ -354,15 +388,27 @@ function drawElevationProfile(pointsWithElev, realDistance) {
   // --- END: SCALING LOGIC ---
 
   // --- 1. Calculate Summary Stats ---
+
+  // Define your smoothing level.
+  // This is the "magic number". Try values like 5, 7, or 9.
+  // A larger number = more smoothing = lower ascent/descent.
+  const SMOOTHING_WINDOW_SIZE = 10;
+
+  // Create a smoothed version of the data for stats
+  const smoothedData = applyMovingAverage(currentData, SMOOTHING_WINDOW_SIZE);
+
+  // Get min/max from the ORIGINAL data for 100% accuracy
   const [minElev, maxElev] = d3.extent(currentData, (d) => d.elevation);
-  const ascent = d3.sum(currentData, (d, i) => {
+
+  // Calculate ascent/descent from the SMOOTHED data to remove noise
+  const ascent = d3.sum(smoothedData, (d, i) => {
     if (i === 0) return 0;
-    const diff = d.elevation - currentData[i - 1].elevation;
+    const diff = d.elevation - smoothedData[i - 1].elevation;
     return diff > 0 ? diff : 0;
   });
-  const descent = d3.sum(currentData, (d, i) => {
+  const descent = d3.sum(smoothedData, (d, i) => {
     if (i === 0) return 0;
-    const diff = d.elevation - currentData[i - 1].elevation;
+    const diff = d.elevation - smoothedData[i - 1].elevation;
     return diff < 0 ? -diff : 0;
   });
 
