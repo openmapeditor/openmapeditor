@@ -45,43 +45,51 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
   const BATCH_SIZE = 512;
   let allResults = [];
 
-  // --- START: "SMARTER" HYBRID LOGIC (FIXED) ---
+  // 1. Define our desired resolution.
+  // This is a good balance of cost and quality.
+  const POINTS_PER_METER = 0.02;
 
-  // 1. Define our desired resolution. 0.04 = 1 point every 25 meters.
-  const POINTS_PER_METER = 0.04;
+  // 2. Set a new, more conservative safety cap.
+  // This is the absolute maximum number of points we will EVER request.
+  const MAX_POINTS_TO_REQUEST = 2000;
 
-  // 2. Set a safety cap. We won't resample to more than 10,000 points.
-  const MAX_RESAMPLE_POINTS = 10000;
-
-  // 3. Use the passed-in realDistance
-  const totalDistance = realDistance; // <-- 2. Use the passed-in value
+  // 3. Use the passed-in realDistance.
+  const totalDistance = realDistance;
   const desiredPoints = Math.floor(totalDistance * POINTS_PER_METER);
   const actualPoints = latlngs.length;
 
   let pointsToSend;
 
-  // 4. Compare and Decide
-  if (actualPoints < desiredPoints && desiredPoints > 2) {
-    // Path is SIMPLE. We need to upsample it.
-    const pointsToCreate = Math.min(desiredPoints, MAX_RESAMPLE_POINTS);
-
+  // 4. Decide what to do.
+  if (actualPoints > MAX_POINTS_TO_REQUEST) {
+    // CASE 1: Path is TOO complex (e.g., 50,000 points).
+    // We MUST downsample it to our absolute cap. This is the biggest cost-saver.
+    console.log(
+      `[Elevation] Path is too complex (${actualPoints} points). Downsampling to ${MAX_POINTS_TO_REQUEST} points.`
+    );
+    pointsToSend = resamplePath(latlngs, MAX_POINTS_TO_REQUEST);
+  } else if (actualPoints < desiredPoints && desiredPoints > 2) {
+    // CASE 2: Path is simple (e.g., 100 points, but 100km long).
+    // We need to upsample it, but we respect our new, lower cap.
+    const pointsToCreate = Math.min(desiredPoints, MAX_POINTS_TO_REQUEST);
     console.log(
       `[Elevation] Path is simple (${actualPoints} points over ${formatDistance(
         totalDistance
-      )}). Upsampling to ${pointsToCreate} points (1 per ~${(
-        totalDistance / pointsToCreate
-      ).toFixed(1)}m).`
+      )}). Upsampling to ${pointsToCreate} points.`
     );
-
     pointsToSend = resamplePath(latlngs, pointsToCreate);
   } else {
-    // Path is COMPLEX or very short. Send all original points.
+    // CASE 3: Path is "just right".
+    // It's either:
+    //  a) A short, dense path (e.g., 500 points, 1km long)
+    //  b) A very short path (e.g., 10 points, 50m long)
+    // In both cases, `actualPoints` is less than `MAX_POINTS_TO_REQUEST`.
+    // Sending the original points is the cheapest and most accurate option.
     console.log(
-      `[Elevation] Path is complex (${actualPoints} points). Sending all original points in batches for maximum accuracy.`
+      `[Elevation] Path is "just right" (${actualPoints} points). Sending all original points.`
     );
     pointsToSend = latlngs;
   }
-  // --- END: "SMARTER" HYBRID LOGIC (FIXED) ---
 
   // This batching loop now works for all cases.
   for (let i = 0; i < pointsToSend.length; i += BATCH_SIZE) {
