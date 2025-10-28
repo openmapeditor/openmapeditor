@@ -960,7 +960,8 @@ a#info-panel-strava-link:hover {
 .altitude-area {
   fill: var(--color-red);
   fill-opacity: 0.5;
-  stroke: var(--color-red);
+  /* stroke: var(--color-red); */
+  stroke: none;
   stroke-width: 1.5;
 }
 
