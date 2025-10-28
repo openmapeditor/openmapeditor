@@ -101,6 +101,94 @@ function applyMovingAverage(data, windowSize) {
   return smoothedData;
 }
 
+// --- START: Added functions from map.geo.admin.ch ---
+// The following two functions are adapted from the map.geo.admin.ch repository
+// Source: https://github.com/geoadmin/web-mapviewer/blob/develop/packages/geoadmin-elevation-profile/src/utils.ts
+
+/**
+ * Calculates hiking time in minutes based on the Swiss hiking time formula.
+ * Adapted from map.geo.admin.ch
+ * @param {Array} points The elevation profile data, sorted by distance.
+ * Expected format: [{distance: number, elevation: number}, ...]
+ * @returns {number} The total hiking time in minutes.
+ */
+function calculateSwissHikingTime(points) {
+  if (!points || points.length < 2) {
+    return 0;
+  }
+
+  // Constants of the formula (Schweizmobil)
+  const arrConstants = [
+    14.271, 3.6991, 2.5922, -1.4384, 0.32105, 0.81542, -0.090261, -0.20757, 0.010192, 0.028588,
+    -0.00057466, -0.0021842, 1.5176e-5, 8.6894e-5, -1.3584e-7, -1.4026e-6,
+  ];
+
+  // Data is assumed to be pre-sorted by distance
+  const timeInMinutes = points
+    .map((currentPoint, index, points) => {
+      // --- START BUG FIX ---
+      // Was `points.length - 2`, which skipped the final segment of the path.
+      if (index < points.length - 1) {
+        // --- END BUG FIX ---
+        const nextPoint = points[index + 1];
+
+        // Use 'distance' property from our data structure
+        const distanceDelta = (nextPoint.distance || 0) - (currentPoint.distance || 0);
+        if (!distanceDelta) {
+          return 0;
+        }
+        const elevationDelta = (nextPoint.elevation || 0) - (currentPoint.elevation || 0);
+
+        // Slope value between the 2 points
+        // 10ths (Schweizmobil formula) instead of % (official formula)
+        const slope = (elevationDelta * 10.0) / distanceDelta;
+
+        // The swiss hiking formula is used between -25% and +25%
+        // but Schweizmobil use -40% and +40%
+        let minutesPerKilometer = 0;
+        if (slope > -4 && slope < 4) {
+          arrConstants.forEach((constants, i) => {
+            minutesPerKilometer += constants * Math.pow(slope, i);
+          });
+          // outside the -40% to +40% range, we use a linear formula
+        } else if (slope > 0) {
+          minutesPerKilometer = 17 * slope;
+        } else {
+          minutesPerKilometer = -9 * slope;
+        }
+        return (distanceDelta * minutesPerKilometer) / 1000;
+      }
+      return 0;
+    })
+    .reduce((a, b) => a + b);
+
+  return Math.round(timeInMinutes);
+}
+
+/**
+ * Formats minutes to hours and minutes (if more than one hour) e.g. 1230 -> '20h 30min', 55 -> '55min'
+ * Adapted from map.geo.admin.ch
+ * @returns {string} Time in 'Hh Mmin' or '-'
+ */
+function formatHikingTime(minutes) {
+  if (!minutes || isNaN(minutes)) {
+    return "-";
+  }
+  let result = "";
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    minutes = minutes - hours * 60;
+    result += `${hours}h`;
+    if (minutes > 0) {
+      result += ` ${minutes}min`;
+    }
+  } else {
+    result += `${minutes}min`;
+  }
+  return result;
+}
+// --- END: Added functions from map.geo.admin.ch ---
+
 /**
  * --- 3. Layout & Drawing Helpers ---
  */
@@ -412,6 +500,14 @@ function drawElevationProfile(pointsWithElev, realDistance) {
     return diff < 0 ? -diff : 0;
   });
 
+  // --- START: Calculate Hiking Time ---
+  // Uses the Swiss hiking time formula from map.geo.admin.ch
+  // We pass the *SMOOTHED* data to match the ascent/descent calculation
+  // and avoid noise from raw elevation data.
+  const hikingTimeMinutes = calculateSwissHikingTime(smoothedData);
+  const hikingTimeFormatted = formatHikingTime(hikingTimeMinutes);
+  // --- END: Calculate Hiking Time ---
+
   const elevationFormatter = (meters) => {
     const feet = meters * 3.28084;
     return useImperial ? `${Math.round(feet)} ft` : `${Math.round(meters)} m`;
@@ -425,7 +521,8 @@ function drawElevationProfile(pointsWithElev, realDistance) {
       `<span style="${itemStyle}">Ascent: ${elevationFormatter(ascent)}</span>` +
         `<span style="${itemStyle}">Descent: ${elevationFormatter(descent)}</span>` +
         `<span style="${itemStyle}">Highest point: ${elevationFormatter(maxElev)}</span>` +
-        `<span style="${itemStyle}">Lowest point: ${elevationFormatter(minElev)}</span>`
+        `<span style="${itemStyle}">Lowest point: ${elevationFormatter(minElev)}</span>` +
+        `<span style="${itemStyle}">Hiking time: ${hikingTimeFormatted}</span>`
     );
   }
 
