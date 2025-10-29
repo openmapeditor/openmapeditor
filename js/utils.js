@@ -480,7 +480,12 @@ function formatDistance(meters, includeSecondary = false) {
     if (miles < 0.1 && miles > 0) {
       primaryDisplay = `${Math.round(meters * METERS_TO_FEET)} ft`;
     } else {
-      primaryDisplay = `${miles.toFixed(2)} mi`;
+      // Special case for 0 to avoid "0.00 mi"
+      if (meters === 0) {
+        primaryDisplay = "0 mi";
+      } else {
+        primaryDisplay = `${miles.toFixed(2)} mi`;
+      }
     }
     secondaryDisplay = km < 1 ? `${Math.round(meters)} m` : `${km.toFixed(2)} km`;
   } else {
