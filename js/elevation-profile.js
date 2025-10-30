@@ -9,11 +9,16 @@
 let svg, chartGroup;
 let x, y, xAxis, yAxis; // D3 scales and axes
 let width, height; // Chart dimensions (dynamically calculated)
-let currentData = [];
 let useImperial = false;
 let chartTargetDivId;
 let totalWidth, totalHeight; // Container dimensions
 let currentRealDistance = 0;
+
+// --- START: MODIFIED DATA VARIABLES ---
+// We now only store raw data.
+// Stats and the chart area are both drawn from currentRawData.
+let currentRawData = [];
+// --- END: MODIFIED DATA VARIABLES ---
 
 // --- D3 elements for hover interaction ---
 let verticalLine, hoverOverlay;
@@ -65,40 +70,6 @@ function formatDataForD3(pointsWithElev) {
     });
   }
   return formattedData;
-}
-
-/**
- * Applies a simple moving average to the elevation data.
- * @param {Array} data The data array (from formatDataForD3)
- * @param {number} windowSize The number of points to average (e.g., 5 or 7). Must be an odd number.
- * @returns {Array} A new array with smoothed elevation data.
- */
-function applyMovingAverage(data, windowSize) {
-  if (windowSize <= 1) return data;
-
-  const smoothedData = [];
-  const halfWindow = Math.floor(windowSize / 2);
-
-  for (let i = 0; i < data.length; i++) {
-    let sum = 0;
-    let count = 0;
-    // Look at points in the "window" around the current point
-    for (let j = -halfWindow; j <= halfWindow; j++) {
-      const index = i + j;
-      if (index >= 0 && index < data.length) {
-        sum += data[index].elevation;
-        count++;
-      }
-    }
-
-    // Create a new data point, copying original properties
-    // but replacing elevation with the smoothed average.
-    smoothedData.push({
-      ...data[i],
-      elevation: sum / count,
-    });
-  }
-  return smoothedData;
 }
 
 // --- START: Added functions from map.geo.admin.ch ---
@@ -260,14 +231,19 @@ function updateChartLayout() {
  * (HELPER) Draws the chart area path and axes based on currentData.
  */
 function redrawChartData() {
-  if (currentData.length < 2) {
+  // --- START: MODIFIED ---
+  // Use raw data for domains and drawing
+  if (currentRawData.length < 2) {
+    // --- END: MODIFIED ---
     drawEmptyAxes();
     return;
   }
 
-  // 1. Update domain (min/max) of our scales
-  const maxDistance = currentData[currentData.length - 1].distance;
-  const [minElev, maxElev] = d3.extent(currentData, (d) => d.elevation);
+  // --- START: MODIFIED ---
+  // 1. Update domain (min/max) of our scales FROM RAW DATA
+  const maxDistance = currentRawData[currentRawData.length - 1].distance;
+  const [minElev, maxElev] = d3.extent(currentRawData, (d) => d.elevation);
+  // --- END: MODIFIED ---
 
   x.domain([0, maxDistance]);
   y.domain([minElev, maxElev]);
@@ -279,8 +255,10 @@ function redrawChartData() {
     .y0(height) // Bottom of the area
     .y1((d) => y(d.elevation)); // Top of the area
 
-  // 3. Bind the data and draw the path
-  chartGroup.select(".altitude-area").datum(currentData).attr("d", areaGenerator);
+  // --- START: MODIFIED ---
+  // 3. Bind the RAW data and draw the path
+  chartGroup.select(".altitude-area").datum(currentRawData).attr("d", areaGenerator);
+  // --- END: MODIFIED ---
 
   // 4. Update the Axes
   const distanceFormatter = (meters) => formatDistance(meters);
@@ -299,6 +277,7 @@ function redrawChartData() {
   });
 
   // Y-Axis
+  // Use the raw min/max for Y-axis ticks
   const yTickValues = [minElev, (minElev + maxElev) / 2, maxElev];
   yAxis.call(d3.axisRight(y).tickValues(yTickValues).tickFormat(elevationFormatter));
   yAxis
@@ -451,69 +430,54 @@ function createElevationChart(targetDivId, isImperial) {
  * @param {number} [realDistance] The optional, true distance from the original path
  */
 function drawElevationProfile(pointsWithElev, realDistance) {
-  // <-- MODIFIED SIGNATURE
-  currentData = formatDataForD3(pointsWithElev);
-  if (currentData.length < 2) {
+  // --- START: MODIFIED LOGIC ---
+
+  // 1. Format data
+  currentRawData = formatDataForD3(pointsWithElev);
+  if (currentRawData.length < 2) {
     clearElevationProfile();
     return;
   }
 
-  // --- START: SCALING LOGIC ---
-  currentRealDistance = realDistance || 0; // Store the real distance
+  // 2. Apply scaling logic
+  currentRealDistance = realDistance || 0;
   const calculatedMaxDistance =
-    currentData.length > 0 ? currentData[currentData.length - 1].distance : 0;
+    currentRawData.length > 0 ? currentRawData[currentRawData.length - 1].distance : 0;
 
-  // Scale the distance of all points in currentData if a valid realDistance was provided
   if (currentRealDistance > 0 && calculatedMaxDistance > 0) {
     const scaleFactor = currentRealDistance / calculatedMaxDistance;
     if (scaleFactor !== 1) {
-      // Only scale if necessary
-      for (let i = 1; i < currentData.length; i++) {
-        currentData[i].distance *= scaleFactor;
+      for (let i = 1; i < currentRawData.length; i++) {
+        currentRawData[i].distance *= scaleFactor;
       }
     }
   }
-  // --- END: SCALING LOGIC ---
 
-  // --- 1. Calculate Summary Stats ---
+  // 3. Calculate Summary Stats FROM RAW DATA
+  // This is the key change to match map.geo.admin.ch
+  const [minElev, maxElev] = d3.extent(currentRawData, (d) => d.elevation);
 
-  // Define your smoothing level.
-  // This is the "magic number". Try values like 5, 7, or 9.
-  // A larger number = more smoothing = lower ascent/descent.
-  const SMOOTHING_WINDOW_SIZE = 10;
-
-  // Create a smoothed version of the data for stats
-  const smoothedData = applyMovingAverage(currentData, SMOOTHING_WINDOW_SIZE);
-
-  // Get min/max from the ORIGINAL data for 100% accuracy
-  const [minElev, maxElev] = d3.extent(currentData, (d) => d.elevation);
-
-  // Calculate ascent/descent from the SMOOTHED data to remove noise
-  const ascent = d3.sum(smoothedData, (d, i) => {
+  const ascent = d3.sum(currentRawData, (d, i) => {
     if (i === 0) return 0;
-    const diff = d.elevation - smoothedData[i - 1].elevation;
+    const diff = d.elevation - currentRawData[i - 1].elevation;
     return diff > 0 ? diff : 0;
   });
-  const descent = d3.sum(smoothedData, (d, i) => {
+  const descent = d3.sum(currentRawData, (d, i) => {
     if (i === 0) return 0;
-    const diff = d.elevation - smoothedData[i - 1].elevation;
+    const diff = d.elevation - currentRawData[i - 1].elevation;
     return diff < 0 ? -diff : 0;
   });
 
-  // --- START: Calculate Hiking Time ---
-  // Uses the Swiss hiking time formula from map.geo.admin.ch
-  // We pass the *SMOOTHED* data to match the ascent/descent calculation
-  // and avoid noise from raw elevation data.
-  const hikingTimeMinutes = calculateSwissHikingTime(smoothedData);
+  // Calculate Hiking Time FROM RAW DATA
+  const hikingTimeMinutes = calculateSwissHikingTime(currentRawData);
   const hikingTimeFormatted = formatHikingTime(hikingTimeMinutes);
-  // --- END: Calculate Hiking Time ---
 
   const elevationFormatter = (meters) => {
     const feet = meters * 3.28084;
     return useImperial ? `${Math.round(feet)} ft` : `${Math.round(meters)} m`;
   };
 
-  // --- 2. Update Summary HTML ---
+  // 4. Update Summary HTML
   const summaryDiv = svg.select("#d3-summary-html");
   if (summaryDiv) {
     const itemStyle = "display: inline-block; white-space: nowrap; margin: 0 4px;";
@@ -526,16 +490,20 @@ function drawElevationProfile(pointsWithElev, realDistance) {
     );
   }
 
-  // --- 3. Update Layout & Redraw Chart ---
+  // 5. Update Layout & Redraw Chart
   updateChartLayout();
   redrawChartData();
+
+  // --- END: MODIFIED LOGIC ---
 }
 
 /**
  * Clears the elevation profile from the chart.
  */
 function clearElevationProfile() {
-  currentData = [];
+  // --- START: MODIFIED ---
+  currentRawData = [];
+  // --- END: MODIFIED ---
   currentRealDistance = 0;
 
   // Clear summary text
@@ -565,11 +533,15 @@ function clearElevationProfile() {
  */
 function updateElevationChartUnits(isImperial) {
   useImperial = isImperial;
-  if (currentData.length > 0) {
+  // --- START: MODIFIED ---
+  if (currentRawData.length > 0) {
+    // --- END: MODIFIED ---
     // Re-run the full draw function to update text and scales
     // Pass the original latlngs AND our stored, correct distance
     drawElevationProfile(
-      currentData.map((d) => d.latlng),
+      // --- START: MODIFIED ---
+      currentRawData.map((d) => d.latlng),
+      // --- END: MODIFIED ---
       currentRealDistance
     );
   } else {
@@ -593,7 +565,9 @@ function onHoverMove(event) {
   // Stop the event from bubbling up to the map (important for touch drag)
   event.stopPropagation();
 
-  if (!currentData || currentData.length === 0) return;
+  // --- START: MODIFIED ---
+  if (!currentRawData || currentRawData.length === 0) return;
+  // --- END: MODIFIED ---
 
   let pointerX;
 
@@ -619,34 +593,37 @@ function onHoverMove(event) {
   // Convert the *clamped* X coordinate back to a "distance" value within the domain
   const hoverDistance = x.invert(clampedPointerX);
 
+  // --- START: MODIFIED ---
   // Use D3's bisector to find the *index* of the closest actual data point
+  // in the RAW data.
   const bisector = d3.bisector((d) => d.distance).left;
-  let index = bisector(currentData, hoverDistance, 1); // Start searching from index 1
+  let index = bisector(currentRawData, hoverDistance, 1); // Start searching from index 1
 
   // Determine the closest point: the one before or the one at the bisector index
-  const d0 = currentData[index - 1];
-  const d1 = currentData[index];
+  const d0 = currentRawData[index - 1];
+  const d1 = currentRawData[index];
 
   // Check if d1 exists before accessing its distance property
   if (d0 && d1) {
     index = hoverDistance - d0.distance > d1.distance - hoverDistance ? index : index - 1;
   } else if (d0) {
     // Only d0 exists, must be the last point
-    index = currentData.length - 1;
+    index = currentRawData.length - 1;
   } else {
     // Neither exists or only d1 exists, must be the first point
     index = 0;
   }
 
   // Clamp index just in case (shouldn't be needed with proper bisect logic but safe)
-  index = Math.max(0, Math.min(currentData.length - 1, index));
+  index = Math.max(0, Math.min(currentRawData.length - 1, index));
 
-  const dataPoint = currentData[index];
+  const dataPoint = currentRawData[index];
+  // --- END: MODIFIED ---
 
   if (dataPoint) {
     // --- START: MODIFIED TOOLTIP LOGIC ---
 
-    // 1. Format text
+    // 1. Format text (shows the raw elevation)
     const distanceText = `Distance: ${formatDistance(dataPoint.distance)}`;
     const elevationFormatter = (meters) => {
       const feet = meters * 3.28084;
