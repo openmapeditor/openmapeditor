@@ -8,7 +8,17 @@ This folder contains original source files from third-party projects that were u
 
 - **Source:** `https://github.com/geoadmin/web-mapviewer/blob/develop/packages/geoadmin-elevation-profile/src/utils.ts`
 - **Used In:** `js/elevation-profile.js`
-- **Purpose:** This file is the original source for the `calculateSwissHikingTime` and `formatHikingTime` functions. It is stored here with its original path for clear attribution.
+- **Purpose:** This file is the original source for the core statistical logic in `elevation-profile.js`.
+  - It served as the reference for calculating `ascent` and `descent` directly from raw, unsmoothed data points.
+  - The `calculateSwissHikingTime` and `formatHikingTime` functions were adapted from this file. (Note: A bug in the original `hikingTime` loop, `points.length - 2`, was corrected to `points.length - 1` in our implementation).
+
+---
+
+### `geoadmin-service-alti/profile_helpers.py`
+
+- **Source:** `https://github.com/geoadmin/service-alti/blob/develop/app/helpers/profile_helpers.py`
+- **Used In:** `js/elevation.js`
+- **Purpose:** This file is the original Python backend source for the `map.geo.admin.ch` elevation profile service. It was used as the primary reference for the data-fetching and sampling logic in `elevation.js`, specifically replicating the 200-point default (`PROFILE_DEFAULT_AMOUNT_POINTS`) and 5000-point maximum (`PROFILE_MAX_AMOUNT_POINTS`) logic.
 
 ---
 
