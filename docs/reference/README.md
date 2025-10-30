@@ -4,7 +4,7 @@ This folder contains original source files from third-party projects that were u
 
 ---
 
-### `geoadmin-elevation-profile/src/utils.ts`
+### `geoadmin-elevation-profile/utils.ts`
 
 - **Source:** `https://github.com/geoadmin/web-mapviewer/blob/develop/packages/geoadmin-elevation-profile/src/utils.ts`
 - **Used In:** `js/elevation-profile.js`
@@ -12,7 +12,7 @@ This folder contains original source files from third-party projects that were u
 
 ---
 
-### `organicmaps/libs/kml/serdes.cpp`
+### `organicmaps/serdes.cpp`
 
 - **Source:** `https://github.com/organicmaps/organicmaps/blob/master/libs/kml/serdes.cpp`
 - **Used In:** `js/config.js`
@@ -20,7 +20,7 @@ This folder contains original source files from third-party projects that were u
 
 ---
 
-### `organicmaps/data/styles/default/dark/style.mapcss`
+### `organicmaps/style.mapcss`
 
 - **Source:** `https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/dark/style.mapcss`
 - **Used In:** `js/config.js`
