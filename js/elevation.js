@@ -214,7 +214,6 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
     const profileParams = new URLSearchParams();
     profileParams.append("geom", lv95GeoJson);
     profileParams.append("sr", "2056"); // We are providing LV95 coordinates
-    profileParams.append("nb_points", "200"); // Mimic PROFILE_DEFAULT_AMOUNT_POINTS
 
     const profileResponse = await fetch(profileApiUrl, {
       method: "POST", // This API (profile.json) does accept POST
