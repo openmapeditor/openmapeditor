@@ -23,8 +23,19 @@ function clearElevationCache() {
 }
 
 /**
- * Converts an array of points between coordinate systems using the geo.admin.ch 'reframe' API.
+ * Converts an array of points between coordinate systems using the Swisstopo REFRAME API.
  * This function makes parallel API calls, one for each point.
+ *
+ * NOTE: The API endpoints are part of the 'geodesy.geo.admin.ch' service, which also
+ * hosts a user-facing file-upload tool at its root. We are using the REST endpoints
+ * documented in the "Geodetic REST Web services (REFRAME Web API)" user manual.
+ *
+ * This API confusingly uses 'easting'/'northing' as keys for both input and output,
+ * even when the output is WGS84 (Lng/Lat).
+ *
+ * @see https://www.swisstopo.admin.ch/en/rest-api-geoservices-reframe-web (API homepage)
+ * @see https://www.swisstopo.admin.ch/dam/fr/sd-web/3xmcWvfxgG6X/Report16-03.pdf (Direct PDF User Manual, see section 4.1)
+ *
  * @param {L.LatLng[]} latlngs - An array of Leaflet LatLng objects. (p.lng/p.lat)
  * @param {string} inSr - The input EPSG code (e.g., '4326' or '2056').
  * @param {string} outSr - The output EPSG code (e.g., '2056' or '4326').
@@ -188,8 +199,10 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
 }
 
 /**
- * Fetches elevation data from the official GeoAdmin API (geo.admin.ch).
+ * Fetches elevation data from the official GeoAdmin API.
  * This mimics the logic from 'profile_helpers.py'.
+ *
+ * @see https://api3.geo.admin.ch/services/sdiservices.html#profile
  */
 async function fetchElevationForPathGeoAdminAPI(latlngs) {
   console.log("Fetching elevation data from: GeoAdmin (geo.admin.ch)");
