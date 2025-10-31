@@ -7,6 +7,23 @@
 // At the top of elevation.js, initialize a cache object.
 const elevationCache = new Map();
 
+// We assume proj4 has been loaded globally (e.g., via <script> tag)
+// 1. Define our coordinate system names
+const WGS84 = "EPSG:4326"; // Standard Lat/Lng
+const LV95 = "EPSG:2056"; // Swiss Grid
+
+// 2. Teach proj4js what LV95 is. This is the official definition.
+// This only needs to be done once when the script loads.
+if (typeof proj4 !== "undefined") {
+  // Safety check
+  proj4.defs(
+    LV95,
+    "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"
+  );
+} else {
+  console.error("proj4js is not loaded. Coordinate conversion will fail.");
+}
+
 /**
  * Clears the elevation data cache and the current elevation profile display.
  */
@@ -23,83 +40,54 @@ function clearElevationCache() {
 }
 
 /**
- * Converts an array of points between coordinate systems using the Swisstopo REFRAME API.
- * This function makes parallel API calls, one for each point.
- *
- * NOTE: The API endpoints are part of the 'geodesy.geo.admin.ch' service, which also
- * hosts a user-facing file-upload tool at its root. We are using the REST endpoints
- * documented in the "Geodetic REST Web services (REFRAME Web API)" user manual.
- *
- * This API confusingly uses 'easting'/'northing' as keys for both input and output,
- * even when the output is WGS84 (Lng/Lat).
- *
- * @see https://www.swisstopo.admin.ch/en/rest-api-geoservices-reframe-web (API homepage)
- * @see https://www.swisstopo.admin.ch/dam/fr/sd-web/3xmcWvfxgG6X/Report16-03.pdf (Direct PDF User Manual, see section 4.1)
+ * Converts an array of points between coordinate systems LOCALLY using proj4js.
+ * This is a synchronous and very fast operation.
  *
  * @param {L.LatLng[]} latlngs - An array of Leaflet LatLng objects. (p.lng/p.lat)
  * @param {string} inSr - The input EPSG code (e.g., '4326' or '2056').
  * @param {string} outSr - The output EPSG code (e.g., '2056' or '4326').
- * @returns {Promise<Array<[number, number]>>} A promise that resolves to an array of [lng, lat] or [easting, northing] coordinates.
+ * @returns {Array<[number, number]>} An array of [lng, lat] or [easting, northing] coordinates.
  */
-async function convertPath(latlngs, inSr, outSr) {
-  let apiUrl, inputParamsKey, outputKeys;
+function convertPath(latlngs, inSr, outSr) {
+  if (typeof proj4 === "undefined") {
+    throw new Error("proj4js is not loaded. Cannot convert coordinates.");
+  }
 
-  // 1. Configure API endpoints and parameter keys
+  let fromProj, toProj;
+
+  // 1. Configure transformation
   if (inSr === "4326" && outSr === "2056") {
-    apiUrl = "https://geodesy.geo.admin.ch/reframe/wgs84tolv95";
-    // Input keys for WGS84
-    inputParamsKey = (p) => `easting=${p.lng}&northing=${p.lat}`; // API uses 'easting' for lng, 'northing' for lat
-    // Expected output keys
-    outputKeys = ["easting", "northing"];
+    fromProj = WGS84;
+    toProj = LV95;
   } else if (inSr === "2056" && outSr === "4326") {
-    apiUrl = "https://geodesy.geo.admin.ch/reframe/lv95towgs84";
-    // Input keys for LV95 (stored in p.lng/p.lat by the caller)
-    inputParamsKey = (p) => `easting=${p.lng}&northing=${p.lat}`;
-
-    // --- START: *** THIS IS THE FIX *** ---
-    // The API confusingly returns 'easting' (for Lng) and 'northing' (for Lat)
-    outputKeys = ["easting", "northing"];
-    // --- END: *** THIS IS THE FIX *** ---
+    fromProj = LV95;
+    toProj = WGS84;
   } else {
     throw new Error(`Unsupported conversion: ${inSr} to ${outSr}`);
   }
 
-  // 2. Create an array of fetch promises
-  const promises = latlngs.map((p) => {
-    const url = `${apiUrl}?${inputParamsKey(p)}&format=json`;
-    return fetch(url) // This is now a GET request (default for fetch)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Reframe API failed (${response.status}) for point ${p.lng},${p.lat}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (data.error) {
-          throw new Error(`Reframe API error: ${data.error.message}`);
-        }
-        // The API returns strings, convert them to numbers
-        const val1 = parseFloat(data[outputKeys[0]]);
-        const val2 = parseFloat(data[outputKeys[1]]);
+  // 2. Get the transformation function from proj4
+  const transformer = proj4(fromProj, toProj);
 
-        // --- ADDED SAFETY CHECK ---
-        // If parsing fails (e.g., for null or ""), parseFloat returns NaN.
-        // We must catch this here, otherwise Promise.all will succeed with bad data.
-        if (isNaN(val1) || isNaN(val2)) {
-          // Throw the *entire* problematic JSON response so we can see what it is
-          throw new Error(`Reframe API returned invalid JSON: ${JSON.stringify(data)}`);
-        }
-        return [val1, val2]; // [easting, northing] or [lng, lat]
-      });
-  });
+  // 3. Perform the conversion by mapping over the array
 
-  // 3. Wait for all promises to resolve
-  try {
-    const coordinates = await Promise.all(promises);
-    return coordinates;
-  } catch (error) {
-    console.error(`Coordinate conversion failed (inSr: ${inSr}, outSr: ${outSr}):`, error);
-    throw error; // Re-throw to stop the fetch chain
+  // Case A: WGS84 (Lng, Lat) -> LV95 (Easting, Northing)
+  if (toProj === LV95) {
+    return latlngs.map((p) => {
+      // Input for WGS84 is [lng, lat]
+      const coords = transformer.forward([p.lng, p.lat]);
+      return [coords[0], coords[1]]; // [easting, northing]
+    });
+  }
+
+  // Case B: LV95 (Easting, Northing) -> WGS84 (Lng, Lat)
+  // Note: The caller stores Easting in p.lng, Northing in p.lat
+  else {
+    return latlngs.map((p) => {
+      // Input for LV95 is [easting, northing]
+      const coords = transformer.forward([p.lng, p.lat]);
+      return [coords[0], coords[1]]; // [lng, lat]
+    });
   }
 }
 
@@ -209,7 +197,6 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
 
   try {
     // --- Step 1: Convert our WGS 84 path to LV95 ---
-    // This now uses the corrected, parallel 'convertPath' function
     const lv95Coordinates = await convertPath(latlngs, "4326", "2056");
     const lv95GeoJson = JSON.stringify({
       type: "LineString",
