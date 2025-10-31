@@ -22,6 +22,76 @@ function clearElevationCache() {
   updateElevationToggleIconColor();
 }
 
+/**
+ * Converts an array of points between coordinate systems using the geo.admin.ch 'reframe' API.
+ * This function makes parallel API calls, one for each point.
+ * @param {L.LatLng[]} latlngs - An array of Leaflet LatLng objects. (p.lng/p.lat)
+ * @param {string} inSr - The input EPSG code (e.g., '4326' or '2056').
+ * @param {string} outSr - The output EPSG code (e.g., '2056' or '4326').
+ * @returns {Promise<Array<[number, number]>>} A promise that resolves to an array of [lng, lat] or [easting, northing] coordinates.
+ */
+async function convertPath(latlngs, inSr, outSr) {
+  let apiUrl, inputParamsKey, outputKeys;
+
+  // 1. Configure API endpoints and parameter keys
+  if (inSr === "4326" && outSr === "2056") {
+    apiUrl = "https://geodesy.geo.admin.ch/reframe/wgs84tolv95";
+    // Input keys for WGS84
+    inputParamsKey = (p) => `easting=${p.lng}&northing=${p.lat}`; // API uses 'easting' for lng, 'northing' for lat
+    // Expected output keys
+    outputKeys = ["easting", "northing"];
+  } else if (inSr === "2056" && outSr === "4326") {
+    apiUrl = "https://geodesy.geo.admin.ch/reframe/lv95towgs84";
+    // Input keys for LV95 (stored in p.lng/p.lat by the caller)
+    inputParamsKey = (p) => `easting=${p.lng}&northing=${p.lat}`;
+
+    // --- START: *** THIS IS THE FIX *** ---
+    // The API confusingly returns 'easting' (for Lng) and 'northing' (for Lat)
+    outputKeys = ["easting", "northing"];
+    // --- END: *** THIS IS THE FIX *** ---
+  } else {
+    throw new Error(`Unsupported conversion: ${inSr} to ${outSr}`);
+  }
+
+  // 2. Create an array of fetch promises
+  const promises = latlngs.map((p) => {
+    const url = `${apiUrl}?${inputParamsKey(p)}&format=json`;
+    return fetch(url) // This is now a GET request (default for fetch)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Reframe API failed (${response.status}) for point ${p.lng},${p.lat}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.error) {
+          throw new Error(`Reframe API error: ${data.error.message}`);
+        }
+        // The API returns strings, convert them to numbers
+        const val1 = parseFloat(data[outputKeys[0]]);
+        const val2 = parseFloat(data[outputKeys[1]]);
+
+        // --- ADDED SAFETY CHECK ---
+        // If parsing fails (e.g., for null or ""), parseFloat returns NaN.
+        // We must catch this here, otherwise Promise.all will succeed with bad data.
+        if (isNaN(val1) || isNaN(val2)) {
+          // Throw the *entire* problematic JSON response so we can see what it is
+          throw new Error(`Reframe API returned invalid JSON: ${JSON.stringify(data)}`);
+        }
+        return [val1, val2]; // [easting, northing] or [lng, lat]
+      });
+  });
+
+  // 3. Wait for all promises to resolve
+  try {
+    const coordinates = await Promise.all(promises);
+    return coordinates;
+  } catch (error) {
+    console.error(`Coordinate conversion failed (inSr: ${inSr}, outSr: ${outSr}):`, error);
+    throw error; // Re-throw to stop the fetch chain
+  }
+}
+
 async function fetchElevationForPathGoogle(latlngs, realDistance) {
   // <-- 1. Accept realDistance
   console.log("Fetching elevation data from: Google");
@@ -117,6 +187,108 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
   return allResults;
 }
 
+/**
+ * Fetches elevation data from the official GeoAdmin API (geo.admin.ch).
+ * This mimics the logic from 'profile_helpers.py'.
+ */
+async function fetchElevationForPathGeoAdminAPI(latlngs) {
+  console.log("Fetching elevation data from: GeoAdmin (geo.admin.ch)");
+
+  try {
+    // --- Step 1: Convert our WGS 84 path to LV95 ---
+    // This now uses the corrected, parallel 'convertPath' function
+    const lv95Coordinates = await convertPath(latlngs, "4326", "2056");
+    const lv95GeoJson = JSON.stringify({
+      type: "LineString",
+      coordinates: lv95Coordinates, // [[easting, northing], ...]
+    });
+
+    // --- Step 2: Call the profile.json service ---
+    const profileApiUrl = "https://api3.geo.admin.ch/rest/services/profile.json";
+    const profileParams = new URLSearchParams();
+    profileParams.append("geom", lv95GeoJson);
+    profileParams.append("sr", "2056"); // We are providing LV95 coordinates
+    profileParams.append("nb_points", "200"); // Mimic PROFILE_DEFAULT_AMOUNT_POINTS
+
+    const profileResponse = await fetch(profileApiUrl, {
+      method: "POST", // This API (profile.json) does accept POST
+      body: profileParams,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    if (!profileResponse.ok) {
+      throw new Error(
+        `Profile API failed (${profileResponse.status}): ${await profileResponse.text()}`
+      );
+    }
+
+    const swissProfilePoints = await profileResponse.json();
+    if (!swissProfilePoints || swissProfilePoints.length === 0) {
+      throw new Error("Profile API returned no data.");
+    }
+
+    // --- START: FIX ---
+    // Filter out any points that the API returned without valid, finite numeric coordinates.
+    // isFinite() correctly handles null, undefined, NaN, "", and "some-string".
+    const validSwissPoints = swissProfilePoints.filter(
+      (p) => isFinite(p.easting) && isFinite(p.northing)
+    );
+    // --- END: FIX ---
+
+    if (validSwissPoints.length === 0) {
+      // This can happen if the *entire* line is outside Switzerland
+      throw new Error(
+        "Profile API returned data, but no valid coordinates (line may be outside data area)."
+      );
+    }
+
+    // --- Step 3: Convert the *new* 200 points back to WGS 84 ---
+    // We need them back in lat/lng for our map hover marker.
+    // NOTE: We store LV95 easting in lng, northing in lat
+    // Use the filtered 'validSwissPoints' array here
+    const profileLv95LatLngs = validSwissPoints.map((p) => L.latLng(p.northing, p.easting));
+
+    const profileWgs84Coords = await convertPath(
+      profileLv95LatLngs,
+      "2056", // Input is LV95
+      "4326" // Output is WGS 84
+    );
+
+    // --- Step 4: Merge the data ---
+    // We create the final array of L.LatLng objects with altitude,
+    // which is exactly what `drawElevationProfile` expects.
+    const pointsWithElev = [];
+    // Iterate over the 'validSwissPoints' array to match the length of 'profileWgs84Coords'
+    for (let i = 0; i < validSwissPoints.length; i++) {
+      const swissPoint = validSwissPoints[i]; // Use the valid point
+      const wgs84Coord = profileWgs84Coords[i]; // [lng, lat]
+
+      // Get altitude, default to 0 if 'COMB' (combined) model isn't present
+      // Also check if alts is null, or if COMB is null/not finite
+      const altitude = swissPoint.alts && isFinite(swissPoint.alts.COMB) ? swissPoint.alts.COMB : 0;
+
+      pointsWithElev.push(
+        L.latLng(wgs84Coord[1], wgs84Coord[0], altitude) // L.latLng(lat, lng, alt)
+      );
+    }
+
+    // This array is now in the *exact* same format as the Google one
+    // and can be processed by formatDataForD3 in elevation-profile.js
+    return pointsWithElev;
+  } catch (error) {
+    console.error("Error fetching elevation from GeoAdmin API:", error);
+    Swal.fire({
+      icon: "error",
+      iconColor: "var(--swal-color-error)",
+      title: "GeoAdmin Elevation Error",
+      text: `Failed to fetch elevation data: ${error.message}`,
+    });
+    return null;
+  }
+}
+
 // Main dispatcher function for fetching elevation data.
 async function fetchElevationForPath(latlngs, realDistance) {
   // <-- 3. Accept realDistance
@@ -127,8 +299,11 @@ async function fetchElevationForPath(latlngs, realDistance) {
     return Promise.resolve(elevationCache.get(cacheKey));
   }
 
-  // Simplified: Always use Google.
-  const pointsWithElev = await fetchElevationForPathGoogle(latlngs, realDistance); // <-- 4. Pass it
+  // --- START: MODIFICATION FOR TEST ---
+  // Simplified: Always use GeoAdminAPI for this test.
+  // const pointsWithElev = await fetchElevationForPathGoogle(latlngs, realDistance); // <-- 4. Pass it
+  const pointsWithElev = await fetchElevationForPathGeoAdminAPI(latlngs);
+  // --- END: MODIFICATION FOR TEST ---
 
   if (pointsWithElev) {
     elevationCache.set(cacheKey, pointsWithElev);
