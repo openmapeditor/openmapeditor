@@ -194,6 +194,11 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
  * @see https://api3.geo.admin.ch/services/sdiservices.html#profile
  */
 async function fetchElevationForPathGeoAdminAPI(latlngs) {
+  // --- START: Debug Toggle ---
+  // Set this to true to activate the debug output in the console
+  const ENABLE_GEOADMIN_DEBUG = true;
+  // --- END: Debug Toggle ---
+
   console.log("Fetching elevation data from: GeoAdmin (geo.admin.ch)");
 
   try {
@@ -261,7 +266,8 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
     // We create the final array of L.LatLng objects with altitude,
     // which is exactly what `drawElevationProfile` expects.
     const pointsWithElev = [];
-    // Iterate over the 'validSwissPoints' array to match the length of 'profileWgs84Coords'
+    let debugDataForTable = []; // --- Debug: Initialize array ---
+
     for (let i = 0; i < validSwissPoints.length; i++) {
       const swissPoint = validSwissPoints[i]; // Use the valid point
       const wgs84Coord = profileWgs84Coords[i]; // [lng, lat]
@@ -273,7 +279,44 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
       pointsWithElev.push(
         L.latLng(wgs84Coord[1], wgs84Coord[0], altitude) // L.latLng(lat, lng, alt)
       );
+
+      // --- START: Debug data capture (inside loop) ---
+      if (ENABLE_GEOADMIN_DEBUG) {
+        debugDataForTable.push({
+          Distance: swissPoint.dist,
+          Altitude: altitude,
+          Easting: swissPoint.easting,
+          Northing: swissPoint.northing,
+          Longitude: wgs84Coord[0],
+          Latitude: wgs84Coord[1],
+        });
+      }
+      // --- END: Debug data capture ---
     }
+
+    // --- START: Debug output (after loop) ---
+    if (ENABLE_GEOADMIN_DEBUG) {
+      console.log("--- GeoAdmin Debug Data (View Only) ---");
+      console.table(debugDataForTable);
+
+      // 3. Create a CSV string you can copy
+      let csvContent = "Distance;Altitude;Easting;Northing;Longitude;Latitude\n";
+      debugDataForTable.forEach((row) => {
+        csvContent += `${row.Distance};${row.Altitude};${row.Easting};${row.Northing};${row.Longitude};${row.Latitude}\n`;
+      });
+
+      // 4. Create a helper function to copy the CSV string to your clipboard
+      window.copyGeoAdminCSV = () => {
+        copy(csvContent); // 'copy()' is a built-in console helper
+        console.log("CSV data copied to clipboard!");
+      };
+
+      console.log(
+        "%cTo copy data as CSV, type copyGeoAdminCSV() in the console and press Enter.",
+        "color: blue; font-size: 14px;"
+      );
+    }
+    // --- END: Debug output ---
 
     // This array is now in the *exact* same format as the Google one
     // and can be processed by formatDataForD3 in elevation-profile.js
