@@ -342,11 +342,15 @@ async function fetchElevationForPath(latlngs, realDistance) {
     return Promise.resolve(elevationCache.get(cacheKey));
   }
 
-  // --- START: MODIFICATION FOR TEST ---
-  // Simplified: Always use GeoAdminAPI for this test.
-  // const pointsWithElev = await fetchElevationForPathGoogle(latlngs, realDistance); // <-- 4. Pass it
-  const pointsWithElev = await fetchElevationForPathGeoAdminAPI(latlngs);
-  // --- END: MODIFICATION FOR TEST ---
+  // Get the selected elevation provider from localStorage (default to "google")
+  const elevationProvider = localStorage.getItem("elevationProvider") || "google";
+
+  let pointsWithElev;
+  if (elevationProvider === "geoadmin") {
+    pointsWithElev = await fetchElevationForPathGeoAdminAPI(latlngs);
+  } else {
+    pointsWithElev = await fetchElevationForPathGoogle(latlngs, realDistance);
+  }
 
   if (pointsWithElev) {
     elevationCache.set(cacheKey, pointsWithElev);
