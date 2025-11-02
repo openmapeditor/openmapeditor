@@ -18,12 +18,10 @@ This folder contains original source files from third-party projects that were u
 
 - **Source:** `https://github.com/geoadmin/web-mapviewer/blob/develop/packages/geoadmin-elevation-profile/src/profile.api.ts`
 - **Used In:** `js/elevation.js`
-- **Purpose:** Official TypeScript client implementation for the GeoAdmin elevation profile API. This file provides reference for:
-  - POST request structure with LineString GeoJSON geometry
-  - Chunking logic for large paths (3000-point batches to avoid backend limits)
-  - Coordinate transformation workflow (WGS84 ↔ LV95)
-  - Comprehensive error handling patterns (413 errors for too many points, out-of-bounds handling)
-  - Response stitching when multiple chunks are required
+- **Purpose:** Official TypeScript client implementation for the GeoAdmin elevation profile API. Used as reference to implement chunking logic in `fetchElevationForPathGeoAdminAPI()` for handling paths that exceed the API's 5000-point limit:
+  - Splits paths exceeding 3000 points into manageable chunks (using conservative limit)
+  - Makes parallel API requests for each chunk using `Promise.all()`
+  - Stitches responses back together with adjusted distance values to maintain continuity
 
 ---
 

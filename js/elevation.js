@@ -188,6 +188,13 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
 }
 
 /**
+ * How many coordinates we will let a chunk have before splitting it into multiple requests/chunks
+ * for the GeoAdmin API. The GeoAdmin backend has a hard limit at 5k, we take a conservative
+ * approach with 3k.
+ */
+const MAX_GEOADMIN_REQUEST_POINT_LENGTH = 3000;
+
+/**
  * Fetches elevation data from the official GeoAdmin API.
  * This mimics the logic from 'profile_helpers.py'.
  *
@@ -196,7 +203,7 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
 async function fetchElevationForPathGeoAdminAPI(latlngs) {
   // --- START: Debug Toggle ---
   // Set this to true to activate the debug output in the console
-  const ENABLE_GEOADMIN_DEBUG = true;
+  const ENABLE_GEOADMIN_DEBUG = false;
   // --- END: Debug Toggle ---
 
   console.log("Fetching elevation data from: GeoAdmin (geo.admin.ch)");
@@ -204,32 +211,69 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
   try {
     // --- Step 1: Convert our WGS 84 path to LV95 ---
     const lv95Coordinates = await convertPath(latlngs, "4326", "2056");
-    const lv95GeoJson = JSON.stringify({
-      type: "LineString",
-      coordinates: lv95Coordinates, // [[easting, northing], ...]
-    });
 
-    // --- Step 2: Call the profile.json service ---
-    const profileApiUrl = "https://api3.geo.admin.ch/rest/services/profile.json";
-    const profileParams = new URLSearchParams();
-    profileParams.append("geom", lv95GeoJson);
-    profileParams.append("sr", "2056"); // We are providing LV95 coordinates
-
-    const profileResponse = await fetch(profileApiUrl, {
-      method: "POST", // This API (profile.json) does accept POST
-      body: profileParams,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    });
-
-    if (!profileResponse.ok) {
-      throw new Error(
-        `Profile API failed (${profileResponse.status}): ${await profileResponse.text()}`
+    // --- Step 2: Split coordinates into chunks if needed (to handle 5000 point limit) ---
+    const coordinateChunks = [];
+    if (lv95Coordinates.length <= MAX_GEOADMIN_REQUEST_POINT_LENGTH) {
+      coordinateChunks.push(lv95Coordinates);
+    } else {
+      console.log(
+        `Path has ${lv95Coordinates.length} points. Splitting into chunks of ${MAX_GEOADMIN_REQUEST_POINT_LENGTH} points.`
       );
+      for (let i = 0; i < lv95Coordinates.length; i += MAX_GEOADMIN_REQUEST_POINT_LENGTH) {
+        coordinateChunks.push(lv95Coordinates.slice(i, i + MAX_GEOADMIN_REQUEST_POINT_LENGTH));
+      }
     }
 
-    const swissProfilePoints = await profileResponse.json();
+    // --- Step 3: Make API requests for each chunk ---
+    const profileApiUrl = "https://api3.geo.admin.ch/rest/services/profile.json";
+    const allRequests = coordinateChunks.map((chunk) => {
+      const lv95GeoJson = JSON.stringify({
+        type: "LineString",
+        coordinates: chunk, // [[easting, northing], ...]
+      });
+
+      const profileParams = new URLSearchParams();
+      profileParams.append("geom", lv95GeoJson);
+      profileParams.append("sr", "2056"); // We are providing LV95 coordinates
+
+      return fetch(profileApiUrl, {
+        method: "POST",
+        body: profileParams,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+    });
+
+    const allResponses = await Promise.all(allRequests);
+
+    // --- Step 4: Process responses and stitch them together ---
+    let swissProfilePoints = [];
+    let previousDist = 0;
+
+    for (const profileResponse of allResponses) {
+      if (!profileResponse.ok) {
+        throw new Error(
+          `Profile API failed (${profileResponse.status}): ${await profileResponse.text()}`
+        );
+      }
+
+      const chunkPoints = await profileResponse.json();
+
+      if (!chunkPoints || chunkPoints.length === 0) {
+        throw new Error("Profile API returned no data for a chunk.");
+      }
+
+      // Adjust distance values to account for previous chunks
+      const adjustedPoints = chunkPoints.map((point) => ({
+        ...point,
+        dist: point.dist + previousDist,
+      }));
+
+      swissProfilePoints = swissProfilePoints.concat(adjustedPoints);
+      previousDist = swissProfilePoints[swissProfilePoints.length - 1].dist;
+    }
     if (!swissProfilePoints || swissProfilePoints.length === 0) {
       throw new Error("Profile API returned no data.");
     }
