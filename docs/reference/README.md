@@ -14,6 +14,19 @@ This folder contains original source files from third-party projects that were u
 
 ---
 
+### `geoadmin-elevation-profile/profile.api.ts`
+
+- **Source:** `https://github.com/geoadmin/web-mapviewer/blob/develop/packages/geoadmin-elevation-profile/src/profile.api.ts`
+- **Used In:** `js/elevation.js`
+- **Purpose:** Official TypeScript client implementation for the GeoAdmin elevation profile API. This file provides reference for:
+  - POST request structure with LineString GeoJSON geometry
+  - Chunking logic for large paths (3000-point batches to avoid backend limits)
+  - Coordinate transformation workflow (WGS84 ↔ LV95)
+  - Comprehensive error handling patterns (413 errors for too many points, out-of-bounds handling)
+  - Response stitching when multiple chunks are required
+
+---
+
 ### `geoadmin-service-alti/profile_helpers.py`
 
 - **Source:** `https://github.com/geoadmin/service-alti/blob/develop/app/helpers/profile_helpers.py`
