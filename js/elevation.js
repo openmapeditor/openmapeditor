@@ -312,7 +312,7 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
 
       console.log(
         "%cTo copy data as CSV, type copyGeoAdminCSV() in the console and press Enter.",
-        "color: blue; font-size: 14px;"
+        "font-size: 14px;"
       );
     }
     // --- END: Debug output ---
