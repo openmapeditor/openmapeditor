@@ -29,7 +29,7 @@ This folder contains original source files from third-party projects that were u
 
 - **Source:** `https://github.com/geoadmin/service-alti/blob/develop/app/helpers/profile_helpers.py`
 - **Used In:** `js/elevation.js`
-- **Purpose:** This file is the original Python backend source for the `map.geo.admin.ch` elevation profile service. It was used as the primary reference for the data-fetching and sampling logic in `elevation.js`, specifically replicating the 200-point default (`PROFILE_DEFAULT_AMOUNT_POINTS`) and 5000-point maximum (`PROFILE_MAX_AMOUNT_POINTS`) logic.
+- **Purpose:** This file is the original Python backend source for the `map.geo.admin.ch` elevation profile service. It was used as a reference for the sampling logic in `elevation.js`, specifically the 200-point default (`PROFILE_DEFAULT_AMOUNT_POINTS`) and 5000-point maximum (`PROFILE_MAX_AMOUNT_POINTS`) constants. Note: These constants are applied in the `fetchElevationForPathGoogle()` function for the Google Elevation API implementation, while the GeoAdmin API implementation uses the chunking approach from `profile.api.ts` instead.
 
 ---
 
