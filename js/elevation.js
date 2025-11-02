@@ -195,6 +195,32 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
 const MAX_GEOADMIN_REQUEST_POINT_LENGTH = 3000;
 
 /**
+ * Official LV95 (EPSG:2056) coordinate system bounds for Switzerland.
+ * Source: https://epsg.io/2056
+ */
+const LV95_BOUNDS = {
+  minEasting: 2485071.58,
+  maxEasting: 2833849.15,
+  minNorthing: 1074261.72,
+  maxNorthing: 1299941.79,
+};
+
+/**
+ * Checks if all LV95 coordinates are outside Switzerland bounds.
+ * @param {Array<[number, number]>} lv95Coords - Array of [easting, northing] coordinates
+ * @returns {boolean} True if ALL coordinates are outside bounds (path completely outside Switzerland)
+ */
+function areAllCoordinatesOutsideSwitzerlandBounds(lv95Coords) {
+  return lv95Coords.every(
+    ([easting, northing]) =>
+      easting < LV95_BOUNDS.minEasting ||
+      easting > LV95_BOUNDS.maxEasting ||
+      northing < LV95_BOUNDS.minNorthing ||
+      northing > LV95_BOUNDS.maxNorthing
+  );
+}
+
+/**
  * Fetches elevation data from the official GeoAdmin API.
  * This mimics the logic from 'profile_helpers.py'.
  *
@@ -211,6 +237,13 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
   try {
     // --- Step 1: Convert our WGS 84 path to LV95 ---
     const lv95Coordinates = await convertPath(latlngs, "4326", "2056");
+
+    // --- Step 1.5: Check if all coordinates are outside Switzerland bounds ---
+    if (areAllCoordinatesOutsideSwitzerlandBounds(lv95Coordinates)) {
+      throw new Error(
+        "Path is completely outside Switzerland. The GeoAdmin elevation service only covers Switzerland."
+      );
+    }
 
     // --- Step 2: Split coordinates into chunks if needed (to handle 5000 point limit) ---
     const coordinateChunks = [];
