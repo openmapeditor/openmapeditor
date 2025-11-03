@@ -7,6 +7,24 @@
 // At the top of elevation.js, initialize a cache object.
 const elevationCache = new Map();
 
+// We assume proj4 has been loaded globally (e.g., via <script> tag)
+// 1. Define our coordinate system names
+const WGS84 = "EPSG:4326"; // Standard Lat/Lng
+const LV95 = "EPSG:2056"; // Swiss Grid
+
+// 2. Teach proj4js what LV95 is. This is the official definition.
+// This only needs to be done once when the script loads.
+if (typeof proj4 !== "undefined") {
+  // Safety check
+  // matrix is coming from https://epsg.io/2056.proj4
+  proj4.defs(
+    LV95,
+    "+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs +type=crs"
+  );
+} else {
+  console.error("proj4js is not loaded. Coordinate conversion will fail.");
+}
+
 /**
  * Clears the elevation data cache and the current elevation profile display.
  */
@@ -20,6 +38,58 @@ function clearElevationCache() {
     isElevationProfileVisible = false;
   }
   updateElevationToggleIconColor();
+}
+
+/**
+ * Converts an array of points between coordinate systems LOCALLY using proj4js.
+ * This is a synchronous and very fast operation.
+ *
+ * @param {L.LatLng[]} latlngs - An array of Leaflet LatLng objects. (p.lng/p.lat)
+ * @param {string} inSr - The input EPSG code (e.g., '4326' or '2056').
+ * @param {string} outSr - The output EPSG code (e.g., '2056' or '4326').
+ * @returns {Array<[number, number]>} An array of [lng, lat] or [easting, northing] coordinates.
+ */
+function convertPath(latlngs, inSr, outSr) {
+  if (typeof proj4 === "undefined") {
+    throw new Error("proj4js is not loaded. Cannot convert coordinates.");
+  }
+
+  let fromProj, toProj;
+
+  // 1. Configure transformation
+  if (inSr === "4326" && outSr === "2056") {
+    fromProj = WGS84;
+    toProj = LV95;
+  } else if (inSr === "2056" && outSr === "4326") {
+    fromProj = LV95;
+    toProj = WGS84;
+  } else {
+    throw new Error(`Unsupported conversion: ${inSr} to ${outSr}`);
+  }
+
+  // 2. Get the transformation function from proj4
+  const transformer = proj4(fromProj, toProj);
+
+  // 3. Perform the conversion by mapping over the array
+
+  // Case A: WGS84 (Lng, Lat) -> LV95 (Easting, Northing)
+  if (toProj === LV95) {
+    return latlngs.map((p) => {
+      // Input for WGS84 is [lng, lat]
+      const coords = transformer.forward([p.lng, p.lat]);
+      return [coords[0], coords[1]]; // [easting, northing]
+    });
+  }
+
+  // Case B: LV95 (Easting, Northing) -> WGS84 (Lng, Lat)
+  // Note: The caller stores Easting in p.lng, Northing in p.lat
+  else {
+    return latlngs.map((p) => {
+      // Input for LV95 is [easting, northing]
+      const coords = transformer.forward([p.lng, p.lat]);
+      return [coords[0], coords[1]]; // [lng, lat]
+    });
+  }
 }
 
 async function fetchElevationForPathGoogle(latlngs, realDistance) {
@@ -117,6 +187,228 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
   return allResults;
 }
 
+/**
+ * How many coordinates we will let a chunk have before splitting it into multiple requests/chunks
+ * for the GeoAdmin API. The GeoAdmin backend has a hard limit at 5k, we take a conservative
+ * approach with 3k.
+ */
+const MAX_GEOADMIN_REQUEST_POINT_LENGTH = 3000;
+
+/**
+ * Official LV95 (EPSG:2056) coordinate system bounds for Switzerland.
+ * Source: https://epsg.io/2056
+ */
+const LV95_BOUNDS = {
+  minEasting: 2485071.58,
+  maxEasting: 2833849.15,
+  minNorthing: 1074261.72,
+  maxNorthing: 1299941.79,
+};
+
+/**
+ * Checks if all LV95 coordinates are outside Switzerland bounds.
+ * @param {Array<[number, number]>} lv95Coords - Array of [easting, northing] coordinates
+ * @returns {boolean} True if ALL coordinates are outside bounds (path completely outside Switzerland)
+ */
+function areAllCoordinatesOutsideSwitzerlandBounds(lv95Coords) {
+  return lv95Coords.every(
+    ([easting, northing]) =>
+      easting < LV95_BOUNDS.minEasting ||
+      easting > LV95_BOUNDS.maxEasting ||
+      northing < LV95_BOUNDS.minNorthing ||
+      northing > LV95_BOUNDS.maxNorthing
+  );
+}
+
+/**
+ * Fetches elevation data from the official GeoAdmin API.
+ * This mimics the logic from 'profile_helpers.py'.
+ *
+ * @see https://api3.geo.admin.ch/services/sdiservices.html#profile
+ */
+async function fetchElevationForPathGeoAdminAPI(latlngs) {
+  // --- START: Debug Toggle ---
+  // Set this to true to activate the debug output in the console
+  const ENABLE_GEOADMIN_DEBUG = false;
+  // --- END: Debug Toggle ---
+
+  console.log("Fetching elevation data from: GeoAdmin (geo.admin.ch)");
+
+  try {
+    // --- Step 1: Convert our WGS 84 path to LV95 ---
+    const lv95Coordinates = await convertPath(latlngs, "4326", "2056");
+
+    // --- Step 1.5: Check if all coordinates are outside Switzerland bounds ---
+    if (areAllCoordinatesOutsideSwitzerlandBounds(lv95Coordinates)) {
+      throw new Error(
+        "Path is completely outside Switzerland. The GeoAdmin elevation service only covers Switzerland."
+      );
+    }
+
+    // --- Step 2: Split coordinates into chunks if needed (to handle 5000 point limit) ---
+    const coordinateChunks = [];
+    if (lv95Coordinates.length <= MAX_GEOADMIN_REQUEST_POINT_LENGTH) {
+      coordinateChunks.push(lv95Coordinates);
+    } else {
+      console.log(
+        `Path has ${lv95Coordinates.length} points. Splitting into chunks of ${MAX_GEOADMIN_REQUEST_POINT_LENGTH} points.`
+      );
+      for (let i = 0; i < lv95Coordinates.length; i += MAX_GEOADMIN_REQUEST_POINT_LENGTH) {
+        coordinateChunks.push(lv95Coordinates.slice(i, i + MAX_GEOADMIN_REQUEST_POINT_LENGTH));
+      }
+    }
+
+    // --- Step 3: Make API requests for each chunk ---
+    const profileApiUrl = "https://api3.geo.admin.ch/rest/services/profile.json";
+    const allRequests = coordinateChunks.map((chunk) => {
+      const lv95GeoJson = JSON.stringify({
+        type: "LineString",
+        coordinates: chunk, // [[easting, northing], ...]
+      });
+
+      const profileParams = new URLSearchParams();
+      profileParams.append("geom", lv95GeoJson);
+      profileParams.append("sr", "2056"); // We are providing LV95 coordinates
+
+      return fetch(profileApiUrl, {
+        method: "POST",
+        body: profileParams,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+    });
+
+    const allResponses = await Promise.all(allRequests);
+
+    // --- Step 4: Process responses and stitch them together ---
+    let swissProfilePoints = [];
+    let previousDist = 0;
+
+    for (const profileResponse of allResponses) {
+      if (!profileResponse.ok) {
+        throw new Error(
+          `Profile API failed (${profileResponse.status}): ${await profileResponse.text()}`
+        );
+      }
+
+      const chunkPoints = await profileResponse.json();
+
+      if (!chunkPoints || chunkPoints.length === 0) {
+        throw new Error("Profile API returned no data for a chunk.");
+      }
+
+      // Adjust distance values to account for previous chunks
+      const adjustedPoints = chunkPoints.map((point) => ({
+        ...point,
+        dist: point.dist + previousDist,
+      }));
+
+      swissProfilePoints = swissProfilePoints.concat(adjustedPoints);
+      previousDist = swissProfilePoints[swissProfilePoints.length - 1].dist;
+    }
+    if (!swissProfilePoints || swissProfilePoints.length === 0) {
+      throw new Error("Profile API returned no data.");
+    }
+
+    // --- START: FIX ---
+    // Filter out any points that the API returned without valid, finite numeric coordinates.
+    // isFinite() correctly handles null, undefined, NaN, "", and "some-string".
+    const validSwissPoints = swissProfilePoints.filter(
+      (p) => isFinite(p.easting) && isFinite(p.northing)
+    );
+    // --- END: FIX ---
+
+    if (validSwissPoints.length === 0) {
+      // This can happen if the *entire* line is outside Switzerland
+      throw new Error(
+        "Profile API returned data, but no valid coordinates (line may be outside data area)."
+      );
+    }
+
+    // --- Step 3: Convert the *new* 200 points back to WGS 84 ---
+    // We need them back in lat/lng for our map hover marker.
+    // NOTE: We store LV95 easting in lng, northing in lat
+    // Use the filtered 'validSwissPoints' array here
+    const profileLv95LatLngs = validSwissPoints.map((p) => L.latLng(p.northing, p.easting));
+
+    const profileWgs84Coords = await convertPath(
+      profileLv95LatLngs,
+      "2056", // Input is LV95
+      "4326" // Output is WGS 84
+    );
+
+    // --- Step 4: Merge the data ---
+    // We create the final array of L.LatLng objects with altitude,
+    // which is exactly what `drawElevationProfile` expects.
+    const pointsWithElev = [];
+    let debugDataForTable = []; // --- Debug: Initialize array ---
+
+    for (let i = 0; i < validSwissPoints.length; i++) {
+      const swissPoint = validSwissPoints[i]; // Use the valid point
+      const wgs84Coord = profileWgs84Coords[i]; // [lng, lat]
+
+      // Get altitude, default to 0 if 'COMB' (combined) model isn't present
+      // Also check if alts is null, or if COMB is null/not finite
+      const altitude = swissPoint.alts && isFinite(swissPoint.alts.COMB) ? swissPoint.alts.COMB : 0;
+
+      pointsWithElev.push(
+        L.latLng(wgs84Coord[1], wgs84Coord[0], altitude) // L.latLng(lat, lng, alt)
+      );
+
+      // --- START: Debug data capture (inside loop) ---
+      if (ENABLE_GEOADMIN_DEBUG) {
+        debugDataForTable.push({
+          Distance: swissPoint.dist,
+          Altitude: altitude,
+          Easting: swissPoint.easting,
+          Northing: swissPoint.northing,
+          Longitude: wgs84Coord[0],
+          Latitude: wgs84Coord[1],
+        });
+      }
+      // --- END: Debug data capture ---
+    }
+
+    // --- START: Debug output (after loop) ---
+    if (ENABLE_GEOADMIN_DEBUG) {
+      console.log("--- GeoAdmin Debug Data (View Only) ---");
+      console.table(debugDataForTable);
+
+      // 3. Create a CSV string you can copy
+      let csvContent = "Distance;Altitude;Easting;Northing;Longitude;Latitude\n";
+      debugDataForTable.forEach((row) => {
+        csvContent += `${row.Distance};${row.Altitude};${row.Easting};${row.Northing};${row.Longitude};${row.Latitude}\n`;
+      });
+
+      // 4. Create a helper function to copy the CSV string to your clipboard
+      window.copyGeoAdminCSV = () => {
+        copy(csvContent); // 'copy()' is a built-in console helper
+        console.log("CSV data copied to clipboard!");
+      };
+
+      console.log(
+        "%cTo copy data as CSV, type copyGeoAdminCSV() in the console and press Enter.",
+        "font-size: 14px;"
+      );
+    }
+    // --- END: Debug output ---
+
+    // This array is now in the *exact* same format as the Google one
+    // and can be processed by formatDataForD3 in elevation-profile.js
+    return pointsWithElev;
+  } catch (error) {
+    console.error("Error fetching elevation from GeoAdmin API:", error);
+    Swal.fire({
+      icon: "error",
+      iconColor: "var(--swal-color-error)",
+      title: "GeoAdmin Elevation Error",
+      text: `Failed to fetch elevation data: ${error.message}`,
+    });
+    return null;
+  }
+}
+
 // Main dispatcher function for fetching elevation data.
 async function fetchElevationForPath(latlngs, realDistance) {
   // <-- 3. Accept realDistance
@@ -127,8 +419,15 @@ async function fetchElevationForPath(latlngs, realDistance) {
     return Promise.resolve(elevationCache.get(cacheKey));
   }
 
-  // Simplified: Always use Google.
-  const pointsWithElev = await fetchElevationForPathGoogle(latlngs, realDistance); // <-- 4. Pass it
+  // Get the selected elevation provider from localStorage (default to "google")
+  const elevationProvider = localStorage.getItem("elevationProvider") || "google";
+
+  let pointsWithElev;
+  if (elevationProvider === "geoadmin") {
+    pointsWithElev = await fetchElevationForPathGeoAdminAPI(latlngs);
+  } else {
+    pointsWithElev = await fetchElevationForPathGoogle(latlngs, realDistance);
+  }
 
   if (pointsWithElev) {
     elevationCache.set(cacheKey, pointsWithElev);

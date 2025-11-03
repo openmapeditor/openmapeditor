@@ -1616,6 +1616,39 @@ function initializeMap() {
     });
     L.DomEvent.on(routingProviderContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
 
+    // --- Elevation Provider Setting ---
+    const elevationProviderContainer = L.DomUtil.create(
+      "div",
+      "settings-control-item",
+      settingsPanel
+    );
+    const elevationProviderLabel = L.DomUtil.create("label", "", elevationProviderContainer);
+    elevationProviderLabel.htmlFor = "elevation-provider-select";
+    elevationProviderLabel.innerText = "Elevation Provider";
+    const elevationProviderSelect = L.DomUtil.create("select", "", elevationProviderContainer);
+    elevationProviderSelect.id = "elevation-provider-select";
+    elevationProviderSelect.innerHTML = `<option value="google">Google</option><option value="geoadmin">GeoAdmin (Switzerland)</option>`;
+    elevationProviderSelect.value = localStorage.getItem("elevationProvider") || "google";
+    L.DomEvent.on(elevationProviderSelect, "change", (e) => {
+      const newProvider = e.target.value;
+      localStorage.setItem("elevationProvider", newProvider);
+      clearElevationCache();
+      Swal.fire({
+        toast: true,
+        position: "center",
+        icon: "info",
+        iconColor: "var(--swal-color-info)",
+        title: `Elevation provider set to ${e.target.options[e.target.selectedIndex].text}`,
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    });
+    L.DomEvent.on(
+      elevationProviderContainer,
+      "dblclick mousedown wheel",
+      L.DomEvent.stopPropagation
+    );
+
     // --- Privacy Policy Link ---
     const privacyPolicyContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
     const privacyPolicyLabel = L.DomUtil.create("label", "", privacyPolicyContainer);

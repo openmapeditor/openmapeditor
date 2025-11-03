@@ -14,11 +14,22 @@ This folder contains original source files from third-party projects that were u
 
 ---
 
+### `geoadmin-elevation-profile/profile.api.ts`
+
+- **Source:** `https://github.com/geoadmin/web-mapviewer/blob/develop/packages/geoadmin-elevation-profile/src/profile.api.ts`
+- **Used In:** `js/elevation.js`
+- **Purpose:** Official TypeScript client implementation for the GeoAdmin elevation profile API. Used as reference to implement chunking logic in `fetchElevationForPathGeoAdminAPI()` for handling paths that exceed the API's 5000-point limit:
+  - Splits paths exceeding 3000 points into manageable chunks (using conservative limit)
+  - Makes parallel API requests for each chunk using `Promise.all()`
+  - Stitches responses back together with adjusted distance values to maintain continuity
+
+---
+
 ### `geoadmin-service-alti/profile_helpers.py`
 
 - **Source:** `https://github.com/geoadmin/service-alti/blob/develop/app/helpers/profile_helpers.py`
 - **Used In:** `js/elevation.js`
-- **Purpose:** This file is the original Python backend source for the `map.geo.admin.ch` elevation profile service. It was used as the primary reference for the data-fetching and sampling logic in `elevation.js`, specifically replicating the 200-point default (`PROFILE_DEFAULT_AMOUNT_POINTS`) and 5000-point maximum (`PROFILE_MAX_AMOUNT_POINTS`) logic.
+- **Purpose:** This file is the original Python backend source for the `map.geo.admin.ch` elevation profile service. It was used as a reference for the sampling logic in `elevation.js`, specifically the 200-point default (`PROFILE_DEFAULT_AMOUNT_POINTS`) and 5000-point maximum (`PROFILE_MAX_AMOUNT_POINTS`) constants. Note: These constants are applied in the `fetchElevationForPathGoogle()` function for the Google Elevation API implementation, while the GeoAdmin API implementation uses the chunking approach from `profile.api.ts` instead.
 
 ---
 
