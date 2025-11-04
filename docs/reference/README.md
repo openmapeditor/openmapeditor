@@ -10,7 +10,7 @@ This folder contains original source files from third-party projects that were u
 - **Used In:** `js/elevation-profile.js`
 - **Purpose:** This file is the original source for the core statistical logic in `elevation-profile.js`.
   - It served as the reference for calculating `ascent` and `descent` directly from raw, unsmoothed data points.
-  - The `calculateSwissHikingTime` and `formatHikingTime` functions were adapted from this file. (Note: A bug in the original `hikingTime` loop, `points.length - 2`, was corrected to `points.length - 1` in our implementation).
+  - The `calculateSwissHikingTime` and `formatHikingTime` functions were adapted from this file. (Note: A bug in the original `hikingTime` loop, `points.length - 2`, was corrected to `points.length - 1` in our implementation. This bug was [reported and acknowledged](https://github.com/geoadmin/web-mapviewer/issues/1477) by the GeoAdmin team).
 
 ---
 
