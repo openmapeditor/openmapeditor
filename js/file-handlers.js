@@ -1,10 +1,12 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
-// Generates a kml <placemark> for a given leaflet layer.
-// @param {L.Layer} layer - The layer to convert.
-// @param {string} defaultname - A fallback name.
-// @param {string} defaultdescription - A fallback description.
-// @returns {string|null} The kml placemark string or null.
+/**
+ * Generates a KML placemark for a given Leaflet layer.
+ * @param {L.Layer} layer - The layer to convert
+ * @param {string} defaultName - A fallback name
+ * @param {string} defaultDescription - A fallback description
+ * @returns {string|null} The KML placemark string or null
+ */
 function generateKmlForLayer(layer, defaultName, defaultDescription = "") {
   let name = defaultName;
   let description = defaultDescription;
@@ -90,15 +92,13 @@ function generateKmlForLayer(layer, defaultName, defaultDescription = "") {
   return null;
 }
 
-// --- REFACTORED: New global function for KML generation ---
 /**
  * Creates a complete, pretty-printed KML document string from a name and an array of placemarks.
- * @param {string} name The name for the <Document>.
- * @param {Array<string>} placemarks An array of pre-formatted KML <Placemark> strings.
- * @returns {string} The full KML document as a string.
+ * @param {string} name - The name for the <Document>
+ * @param {Array<string>} placemarks - An array of pre-formatted KML <Placemark> strings
+ * @returns {string} The full KML document as a string
  */
 function createKmlDocument(name, placemarks) {
-  // This logic generates all the shared <Style> tags for markers.
   const kmlMarkerStyles = ORGANIC_MAPS_COLORS.map(
     (color) =>
       `  <Style id="placemark-${color.name.toLowerCase()}">\n` +
@@ -110,7 +110,6 @@ function createKmlDocument(name, placemarks) {
       `  </Style>`
   ).join("\n");
 
-  // This is the main template for the entire KML file.
   return (
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<kml xmlns="http://www.opengis.net/kml/2.2">\n` +
@@ -123,10 +122,11 @@ function createKmlDocument(name, placemarks) {
   );
 }
 
-// --- REFACTORED: This function no longer contains the KML creation logic ---
-// Creates a jszip instance containing all map data for a kmz export.
-// @param {string} docName - The name for the main KML document.
-// @returns {JSZip} The zip object ready for generation.
+/**
+ * Creates a JSZip instance containing all map data for a KMZ export.
+ * @param {string} docName - The name for the main KML document
+ * @returns {JSZip} The zip object ready for generation
+ */
 function generateFullKmzZip(docName) {
   const zip = new JSZip();
   const filesFolder = zip.folder("files");
@@ -172,7 +172,6 @@ function generateFullKmzZip(docName) {
     }
   });
 
-  // --- Process Strava activities ---
   stravaActivitiesLayer.eachLayer(function (layer) {
     const defaultName = `Strava_Activity_${++featureCounter}`;
     const kmlSnippet = generateKmlForLayer(layer, defaultName);
@@ -185,7 +184,6 @@ function generateFullKmzZip(docName) {
     if (kmlGroups[path].length > 0) {
       const fileName = path.substring(path.lastIndexOf("/") + 1);
       const docName = fileName.replace(/\.kml$/i, "");
-      // Call the new global function
       filesFolder.file(fileName, createKmlDocument(docName, kmlGroups[path]));
       networkLinks.push({ name: docName, href: `files/${fileName}` });
     }
@@ -204,7 +202,6 @@ function generateFullKmzZip(docName) {
     networkLinks.push({ name: "Imported Features", href: "files/Imported_Features.kml" });
   }
 
-  // --- NEW: Create a separate KML for Strava activities ---
   if (stravaPlacemarks.length > 0) {
     filesFolder.file(
       "Strava_Activities.kml",
@@ -212,7 +209,6 @@ function generateFullKmzZip(docName) {
     );
     networkLinks.push({ name: "Strava Activities", href: "files/Strava_Activities.kml" });
   }
-  // --- END NEW ---
 
   preservedKmzFiles.forEach((file) => {
     const fileName = file.path.substring(file.path.lastIndexOf("/") + 1);
@@ -238,7 +234,9 @@ function generateFullKmzZip(docName) {
   return zip;
 }
 
-// Handles the final export and download of the kmz file.
+/**
+ * Handles the final export and download of the KMZ file.
+ */
 function exportKmz() {
   const now = new Date();
   const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now
@@ -249,11 +247,10 @@ function exportKmz() {
     .toString()
     .padStart(2, "0")}${now.getSeconds().toString().padStart(2, "0")}`;
   const fileName = `Map_Export_${timestamp}.kmz`;
-  const docName = `Map Export ${timestamp}`; // Create the document name from the timestamp
+  const docName = `Map Export ${timestamp}`;
 
-  const zip = generateFullKmzZip(docName); // Pass the document name to the zip generator
+  const zip = generateFullKmzZip(docName);
 
-  // Check if the main doc.kml was created. If not, the zip is effectively empty.
   if (!zip.files["doc.kml"]) {
     return Swal.fire({
       icon: "info",
@@ -293,9 +290,11 @@ function exportKmz() {
     });
 }
 
-// Converts a leaflet layer to a gpx string, supporting markers and paths with OM colors.
-// @param {L.Layer} layer - The layer to convert.
-// @returns {string} The gpx file content as a string.
+/**
+ * Converts a Leaflet layer to a GPX string, supporting markers and paths with Organic Maps colors.
+ * @param {L.Layer} layer - The layer to convert
+ * @returns {string} The GPX file content as a string
+ */
 function toGpx(layer) {
   const name = layer.feature?.properties?.name || "Exported Feature";
   const description = layer.feature?.properties?.description || "";
@@ -314,7 +313,6 @@ function toGpx(layer) {
 
   if (layer instanceof L.Polyline) {
     let latlngs = layer.getLatLngs();
-    // Flatten for MultiPolyline
     while (latlngs.length > 0 && Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
       latlngs = latlngs[0];
     }
@@ -344,7 +342,6 @@ function toGpx(layer) {
   </trk>`;
   } else if (layer instanceof L.Marker) {
     const latlng = layer.getLatLng();
-    // For markers, GPX export does not include color. Name and description are used.
     content = `
   <wpt lat="${latlng.lat}" lon="${latlng.lng}">
     <name>${name}</name>${description ? `\n    <desc>${description}</desc>` : ""}
@@ -355,9 +352,13 @@ function toGpx(layer) {
   return header + content + footer;
 }
 
-// Helper function to find a color name from a KML style property
+/**
+ * Finds a color name from a KML style property.
+ * @param {object} properties - The feature properties
+ * @returns {string} The color name or "Red" as default
+ */
 function getColorNameFromKmlStyle(properties) {
-  // Case 1: styleUrl (e.g., #placemark-red) - for markers
+  // Case 1: styleUrl (e.g., #placemark-red) for markers
   if (properties.styleUrl) {
     const styleId = properties.styleUrl.substring(1).toLowerCase(); // -> "placemark-red"
     const colorMatch = ORGANIC_MAPS_COLORS.find(
@@ -366,17 +367,22 @@ function getColorNameFromKmlStyle(properties) {
     if (colorMatch) return colorMatch.name;
   }
 
-  // Case 2: Inline style color from toGeoJSON (KML <LineStyle><color>AABBGGRR</color>)
-  // toGeoJSON converts this to an RGBA hex string: #RRGGBBAA
+  // Case 2: Inline style color from toGeoJSON (converted to #RRGGBBAA format)
   if (properties.stroke) {
     const cssColor = properties.stroke.substring(0, 7).toLowerCase(); // Get #RRGGBB
     const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === cssColor);
     if (colorMatch) return colorMatch.name;
   }
-  return "Red"; // Default color if none found
+  return "Red";
 }
 
-// Adds GeoJSON data to the map, applying appropriate styles.
+/**
+ * Adds GeoJSON data to the map, applying appropriate styles.
+ * @param {object} geoJsonData - The GeoJSON data to add
+ * @param {string} fileType - The file type ('gpx', 'kml', 'kmz')
+ * @param {string|null} originalPath - The original path for KMZ files
+ * @returns {L.GeoJSON} The created layer group
+ */
 function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
   const targetGroup = fileType === "kmz" ? kmzLayer : importedItems;
 
@@ -394,7 +400,6 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
     },
     onEachFeature: (feature, layer) => {
       const isKmlBased = fileType === "kml" || fileType === "kmz";
-      // Assign the color name found during parsing (or default)
       layer.feature.properties.omColorName =
         feature.properties.omColorName ||
         (isKmlBased ? getColorNameFromKmlStyle(feature.properties) : "Red");
@@ -408,9 +413,7 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
         L.DomEvent.stopPropagation(e);
         selectItem(layer);
       });
-      // Check if the layer is a path-like object
       if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
-        // Distance label creation was removed from here.
       }
     },
     pointToLayer: (feature, latlng) => {
@@ -424,17 +427,14 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
       const marker = L.marker(latlng, {
         icon: createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity),
       });
-      marker.feature = feature; // ensure feature is attached for selection logic
+      marker.feature = feature;
       return marker;
     },
   });
 
-  // --- BUG FIX: Add individual layers to the target group instead of the L.GeoJSON group ---
-  // This flattens the layer structure, making group-level operations more reliable.
   layerGroup.eachLayer((layer) => {
     targetGroup.addLayer(layer);
   });
-  // --- END BUG FIX ---
 
   updateElevationToggleIconColor();
   updateDrawControlStates();
@@ -442,7 +442,10 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
   return layerGroup;
 }
 
-// --- REFACTORED: Now uses modern async/await for better readability ---
+/**
+ * Handles the loading and processing of a KMZ file.
+ * @param {File} file - The KMZ file to process
+ */
 async function handleKmzFile(file) {
   if (!file) return;
 
@@ -482,7 +485,6 @@ async function handleKmzFile(file) {
       })
     );
 
-    // Provide feedback after all files are processed
     if (justImportedLayers.getLayers().length > 0) {
       const bounds = justImportedLayers.getBounds();
       if (bounds.isValid()) {

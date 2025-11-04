@@ -1,18 +1,19 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
-// This is our "manager" function. It ensures the Google Maps API is loaded only once.
+/**
+ * Ensures the Google Maps API is loaded only once. Returns a promise that resolves
+ * when the API is ready, handling concurrent load requests gracefully.
+ * @returns {Promise<void>} Promise that resolves when the API is loaded
+ */
 function ensureGoogleApiIsLoaded() {
-  // If another part of the app is already loading the API, just wait for it to finish.
   if (window.googleMapsApiPromise) {
     return window.googleMapsApiPromise;
   }
 
-  // If this is the first time, create a new promise to manage the loading process.
   window.googleMapsApiPromise = new Promise((resolve, reject) => {
-    // This is the function Google will call when the script is ready.
     window.onGoogleMapsApiReady = () => {
-      resolve(); // Signal that loading is complete and successful.
-      delete window.onGoogleMapsApiReady; // Clean up.
+      resolve();
+      delete window.onGoogleMapsApiReady;
     };
 
     if (!googleApiKey) {
@@ -22,7 +23,6 @@ function ensureGoogleApiIsLoaded() {
     }
 
     const script = document.createElement("script");
-    // CRITICAL: We request ALL libraries (elevation AND maps) in one call.
     script.src = `https://maps.googleapis.com/maps/api/js?key=${googleApiKey}&loading=async&libraries=elevation,maps&callback=onGoogleMapsApiReady`;
     script.async = true;
     script.defer = true;
@@ -34,12 +34,11 @@ function ensureGoogleApiIsLoaded() {
 }
 
 /**
- * --- START: OpenStreetMap-inspired Coordinate Parsing Function ---
  * Parses a string to determine if it represents valid geographic coordinates.
- * This logic is inspired by the implementation found in the OpenStreetMap website controller:
- * https://github.com/openstreetmap/openstreetmap-website/blob/master/app/controllers/searches_controller.rb
+ * Inspired by the OpenStreetMap website controller implementation.
+ * @see https://github.com/openstreetmap/openstreetmap-website/blob/master/app/controllers/searches_controller.rb
  *
- * It supports two main formats:
+ * Supports two main formats:
  * 1. Decimal Degrees (DD):
  * - Two numbers (integer or decimal) separated by a comma, space, or slash.
  * - Numbers can have an optional +/- prefix.
@@ -50,9 +49,8 @@ function ensureGoogleApiIsLoaded() {
  * - Supports degree (°), minute (', ′), and second (", ″) symbols, but they are optional.
  * - Examples: "N 47° 28' 41.75"", "47 28 41.75 N 7 41 37.13 E"
  *
- * @param {string} inputString - The string to parse.
- * @returns {L.LatLng|null} A Leaflet LatLng object if parsing is successful and
- * coordinates are valid, otherwise null.
+ * @param {string} inputString - The string to parse
+ * @returns {L.LatLng|null} Leaflet LatLng object if valid, otherwise null
  */
 function parseCoordinateString(inputString) {
   const dmsToDecimal = (captures, Hemi) => {
@@ -108,42 +106,32 @@ function parseCoordinateString(inputString) {
     }
   }
 
-  return null; // Return null if no valid coordinates were found
+  return null;
 }
-// --- END: OpenStreetMap-inspired Coordinate Parsing Function ---
 
 /**
- * Simplifies a geometry's coordinates (LineString or MultiLineString) using a provided configuration.
- *
- * @param {Array} coordinates The array of coordinates from a GeoJSON geometry, expected in [lng, lat] format.
- * @param {string} type The geometry type ('LineString' or 'MultiLineString').
- * @param {object} config The configuration object (e.g., pathSimplificationConfig or routeSimplificationConfig).
- * @returns {{simplified: boolean, coords: Array}} An object containing a flag indicating if simplification occurred
- * and the new (or original) coordinates.
+ * Simplifies a geometry's coordinates using the simplify.js library and provided configuration.
+ * @param {Array} coordinates - Array of coordinates in [lng, lat] format
+ * @param {string} type - Geometry type ('LineString' or 'MultiLineString')
+ * @param {object} config - Configuration object with TOLERANCE and MIN_POINTS properties
+ * @returns {{simplified: boolean, coords: Array}} Object with simplification flag and resulting coordinates
  */
 function simplifyPath(coordinates, type, config) {
   let overallSimplified = false;
   let newCoordinates;
 
-  // Helper function to simplify a single path
   const simplifySinglePath = (pathCoords) => {
-    // 1. Check against the minimum point threshold from the passed config.
     if (pathCoords.length <= config.MIN_POINTS) {
       return { simplified: false, coords: pathCoords };
     }
 
-    // 2. Convert to the format simplify.js expects: {x, y}
     const points = pathCoords.map((c) => ({ x: c[0], y: c[1] }));
-
-    // 3. Apply simplify.js with the tolerance from the passed config.
     const simplifiedPoints = simplify(points, config.TOLERANCE, true);
 
-    // 4. Check if simplification actually happened.
     if (simplifiedPoints.length < pathCoords.length) {
       console.log(
         `Path segment simplified: ${pathCoords.length} -> ${simplifiedPoints.length} points`
       );
-      // 5. Convert back to the original coordinate format.
       return { simplified: true, coords: simplifiedPoints.map((p) => [p.x, p.y]) };
     }
 
@@ -163,7 +151,6 @@ function simplifyPath(coordinates, type, config) {
       return result.coords;
     });
   } else {
-    // Return original coordinates for unhandled types (e.g., Polygon)
     return { simplified: false, coords: coordinates };
   }
 
@@ -171,22 +158,17 @@ function simplifyPath(coordinates, type, config) {
 }
 
 /**
- * FIX #1: Adds a robust, mobile-friendly clipboard copy function.
- * Uses the modern async Clipboard API if available (in secure contexts),
- * with a fallback to the legacy `document.execCommand` for broader compatibility.
- * @param {string} text The string to be copied to the clipboard.
- * @returns {Promise<void>} A promise that resolves on success and rejects on failure.
+ * Copies text to clipboard using modern Clipboard API with fallback to legacy execCommand.
+ * @param {string} text - The string to copy to clipboard
+ * @returns {Promise<void>} Promise that resolves on success, rejects on failure
  */
 function copyToClipboard(text) {
-  // Use modern API if available and in a secure context
   if (navigator.clipboard && window.isSecureContext) {
     return navigator.clipboard.writeText(text);
   }
-  // Fallback for older browsers or insecure contexts (like HTTP)
   return new Promise((resolve, reject) => {
     const textArea = document.createElement("textarea");
     textArea.value = text;
-    // Make the textarea out of sight
     textArea.style.position = "fixed";
     textArea.style.left = "-9999px";
     textArea.style.top = "0";
@@ -207,9 +189,11 @@ function copyToClipboard(text) {
   });
 }
 
-// Triggers a browser download for a text-based file.
-// @param {string} filename - The desired name of the file.
-// @param {string} text - The content of the file.
+/**
+ * Triggers a browser download for a text-based file.
+ * @param {string} filename - Desired name of the file
+ * @param {string} text - Content of the file
+ */
 function downloadFile(filename, text) {
   const element = document.createElement("a");
   element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
@@ -221,15 +205,13 @@ function downloadFile(filename, text) {
 }
 
 /**
- * A lightweight helper function to calculate the total distance of a path.
- * This replaces the calculation that was part of the label creation.
- * @param {L.Polyline | L.Polygon} path The layer to measure.
- * @returns {number} The total distance in meters.
+ * Calculates the total distance of a path in meters.
+ * @param {L.Polyline | L.Polygon} path - The layer to measure
+ * @returns {number} Total distance in meters
  */
 function calculatePathDistance(path) {
   if (!(path instanceof L.Polyline) && !(path instanceof L.Polygon)) return 0;
   let latlngs = path.getLatLngs();
-  // Flatten array if needed for MultiPolyline
   while (latlngs.length > 0 && Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
     latlngs = latlngs[0];
   }
@@ -247,28 +229,24 @@ function calculatePathDistance(path) {
 }
 
 /**
- * Resamples a path to have exactly `maxPoints` by interpolating new,
- * evenly-spaced points along the original path's geometry.
- *
- * @param {Array<L.LatLng>} latlngs The original array of points.
- * @param {number} maxPoints The target number of points for the new path (e.g., 500).
- * @returns {Array<L.LatLng>} The new, resampled array of points.
+ * Resamples a path to have exactly the specified number of evenly-spaced points
+ * by interpolating along the original path geometry.
+ * @param {Array<L.LatLng>} latlngs - Original array of points
+ * @param {number} maxPoints - Target number of points for the resampled path
+ * @returns {Array<L.LatLng>} Resampled array of points
  */
 function resamplePath(latlngs, maxPoints) {
-  // 1. Guard clauses for invalid paths
   if (!latlngs || latlngs.length < 2) {
-    return latlngs; // Not enough points to create a path
+    return latlngs;
   }
 
-  // 2. Calculate total distance and store cumulative distance at each vertex
   let totalDistance = 0;
-  const cumulativeDistances = [0]; // Start with 0 distance at the first point
+  const cumulativeDistances = [0];
   for (let i = 1; i < latlngs.length; i++) {
     totalDistance += latlngs[i].distanceTo(latlngs[i - 1]);
     cumulativeDistances.push(totalDistance);
   }
 
-  // 3. Handle 0-distance paths (e.g., multiple identical points)
   if (totalDistance === 0) {
     const firstPoint = latlngs[0];
     const newPoints = [];
@@ -278,26 +256,20 @@ function resamplePath(latlngs, maxPoints) {
     return newPoints;
   }
 
-  // 4. Calculate the new, regular distance interval
-  // We want `maxPoints`, which means `maxPoints - 1` equal segments.
   const intervalDistance = totalDistance / (maxPoints - 1);
 
   const newPoints = [];
-  let currentVertexIndex = 1; // Index of the *next* vertex in the original path
+  let currentVertexIndex = 1;
 
-  // 5. Loop to create exactly maxPoints
   for (let i = 0; i < maxPoints; i++) {
-    // Calculate the target distance for this new point
     const targetDistance = intervalDistance * i;
 
-    // Handle the last point explicitly to avoid float errors
     if (i === maxPoints - 1) {
       const lastOriginalPoint = latlngs[latlngs.length - 1];
       newPoints.push(L.latLng(lastOriginalPoint.lat, lastOriginalPoint.lng));
       continue;
     }
 
-    // Find the original segment that contains our targetDistance
     while (
       cumulativeDistances[currentVertexIndex] < targetDistance &&
       currentVertexIndex < latlngs.length - 1
@@ -305,7 +277,6 @@ function resamplePath(latlngs, maxPoints) {
       currentVertexIndex++;
     }
 
-    // 6. Interpolate the new point within this segment
     const prevVertex = latlngs[currentVertexIndex - 1];
     const nextVertex = latlngs[currentVertexIndex];
 
@@ -313,10 +284,8 @@ function resamplePath(latlngs, maxPoints) {
       cumulativeDistances[currentVertexIndex] - cumulativeDistances[currentVertexIndex - 1];
     const distanceFromPrevVertex = targetDistance - cumulativeDistances[currentVertexIndex - 1];
 
-    // Calculate the fraction (percentage) of how far along this *specific segment* we are
     const fraction = distanceOfSegment === 0 ? 0 : distanceFromPrevVertex / distanceOfSegment;
 
-    // Calculate the interpolated lat and lng
     const newLat = prevVertex.lat + (nextVertex.lat - prevVertex.lat) * fraction;
     const newLng = prevVertex.lng + (nextVertex.lng - prevVertex.lng) * fraction;
 
@@ -327,13 +296,12 @@ function resamplePath(latlngs, maxPoints) {
 }
 
 /**
- * Sets up autocomplete functionality for a text input field using a geocoding provider.
- * @param {HTMLInputElement} inputEl The input element to attach the autocomplete to.
- * @param {HTMLElement} suggestionsEl The container element to display suggestions in.
- * @param {function(L.LatLng, string): void} callback The function to call when a location is selected. It receives the LatLng object and the location's label.
+ * Sets up autocomplete functionality for a text input field using geocoding.
+ * @param {HTMLInputElement} inputEl - Input element for autocomplete
+ * @param {HTMLElement} suggestionsEl - Container element for suggestions
+ * @param {function(L.LatLng, string): void} callback - Callback when location is selected
  */
 async function setupAutocomplete(inputEl, suggestionsEl, callback) {
-  // OpenStreetMap Provider
   const geocoder = new GeoSearch.OpenStreetMapProvider({
     // https://nominatim.org/release-docs/develop/api/Search/#parameters
     params: {
@@ -342,15 +310,6 @@ async function setupAutocomplete(inputEl, suggestionsEl, callback) {
       limit: 5,
     },
   });
-
-  // Google Provider
-  // Wait for our manager to confirm the Google API is ready.
-  // await ensureGoogleApiIsLoaded();
-  // const geocoder = new GeoSearch.GoogleProvider({
-  //   apiKey: googleApiKey,
-  // language: "nl", // render results in Dutch
-  // region: "nl", // prioritize matches within The Netherlands
-  // });
 
   let debounceTimeout;
   let activeSuggestionIndex = -1;
@@ -365,24 +324,18 @@ async function setupAutocomplete(inputEl, suggestionsEl, callback) {
   inputEl.addEventListener("input", () => {
     const query = inputEl.value.trim();
 
-    // --- MODIFIED: Use the new standalone parsing function ---
     const latLng = parseCoordinateString(query);
 
     if (latLng) {
-      // It's a valid coordinate pair!
       clearTimeout(debounceTimeout);
       suggestionsEl.innerHTML = "";
       suggestionsEl.style.display = "none";
 
-      // Call the callback to trigger the map action.
-      // We format the found coordinates as the label.
       callback(latLng, `${latLng.lat.toFixed(5)}, ${latLng.lng.toFixed(5)}`);
 
-      return; // Stop further processing
+      return;
     }
-    // --- END MODIFICATION ---
 
-    // If it wasn't valid coordinates, proceed with the original geocoding logic...
     clearTimeout(debounceTimeout);
     activeSuggestionIndex = -1; // Reset on new input
     if (query.length < 3) {
@@ -414,7 +367,6 @@ async function setupAutocomplete(inputEl, suggestionsEl, callback) {
     }, 300);
   });
 
-  // START: ADDED KEYDOWN LISTENER
   inputEl.addEventListener("keydown", (e) => {
     const items = suggestionsEl.querySelectorAll(".autocomplete-suggestion-item");
     if (items.length === 0) return;
@@ -438,16 +390,11 @@ async function setupAutocomplete(inputEl, suggestionsEl, callback) {
       activeSuggestionIndex = -1;
     }
   });
-  // END: ADDED KEYDOWN LISTENER
 
-  // This robustly hides suggestions when the input loses focus for any reason.
   inputEl.addEventListener("blur", () => {
-    // A short delay is crucial. It gives the browser time to process a
-    // click on a suggestion item before the list is hidden.
     setTimeout(() => {
       suggestionsEl.style.display = "none";
 
-      // This preserves the logic to clear the search bar if no selection was made.
       if (inputEl.id === "search-input" && !temporarySearchMarker) {
         inputEl.value = "";
       }
@@ -456,11 +403,10 @@ async function setupAutocomplete(inputEl, suggestionsEl, callback) {
 }
 
 /**
- * Formats a distance in meters into a human-readable string,
- * respecting the global 'useImperialUnits' setting.
- * @param {number} meters The distance in meters.
- * @param {boolean} [includeSecondary=false] - If true, adds the other unit system in parentheses.
- * @returns {string} The formatted distance string (e.g., "10.54 km" or "6.55 mi").
+ * Formats a distance in meters into a human-readable string respecting the global unit setting.
+ * @param {number} meters - Distance in meters
+ * @param {boolean} [includeSecondary=false] - If true, includes other unit system in parentheses
+ * @returns {string} Formatted distance string (e.g., "10.54 km" or "6.55 mi")
  */
 function formatDistance(meters, includeSecondary = false) {
   if (typeof meters !== "number" || isNaN(meters)) {
@@ -476,11 +422,9 @@ function formatDistance(meters, includeSecondary = false) {
   let primaryDisplay, secondaryDisplay;
 
   if (useImperialUnits) {
-    // Imperial is primary
     if (miles < 0.1 && miles > 0) {
       primaryDisplay = `${Math.round(meters * METERS_TO_FEET)} ft`;
     } else {
-      // Special case for 0 to avoid "0.00 mi"
       if (meters === 0) {
         primaryDisplay = "0 mi";
       } else {
@@ -489,7 +433,6 @@ function formatDistance(meters, includeSecondary = false) {
     }
     secondaryDisplay = km < 1 ? `${Math.round(meters)} m` : `${km.toFixed(2)} km`;
   } else {
-    // Metric is primary
     if (km < 1) {
       primaryDisplay = `${Math.round(meters)} m`;
     } else {

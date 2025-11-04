@@ -1,29 +1,30 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
-// --- Strava API Configuration ---
+// Strava Integration Module
+// This module handles the integration with Strava's API, including OAuth authentication,
+// activity fetching, and exporting activities to various formats.
+
+// Strava API Configuration
 const redirectURI = `${window.location.origin}/strava-callback.html`;
 const scope = "read,activity:read_all";
 const tokenURL = "https://www.strava.com/oauth/token";
 const activitiesURL = "https://www.strava.com/api/v3/athlete/activities";
 const streamsURL = "https://www.strava.com/api/v3/activities";
 
-// --- DOM Elements ---
+// DOM Elements
 let stravaPanelContent;
 
-// --- Global variable to store the raw activities data from the API. ---
+// Global variable to store the raw activities data from the API
 let allFetchedActivities = [];
 
-// ===================================================================================
-// --- Core Authentication and Data Fetching (Refactored) ---
-// ===================================================================================
+// Core Authentication and Data Fetching
 
 /**
- * --- REFACTORED: Unified function to get an access token. ---
  * Exchanges an authorization code for an access token using the provided credentials.
- * @param {string} code The authorization code from Strava.
- * @param {string} clientId The Strava Client ID.
- * @param {string} clientSecret The Strava Client Secret.
- * @returns {Promise<boolean>} A promise that resolves to true on success, false on failure.
+ * @param {string} code - The authorization code from Strava
+ * @param {string} clientId - The Strava Client ID
+ * @param {string} clientSecret - The Strava Client Secret
+ * @returns {Promise<boolean>} True on success, false on failure
  */
 async function getAccessToken(code, clientId, clientSecret) {
   try {
@@ -52,7 +53,7 @@ async function getAccessToken(code, clientId, clientSecret) {
       sessionStorage.setItem("strava_access_token", data.access_token);
       sessionStorage.setItem("strava_refresh_token", data.refresh_token);
       sessionStorage.setItem("strava_expires_at", data.expires_at);
-      return true; // Indicate success
+      return true;
     } else {
       throw new Error("Access token was not received from Strava.");
     }
@@ -64,12 +65,11 @@ async function getAccessToken(code, clientId, clientSecret) {
       title: "Authentication Failed",
       text: `Please check your API keys and try again. Error: ${error.message}`,
     });
-    return false; // Indicate failure
+    return false;
   }
 }
 
 /**
- * --- REFACTORED: Unified function to fetch activities. ---
  * Fetches activities from the Strava API, handling pagination and user limits.
  */
 async function fetchAllActivities() {
@@ -133,16 +133,14 @@ async function fetchAllActivities() {
     activitiesBuffer = activitiesBuffer.slice(0, fetchLimit);
   }
 
-  allFetchedActivities = activitiesBuffer; // Store raw data
+  allFetchedActivities = activitiesBuffer;
 
   if (progressText)
     progressText.innerText = `Found ${activitiesBuffer.length} total activities. Processing...`;
   displayActivitiesOnMap(activitiesBuffer);
 }
 
-// ===================================================================================
-// --- UI Rendering and Event Handling ---
-// ===================================================================================
+// UI Rendering and Event Handling
 
 /**
  * Displays the "Connect with Strava" button (for developer keys flow).
@@ -211,8 +209,8 @@ function renderUserKeysPanel() {
 
 /**
  * Generates HTML for the Strava fetch/export controls.
- * @param {number} activityCount The number of currently loaded activities.
- * @returns {string} The HTML string for the controls.
+ * @param {number} activityCount - The number of currently loaded activities
+ * @returns {string} The HTML string for the controls
  */
 function _getFetchControlsHTML(activityCount = 0) {
   const message =
@@ -240,8 +238,8 @@ function _getFetchControlsHTML(activityCount = 0) {
 
 /**
  * Attaches event listeners to the fetch/export controls.
- * @param {function} fetchFunction The fetch function to call.
- * @param {number} activityCount The number of loaded activities.
+ * @param {function} fetchFunction - The fetch function to call
+ * @param {number} activityCount - The number of loaded activities
  */
 function _addFetchControlsListeners(fetchFunction, activityCount = 0) {
   document.getElementById("fetch-strava-btn").addEventListener("click", fetchFunction);
@@ -255,7 +253,7 @@ function _addFetchControlsListeners(fetchFunction, activityCount = 0) {
 
 /**
  * Displays the UI for fetching/exporting (developer keys flow).
- * @param {number} [activityCount=0] The number of loaded activities.
+ * @param {number} [activityCount=0] - The number of loaded activities
  */
 function showFetchUI(activityCount = 0) {
   if (!stravaPanelContent) return;
@@ -341,13 +339,11 @@ function addEventListenersForUserKeysPanel() {
   });
 }
 
-// ===================================================================================
-// --- Authentication Callback Handlers ---
-// ===================================================================================
+// Authentication Callback Handlers
 
 /**
  * Handles the auth callback from the new tab (developer keys flow).
- * @param {StorageEvent} event The storage event.
+ * @param {StorageEvent} event - The storage event
  */
 async function handleStravaAuthReturn(event) {
   if (event.key === "strava_auth_code" && event.newValue) {
@@ -356,7 +352,6 @@ async function handleStravaAuthReturn(event) {
     window.removeEventListener("storage", handleStravaAuthReturn);
     stravaPanelContent.innerHTML = "<p>Authenticating...</p>";
 
-    // --- REFACTORED: Call the unified function with credentials from secrets.js ---
     const success = await getAccessToken(authCode, stravaClientId, stravaClientSecret);
     if (success) {
       showFetchUI();
@@ -364,7 +359,6 @@ async function handleStravaAuthReturn(event) {
       setTimeout(showConnectUI, 5000);
     }
   } else if (event.key === "strava_auth_error") {
-    // ... (error handling is unchanged)
     console.error("Strava authentication error:", event.newValue);
     localStorage.removeItem("strava_auth_error");
     window.removeEventListener("storage", handleStravaAuthReturn);
@@ -376,7 +370,7 @@ async function handleStravaAuthReturn(event) {
 
 /**
  * Handles the auth callback from the new tab (user keys flow).
- * @param {StorageEvent} event The storage event.
+ * @param {StorageEvent} event - The storage event
  */
 async function handleStravaAuthReturnForUserKeys(event) {
   if (event.key === "strava_auth_code" && event.newValue) {
@@ -388,7 +382,6 @@ async function handleStravaAuthReturnForUserKeys(event) {
     const userClientId = localStorage.getItem("userStravaClientId");
     const userClientSecret = localStorage.getItem("userStravaClientSecret");
 
-    // --- REFACTORED: Call the unified function with credentials from localStorage ---
     const success = await getAccessToken(authCode, userClientId, userClientSecret);
     if (success) {
       renderUserKeysPanel();
@@ -398,7 +391,6 @@ async function handleStravaAuthReturnForUserKeys(event) {
       renderUserKeysPanel();
     }
   } else if (event.key === "strava_auth_error") {
-    // ... (error handling is unchanged)
     console.error("Strava authentication error:", event.newValue);
     localStorage.removeItem("strava_auth_error");
     window.removeEventListener("storage", handleStravaAuthReturnForUserKeys);
@@ -406,13 +398,11 @@ async function handleStravaAuthReturnForUserKeys(event) {
   }
 }
 
-// ===================================================================================
-// --- Data Processing, Export, and Initialization ---
-// ===================================================================================
+// Data Processing, Export, and Initialization
 
 /**
  * Processes activities and adds them to the map layer.
- * @param {Array} activities The array of activity objects from Strava.
+ * @param {Array} activities - The array of activity objects from Strava
  */
 function displayActivitiesOnMap(activities) {
   if (!stravaActivitiesLayer) return;
@@ -475,9 +465,9 @@ function displayActivitiesOnMap(activities) {
 
 /**
  * Generates a timestamped filename.
- * @param {string} baseName The base name for the file.
- * @param {string} extension The file extension.
- * @returns {string} The complete, timestamped filename.
+ * @param {string} baseName - The base name for the file
+ * @param {string} extension - The file extension
+ * @returns {string} The complete, timestamped filename
  */
 function generateTimestampedFilename(baseName, extension) {
   const now = new Date();
@@ -539,8 +529,8 @@ async function exportStravaActivitiesAsJson() {
 
 /**
  * Triggers a browser download of the original GPX file from Strava's website.
- * @param {string} activityId The ID of the Strava activity.
- * @param {string} activityName The name of the activity, used for the filename.
+ * @param {string} activityId - The ID of the Strava activity
+ * @param {string} activityName - The name of the activity, used for the filename
  */
 function downloadOriginalStravaGpx(activityId, activityName) {
   const link = document.createElement("a");

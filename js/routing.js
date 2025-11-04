@@ -1,9 +1,9 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
-// ===================================================================================
-// --- ROUTING FUNCTIONALITY ---
-// ===================================================================================
-
+/**
+ * Initializes the routing functionality including routing control, markers,
+ * user input handlers, and provider configuration.
+ */
 function initializeRouting() {
   const ROUTING_MARKER_HINT = "Drag to move, long-press to remove";
   let routingControl,
@@ -29,39 +29,29 @@ function initializeRouting() {
   const osrmRouter = L.Routing.osrmv1({
     serviceUrl: "https://router.project-osrm.org/route/v1",
     profile: "driving",
-    // suppressDemoServerWarning: true,
   });
 
-  // --- START: NEW Scalable Provider Configuration Object ---
-  // This object centralizes all settings for each routing provider,
-  // making it easy to add new providers or modify existing ones.
   const PROVIDER_CONFIG = {
     mapbox: {
       router: mapboxRouter,
-      // Mapbox-specific profile names required by their API
       profiles: {
         driving: "driving",
         bike: "cycling",
         foot: "walking",
       },
-      // Function to format the final profile string for the API call
       profileFormatter: (profile) => `mapbox/${profile}`,
     },
     osrm: {
       router: osrmRouter,
-      // OSRM uses the same names as our UI, so no translation is needed
       profiles: {
         driving: "driving",
         bike: "bike",
         foot: "foot",
       },
-      // OSRM doesn't need a special prefix
       profileFormatter: (profile) => profile,
     },
   };
-  // --- END: NEW Scalable Provider Configuration Object ---
 
-  // --- Helper function to clear just the route line and summary ---
   const clearRouteLine = () => {
     if (currentRoutePath) {
       if (globallySelectedItem === currentRoutePath) {
@@ -83,9 +73,7 @@ function initializeRouting() {
     saveRouteBtn.disabled = true;
   };
 
-  // --- Central function to calculate a fresh route ---
   const calculateNewRoute = () => {
-    // Guard clause: only run if we have a start and end.
     if (!currentStartLatLng || !currentEndLatLng) {
       return;
     }
@@ -95,27 +83,19 @@ function initializeRouting() {
     intermediateViaMarkers = [];
     saveRouteBtn.disabled = true;
 
-    // --- START: REFACTORED Logic using the configuration object ---
     const selectedProfile = document.querySelector("#routing-profile-selector .profile-btn.active")
       .dataset.profile;
     const currentProvider = localStorage.getItem("routingProvider") || "mapbox";
 
-    // 1. Get the configuration for the current provider
     const config = PROVIDER_CONFIG[currentProvider];
     if (!config) {
       console.error(`No configuration found for provider: ${currentProvider}`);
-      return; // Exit if the provider is invalid
+      return;
     }
 
-    // 2. Look up the correct API profile name from the config
     const apiProfile = config.profiles[selectedProfile] || config.profiles["driving"];
-
-    // 3. Format the profile string using the provider-specific function
     const finalProfile = config.profileFormatter(apiProfile);
-
-    // 4. Set the profile on the router
     routingControl.getRouter().options.profile = finalProfile;
-    // --- END: REFACTORED Logic ---
 
     const waypoints = [L.latLng(currentStartLatLng)];
     if (currentViaLatLng) {
@@ -126,6 +106,9 @@ function initializeRouting() {
     setWaypointsAndLog(waypoints);
   };
 
+  /**
+   * Sets waypoints on the routing control and logs the provider being used.
+   */
   const setWaypointsAndLog = (waypoints) => {
     const providerMap = { mapbox: "Mapbox", osrm: "OSRM" };
     const currentProvider = localStorage.getItem("routingProvider") || "mapbox";
@@ -134,6 +117,9 @@ function initializeRouting() {
     routingControl.setWaypoints(waypoints);
   };
 
+  /**
+   * Recalculates the route including all intermediate via markers without changing map bounds.
+   */
   const updateRouteWithIntermediateVias = () => {
     if (!currentStartLatLng || !currentEndLatLng) return;
     shouldFitBounds = false;
@@ -148,6 +134,9 @@ function initializeRouting() {
     setWaypointsAndLog(waypoints);
   };
 
+  /**
+   * Adds an intermediate via point marker to the route at the specified location.
+   */
   const addIntermediateViaPoint = (latlng) => {
     const newViaMarker = L.marker(latlng, {
       icon: createMarkerIcon(routingColorVia, 1),
@@ -161,11 +150,9 @@ function initializeRouting() {
       updateRouteWithIntermediateVias();
     };
 
-    // --- START: CORRECTED Long-press & Right-click Logic ---
     let pressTimer = null;
 
     newViaMarker.on("mousedown", (e) => {
-      // This timer is for a long LEFT-CLICK on desktop only.
       if (e.originalEvent.pointerType === "touch" || e.originalEvent.button === 2) {
         return;
       }
@@ -179,24 +166,24 @@ function initializeRouting() {
     newViaMarker.on("mouseup", cancelPressTimer);
     newViaMarker.on("dragstart", cancelPressTimer);
 
-    // This handles the mobile long-press and desktop right-click.
     newViaMarker.on("contextmenu", (e) => {
       L.DomEvent.stop(e);
       deleteMarkerAction();
     });
-    // --- END: CORRECTED Long-press & Right-click Logic ---
 
     newViaMarker.on("dragend", updateRouteWithIntermediateVias);
     intermediateViaMarkers.push(newViaMarker);
     updateRouteWithIntermediateVias();
   };
 
+  /**
+   * Sets up the routing control with the specified provider and attaches event handlers.
+   */
   function setupRoutingControl(provider) {
     if (routingControl) {
       map.removeControl(routingControl);
       routingControl = null;
     }
-    // --- REFACTORED: Get router instance from the config object ---
     const router = PROVIDER_CONFIG[provider]?.router || PROVIDER_CONFIG["mapbox"].router;
 
     routingControl = L.Routing.control({
@@ -267,7 +254,6 @@ function initializeRouting() {
 
         if (currentRoutePath) {
           currentRoutePath.setLatLngs(processedCoordinates);
-          // --- MODIFIED: Use the new dynamic name here ---
           currentRoutePath.feature.properties.name = newRouteName;
           currentRoutePath.feature.properties.totalDistance = route.summary.totalDistance;
         } else {
@@ -280,7 +266,6 @@ function initializeRouting() {
 
           newRoutePath.feature = {
             properties: {
-              // --- MODIFIED: Use the new dynamic name here ---
               name: newRouteName,
               omColorName: routeColorName,
               totalDistance: route.summary.totalDistance,
@@ -291,14 +276,10 @@ function initializeRouting() {
           let pressTimer = null;
           let wasLongPress = false;
 
-          // We modify the mousedown handler to IGNORE right-clicks.
-          // A mouse event's 'button' property is 2 for a right-click.
           newRoutePath.on("mousedown", (e) => {
-            // If it's a right-click, let the contextmenu handler deal with it.
             if (e.originalEvent.button === 2) {
               return;
             }
-            // The timer for a long LEFT-click remains the same.
             wasLongPress = false;
             pressTimer = setTimeout(() => {
               wasLongPress = true;
@@ -310,7 +291,6 @@ function initializeRouting() {
             clearTimeout(pressTimer);
           });
 
-          // The click handler is still correct.
           newRoutePath.on("click", (e) => {
             L.DomEvent.stop(e);
             if (!wasLongPress) {
@@ -319,12 +299,9 @@ function initializeRouting() {
             wasLongPress = false;
           });
 
-          // The contextmenu handler now works for both iOS long-press and desktop right-click.
-          // We remove the conditional check as you discovered.
-          // This is now safe because the mousedown handler above ignores right-clicks, preventing the double-add bug.
           newRoutePath.on("contextmenu", (e) => {
             L.DomEvent.stop(e);
-            wasLongPress = true; // Prevents the 'click' event from also firing.
+            wasLongPress = true;
             addIntermediateViaPoint(e.latlng);
           });
 
@@ -403,7 +380,6 @@ function initializeRouting() {
   customCursorEnd = document.getElementById("custom-cursor-end");
   customCursorVia = document.getElementById("custom-cursor-via");
 
-  // --- NEW: Select all text in routing inputs on focus ---
   [startInput, viaInput, endInput].forEach((input) => {
     input.addEventListener("focus", function () {
       this.select();
@@ -414,15 +390,11 @@ function initializeRouting() {
 
   profileButtons.forEach((button) => {
     button.addEventListener("click", (e) => {
-      L.DomEvent.stop(e); // Prevent any unwanted default button behavior
+      L.DomEvent.stop(e);
 
-      // Remove 'active' class from all buttons
       profileButtons.forEach((btn) => btn.classList.remove("active"));
-
-      // Add 'active' class to the clicked button
       button.classList.add("active");
 
-      // If we can calculate a route, do it now
       if (startMarker && endMarker) {
         calculateNewRoute();
       }
@@ -496,6 +468,9 @@ function initializeRouting() {
   endInput.addEventListener("input", updateClearButtonState);
   viaInput.addEventListener("input", updateClearButtonState);
 
+  /**
+   * Adds drag and delete handlers to routing markers (start/end/via).
+   */
   function addDragHandlersToRoutingMarker(marker, type) {
     const isStart = type === "start";
     const isVia = type === "via";
@@ -518,10 +493,7 @@ function initializeRouting() {
       }
     });
 
-    // --- START: CORRECTED Long-press & Right-click Logic ---
     marker.on("mousedown", (e) => {
-      // This timer is for a long LEFT-CLICK on desktop only.
-      // It ignores touch events and right-clicks.
       if (e.originalEvent.pointerType === "touch" || e.originalEvent.button === 2) {
         return;
       }
@@ -535,14 +507,15 @@ function initializeRouting() {
     marker.on("mouseup", cancelPressTimer);
     marker.on("dragstart", cancelPressTimer);
 
-    // This handles the mobile long-press and desktop right-click.
     marker.on("contextmenu", (e) => {
       L.DomEvent.stop(e);
       deleteMarkerAction();
     });
-    // --- END: CORRECTED Long-press & Right-click Logic ---
   }
 
+  /**
+   * Clears all routing markers, inputs, and route path from the map.
+   */
   const clearRouting = () => {
     if (routingControl) {
       routingControl.setWaypoints([]);
@@ -597,9 +570,10 @@ function initializeRouting() {
     clearRouting();
   });
 
-  // --- Generalized function to handle start, via, or end ---
+  /**
+   * Updates a routing point (start/via/end) with a new location and optional label.
+   */
   const updateRoutingPoint = (latlng, type, label) => {
-    // If a label is provided, use it. Otherwise, format the coordinates as a fallback.
     const locationString = label || `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
 
     if (type === "start") {
@@ -629,7 +603,6 @@ function initializeRouting() {
         addDragHandlersToRoutingMarker(viaMarker, "via");
       }
     } else {
-      // 'end' case
       currentEndLatLng = latlng;
       endInput.value = locationString;
       if (endMarker) {
@@ -654,6 +627,9 @@ function initializeRouting() {
     exitRoutePointSelectionMode();
   };
 
+  /**
+   * Handles getting the user's current location for a routing point.
+   */
   const handleRoutingLocation = (type) => {
     const onLocationAquired = (latlng) => {
       if (!latlng || typeof latlng.lat !== "number" || typeof latlng.lng !== "number") {
@@ -686,7 +662,6 @@ function initializeRouting() {
       });
   };
 
-  // --- MODIFIED: Use a loop to set up "Use Current Location" buttons ---
   ["start", "via", "end"].forEach((type) => {
     const btn = document.getElementById(`use-current-location-${type}`);
     if (btn) {
@@ -697,7 +672,9 @@ function initializeRouting() {
     }
   });
 
-  // --- NEW: Generic function to clear a single routing point ---
+  /**
+   * Clears a single routing point (start/via/end) and updates the route accordingly.
+   */
   const clearRoutingPoint = (type) => {
     switch (type) {
       case "start":
@@ -720,18 +697,13 @@ function initializeRouting() {
         currentViaLatLng = null;
         viaInput.value = "";
         if (startMarker && endMarker) {
-          // This is the default behavior: only clears the main via point.
           updateRouteWithIntermediateVias();
-
-          // To clear ALL via points comment the line above and uncomment the line below.
-          // calculateNewRoute();
         }
         break;
     }
     updateClearButtonState();
   };
 
-  // --- NEW: Use a loop to set up "Clear" buttons ---
   ["start", "via", "end"].forEach((type) => {
     const btn = document.getElementById(`clear-point-${type}`);
     if (btn) {
@@ -743,10 +715,6 @@ function initializeRouting() {
     }
   });
 
-  // --- START: NEW Input Change Handler ---
-  // This robustly handles manual input changes. It lets the autocomplete
-  // utility handle coordinate parsing and only intervenes if the user
-  // completely clears an input field.
   const handleManualInputChange = (type) => {
     let input, currentLatLngValue;
 
@@ -757,13 +725,10 @@ function initializeRouting() {
       input = viaInput;
       currentLatLngValue = currentViaLatLng;
     } else {
-      // 'end'
       input = endInput;
       currentLatLngValue = currentEndLatLng;
     }
 
-    // If the input field is cleared by the user, and it previously had a
-    // valid coordinate, we need to clear that point from the routing state.
     if (input.value.trim() === "" && currentLatLngValue) {
       clearRoutingPoint(type);
     }
@@ -772,7 +737,6 @@ function initializeRouting() {
   startInput.addEventListener("input", () => handleManualInputChange("start"));
   viaInput.addEventListener("input", () => handleManualInputChange("via"));
   endInput.addEventListener("input", () => handleManualInputChange("end"));
-  // --- END: NEW Input Change Handler ---
 
   function updateCustomCursorPosition(e) {
     if (!routePointSelectionMode) return;
@@ -917,7 +881,6 @@ function initializeRouting() {
       return;
     }
 
-    // --- START: SIMPLIFICATION LOGIC ON SAVE ---
     let coordsToUse = currentRoutePath.getLatLngs();
     let simplificationHappened = false;
 
@@ -926,7 +889,7 @@ function initializeRouting() {
       const simplifiedResult = simplifyPath(
         originalCoords,
         "LineString",
-        routeSimplificationConfig // Use routeSimplificationConfig
+        routeSimplificationConfig
       );
 
       if (simplifiedResult.simplified) {
@@ -934,7 +897,6 @@ function initializeRouting() {
         simplificationHappened = true;
       }
     }
-    // --- END: SIMPLIFICATION LOGIC ON SAVE ---
 
     const newPath = L.polyline(coordsToUse, {
       ...STYLE_CONFIG.path.default,
@@ -974,18 +936,18 @@ function initializeRouting() {
     }
   });
 
-  // This function will be called from main.js when the user toggles the unit setting.
+  /**
+   * Recalculates and redisplays the current route when unit settings change.
+   * Called from main.js when the user toggles between metric and imperial units.
+   */
   const redisplayCurrentRoute = () => {
-    // Check if there is an active route to recalculate/redisplay.
     if (currentRoutePath && routingControl) {
       wasRouteSelectedOnUnitRefresh = globallySelectedItem === currentRoutePath;
       const waypoints = routingControl.getWaypoints();
-      // Check for waypoints that have a valid latLng.
       const validWaypoints = waypoints.filter((wp) => wp.latLng);
       if (validWaypoints.length > 1) {
-        // Set the flags before re-triggering the route calculation.
-        shouldFitBounds = false; // Don't re-zoom the map on unit change.
-        isUnitRefreshInProgress = true; // Flag that a unit refresh is occurring.
+        shouldFitBounds = false;
+        isUnitRefreshInProgress = true;
         routingControl.setWaypoints(validWaypoints);
       }
     }

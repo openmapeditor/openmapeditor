@@ -1,10 +1,14 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
+// UI Handlers Module
+// This module handles the user interface elements for the overview list, info panel,
+// color picker, and various UI updates throughout the application.
+
 /**
  * Helper function to create a single list item for the overview panel.
  * This encapsulates the logic for creating the item's text, buttons, and event listeners.
- * @param {L.Layer} layer - The layer to create the list item for.
- * @returns {HTMLElement} The created list item element.
+ * @param {L.Layer} layer - The layer to create the list item for
+ * @returns {HTMLElement} The created list item element
  */
 function createOverviewListItem(layer) {
   const layerId = L.Util.stamp(layer);
@@ -78,7 +82,7 @@ function createOverviewListItem(layer) {
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
       const color = colorData ? colorData.css : "#e51b23";
 
-      // --- START: MODIFIED AND REFACTORED DUPLICATION LOGIC ---
+      // Create the appropriate layer type (marker or polyline)
       if (layerToDuplicate instanceof L.Marker) {
         newLayer = L.marker(layerToDuplicate.getLatLng(), {
           icon: createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity),
@@ -89,7 +93,7 @@ function createOverviewListItem(layer) {
           .map((latlng) => [latlng.lng, latlng.lat]);
 
         let coordsToUse = originalCoords;
-        let simplificationHappened = false; // Add a flag
+        let simplificationHappened = false;
 
         if (enablePathSimplification) {
           const simplifiedResult = simplifyPath(
@@ -101,7 +105,7 @@ function createOverviewListItem(layer) {
           // Check if the path was actually simplified
           if (simplifiedResult.simplified) {
             coordsToUse = simplifiedResult.coords;
-            simplificationHappened = true; // Set the flag to true
+            simplificationHappened = true;
           }
         }
 
@@ -126,7 +130,6 @@ function createOverviewListItem(layer) {
         );
         newFeature.properties.totalDistance = calculatePathDistance(newLayer);
       }
-      // --- END: MODIFIED AND REFACTORED DUPLICATION LOGIC ---
 
       if (newLayer) {
         newLayer.feature = newFeature;
@@ -200,7 +203,9 @@ function createOverviewListItem(layer) {
   return listItem;
 }
 
-// Populates or updates the overview list with all items on the map, grouped by type.
+/**
+ * Populates or updates the overview list with all items on the map, grouped by type.
+ */
 function updateOverviewList() {
   const listContainer = document.getElementById("overview-panel-list");
   if (!listContainer) return;
@@ -288,8 +293,10 @@ function updateOverviewList() {
   listContainer.appendChild(fragment);
 }
 
-// Displays the info panel with details about the selected layer.
-// @param {L.Layer} layer - The selected layer.
+/**
+ * Displays the info panel with details about the selected layer.
+ * @param {L.Layer} layer - The selected layer
+ */
 function showInfoPanel(layer) {
   // Style adjustments for when an item is selected
   infoPanelName.style.display = "block";
@@ -327,7 +334,6 @@ function showInfoPanel(layer) {
     infoPanelDetails.style.cursor = "pointer";
     infoPanelDetails.title = "Click to copy coordinates";
 
-    // FIX #1: Use the robust copyToClipboard function and handle both click and touch events.
     infoPanelDetails.onclick = (e) => {
       L.DomEvent.stop(e); // Prevent event from bubbling up
       const coordString = `${latlng.lat}, ${latlng.lng}`;
@@ -360,12 +366,10 @@ function showInfoPanel(layer) {
   } else if (layer instanceof L.Polyline) {
     name = name || "Path";
 
-    // ALWAYS recalculate the distance from the geometry, just like the elevation panel does.
-    // This ensures the value is always consistent between the two panels.
+    // Recalculate distance from geometry to ensure consistency with elevation panel
     const totalDistance = calculatePathDistance(layer);
 
-    // (Optional but good practice) We can also update the cached property
-    // in case anything else ever uses it.
+    // Update the cached property
     if (layer.feature && layer.feature.properties) {
       layer.feature.properties.totalDistance = totalDistance;
     }
@@ -430,7 +434,9 @@ function showInfoPanel(layer) {
   colorPicker.style.display = "none";
 }
 
-// Resets the info panel to its default state (no item selected).
+/**
+ * Resets the info panel to its default state (no item selected).
+ */
 function resetInfoPanel() {
   if (infoPanel) {
     infoPanelName.style.display = "none";
@@ -456,7 +462,9 @@ function resetInfoPanel() {
   }
 }
 
-// Updates the name of the selected layer from the info panel input.
+/**
+ * Updates the name of the selected layer from the info panel input.
+ */
 function updateLayerName() {
   if (globallySelectedItem && globallySelectedItem.feature.properties) {
     let newName = infoPanelName.value.trim();
@@ -470,7 +478,9 @@ function updateLayerName() {
   }
 }
 
-// Populates the color picker with swatches
+/**
+ * Populates the color picker with swatches.
+ */
 function populateColorPicker() {
   ORGANIC_MAPS_COLORS.forEach((color) => {
     const swatch = document.createElement("div");
@@ -507,7 +517,6 @@ function populateColorPicker() {
         // Update the selected state in the color picker
         updateColorPickerSelection(newColorName);
 
-        // --- NEW ---
         // Update the mini swatch in the info panel and hide the picker
         infoPanelColorSwatch.style.backgroundColor = newColorData.css;
         colorPicker.style.display = "none";
@@ -518,7 +527,10 @@ function populateColorPicker() {
   });
 }
 
-// Updates which swatch in the picker has the 'selected' class
+/**
+ * Updates which swatch in the picker has the 'selected' class.
+ * @param {string} colorName - The name of the color to select
+ */
 function updateColorPickerSelection(colorName) {
   const swatches = colorPicker.querySelectorAll(".color-swatch");
   swatches.forEach((swatch) => {
@@ -530,7 +542,9 @@ function updateColorPickerSelection(colorName) {
   });
 }
 
-// Replaces default leaflet icons with Material Symbols
+/**
+ * Replaces default Leaflet icons with Material Symbols.
+ */
 function replaceDefaultIconsWithMaterialSymbols() {
   const layersButton = document.querySelector('.leaflet-control-custom[title="Layers"]');
   if (layersButton) {

@@ -9,12 +9,10 @@ const APP_SHORT_DESCRIPTION = "A simple, powerful web-based editor for creating,
 const APP_DOMAIN = "www.openmapeditor.com"; // Used for Strava setup instructions
 
 /**
- * Converts a CSS hex color (#RRGGBB) to a KML color (AABBGGRR).
- * This logic is similar to the SaveColorToABGR function in Organic Maps' C++ code:
- * https://github.com/organicmaps/organicmaps/blob/master/libs/kml/serdes.cpp
- * It assumes full opacity (AA = FF).
- * @param {string} cssColor The CSS color string (e.g., "#E51B23").
- * @returns {string} The KML color string (e.g., "FF231BE5").
+ * Converts a CSS hex color to KML AABBGGRR format for Organic Maps compatibility.
+ * @see https://github.com/organicmaps/organicmaps/blob/master/libs/kml/serdes.cpp
+ * @param {string} cssColor - CSS color string (e.g., "#E51B23")
+ * @returns {string} KML color string (e.g., "FF231BE5")
  */
 function cssToKmlColor(cssColor) {
   const rr = cssColor.substring(1, 3);
@@ -23,12 +21,11 @@ function cssToKmlColor(cssColor) {
   return `FF${bb}${gg}${rr}`.toUpperCase();
 }
 
-// --- START: Organic Maps Color Configuration ---
-// Centralized configuration for the 16 Organic Maps colors.
-// KML colors are generated automatically to match the format used by Organic Maps.
-// The source for the CSS hex values can be found here:
-// https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/dark/style.mapcss
-// https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/light/style.mapcss
+/**
+ * The 16 official Organic Maps colors with their CSS hex values.
+ * @see https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/dark/style.mapcss
+ * @see https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/light/style.mapcss
+ */
 const ORGANIC_MAPS_COLORS_DATA = [
   { name: "Red", css: "#E51B23" },
   { name: "Pink", css: "#FF4182" },
@@ -52,12 +49,12 @@ const ORGANIC_MAPS_COLORS = ORGANIC_MAPS_COLORS_DATA.map((color) => ({
   ...color,
   kml: cssToKmlColor(color.css),
 }));
-// --- END: Organic Maps Color Configuration ---
 
-// Global settings
 let enablePathSimplification = localStorage.getItem("enablePathSimplification") !== "false";
 
-// --- NEW: Centralized Style Configuration ---
+/**
+ * Centralized style configuration for paths and markers.
+ */
 const STYLE_CONFIG = {
   path: {
     default: {
@@ -70,12 +67,12 @@ const STYLE_CONFIG = {
       outline: {
         enabled: true,
         color: "black",
-        weightOffset: 4, // Final weight will be highlight.weight + weightOffset
+        weightOffset: 4,
       },
     },
   },
   marker: {
-    baseSize: 50, // Base width of marker in pixels - MUST match font-size in .material-symbols-map-marker
+    baseSize: 50,
     default: {
       opacity: 0.75,
     },
@@ -84,16 +81,13 @@ const STYLE_CONFIG = {
       outline: {
         enabled: true,
         color: "black",
-        sizeOffset: 4, // Final size will be baseSize + sizeOffset
-        // A negative Y offset moves the anchor up on the icon, making the icon render lower on the map.
-        anchorOffsetY: -4, // Vertical offset in pixels for the outline effect
+        sizeOffset: 4,
+        anchorOffsetY: -4,
       },
     },
   },
 };
-// --- END NEW ---
 
-// Centralized color configuration
 const rootStyles = getComputedStyle(document.documentElement);
 
 const routingColorStart = rootStyles.getPropertyValue("--routing-color-start").trim();
@@ -119,21 +113,18 @@ const colorScheme = {
   },
 };
 
-// --- Simplification Settings ---
-
-// Simplification settings for IMPORTED PATHS (GPX, KML, KMZ).
-// These files can be very dense, so a moderate simplification is often helpful.
+/**
+ * Simplification settings for imported paths (GPX, KML, KMZ).
+ * Tolerance is in decimal degrees (~0.00005° ≈ 5.5m at equator).
+ */
 const pathSimplificationConfig = {
-  // The tolerance for simplification in decimal degrees. A higher value means more simplification.
-  // Note: 0.00005 degrees is roughly 5.5 meters at the equator.
   TOLERANCE: 0.00015,
-  // Paths with a point count at or below this number will not be simplified.
   MIN_POINTS: 100,
 };
 
-// Simplification settings for GENERATED ROUTES.
-// Routes from engines like OSRM are often algorithmically generated and can benefit from
-// a slightly more aggressive simplification to reduce point count without losing shape.
+/**
+ * Simplification settings for generated routes from routing engines.
+ */
 const routeSimplificationConfig = {
   TOLERANCE: 0.00015,
   MIN_POINTS: 100,

@@ -1,58 +1,45 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
-// --- START: Apply saved theme on load ---
-// Immediately-invoked function to set theme on initial load.
-// It only applies dark mode if it was explicitly saved, otherwise the default is light.
+// Apply saved theme on load (dark mode if explicitly saved, otherwise light is default)
 (function () {
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme === "dark") {
     document.body.classList.add("dark-mode");
   }
 })();
-// --- END: Apply saved theme on load ---
 
-// --- START: Apply saved layout on load ---
+// Apply saved layout preference on load
 (function () {
   const forceDesktopLayout = localStorage.getItem("forceDesktopLayout") === "true";
   if (forceDesktopLayout) {
     document.body.classList.add("force-desktop-layout");
   }
 })();
-// --- END: Apply saved layout on load ---
 
-// --- START: Dynamic Input Type Tracking ---
+// Dynamic input type tracking (mouse vs touch) for hybrid devices
 (function () {
-  // Default to touch, as it's the safer default for hybrid devices.
   let lastInputType = "touch";
   document.body.classList.add("using-touch");
 
   function updateInputType(event) {
-    const currentInputType = event.pointerType; // 'mouse', 'touch', 'pen'
+    const currentInputType = event.pointerType;
 
-    // Only run if the input type has actually changed
     if (currentInputType === lastInputType) {
       return;
     }
 
-    // console.log(`Input switched from '${lastInputType}' to '${currentInputType}'`);
-
     if (currentInputType === "mouse") {
-      // Mouse is being used: REMOVE the class
       document.body.classList.remove("using-touch");
     } else {
-      // Touch or pen is being used: ADD the class
       document.body.classList.add("using-touch");
     }
 
-    // Remember the new input type for the next event
     lastInputType = currentInputType;
   }
 
-  // Listen for both movement and clicks/taps
   window.addEventListener("pointermove", updateInputType, { passive: true });
   window.addEventListener("pointerdown", updateInputType, { passive: true });
 })();
-// --- END: Dynamic Input Type Tracking ---
 
 // Global variables
 let map,
@@ -91,65 +78,48 @@ let map,
 /**
  * Adjusts the height of the info panel's name textarea to fit its content,
  * up to a maximum of approximately three lines.
- * @param {HTMLTextAreaElement} textarea The textarea element to resize.
+ * @param {HTMLTextAreaElement} textarea - The textarea element to resize
  */
 function adjustInfoPanelNameHeight(textarea) {
-  // Max height for ~3 lines (14px font * 1.5 line-height * 3 lines + 10px padding)
   const heightLimit = 75;
 
-  // Temporarily reset height to auto to get the new scrollHeight
   textarea.style.height = "auto";
-
-  // Set the new height, but don't exceed the limit
   textarea.style.height = `${Math.min(textarea.scrollHeight, heightLimit)}px`;
-
-  // Show a scrollbar only if the content is taller than the limit
   textarea.style.overflowY = textarea.scrollHeight > heightLimit ? "auto" : "hidden";
-
-  // MODIFIED: Add this line to ensure the text is scrolled to the top
   textarea.scrollTop = 0;
 }
 
 /**
- * A simple function to trigger updates on currently displayed UI elements
- * that show units, like the routing panel and info panel. This is called
- * when the user toggles the unit setting.
+ * Updates currently displayed UI elements that show units (routing panel, info panel)
+ * when the user toggles between metric and imperial units.
  */
 function updateAllDynamicUnitDisplays() {
-  // 1. If an item is selected, re-render its info panel to update units.
   if (globallySelectedItem) {
     showInfoPanel(globallySelectedItem);
   }
 
-  // 2. If a route is active, tell the routing module to redisplay it.
   if (window.app && typeof window.app.redisplayCurrentRoute === "function") {
     window.app.redisplayCurrentRoute();
   }
 }
 
-// --- START: Reusable function to show the credits popup ---
 /**
  * Fetches the credits content from an HTML file and displays it in a SweetAlert modal.
- * This function is designed to be called by any UI element that needs to show the credits.
  */
 async function showCreditsPopup() {
   try {
-    // Fetch the content from the HTML file
     const response = await fetch("/credits.html");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const creditsHtmlContent = await response.text();
 
-    // Create a container and populate it with the fetched HTML
     const swalContent = document.createElement("div");
     swalContent.innerHTML = creditsHtmlContent;
 
-    // Dynamically update placeholder text with app-specific info
     swalContent.querySelector("#credits-app-name").textContent = APP_NAME;
     swalContent.querySelector("#credits-app-short-description").textContent = APP_SHORT_DESCRIPTION;
 
-    // Open the SweetAlert with the fetched and populated content
     Swal.fire({
       imageUrl: "/img/icon-1024x1024.svg",
       imageWidth: 150,
@@ -171,12 +141,11 @@ async function showCreditsPopup() {
     });
   }
 }
-// --- END: Reusable function to show the credits popup ---
 
 /**
  * Parses a URL hash string to extract map view parameters.
- * @param {string} hashString The hash string from window.location.hash.
- * @returns {{zoom: number, lat: number, lon: number}|null} An object with map parameters or null if the hash is invalid.
+ * @param {string} hashString - The hash string from window.location.hash
+ * @returns {{zoom: number, lat: number, lon: number}|null} Map parameters or null if invalid
  */
 function parseMapHash(hashString) {
   const match = hashString.match(/^#map=(\d{1,2})\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)$/);
@@ -190,10 +159,11 @@ function parseMapHash(hashString) {
   return null;
 }
 
-// Main function to initialize the map and all its components.
+/**
+ * Initializes the map and all its components (layers, controls, event handlers).
+ */
 function initializeMap() {
-  // --- START: Add this check for secrets.js ---
-  // Verify that all API keys from secrets.js are available.
+  // Verify that all required API keys from secrets.js are available
   if (
     typeof googleApiKey === "undefined" ||
     typeof mapboxAccessToken === "undefined" ||
@@ -207,22 +177,18 @@ function initializeMap() {
       allowOutsideClick: false,
     });
   }
-  // --- END: Check for secrets.js ---
 
-  // Update the live page title and description
   document.title = APP_NAME;
   const metaDescription = document.querySelector('meta[name="description"]');
   if (metaDescription) {
     metaDescription.setAttribute("content", APP_DESCRIPTION);
   }
 
-  // Read saved preference for units setting at the beginning
   useImperialUnits = localStorage.getItem("useImperialUnits") === "true";
 
-  // FIX: This prevents the polyline drawing tool from finishing on the second tap on touch devices.
+  // Prevent polyline drawing tool from finishing on second tap on touch devices
   L.Draw.Polyline.prototype._onTouch = L.Util.falseFn;
 
-  // Initialize ui elements
   infoPanel = document.getElementById("info-panel");
   infoPanelName = document.getElementById("info-panel-name");
   infoPanelDetails = document.getElementById("info-panel-details");
@@ -236,18 +202,15 @@ function initializeMap() {
     adjustInfoPanelNameHeight(infoPanelName);
   });
   infoPanelName.addEventListener("keydown", (e) => {
-    // MODIFIED: For textarea, "Enter" without Shift should submit, not create a newline.
     if (e.key === "Enter" && !e.shiftKey) {
       updateLayerName();
-      infoPanelName.blur(); // Unfocus the element
-      e.preventDefault(); // Prevent adding a new line
+      infoPanelName.blur();
+      e.preventDefault();
     }
   });
 
-  // This makes the textarea grow and shrink as you type.
   infoPanelName.addEventListener("input", () => adjustInfoPanelNameHeight(infoPanelName));
 
-  // Toggle color picker on swatch click
   infoPanelColorSwatch.addEventListener("click", () => {
     const isPickerVisible =
       colorPicker.style.display === "grid" || colorPicker.style.display === "block";
@@ -256,40 +219,33 @@ function initializeMap() {
 
   populateColorPicker();
 
-  // --- MODIFIED: Tab System Logic ---
   const tabButtons = document.querySelectorAll(".tab-button");
   const tabPanels = document.querySelectorAll(".tab-panel");
   const routingInfoIcon = document.getElementById("routing-info-icon");
 
   tabButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      // Deactivate all buttons and panels
       tabButtons.forEach((btn) => btn.classList.remove("active"));
       tabPanels.forEach((panel) => panel.classList.remove("active"));
 
-      // Activate the clicked button
       button.classList.add("active");
 
-      // Activate the corresponding panel
       const targetPanelId = button.getAttribute("data-target");
       const targetPanel = document.getElementById(targetPanelId);
       if (targetPanel) {
         targetPanel.classList.add("active");
       }
 
-      // Check if we need to scroll the overview list
       if (targetPanelId === "overview-panel" && globallySelectedItem) {
         const layerId = L.Util.stamp(globallySelectedItem);
         const listItem = document.querySelector(
           `#overview-panel-list .overview-list-item[data-layer-id='${layerId}']`
         );
         if (listItem) {
-          // The panel is now visible, so we can scroll to the item
           listItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
       }
 
-      // Update the visual state of the routing info icon
       if (document.getElementById("tab-btn-routing").classList.contains("active")) {
         routingInfoIcon.classList.remove("disabled");
       } else {
@@ -298,9 +254,7 @@ function initializeMap() {
     });
   });
 
-  // --- Routing Info Icon Logic ---
   if (routingInfoIcon) {
-    // Set initial visual state for the info icon on page load
     if (!document.getElementById("tab-btn-routing").classList.contains("active")) {
       routingInfoIcon.classList.add("disabled");
     }
@@ -308,9 +262,8 @@ function initializeMap() {
     L.DomEvent.on(routingInfoIcon, "click", (e) => {
       const routingTabButton = document.getElementById("tab-btn-routing");
 
-      // ONLY if the tab is already active, stop the event and show the alert.
       if (routingTabButton.classList.contains("active")) {
-        L.DomEvent.stop(e); // Prevent the click from bubbling to the parent button
+        L.DomEvent.stop(e);
         Swal.fire({
           title: "Routing Help",
           icon: "info",
@@ -331,14 +284,9 @@ function initializeMap() {
           confirmButtonText: "Got it!",
         });
       }
-      // If the tab is NOT active, we do nothing. The click event will
-      // naturally bubble up to the parent button and trigger its click handler.
     });
   }
 
-  // An object to map layer keys to their display HTML.
-  // For using the flags inline with text add the classes .fi and .fi-xx (where xx is the ISO 3166-1-alpha-2 code of a country) to an empty <span>.
-  // If you want to have a squared version flag then add the class fis as well.
   const layerDisplayNames = {
     OpenStreetMap: '<span class="material-symbols layer-icon">globe</span> OpenStreetMap',
     EsriWorldImagery: '<span class="material-symbols layer-icon">globe</span> Esri World Imagery',
@@ -354,7 +302,6 @@ function initializeMap() {
       '<span class="material-symbols layer-icon">directions_run</span> Strava Activities',
   };
 
-  // Define base and overlay layers with SIMPLE keys
   const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
   });
@@ -390,7 +337,6 @@ function initializeMap() {
     }),
   };
 
-  // Initialize map
   map = L.map("map", {
     center: [0, 0],
     zoom: 2,
@@ -399,19 +345,14 @@ function initializeMap() {
     worldCopyJump: true,
   });
 
-  // --- START: URL Hash Logic ---
-  // This block handles the initial view, updates the hash on move, and listens for manual changes.
-
-  // Set the initial view from the URL hash, with a fallback to IP geolocation.
   const initialView = parseMapHash(window.location.hash);
-  let isUpdatingUrl = false; // A flag to prevent event loops
+  let isUpdatingUrl = false;
 
   if (initialView) {
-    isUpdatingUrl = true; // Prevent the initial 'moveend' from overwriting the hash
+    isUpdatingUrl = true;
     map.setView([initialView.lat, initialView.lon], initialView.zoom);
-    isUpdatingUrl = false; // Reset the flag
+    isUpdatingUrl = false;
   } else {
-    // Fallback to IP geolocation if no valid hash is found
     fetch("https://ipinfo.io/json")
       .then((response) => {
         if (!response.ok) {
@@ -430,13 +371,11 @@ function initializeMap() {
       })
       .catch((error) => {
         console.error("IP Geolocation fetch failed, using default map view.", error);
-        // The map will just keep its default [0, 0] view if the API call fails
       });
   }
 
-  // This function updates the URL hash with the current map view when the map moves.
   const updateUrlHash = () => {
-    if (isUpdatingUrl) return; // Don't update the URL if we are already setting the view from it
+    if (isUpdatingUrl) return;
     const center = map.getCenter();
     const zoom = map.getZoom();
     const lat = center.lat.toFixed(5);
@@ -447,13 +386,11 @@ function initializeMap() {
 
   map.on("moveend", updateUrlHash);
 
-  // This function runs whenever the user manually changes the hash in the URL bar.
   const handleHashChange = () => {
     const newView = parseMapHash(window.location.hash);
     if (newView) {
       const currentCenter = map.getCenter();
       const currentZoom = map.getZoom();
-      // To prevent a feedback loop, only update the map if the new view is different from the current one.
       if (
         currentZoom !== newView.zoom ||
         currentCenter.lat.toFixed(5) !== newView.lat.toFixed(5) ||
@@ -465,25 +402,20 @@ function initializeMap() {
   };
 
   window.addEventListener("hashchange", handleHashChange, false);
-  // --- END: URL Hash Logic ---
 
-  // Configure the map's attribution control
   map.attributionControl.setPosition("bottomleft");
   map.attributionControl.setPrefix(
     `<a href="#" id="credits-link-bottom-left" class="js-show-credits" title="Credits">${APP_NAME} <span class="material-symbols material-symbols-fill attribution-heart-icon">favorite</span></a><a href="#" id="install-pwa-link" title="Install App" style="display: none;">Install</a>`
   );
 
-  // Add the initial base layer to the map (after configuring attribution control to prevent problems with prefix)
   osmLayer.addTo(map);
 
-  // Initialize feature groups first so they are available for the layer control
   drawnItems = new L.FeatureGroup().addTo(map);
   importedItems = new L.FeatureGroup().addTo(map);
   kmzLayer = new L.FeatureGroup().addTo(map);
-  editableLayers = new L.FeatureGroup(); // Don't add to map directly, managed by other groups
+  editableLayers = new L.FeatureGroup();
   stravaActivitiesLayer = L.featureGroup().addTo(map);
 
-  // Combine all overlays into a single object for the custom control
   const allOverlayMaps = {
     ...staticOverlayMaps,
     DrawnItems: drawnItems,
@@ -492,25 +424,20 @@ function initializeMap() {
     StravaActivities: stravaActivitiesLayer,
   };
 
-  // Start functionality for swisstopo layers
   const swissBounds = L.latLngBounds([
-    [45.8179, 5.956], // Southwest corner of Switzerland
-    [47.8085, 10.4923], // Northeast corner of Switzerland
+    [45.8179, 5.956],
+    [47.8085, 10.4923],
   ]);
 
   map.on("baselayerchange", function (e) {
     if (e.name && e.name.includes("Swisstopo")) {
       const currentBounds = map.getBounds();
-      // Do not re-frame the map if the current view is already
-      // completely within the bounds of Switzerland.
       if (!swissBounds.contains(currentBounds)) {
         // map.fitBounds(swissBounds);
       }
     }
   });
-  // End functionality for swisstopo layers
 
-  // --- START: Custom Layer Control Implementation ---
   const LayersToggleControl = L.Control.extend({
     options: { position: "topleft" },
     onAdd: function (map) {
@@ -524,8 +451,6 @@ function initializeMap() {
       link.role = "button";
       link.innerHTML = "";
 
-      // This control ONLY handles the click on the button.
-      // The global document listener handles closing.
       L.DomEvent.on(link, "click", (e) => {
         L.DomEvent.stop(e);
         const panel = document.getElementById("custom-layers-panel");
@@ -537,23 +462,18 @@ function initializeMap() {
     },
   });
 
-  // Add the custom button to the map
   new LayersToggleControl().addTo(map);
 
-  // --- Robustly populate the custom panel ---
   const customPanel = document.getElementById("custom-layers-panel");
   let formContent = '<form class="leaflet-control-layers-form">';
 
-  // Add base layers
   formContent += '<div class="leaflet-control-layers-base">';
   let firstBaseLayer = true;
   for (const name in baseMaps) {
     const layer = baseMaps[name];
     const layerId = L.Util.stamp(layer);
     const isChecked = firstBaseLayer ? 'checked="checked"' : "";
-    const displayName = layerDisplayNames[name] || name; // Fallback to the key if no display name is found
-    // The 'name' (the simple key) goes in the data attribute.
-    // The 'displayName' (with HTML) goes in the span.
+    const displayName = layerDisplayNames[name] || name;
     formContent += `<label><div><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers" ${isChecked} data-layer-id="${layerId}" data-layer-name="${name}"><span> ${displayName}</span></div></label>`;
     firstBaseLayer = false;
   }
@@ -561,22 +481,18 @@ function initializeMap() {
 
   formContent += '<div class="leaflet-control-layers-separator"></div>';
 
-  // Add overlay layers
   formContent += '<div class="leaflet-control-layers-overlays">';
   for (const name in allOverlayMaps) {
     const layer = allOverlayMaps[name];
     const layerId = L.Util.stamp(layer);
     const isChecked = map.hasLayer(layer) ? 'checked="checked"' : "";
     const displayName = layerDisplayNames[name] || name;
-    // The 'name' (the simple key) goes in the data attribute.
-    // The 'displayName' (with HTML) goes in the span.
     formContent += `<label><div><input type="checkbox" class="leaflet-control-layers-selector" ${isChecked} data-layer-id="${layerId}" data-layer-name="${name}"><span> ${displayName}</span></div></label>`;
   }
   formContent += "</div></form>";
 
   customPanel.innerHTML = formContent;
 
-  // --- This function handles side effects of toggling overlays (like updating labels) ---
   const onOverlayToggle = (e) => {
     const isAdding = e.type === "overlayadd";
 
@@ -597,13 +513,9 @@ function initializeMap() {
       }
     }
 
-    // --- FIX: Check if the layer supports eachLayer before iterating ---
-    // This handles both tile layers (like Swisstopo) and our feature groups.
     if (typeof e.layer.eachLayer !== "function") {
-      // If it's a simple layer (e.g., a WMS tile layer), there's nothing more to do.
       return;
     }
-    // --- END FIX ---
 
     if (isAdding) {
       e.layer.eachLayer((group) => {
@@ -621,20 +533,17 @@ function initializeMap() {
     }
   };
 
-  // --- Add event listener to the manually created inputs ---
   customPanel.addEventListener("click", function (e) {
     if (e.target && e.target.classList.contains("leaflet-control-layers-selector")) {
-      // NEW: Prevent interaction if disabled
       if (L.DomUtil.hasClass(e.target, "leaflet-disabled-interaction")) {
-        L.DomEvent.stop(e); // Stop event propagation
-        return; // Do nothing
+        L.DomEvent.stop(e);
+        return;
       }
 
       const selectedLayerId = parseInt(e.target.dataset.layerId, 10);
       const isRadio = e.target.type === "radio";
 
       if (isRadio) {
-        // Handle base layers
         for (const name in baseMaps) {
           map.removeLayer(baseMaps[name]);
         }
@@ -644,27 +553,23 @@ function initializeMap() {
           }
         }
       } else {
-        // Handle overlay layers
         for (const name in allOverlayMaps) {
           const layer = allOverlayMaps[name];
           if (L.Util.stamp(layer) === selectedLayerId) {
             if (e.target.checked) {
               map.addLayer(layer);
-              // Manually trigger the 'add' logic
               onOverlayToggle({ type: "overlayadd", layer: layer });
             } else {
               map.removeLayer(layer);
-              // Manually trigger the 'remove' logic
               onOverlayToggle({ type: "overlayremove", layer: layer });
             }
-            break; // Exit loop once found
+            break;
           }
         }
       }
     }
   });
 
-  // --- Global click handler to close popups ---
   document.addEventListener(
     "click",
     function (event) {
@@ -675,7 +580,6 @@ function initializeMap() {
         '.leaflet-control-custom[title="Download file"]'
       );
 
-      // Close Layers Panel if click is outside
       if (
         layersPanel &&
         layersButton &&
@@ -686,7 +590,6 @@ function initializeMap() {
         layersPanel.style.display = "none";
       }
 
-      // Close Download Menu if click is outside
       if (
         downloadMenu &&
         downloadButton &&
@@ -698,9 +601,8 @@ function initializeMap() {
       }
     },
     true
-  ); // Use capture phase to ensure this runs before other click handlers stop propagation.
+  );
 
-  // Define and add other custom controls
   const ElevationToggleControl = L.Control.extend({
     options: { position: "topleft" },
     onAdd: function (map) {
@@ -731,7 +633,6 @@ function initializeMap() {
     },
   });
 
-  // --- REFACTORED: Single-item export now calls the global createKmlDocument function ---
   const DownloadControl = L.Control.extend({
     options: { position: "topleft" },
     onAdd: function (map) {
@@ -770,9 +671,7 @@ function initializeMap() {
         if (format === "gpx") {
           data = toGpx(globallySelectedItem);
         } else if (format === "kml") {
-          // This is much simpler now. It generates the single placemark...
           const kmlPlacemark = generateKmlForLayer(globallySelectedItem, name);
-          // ...and calls the global function, passing the placemark in an array.
           data = createKmlDocument(name, [kmlPlacemark]);
         }
 
@@ -807,24 +706,17 @@ function initializeMap() {
     },
   });
 
-  // A single constant for both custom locate markers.
   const CUSTOM_LOCATE_ICON_SIZE = 50;
 
   const locationArrowIcon = L.divIcon({
     html: `<img src="/img/location-arrow.svg" style="width: ${CUSTOM_LOCATE_ICON_SIZE}px; height: ${CUSTOM_LOCATE_ICON_SIZE}px;">`,
     className: "custom-locate-icon",
     iconSize: [CUSTOM_LOCATE_ICON_SIZE, CUSTOM_LOCATE_ICON_SIZE],
-    // Calculate anchor based on the SVG's dimensions relative to its viewBox.
-    // The tip of the arrow is at x=100, y=150.
-    // The total viewBox width is 220 - (-10) = 230
-    // The total viewBox height is 220 - (-25) = 245
     iconAnchor: [(100 / 230) * CUSTOM_LOCATE_ICON_SIZE, (150 / 245) * CUSTOM_LOCATE_ICON_SIZE],
   });
 
-  // Custom location compass marker for locateControl
   const locationCompassArrowIcon = L.Control.Locate.LocationMarker.extend({
     initialize(latlng, heading, options) {
-      // Use leaflet.setOptions instead of L.setOptions
       leaflet.setOptions(this, options);
       this._latlng = latlng;
       this._heading = heading;
@@ -833,7 +725,6 @@ function initializeMap() {
 
     setHeading(heading) {
       this._heading = heading;
-      // Rotate the icon's IMG element directly
       if (this._icon) {
         const imgElement = this._icon.querySelector("img");
         if (imgElement) {
@@ -841,46 +732,29 @@ function initializeMap() {
         }
       }
 
-      // The L.Control.Locate plugin internally creates its default marker with this specific class name.
-      // We select it here so we can hide it, ensuring only our custom compass icon is visible when heading is available.
       const locationMarkerElement = document.querySelector(".leaflet-control-locate-location");
-      // Check if the element exists
       if (locationMarkerElement) {
-        // Set the display property to 'none'
         locationMarkerElement.style.display = "none";
       }
     },
 
-    /**
-     * **OVERRIDE THE ENTIRE METHOD TO ADD THE ICON ANCHOR**
-     * Create a styled circle location marker
-     */
     createIcon() {
-      // This method is copied from the parent L.Control.Locate.LocationMarker
-      // with one critical addition: `iconAnchor`.
       const opt = this.options;
-      const style = ""; // Style is not needed as we use an SVG symbol
+      const style = "";
 
       const icon = this._getIconSVG(opt, style);
 
       this._locationIcon = leaflet.divIcon({
         className: icon.className,
-        html: icon.html, // Use 'html' property
+        html: icon.html,
         iconSize: [icon.w, icon.h],
-        // --- THIS IS THE FIX ---
-        // Add the same anchor calculation as locationArrowIcon
         iconAnchor: [(100 / 230) * CUSTOM_LOCATE_ICON_SIZE, (150 / 245) * CUSTOM_LOCATE_ICON_SIZE],
       });
 
       this.setIcon(this._locationIcon);
-
-      // After setting the icon, apply initial heading
       this.setHeading(this._heading);
     },
 
-    /**
-     * Create a styled arrow compass marker
-     */
     _getIconSVG(options, style) {
       const size = CUSTOM_LOCATE_ICON_SIZE;
       const imgContent = `<img src="/img/location-arrow.svg" style="width:${size}px; height:${size}px;">`;
@@ -894,7 +768,6 @@ function initializeMap() {
     },
   });
 
-  // Get the color value from your CSS file
   const locateCircleColor = rootStyles.getPropertyValue("--locate-color").trim();
 
   locateControl = L.control
@@ -905,32 +778,18 @@ function initializeMap() {
       drawCircle: false,
       showPopup: false,
       showCompass: true,
-      // Custom compass marker
       compassClass: locationCompassArrowIcon,
-      // Marker style when not using custom marker
       markerStyle: {
-        color: "white", // Color of the marker's border
-        fillColor: locateCircleColor, // Fill color of the marker
+        color: "white",
+        fillColor: locateCircleColor,
         fillOpacity: 1,
         weight: 2,
         opacity: 1,
-        radius: 10, // Size of the center dot
+        radius: 10,
       },
-      // --- FOR DEBUGGING ALIGNMENT ---
-      // To visually test that the rotating compass marker has the correct anchor point,
-      // you can un-comment the 'markerClass' option below. This will force the plugin
-      // to use our non-rotating custom icon, making it easy to confirm that both
-      // the compass and static icons align perfectly.
-      //
-      // markerClass: L.Marker.extend({
-      //   options: {
-      //     icon: locationArrowIcon,
-      //   },
-      // }),
     })
     .addTo(map);
 
-  // Add a scale control showing units based on the user's setting
   scaleControl = L.control
     .scale({
       position: "bottomleft",
@@ -939,7 +798,6 @@ function initializeMap() {
     })
     .addTo(map);
 
-  // Change background of locate button on locationfound/locationerror
   const locateButtonContainer = locateControl.getContainer();
   map.on("locateactivate", function () {
     L.DomUtil.addClass(locateButtonContainer, "locate-active");
@@ -950,7 +808,6 @@ function initializeMap() {
 
   L.control.zoom({ position: "topleft" }).addTo(map);
 
-  // --- REFACTORED: PanelsToggleControl with cleaner CSS-based icon swapping ---
   const PanelsToggleControl = L.Control.extend({
     options: { position: "topright" },
     onAdd: function (map) {
@@ -959,9 +816,7 @@ function initializeMap() {
         "leaflet-control leaflet-control-custom leaflet-control-toggle-panels"
       );
       container.title = "Toggle Sidebar";
-      // The container starts in the "visible" state
       container.classList.add("panels-visible");
-      // Both icons are present in the HTML, their visibility is controlled by CSS
       container.innerHTML =
         '<a href="#" role="button">' +
         '<span class="icon-chevron-right-span material-symbols">keyboard_arrow_right</span>' +
@@ -972,18 +827,12 @@ function initializeMap() {
         L.DomEvent.stop(ev);
         const panelContainer = document.getElementById("main-right-container");
         panelContainer.classList.toggle("hidden");
-        // Toggle the state class on the button itself
         container.classList.toggle("panels-visible");
         container.classList.toggle("panels-hidden");
 
-        // --- START: NEW FIX ---
-        // If the panel was just made visible and an item is selected,
-        // re-run the height adjustment for the name textarea. This corrects
-        // the height if an item was selected while the panel was hidden.
         if (!panelContainer.classList.contains("hidden") && globallySelectedItem) {
           adjustInfoPanelNameHeight(infoPanelName);
         }
-        // --- END: NEW FIX ---
       });
       L.DomEvent.on(container, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
       return container;
@@ -992,7 +841,6 @@ function initializeMap() {
 
   new PanelsToggleControl().addTo(map);
 
-  // --- REFACTORED: FullscreenToggleControl with cleaner CSS-based icon swapping ---
   const FullscreenToggleControl = L.Control.extend({
     options: { position: "topright" },
     onAdd: function (map) {
@@ -1001,7 +849,6 @@ function initializeMap() {
         "leaflet-control leaflet-control-custom leaflet-control-fullscreen-toggle"
       );
       container.title = "Toggle Fullscreen (f)";
-      // Both icons are present, CSS will control visibility
       container.innerHTML =
         '<a href="#" role="button">' +
         '<span class="icon-fullscreen-enter-span material-symbols">fullscreen</span>' +
@@ -1028,7 +875,6 @@ function initializeMap() {
     }
   }
 
-  // Also listen for native fullscreen changes (e.g., user pressing ESC)
   document.addEventListener("fullscreenchange", () => {
     const container = document.querySelector(".leaflet-control-fullscreen-toggle");
     if (document.fullscreenElement) {
@@ -1047,39 +893,30 @@ function initializeMap() {
 
   new FullscreenToggleControl().addTo(map);
 
-  // --- START: NEW Custom Search Bar Setup ---
   const searchInput = document.getElementById("search-input");
   const searchSuggestions = document.getElementById("search-suggestions");
 
   const onSearchResult = (locationLatLng, label) => {
-    // This logic is moved from the old 'geosearch/showlocation' event handler.
-
-    // Remove previous temporary marker if it exists
     if (temporarySearchMarker) {
       map.removeLayer(temporarySearchMarker);
-      temporarySearchMarker = null; // Important to nullify it
+      temporarySearchMarker = null;
     }
 
-    // Create a new, temporary black marker and make it interactive
     temporarySearchMarker = L.marker(locationLatLng, {
       icon: createMarkerIcon(rootStyles.getPropertyValue("--color-black").trim(), 1),
       interactive: true,
     }).addTo(map);
 
-    // --- Create Popup Content ---
     const popupContent = document.createElement("div");
     popupContent.style.textAlign = "center";
     popupContent.innerHTML = `<div style="font-weight: bold; margin-bottom: 8px;">${label}</div>`;
 
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save to Map";
-    // Add some basic styling to make it look like a button
     saveButton.style.cssText =
       "padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background-color: #f0f0f0;";
     popupContent.appendChild(saveButton);
-    // --- End Popup Content ---
 
-    // --- Save Button Logic ---
     L.DomEvent.on(saveButton, "click", () => {
       const defaultDrawColorName = "Red";
       const defaultDrawColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === defaultDrawColorName);
@@ -1127,51 +964,35 @@ function initializeMap() {
         timer: 2000,
       });
     });
-    // --- End Save Button Logic ---
 
-    // Bind the popup and open it.
     temporarySearchMarker
       .bindPopup(popupContent, { offset: L.point(0, -35), maxWidth: 150 })
       .openPopup();
 
-    // When the popup is closed (without saving), remove the temporary marker.
     temporarySearchMarker.on("popupclose", () => {
-      // The marker might have already been removed by the save button.
       if (temporarySearchMarker && map.hasLayer(temporarySearchMarker)) {
         map.removeLayer(temporarySearchMarker);
         temporarySearchMarker = null;
       }
-      searchInput.value = ""; // Also clear input on popup close
+      searchInput.value = "";
     });
 
-    // Fly to the location
     map.flyTo(locationLatLng, map.getZoom() < 16 ? 16 : map.getZoom());
   };
 
   setupAutocomplete(searchInput, searchSuggestions, onSearchResult);
-  // --- END: NEW Custom Search Bar Setup ---
 
-  // Create elevation chart
   window.elevationProfile.createElevationChart("elevation-div", useImperialUnits);
 
-  // Set the initial state for the elevation panel.
-  // This ensures the panel is hidden via an inline `style` attribute on page load.
-  // This is necessary to trigger the corresponding CSS rule which collapses the
-  // div's height to 0, preventing it from blocking map interactions on mobile.
+  // Hide elevation panel on load to prevent blocking map interactions on mobile
   document.getElementById("elevation-div").style.visibility = "hidden";
-
-  // Configure draw control
   const defaultDrawColorName = "Red";
   const defaultDrawColor = ORGANIC_MAPS_COLORS.find((c) => c.name === defaultDrawColorName).css;
 
-  // --- START: Fix for Leaflet.draw Toolbar on iPad with Mouse ---
-  // Overrides the internal _detectIOS function to force 'click' events instead
-  // of 'touchstart'. This corrects a bug where toolbar buttons are not
-  // clickable with a mouse in Chrome on iPadOS.
+  // Fix Leaflet.draw toolbar on iPad with mouse by forcing click events instead of touchstart
   if (L.Toolbar) {
     L.Toolbar.prototype._detectIOS = () => false;
   }
-  // --- END: Fix ---
 
   L.drawLocal.draw.toolbar.buttons.polyline = "Draw path";
   L.drawLocal.draw.toolbar.buttons.marker = "Place marker";
@@ -1234,10 +1055,7 @@ function initializeMap() {
               const dom = new DOMParser().parseFromString(readEvent.target.result, "text/xml");
               const fileType = fileNameLower.endsWith(".gpx") ? "gpx" : "kml";
 
-              // FIX: Define geojsonData *before* it is used.
               const geojsonData = toGeoJSON[fileType](dom);
-
-              // --- Pre-process GPX to find colors ---
               if (fileType === "gpx") {
                 const tracksInDom = dom.querySelectorAll("trk");
                 const pathFeatures = geojsonData.features.filter(
@@ -1305,7 +1123,6 @@ function initializeMap() {
       selectItem(layer);
     });
     if (e.layerType === "polyline" || e.layerType === "polygon") {
-      // Distance label creation was removed from here.
     }
     selectItem(layer);
     updateDrawControlStates();
@@ -1315,38 +1132,29 @@ function initializeMap() {
   map.on("draw:edited", (e) => {
     e.layers.eachLayer((layer) => {
       if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
-        // --- FIX: Recalculate distance, store it, then update the UI ---
         const newDistance = calculatePathDistance(layer);
         if (layer.feature && layer.feature.properties) {
           layer.feature.properties.totalDistance = newDistance;
         }
-        // --- END FIX ---
         if (globallySelectedItem === layer) selectItem(layer);
       }
     });
     updateDrawControlStates();
   });
 
-  // --- MODIFIED: L.Draw.Event.DELETED handler for "Clear All" and toolbar deletions ---
   map.on(L.Draw.Event.DELETED, (e) => {
     e.layers.eachLayer((layer) => {
-      // This event fires when 'Save' is clicked in delete mode.
-      // If `layer.isDeletedFromToolbar` is true, it means it was a single selection.
-      // If all layers are in `e.layers`, it means "Clear All" was pressed.
       deleteLayerImmediately(layer);
-      layer.isDeletedFromToolbar = false; // Reset flag
+      layer.isDeletedFromToolbar = false;
     });
   });
 
   map.on(L.Draw.Event.DRAWSTART, function (e) {
-    // When any drawing starts deselect current item
     deselectCurrentItem();
-    // When any drawing starts, add a general class to the body.
     L.DomUtil.addClass(document.body, "leaflet-is-drawing");
   });
 
   map.on(L.Draw.Event.DRAWSTOP, function () {
-    // When drawing stops for any reason, remove the class.
     L.DomUtil.removeClass(document.body, "leaflet-is-drawing");
   });
 
@@ -1363,37 +1171,30 @@ function initializeMap() {
     isDeleteMode = true;
     deselectCurrentItem();
     editableLayers.eachLayer((layer) => {
-      // Add event listener only if the layer is currently on the map.
-      // This prevents issues with hidden layers.
       if (map.hasLayer(layer)) {
         layer.on("click", onFeatureClickToDelete);
       }
     });
-    // Add class to map container to force dotted line removal on paths during editing
     L.DomUtil.addClass(map.getContainer(), "map-is-editing");
-    updateDrawControlStates(); // Update layer toggles
+    updateDrawControlStates();
   });
 
   map.on(L.Draw.Event.DELETESTOP, () => {
     isDeleteMode = false;
-    updateDrawControlStates(); // Update layer toggles
+    updateDrawControlStates();
     editableLayers.eachLayer((layer) => {
       layer.off("click", onFeatureClickToDelete);
     });
     L.DomUtil.removeClass(map.getContainer(), "map-is-editing");
 
-    // Re-add any layers that were "hidden" by onFeatureClickToDelete but not actually removed
-    // (i.e., the user cancelled the deletion by clicking 'Cancel' in the toolbar)
     editableLayers.eachLayer((layer) => {
-      // Only re-add if it's not already on the map AND wasn't manually hidden before delete mode
       if (!map.hasLayer(layer) && !layer.isManuallyHidden) {
         map.addLayer(layer);
       }
-      layer.isDeletedFromToolbar = false; // Ensure flag is reset
+      layer.isDeletedFromToolbar = false;
     });
 
     if (globallySelectedItem) {
-      // If an item was selected before delete mode, re-select it to restore highlight
       selectItem(globallySelectedItem);
     }
   });
@@ -1403,9 +1204,8 @@ function initializeMap() {
     deselectCurrentItem();
     if (selectedPathOutline) map.removeLayer(selectedPathOutline);
     if (selectedMarkerOutline) map.removeLayer(selectedMarkerOutline);
-    // Add class to map container to force dotted line removal on paths during editing
     L.DomUtil.addClass(map.getContainer(), "map-is-editing");
-    updateDrawControlStates(); // Update layer toggles
+    updateDrawControlStates();
   });
 
   map.on(L.Draw.Event.EDITSTOP, () => {
@@ -1425,19 +1225,11 @@ function initializeMap() {
     updateDrawControlStates();
   });
 
-  // Kick off routing functionality
   initializeRouting();
-
-  // Initialize Strava functionality
   initializeStrava();
-
-  // Initialize the new context menu functionality
   initializeContextMenu(map);
-
-  // --- MODIFIED: Settings Controls are now in the Settings Panel ---
   const settingsPanel = document.getElementById("settings-panel");
   if (settingsPanel) {
-    // --- Path Simplification Setting ---
     const simplificationContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
     const labelGroup = L.DomUtil.create("div", "", simplificationContainer);
     labelGroup.style.display = "flex";
@@ -1494,7 +1286,6 @@ function initializeMap() {
     });
     L.DomEvent.on(simplificationContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
 
-    // --- Dark/Light Mode Toggle ---
     const themeToggleContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
     const themeLabel = L.DomUtil.create("label", "", themeToggleContainer);
     themeLabel.htmlFor = "theme-toggle";
@@ -1514,7 +1305,6 @@ function initializeMap() {
     });
     L.DomEvent.on(themeToggleContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
 
-    // --- START: Imperial Units Toggle ---
     const imperialUnitsContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
     const imperialUnitsLabel = L.DomUtil.create("label", "", imperialUnitsContainer);
     imperialUnitsLabel.htmlFor = "imperial-units-toggle";
@@ -1522,13 +1312,12 @@ function initializeMap() {
     const imperialUnitsCheckbox = L.DomUtil.create("input", "", imperialUnitsContainer);
     imperialUnitsCheckbox.type = "checkbox";
     imperialUnitsCheckbox.id = "imperial-units-toggle";
-    imperialUnitsCheckbox.checked = useImperialUnits; // Use the global variable
+    imperialUnitsCheckbox.checked = useImperialUnits;
 
     L.DomEvent.on(imperialUnitsCheckbox, "change", async (e) => {
       useImperialUnits = e.target.checked;
       localStorage.setItem("useImperialUnits", useImperialUnits);
 
-      // Update the scale control to reflect the new unit setting
       if (scaleControl) {
         map.removeControl(scaleControl);
       }
@@ -1540,7 +1329,6 @@ function initializeMap() {
         })
         .addTo(map);
 
-      // Update elevation chart units
       window.elevationProfile.updateElevationChartUnits(useImperialUnits);
 
       updateAllDynamicUnitDisplays();
@@ -1557,9 +1345,7 @@ function initializeMap() {
     });
 
     L.DomEvent.on(imperialUnitsContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
-    // --- END: Imperial Units Toggle ---
 
-    // --- START: Force Desktop Layout Toggle ---
     const forceDesktopLayoutContainer = L.DomUtil.create(
       "div",
       "settings-control-item",
@@ -1571,7 +1357,6 @@ function initializeMap() {
     const forceDesktopLayoutCheckbox = L.DomUtil.create("input", "", forceDesktopLayoutContainer);
     forceDesktopLayoutCheckbox.type = "checkbox";
     forceDesktopLayoutCheckbox.id = "force-desktop-toggle";
-    // Check localStorage for the saved preference
     forceDesktopLayoutCheckbox.checked = localStorage.getItem("forceDesktopLayout") === "true";
 
     L.DomEvent.on(forceDesktopLayoutCheckbox, "change", (e) => {
@@ -1584,9 +1369,7 @@ function initializeMap() {
         document.body.classList.remove("force-desktop-layout");
       }
     });
-    // --- END: Force Desktop Layout Toggle ---
 
-    // --- Routing Provider Setting ---
     const routingProviderContainer = L.DomUtil.create(
       "div",
       "settings-control-item",
@@ -1616,7 +1399,6 @@ function initializeMap() {
     });
     L.DomEvent.on(routingProviderContainer, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
 
-    // --- Elevation Provider Setting ---
     const elevationProviderContainer = L.DomUtil.create(
       "div",
       "settings-control-item",
@@ -1649,7 +1431,6 @@ function initializeMap() {
       L.DomEvent.stopPropagation
     );
 
-    // --- Privacy Policy Link ---
     const privacyPolicyContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
     const privacyPolicyLabel = L.DomUtil.create("label", "", privacyPolicyContainer);
     privacyPolicyLabel.innerText = "Legal";
@@ -1661,71 +1442,50 @@ function initializeMap() {
     privacyPolicyLink.style.fontSize = "14px";
     privacyPolicyLink.style.color = "var(--highlight-color)";
 
-    // --- START: About/Credits Link ---
     const aboutContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
     const aboutLabel = L.DomUtil.create("label", "", aboutContainer);
     aboutLabel.innerText = "About";
     aboutLabel.style.color = "var(--text-color)";
     const creditsLink = L.DomUtil.create("a", "", aboutContainer);
-    creditsLink.href = "#"; // Use # to make it behave like a link
+    creditsLink.href = "#";
     creditsLink.innerText = "View Credits";
     creditsLink.classList.add("credits-link");
 
-    // Add a click event listener to call the centralized popup function
     L.DomEvent.on(creditsLink, "click", (e) => {
-      L.DomEvent.stop(e); // Prevent the link from navigating
+      L.DomEvent.stop(e);
       showCreditsPopup();
     });
-    // --- END: About/Credits Link ---
   }
 
-  // --- START: MODIFIED code block for clickable credits using event delegation ---
-  // Use event delegation on the map container to handle clicks on the attribution link.
-  // This is robust and works even if Leaflet redraws the attribution control.
   map.getContainer().addEventListener("click", (e) => {
-    // Use .closest() to check if the click was on a link with our generic class.
     const creditsTrigger = e.target.closest(".js-show-credits");
 
     if (creditsTrigger) {
-      // Prevent the link's default behavior (e.g., navigating to '#')
       e.preventDefault();
       e.stopPropagation();
-      // Call the centralized function to show the popup.
       showCreditsPopup();
     }
   });
-  // --- END: MODIFIED code block ---
-
-  // --- Event listener for the heart/credits button in the tab bar ---
   const heartButton = document.getElementById("tab-btn-heart");
   if (heartButton) {
     heartButton.addEventListener("click", (e) => {
       e.preventDefault();
-      e.stopPropagation(); // Prevent tab switching logic from running
-      showCreditsPopup(); // Call the centralized function
+      e.stopPropagation();
+      showCreditsPopup();
     });
   }
 
-  // --- START: NEW - MutationObserver to auto-resize textarea on selection ---
-  // This observer watches for changes in the info panel. When details are
-  // populated (which happens when an item is selected), it automatically
-  // triggers the textarea height adjustment. This robustly solves the problem
-  // of the initial height being incorrect for names of any length.
   const infoPanelObserver = new MutationObserver(() => {
     if (infoPanelName) {
       adjustInfoPanelNameHeight(infoPanelName);
     }
   });
 
-  // Start observing the main info panel container for any changes in its content.
   infoPanelObserver.observe(infoPanel, {
     childList: true,
     subtree: true,
     characterData: true,
   });
-  // --- END: NEW - MutationObserver ---
-
-  // --- START: PWA Installation Logic ---
   let deferredPrompt;
 
   window.addEventListener("beforeinstallprompt", (e) => {
@@ -1740,7 +1500,6 @@ function initializeMap() {
         clickEvent.preventDefault();
         installLink.style.display = "none";
 
-        // Check if the prompt is still available before using it
         if (deferredPrompt) {
           deferredPrompt.prompt();
 
@@ -1748,8 +1507,6 @@ function initializeMap() {
             console.log(`User response to the install prompt: ${outcome}`);
           });
 
-          // **THE FIX**: Clear the deferredPrompt immediately after calling prompt().
-          // This prevents it from being used a second time.
           deferredPrompt = null;
         }
       });
@@ -1764,15 +1521,11 @@ function initializeMap() {
     deferredPrompt = null;
     console.log("PWA was installed");
   });
-  // --- END: PWA Installation Logic ---
-
-  // --- Bottom Sheet Handle Logic ---
   const sheetHandle = document.getElementById("sheet-handle");
   if (sheetHandle) {
     const panelContainer = document.getElementById("main-right-container");
     const toggleButton = document.querySelector(".leaflet-control-toggle-panels");
 
-    // Helper function to open the sheet and sync the desktop button
     const openSheet = () => {
       panelContainer.classList.remove("hidden");
       if (toggleButton) {
@@ -1781,7 +1534,6 @@ function initializeMap() {
       }
     };
 
-    // Helper function to close the sheet and sync the desktop button
     const closeSheet = () => {
       panelContainer.classList.add("hidden");
       if (toggleButton) {
@@ -1790,7 +1542,6 @@ function initializeMap() {
       }
     };
 
-    // Keep the original click handler for accessibility and convenience
     sheetHandle.addEventListener("click", () => {
       if (panelContainer.classList.contains("hidden")) {
         openSheet();
@@ -1799,9 +1550,8 @@ function initializeMap() {
       }
     });
 
-    // --- START: NEW SWIPE LOGIC ---
     let touchStartY = 0;
-    const swipeThreshold = 50; // Min pixels to swipe to trigger an action
+    const swipeThreshold = 50;
 
     sheetHandle.addEventListener(
       "touchstart",
@@ -1815,23 +1565,15 @@ function initializeMap() {
       const touchEndY = e.changedTouches[0].clientY;
       const deltaY = touchEndY - touchStartY;
 
-      // If swiped down more than the threshold, close the sheet
       if (deltaY > swipeThreshold) {
         closeSheet();
       }
 
-      // If swiped up more than the threshold, open the sheet
       if (deltaY < -swipeThreshold) {
         openSheet();
       }
     });
-    // --- END: NEW SWIPE LOGIC ---
   }
-  // --- End Bottom Sheet Handle Logic ---
-
-  // --- START: Unified UI Interaction Blocker ---
-  // This single, centralized block prevents clicks, drags, and scrolls within any
-  // UI panel from accidentally panning or zooming the map underneath.
   const uiContainers = [
     document.getElementById("main-right-container"),
     document.getElementById("search-container"),
@@ -1847,33 +1589,24 @@ function initializeMap() {
       L.DomEvent.disableScrollPropagation(container);
     }
   });
-  // --- END: Unified UI Interaction Blocker ---
 
-  // Final ui updates
   setTimeout(updateDrawControlStates, 0);
   setTimeout(replaceDefaultIconsWithMaterialSymbols, 0);
   resetInfoPanel();
 
-  // --- START: Preload key images to prevent flash on modal/panel open ---
-  // This waits for the window to be fully loaded, then downloads the images
-  // into the cache so they are ready when needed.
   window.addEventListener(
     "load",
     () => {
-      // Preload credits icon
       const creditsIcon = new Image();
       creditsIcon.src = "/img/icon-1024x1024.svg";
 
-      // Preload Strava connect button
       const stravaButton = new Image();
       stravaButton.src = "/img/btn_strava_connect_with_orange.svg";
     },
     { once: true }
   );
-  // --- END ---
 }
 
-// Initialize the application once the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", initializeMap);
 
 // console.log("User Agent:", navigator.userAgent);

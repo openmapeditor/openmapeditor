@@ -1,13 +1,11 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
-// --- Marker for elevation profile hover ---
 let elevationHoverMarker = null;
 window.mapInteractions = {};
 
 /**
- * Displays or moves a temporary circle marker on the map, usually
- * triggered by hovering over the elevation profile.
- * @param {L.LatLng} latlng The geographical coordinate to show the marker at.
+ * Displays or moves a temporary circle marker on the map when hovering over the elevation profile.
+ * @param {L.LatLng} latlng - The geographical coordinate to show the marker at
  */
 window.mapInteractions.showElevationMarker = function (latlng) {
   if (!latlng) return;
@@ -21,18 +19,15 @@ window.mapInteractions.showElevationMarker = function (latlng) {
   };
 
   if (elevationHoverMarker) {
-    // If it already exists, just move it
     elevationHoverMarker.setLatLng(latlng);
   } else {
-    // Otherwise, create it and add it to the map
     elevationHoverMarker = L.circleMarker(latlng, markerStyle).addTo(map);
   }
-  // Ensure it's always on top
   elevationHoverMarker.bringToFront();
 };
 
 /**
- * Hides and removes the temporary elevation hover marker from the map.
+ * Removes the temporary elevation hover marker from the map.
  */
 window.mapInteractions.hideElevationMarker = function () {
   if (elevationHoverMarker) {
@@ -41,7 +36,15 @@ window.mapInteractions.hideElevationMarker = function () {
   }
 };
 
-// Creates a marker icon
+/**
+ * Creates a Leaflet divIcon for map markers using Material Symbols.
+ * @param {string} color - CSS color value
+ * @param {number} opacity - Opacity value (0-1)
+ * @param {number} [size] - Icon size in pixels
+ * @param {number} [anchorOffsetY] - Vertical anchor offset for outline effect
+ * @param {boolean} [isOutline] - Whether to render as outline style
+ * @returns {L.DivIcon} Configured marker icon
+ */
 function createMarkerIcon(
   color,
   opacity,
@@ -59,15 +62,20 @@ function createMarkerIcon(
   });
 }
 
-// Helper function to keep the marker outline position updated during a drag
+/**
+ * Keeps the marker outline synchronized with its parent marker during drag operations.
+ */
 function updateMarkerOutlinePosition() {
   if (globallySelectedItem instanceof L.Marker && selectedMarkerOutline) {
     selectedMarkerOutline.setLatLng(globallySelectedItem.getLatLng());
   }
 }
 
+/**
+ * Deselects the currently selected item and cleans up all associated UI elements
+ * (outlines, elevation profile, info panel, etc.).
+ */
 function deselectCurrentItem() {
-  // Hide the elevation hover marker
   if (window.mapInteractions) window.mapInteractions.hideElevationMarker();
 
   if (temporarySearchMarker) {
@@ -75,7 +83,6 @@ function deselectCurrentItem() {
     temporarySearchMarker = null;
   }
 
-  // Remove any existing selection outlines
   if (selectedPathOutline) {
     map.removeLayer(selectedPathOutline);
     selectedPathOutline = null;
@@ -87,12 +94,10 @@ function deselectCurrentItem() {
 
   if (!globallySelectedItem) return;
 
-  // Clean up drag listener if the deselected item was a marker
   if (globallySelectedItem instanceof L.Marker) {
     globallySelectedItem.off("drag", updateMarkerOutlinePosition);
   }
 
-  // Reset the overlay pane's z-index to its default value of 400
   const overlayPane = document.querySelector(".leaflet-overlay-pane");
   if (overlayPane) {
     overlayPane.style.zIndex = 400;
@@ -112,8 +117,6 @@ function deselectCurrentItem() {
     const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
     if (colorData) {
       if (item instanceof L.Polyline || item instanceof L.Polygon) {
-        // --- MODIFIED: Removed special case for Strava paths ---
-        // It will now correctly use the color defined by its omColorName ("Orange")
         item.setStyle({ ...STYLE_CONFIG.path.default, color: colorData.css });
       } else if (item instanceof L.Marker) {
         item.setIcon(createMarkerIcon(colorData.css, STYLE_CONFIG.marker.default.opacity));
@@ -136,7 +139,6 @@ function deselectCurrentItem() {
   const kmlButton = downloadContainer.querySelector("#download-kml");
   const stravaGpxButton = downloadContainer.querySelector("#download-strava-original-gpx");
 
-  // Reset button visibility to default
   gpxButton.style.display = "block";
   kmlButton.style.display = "block";
   stravaGpxButton.style.display = "none";
@@ -150,6 +152,11 @@ function deselectCurrentItem() {
   resetInfoPanel();
 }
 
+/**
+ * Selects a layer on the map and applies visual highlighting (outline, color change).
+ * Updates the info panel, elevation profile, and download button states.
+ * @param {L.Layer} layer - The Leaflet layer to select
+ */
 function selectItem(layer) {
   if (isDeleteMode || isEditMode) return;
   if (globallySelectedItem && globallySelectedItem !== layer) {
@@ -181,11 +188,10 @@ function selectItem(layer) {
       .getContainer()
       .querySelector("#download-strava-original-gpx");
 
-    // Logic to show the correct button(s)
     if (layer.pathType === "strava") {
-      gpxButton.style.display = "none"; // Hide standard GPX button
-      kmlButton.style.display = "none"; // Hide standard KML button
-      stravaGpxButton.style.display = "block"; // Show Strava-specific button
+      gpxButton.style.display = "none";
+      kmlButton.style.display = "none";
+      stravaGpxButton.style.display = "block";
     } else {
       gpxButton.style.display = "block";
       kmlButton.style.display = "block";
@@ -200,20 +206,17 @@ function selectItem(layer) {
   }
 
   if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
-    // Set the overlay pane's z-index to a higher value above .leaflet-marker-pane with z-index 600
     if (layer.pathType !== "route") {
-      // Don't change z-index for routes, as the path would hide its start/end/via markers
       const overlayPane = document.querySelector(".leaflet-overlay-pane");
       if (overlayPane) {
         overlayPane.style.zIndex = 601;
       }
     }
 
-    // --- Create and add the selection outline if enabled ---
     const { outline } = STYLE_CONFIG.path.highlight;
     if (outline.enabled) {
       if (selectedPathOutline) {
-        map.removeLayer(selectedPathOutline); // Clean up just in case
+        map.removeLayer(selectedPathOutline);
       }
       selectedPathOutline = L.polyline(layer.getLatLngs(), {
         color: outline.color,
@@ -221,12 +224,10 @@ function selectItem(layer) {
         opacity: STYLE_CONFIG.path.highlight.opacity,
         interactive: false,
       });
-      // Only add the outline to the map if the main layer is actually visible
       if (map.hasLayer(layer) && !isEditMode) {
         selectedPathOutline.addTo(map).bringToFront();
       }
     }
-    // --- END ---
 
     selectedElevationPath = layer;
     window.elevationProfile.clearElevationProfile();
@@ -243,20 +244,17 @@ function selectItem(layer) {
       isElevationProfileVisible = true;
     }
   } else if (layer instanceof L.Marker) {
-    // --- START: REFINED MARKER OUTLINE LOGIC ---
     const { outline } = STYLE_CONFIG.marker.highlight;
     if (outline.enabled) {
       if (selectedMarkerOutline) {
         map.removeLayer(selectedMarkerOutline);
       }
 
-      // The outline marker is now the SAME size as the base marker.
       const outlineSize = STYLE_CONFIG.marker.baseSize;
 
       selectedMarkerOutline = L.marker(layer.getLatLng(), {
-        // Call the modified function with 'isOutline' set to true.
-        icon: createMarkerIcon(outline.color, 1, outlineSize, 0, true), // <-- SET isOutline to true
-        zIndexOffset: 1001, // HIGHER z-index to appear ON TOP
+        icon: createMarkerIcon(outline.color, 1, outlineSize, 0, true),
+        zIndexOffset: 1001,
         interactive: false,
       });
 
@@ -264,9 +262,7 @@ function selectItem(layer) {
         selectedMarkerOutline.addTo(map);
       }
     }
-    // --- END: REFINED MARKER OUTLINE LOGIC ---
 
-    // The main marker is now styled using the same function, ensuring it's filled.
     layer.setIcon(createMarkerIcon(highlightColor, STYLE_CONFIG.marker.highlight.opacity));
     layer.setZIndexOffset(1000);
 
@@ -276,6 +272,10 @@ function selectItem(layer) {
   updateElevationToggleIconColor();
 }
 
+/**
+ * Updates the state of edit/delete controls and layer toggles based on available layers
+ * and current edit/delete mode status.
+ */
 function updateDrawControlStates() {
   if (!drawControl) return;
   if (!editControlContainer) {
@@ -289,15 +289,14 @@ function updateDrawControlStates() {
     importedItems.getLayers().length > 0 ||
     kmzLayer.getLayers().length > 0;
 
-  // Disable the entire download control if there are no layers on the map.
   const downloadButtonContainer = document.getElementById("main-download-button");
   if (downloadButtonContainer) {
     if (hasLayers) {
       L.DomUtil.removeClass(downloadButtonContainer, "disabled");
-      downloadButtonContainer.title = "Download file"; // Set normal tooltip
+      downloadButtonContainer.title = "Download file";
     } else {
       L.DomUtil.addClass(downloadButtonContainer, "disabled");
-      downloadButtonContainer.title = "No items to download"; // Set disabled tooltip
+      downloadButtonContainer.title = "No items to download";
     }
   }
 
@@ -313,27 +312,24 @@ function updateDrawControlStates() {
     }
   }
 
-  // NEW: Disable/enable layer toggling based on edit/delete mode
   const layerSelectors = document.querySelectorAll(
     "#custom-layers-panel .leaflet-control-layers-selector"
   );
   if (isEditMode || isDeleteMode) {
     layerSelectors.forEach((selector) => {
       L.DomUtil.addClass(selector, "leaflet-disabled-interaction");
-      selector.disabled = true; // Also disable the checkbox/radio directly
+      selector.disabled = true;
     });
   } else {
     layerSelectors.forEach((selector) => {
       L.DomUtil.removeClass(selector, "leaflet-disabled-interaction");
-      selector.disabled = false; // Enable them back
+      selector.disabled = false;
     });
   }
 }
-
-// --- START: NEW INSTANT DELETION LOGIC ---
 /**
  * Deletes a layer and its associated data immediately from all groups and the UI.
- * @param {L.Layer} layer The layer to be deleted.
+ * @param {L.Layer} layer - The layer to be deleted.
  */
 function deleteLayerImmediately(layer) {
   if (!layer) return;
@@ -346,7 +342,6 @@ function deleteLayerImmediately(layer) {
     if (window.app && typeof window.app.clearRouting === "function") {
       window.app.clearRouting();
     }
-    // We return here because clearRouting() takes care of all necessary layer removal and UI updates.
     return;
   }
 
@@ -354,7 +349,6 @@ function deleteLayerImmediately(layer) {
     deselectCurrentItem();
   }
 
-  // Remove the layer from whichever display group it resides in (including nested groups)
   [drawnItems, importedItems, kmzLayer, stravaActivitiesLayer].forEach((group) => {
     if (group.hasLayer(layer)) {
       group.removeLayer(layer);
@@ -376,25 +370,20 @@ function deleteLayerImmediately(layer) {
     currentRoutePath = null;
   }
 
-  // Refresh the UI
   updateDrawControlStates();
   updateOverviewList();
 }
 
-// A named function to act as our delete click handler during Leaflet.Draw's delete mode.
+/**
+ * Click handler for features during delete mode. Visually hides the layer
+ * while keeping it in editableLayers for Leaflet.Draw to manage.
+ */
 const onFeatureClickToDelete = function (e) {
-  // Deselect the item if it was selected and is about to be "hidden" for deletion
   if (this === globallySelectedItem) {
     deselectCurrentItem();
   }
 
-  // Remove the layer from the map (visually hide it) but keep it in editableLayers
-  // so Leaflet.Draw can manage its actual deletion or restoration on save/cancel.
   map.removeLayer(this);
-  // Add a flag to distinguish layers removed by the toolbar for later processing in DELETED event
   this.isDeletedFromToolbar = true;
-
-  // Stop the event from propagating to Leaflet.Draw's own handlers
   L.DomEvent.stop(e);
 };
-// --- END: NEW INSTANT DELETION LOGIC ---

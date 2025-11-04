@@ -72,7 +72,7 @@ select:focus {
   position: relative; /* Needed for absolute positioning of children */
 }
 
-/* --- Unified icon styling --- */
+/* Unified icon styling */
 
 /* 1. Center all icons in their button containers using flexbox */
 .leaflet-control-custom a,
@@ -80,7 +80,7 @@ select:focus {
 .leaflet-control-layers-toggle,
 .leaflet-control-zoom a,
 .leaflet-draw-toolbar a,
-.tab-button /* NEW: Also apply to tab buttons */ {
+.tab-button /* Also apply to tab buttons */ {
   display: flex !important;
   justify-content: center;
   align-items: center;
@@ -110,14 +110,14 @@ select:focus {
   fill: var(--icon-color); /* Use a faded grey for the icon itself */
 }
 
-/* --- Info panel for selected items (MODIFIED) --- */
+/* Info panel for selected items */
 #info-panel {
   position: relative; /* Needed for color picker positioning */
   background-color: var(--background-color);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   text-align: center;
-  width: 100%; /* MODIFIED: Take full width of parent */
+  width: 100%; /* Take full width of parent */
   min-height: 90px;
   display: flex;
   flex-direction: column;
@@ -192,14 +192,13 @@ select:focus {
   box-sizing: border-box;
 }
 
-/* --- Style Row for Color Swatch and Layer Name --- */
+/* Style Row for Color Swatch and Layer Name */
 #info-panel-style-row {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 200px;
   margin-top: 5px;
-  /* REMOVED: position: relative; */
   min-height: 22px;
 }
 
@@ -211,7 +210,6 @@ select:focus {
   cursor: pointer;
   transition: transform 0.1s ease-in-out;
   position: absolute;
-  /* MODIFIED aLIGNMENT */
   left: 10px;
   bottom: 10px;
 }
@@ -240,7 +238,7 @@ a#info-panel-strava-link:hover {
   text-decoration: underline !important;
 }
 
-/* --- Color Picker Styles --- */
+/* Color Picker Styles */
 #color-picker {
   display: none; /* Hidden by default, JS toggles to 'grid' */
   width: 100%;
@@ -272,7 +270,7 @@ a#info-panel-strava-link:hover {
   border: 2px solid var(--text-color);
 }
 
-/* --- Overview panel styles --- */
+/* Overview panel styles */
 #overview-panel {
   width: 100%;
   background-color: var(--background-color);
@@ -364,7 +362,7 @@ a#info-panel-strava-link:hover {
   transform: rotate(45deg);
 }
 
-/* --- Custom Layers Panel Styles --- */
+/* Custom Layers Panel Styles */
 .layer-icon {
   vertical-align: middle;
   margin-right: 0;
@@ -420,7 +418,7 @@ a#info-panel-strava-link:hover {
   background-color: transparent !important;
 }
 
-/* --- Routing Panel Styles (MODIFIED) --- */
+/* Routing Panel Styles */
 #routing-panel {
   width: 100%;
   box-sizing: border-box;
@@ -481,7 +479,7 @@ a#info-panel-strava-link:hover {
   border-color: var(--border-color);
 }
 
-/* --- Routing Profile Button Group Styles --- */
+/* Routing Profile Button Group Styles */
 
 /* The container for the buttons */
 .routing-profile-selector {
@@ -611,7 +609,7 @@ a#info-panel-strava-link:hover {
   margin-left: 5px;
 }
 
-/* --- Strava Panel Style --- */
+/* Strava Panel Style */
 #strava-panel {
   border: none;
   border-radius: 0 0 8px 8px;
@@ -665,7 +663,7 @@ a#info-panel-strava-link:hover {
   transition: background-color 0.2s ease-in-out;
 }
 
-/* --- Autocomplete suggestion list styles --- */
+/* Autocomplete suggestion list styles */
 .autocomplete-suggestions {
   display: none;
   position: absolute;
@@ -700,7 +698,7 @@ a#info-panel-strava-link:hover {
   background-color: var(--highlight-color) !important;
 }
 
-/* --- NEW: Seamless Input/Suggestion Box Connection --- */
+/* Seamless Input/Suggestion Box Connection */
 /* This is traditionally difficult with CSS alone, but the modern :has() selector makes it possible.
    We select the parent group if it :has() a visible suggestion list, then style the input inside it. */
 .routing-input-group:has(.autocomplete-suggestions[style*="display: block"]) > input[type="text"] {
@@ -709,7 +707,7 @@ a#info-panel-strava-link:hover {
   border-bottom-right-radius: 0;
 }
 
-/* --- Directions Panel Styles --- */
+/* Directions Panel Styles */
 #directions-panel {
   margin-top: 10px;
   margin-bottom: 10px;
@@ -764,7 +762,7 @@ a#info-panel-strava-link:hover {
   transform: rotate(45deg); /* Collapsed state */
 }
 
-/* --- NEW: Tab System Styles --- */
+/* Tab System Styles */
 #tab-container {
   width: 100%;
   box-sizing: border-box;
@@ -803,7 +801,7 @@ a#info-panel-strava-link:hover {
   border-right: none;
 }
 
-/* MODIFIED: Routing button is now in the middle */
+/* Routing button is now in the middle */
 #tab-btn-routing {
   border-radius: 0;
   border-right: none;
@@ -815,7 +813,7 @@ a#info-panel-strava-link:hover {
   border-right: none;
 }
 
-/* NEW: Settings icon button has fixed size */
+/* Settings icon button has fixed size */
 #tab-btn-settings {
   flex: 0 0 40px; /* Don't grow, fixed width */
   padding: 8px;
@@ -844,12 +842,11 @@ a#info-panel-strava-link:hover {
 }
 
 .tab-panel.active {
-  display: flex; /* MODIFIED: Use flex for both panels */
+  display: flex; /* Use flex for both panels */
   flex-direction: column;
 }
-/* END: Tab System Styles */
 
-/* --- NEW: Settings Panel Style --- */
+/* Settings Panel Style */
 #settings-panel {
   padding: 10px;
   border: none;
@@ -858,7 +855,7 @@ a#info-panel-strava-link:hover {
   gap: 10px;
 }
 
-/* --- START: Themed Sweetalert2 Styles --- */
+/* Themed Sweetalert2 Styles */
 /* This block styles all SweetAlert2 popups to respect the selected
    light or dark theme by using the application's CSS variables. */
 
@@ -924,8 +921,6 @@ a#info-panel-strava-link:hover {
   margin-bottom: 0;
 }
 
-/* --- END: Themed Sweetalert2 Styles --- */
-
 /* Leaflet control overrides */
 .leaflet-touch .leaflet-control-layers-toggle {
   background-position: center center;
@@ -935,7 +930,7 @@ a#info-panel-strava-link:hover {
   z-index: 4000;
 }
 
-/* --- START: Elevation Profile Styles --- */
+/* Elevation Profile Styles */
 #elevation-div {
   bottom: 0px;
   height: 250px;
@@ -1003,7 +998,6 @@ a#info-panel-strava-link:hover {
   -ms-user-select: none;
   user-select: none;
 }
-/* --- END: Elevation Profile Styles --- */
 
 /* Style for the download submenu */
 .leaflet-control-custom .download-submenu {
@@ -1070,7 +1064,7 @@ a#info-panel-strava-link:hover {
   margin-top: 10px !important;
 }
 
-/* --- Search Bar --- */
+/* Search Bar */
 #search-container {
   position: absolute;
   top: 10px;
@@ -1206,7 +1200,7 @@ a#info-panel-strava-link:hover {
   vertical-align: middle !important;
 }
 
-/* --- PWA Install Button Style --- */
+/* PWA Install Button Style */
 #install-pwa-link {
   background-color: var(--color-blue);
   color: var(--color-white) !important;
@@ -1257,7 +1251,7 @@ a#info-panel-strava-link:hover {
   display: none;
 }
 
-/* MODIFIED: Settings Control Item Styles are now inside the settings panel */
+/* Settings Control Item Styles are now inside the settings panel */
 #settings-panel .settings-control-item {
   width: 100%;
   box-sizing: border-box;
@@ -1272,7 +1266,7 @@ a#info-panel-strava-link:hover {
 /* Make routing and elevation provider select boxes the same width */
 #settings-panel select {
   width: 130px;
-  /* ADDED: Styles to match other dropdowns */
+  /* Styles to match other dropdowns */
   background-color: var(--background-color);
   color: var(--text-color);
   border: 1px solid var(--border-color);
@@ -1282,7 +1276,7 @@ a#info-panel-strava-link:hover {
   box-sizing: border-box;
 }
 
-/* MODIFIED: Only apply pointer cursor to labels in items that contain a checkbox */
+/* Only apply pointer cursor to labels in items that contain a checkbox */
 #settings-panel .settings-control-item:has(input[type="checkbox"]) label {
   cursor: pointer;
   user-select: none; /* Prevent text selection on click */
@@ -1293,14 +1287,14 @@ a#info-panel-strava-link:hover {
   transform: scale(1.2);
 }
 
-/* --- NEW: Shared styles for all panel info icons --- */
+/* Shared styles for all panel info icons */
 #strava-info-icon,
 .settings-info-icon {
   cursor: pointer;
   margin-left: 5px;
 }
 
-/* --- NEW: Styles for the info icon in the settings panel --- */
+/* Styles for the info icon in the settings panel */
 .settings-info-icon {
   font-size: 14px;
   font-weight: bold;
@@ -1314,7 +1308,7 @@ body.route-point-select-mode * {
   cursor: none !important;
 }
 
-/* --- Custom Cursor Styles --- */
+/* Custom Cursor Styles */
 .custom-cursor {
   position: absolute;
   display: none;
@@ -1368,7 +1362,7 @@ body.route-point-select-mode * {
   border-color: var(--text-color);
 }
 
-/* --- Panels Toggle Button --- */
+/* Panels Toggle Button */
 .leaflet-control-toggle-panels {
   position: absolute !important;
   top: 0px !important;
@@ -1441,7 +1435,7 @@ body.route-point-select-mode * {
   border-radius: 50%;
 }
 
-/* --- Fullscreen Toggle Control (NEW) --- */
+/* Fullscreen Toggle Control */
 .leaflet-control-fullscreen-toggle {
   position: absolute !important;
   top: 0px !important;
@@ -1504,7 +1498,7 @@ body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-attribut
   display: none;
 }
 
-/* --- Strava Panel Button Styles (MODIFIED) --- */
+/* Strava Panel Button Styles */
 /* Base styles to match routing panel controls */
 .strava-button-primary,
 .strava-button-secondary {
@@ -1548,7 +1542,7 @@ button.strava-button-secondary:not(:disabled) {
   border: none;
 }
 
-/* --- Styles for Overview Panel Group Headers --- */
+/* Styles for Overview Panel Group Headers */
 .overview-list-header {
   font-weight: bold;
   font-size: 12px;
@@ -1568,7 +1562,7 @@ button.strava-button-secondary:not(:disabled) {
   border-top: none; /* The very first header doesn't need a top border */
 }
 
-/* --- Fix for Privacy Policy Link Style --- */
+/* Fix for Privacy Policy Link Style */
 /* This ensures links in these specific panels have no default underline */
 #strava-panel a,
 #strava-api-link,
@@ -1583,7 +1577,7 @@ button.strava-button-secondary:not(:disabled) {
   text-decoration: underline;
 }
 
-/* --- Style for credits link in settings panel --- */
+/* Style for credits link in settings panel */
 .credits-link {
   font-size: 14px;
   color: var(--highlight-color) !important;
@@ -1594,7 +1588,7 @@ button.strava-button-secondary:not(:disabled) {
   text-decoration: underline;
 }
 
-/* --- Material Symbols Styles Start --- */
+/* Material Symbols Styles Start */
 
 /* For self hosting the font */
 /* @font-face {
@@ -1672,7 +1666,7 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 .leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-enter-span {
   display: none;
 }
-/* --- Material Symbols Styles End --- */
+/* Material Symbols Styles End */
 
 #sheet-handle {
   /* Hide sheet-handle on desktop */
@@ -1699,7 +1693,7 @@ body.using-touch {
   }
 }
 
-/* --- Mobile Specific Styles Start --- */
+/* Mobile Specific Styles Start */
 
 /* Applies styles for devices with a coarse pointer (e.g., a finger on a touchscreen). */
 @media (pointer: coarse) {
@@ -1775,12 +1769,12 @@ body.using-touch {
       transition: bottom 0.3s ease-in-out;
     }
 
-    /* --- Hide the Via input group on mobile --- */
+    /* Hide the Via input group on mobile */
     #routing-via-group {
       display: none;
     }
 
-    /* --- Dynamic Mobile Search Bar --- */
+    /* Dynamic Mobile Search Bar */
     #search-container {
       left: 50px;
       right: 90px;
@@ -1800,7 +1794,7 @@ body.using-touch {
       width: 100%;
     }
 
-    /* --- Mobile Bottom Sheet Styles Start --- */
+    /* Mobile Bottom Sheet Styles Start */
     #main-right-container {
       display: flex !important;
       position: fixed;
@@ -1891,7 +1885,7 @@ body.using-touch {
       min-height: 0;
     }
 
-    /* START: SCROLLING FIX */
+    /* Scrolling fix */
     #tab-content {
       flex-grow: 1;
       display: flex;
@@ -1923,7 +1917,6 @@ body.using-touch {
     #directions-list {
       max-height: none;
     }
-    /* END: SCROLLING FIX */
 
     .tab-button {
       border-radius: 0 !important;
@@ -1985,7 +1978,7 @@ body.using-touch {
     #tab-btn-heart .material-symbols {
       color: var(--text-color);
     }
-    /* --- Mobile Bottom Sheet Styles End --- */
+    /* Mobile Bottom Sheet Styles End */
   }
 }
-/* --- Mobile Specific Styles End --- */
+/* Mobile Specific Styles End */

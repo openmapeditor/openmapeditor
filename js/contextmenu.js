@@ -1,9 +1,12 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
+// Context Menu Module
+// This module handles the right-click context menu on the map,
+// providing options to copy coordinates, set routing points, and edit on OpenStreetMap.
 function initializeContextMenu(map) {
   /**
    * Creates and displays the map's context menu in a popup.
-   * @param {L.LeafletEvent} e The map event object.
+   * @param {L.LeafletEvent} e - The map event object
    */
   const showMapContextMenu = (e) => {
     const latlng = e.latlng;
@@ -124,7 +127,7 @@ function initializeContextMenu(map) {
     const clickedOnUi = e.originalEvent.target.closest(uiSelectors.join(", "));
 
     if (!clickedOnUi) {
-      // It's also good practice to close any existing popups before opening a new one
+      // Close any existing popups before opening the context menu
       map.closePopup();
       showMapContextMenu(e);
     }
