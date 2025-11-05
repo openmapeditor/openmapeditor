@@ -35,11 +35,12 @@ jobs:
           # Extract values from config.js
           APP_NAME_VALUE=$(grep 'const APP_NAME' js/config.js | cut -d '"' -f 2)
           APP_SHORT_NAME_VALUE=$(grep 'const APP_SHORT_NAME' js/config.js | cut -d '"' -f 2)
+          APP_TITLE_VALUE=$(grep 'const APP_TITLE' js/config.js | cut -d '"' -f 2)
           APP_DESC_VALUE=$(grep 'const APP_DESCRIPTION' js/config.js | cut -d '"' -f 2)
           APP_SHORT_DESC_VALUE=$(grep 'const APP_SHORT_DESCRIPTION' js/config.js | cut -d '"' -f 2)
 
           # Replace in index.html (uses the LONG description)
-          sed -i "s|__APP_NAME__|${APP_NAME_VALUE}|g" index.html
+          sed -i "s|__APP_TITLE__|${APP_TITLE_VALUE}|g" index.html
           sed -i "s|__APP_DESCRIPTION__|${APP_DESC_VALUE}|g" index.html
 
           # Replace in manifest.json (uses the SHORT description)

@@ -2,6 +2,7 @@
 
 const APP_NAME = "OpenMapEditor";
 const APP_SHORT_NAME = "OpenMapEditor";
+const APP_TITLE = "OpenMapEditor: GPX, KML & Strava Route Editor"; // Used in the HTML <title> tag
 // prettier-ignore
 const APP_DESCRIPTION = "OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, KMZ), routing, elevation profiles, custom styling, and Strava activity integration.";
 // prettier-ignore

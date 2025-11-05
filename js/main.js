@@ -178,7 +178,7 @@ function initializeMap() {
     });
   }
 
-  document.title = APP_NAME;
+  document.title = APP_TITLE;
   const metaDescription = document.querySelector('meta[name="description"]');
   if (metaDescription) {
     metaDescription.setAttribute("content", APP_DESCRIPTION);
