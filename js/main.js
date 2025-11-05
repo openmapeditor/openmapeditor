@@ -118,7 +118,7 @@ async function showCreditsPopup() {
     swalContent.innerHTML = creditsHtmlContent;
 
     swalContent.querySelector("#credits-app-name").textContent = APP_NAME;
-    swalContent.querySelector("#credits-app-short-description").textContent = APP_SHORT_DESCRIPTION;
+    swalContent.querySelector("#credits-app-description").textContent = APP_CREDITS_DESCRIPTION;
 
     Swal.fire({
       imageUrl: "/img/icon-1024x1024.svg",

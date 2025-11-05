@@ -34,26 +34,21 @@ jobs:
         run: |
           # Extract values from config.js
           APP_NAME_VALUE=$(grep 'const APP_NAME' js/config.js | cut -d '"' -f 2)
-          APP_SHORT_NAME_VALUE=$(grep 'const APP_SHORT_NAME' js/config.js | cut -d '"' -f 2)
           APP_TITLE_VALUE=$(grep 'const APP_TITLE' js/config.js | cut -d '"' -f 2)
           APP_DESC_VALUE=$(grep 'const APP_DESCRIPTION' js/config.js | cut -d '"' -f 2)
-          APP_SHORT_DESC_VALUE=$(grep 'const APP_SHORT_DESCRIPTION' js/config.js | cut -d '"' -f 2)
 
           # Escape special characters for sed (& and \)
           APP_NAME_VALUE_ESCAPED=$(echo "$APP_NAME_VALUE" | sed 's/[&\]/\\&/g')
-          APP_SHORT_NAME_VALUE_ESCAPED=$(echo "$APP_SHORT_NAME_VALUE" | sed 's/[&\]/\\&/g')
           APP_TITLE_VALUE_ESCAPED=$(echo "$APP_TITLE_VALUE" | sed 's/[&\]/\\&/g')
           APP_DESC_VALUE_ESCAPED=$(echo "$APP_DESC_VALUE" | sed 's/[&\]/\\&/g')
-          APP_SHORT_DESC_VALUE_ESCAPED=$(echo "$APP_SHORT_DESC_VALUE" | sed 's/[&\]/\\&/g')
 
-          # Replace in index.html (uses the LONG description)
+          # Replace in index.html
           sed -i "s|__APP_TITLE__|${APP_TITLE_VALUE_ESCAPED}|g" index.html
           sed -i "s|__APP_DESCRIPTION__|${APP_DESC_VALUE_ESCAPED}|g" index.html
 
-          # Replace in manifest.json (uses the SHORT description)
+          # Replace in manifest.json
           sed -i "s|__APP_NAME__|${APP_NAME_VALUE_ESCAPED}|g" manifest.json
-          sed -i "s|__APP_SHORT_NAME__|${APP_SHORT_NAME_VALUE_ESCAPED}|g" manifest.json
-          sed -i "s|__APP_SHORT_DESCRIPTION__|${APP_SHORT_DESC_VALUE_ESCAPED}|g" manifest.json
+          sed -i "s|__APP_DESCRIPTION__|${APP_DESC_VALUE_ESCAPED}|g" manifest.json
 
       # Steps for JavaScript Minification ---
       - name: Setup Node.js

@@ -1,7 +1,7 @@
 {
   "name": "__APP_NAME__",
-  "short_name": "__APP_SHORT_NAME__",
-  "description": "__APP_SHORT_DESCRIPTION__",
+  "short_name": "__APP_NAME__",
+  "description": "__APP_DESCRIPTION__",
   "start_url": "/",
   "display": "standalone",
   "background_color": "white",
