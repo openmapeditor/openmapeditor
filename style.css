@@ -1005,7 +1005,7 @@ a#info-panel-strava-link:hover {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   display: none;
-  left: 35px;
+  left: 40px;
   position: absolute;
   top: 0px;
   white-space: nowrap;
@@ -1071,7 +1071,7 @@ a#info-panel-strava-link:hover {
   right: 90px;
   width: 240px;
   z-index: 1001;
-  max-width: calc(100vw - 140px);
+  max-width: calc(100vw - 141px);
 }
 
 /* The search input field itself */
@@ -1160,7 +1160,7 @@ a#info-panel-strava-link:hover {
 }
 
 .leaflet-touch .leaflet-draw-actions {
-  left: 35px;
+  left: 40px;
   border: 1px solid var(--border-color) !important;
   border-radius: 8px;
   overflow: hidden;
@@ -1348,7 +1348,7 @@ body.route-point-select-mode * {
   display: flex;
   flex-direction: column;
   gap: 10px; /* Space between panels */
-  max-width: calc(100vw - 60px);
+  max-width: calc(100vw - 61px);
   cursor: auto;
 }
 
