@@ -210,8 +210,8 @@ select:focus {
   cursor: pointer;
   transition: transform 0.1s ease-in-out;
   position: absolute;
-  left: 10px;
-  bottom: 10px;
+  left: 5px;
+  bottom: 5px;
 }
 
 /* Hide color swatch when picker is open */
