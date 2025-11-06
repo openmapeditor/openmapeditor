@@ -116,7 +116,7 @@ function createKmlDocument(name, placemarks) {
     `<Document>\n` +
     `  <name>${name}</name>\n` +
     `${kmlMarkerStyles}\n` +
-    `  ${placemarks.join("\n")}\n` +
+    `${placemarks.join("\n")}\n` +
     `</Document>\n` +
     `</kml>`
   );
