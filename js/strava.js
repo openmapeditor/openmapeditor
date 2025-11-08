@@ -17,6 +17,10 @@ let stravaPanelContent;
 // Global variable to store the raw activities data from the API
 let allFetchedActivities = [];
 
+// Temporary storage for user-provided API keys (memory only, not persisted)
+let tempUserClientId = "";
+let tempUserClientSecret = "";
+
 // Core Authentication and Data Fetching
 
 /**
@@ -173,8 +177,6 @@ function showConnectUI() {
  */
 function renderUserKeysPanel() {
   if (!stravaPanelContent) return;
-  const userClientId = localStorage.getItem("userStravaClientId") || "";
-  const userClientSecret = localStorage.getItem("userStravaClientSecret") || "";
   const accessToken = sessionStorage.getItem("strava_access_token");
 
   const apiKeysHtml = `
@@ -184,14 +186,12 @@ function renderUserKeysPanel() {
       <span id="strava-info-icon" class="material-symbols" title="Why is this needed?" style="font-size: 14px; line-height: 1;">info</span>
       </div>
       <div class="routing-input-group">
-        <input type="password" id="user-strava-client-id" placeholder="Your Strava Client ID" autocomplete="off" value="${userClientId}" />
-        <button id="clear-strava-client-id-user" title="Clear Client ID"><span class="material-symbols material-symbols-fill routing-panel-icon">cancel</span></button>
+        <input type="password" id="user-strava-client-id" placeholder="Your Strava Client ID" autocomplete="off" value="${tempUserClientId}" />
       </div>
       <div class="routing-input-group">
-        <input type="password" id="user-strava-client-secret" placeholder="Your Strava Client Secret" autocomplete="off" value="${userClientSecret}" />
-        <button id="clear-strava-client-secret-user" title="Clear Client Secret"><span class="material-symbols material-symbols-fill routing-panel-icon">cancel</span></button>
+        <input type="password" id="user-strava-client-secret" placeholder="Your Strava Client Secret" autocomplete="off" value="${tempUserClientSecret}" />
       </div>
-      <button id="strava-connect-btn-user" class="strava-button-primary" style="width: 100%; margin-top: 10px; margin-bottom: 0;">Save & Connect with Strava</button>
+      <button id="strava-connect-btn-user" class="strava-button-primary" style="width: 100%; margin-top: 10px; margin-bottom: 0;">Connect with Strava</button>
     </div>
   `;
 
@@ -284,7 +284,7 @@ function addEventListenersForUserKeysPanel() {
           <li>Create a new app. For "Authorization Callback Domain", enter <strong id="auth-callback-domain-wrapper" style="cursor:pointer; text-decoration: underline;" title="Click to copy">${APP_DOMAIN}<span id="auth-callback-domain-copy-icon" class="copy-icon material-symbols">content_copy</span></strong>.</li>
           <li>Copy your <strong>Client ID</strong> and <strong>Client Secret</strong> and paste them here.</li>
         </ol>
-        <p style="text-align: left; margin-top: 15px;">Your keys are saved securely in your browser's local storage.</p>`,
+        <p style="text-align: left; margin-top: 15px;"><strong>Security:</strong> Your keys are kept in memory for this session only and are not saved in your browser.</p>`,
       confirmButtonText: "Got it!",
       didOpen: () => {
         document.getElementById("auth-callback-domain-wrapper")?.addEventListener("click", () => {
@@ -307,16 +307,6 @@ function addEventListenersForUserKeysPanel() {
     Swal.fire(mainAlertOptions);
   });
 
-  document.getElementById("clear-strava-client-id-user").addEventListener("click", () => {
-    clientIdInput.value = "";
-    localStorage.removeItem("userStravaClientId");
-  });
-
-  document.getElementById("clear-strava-client-secret-user").addEventListener("click", () => {
-    clientSecretInput.value = "";
-    localStorage.removeItem("userStravaClientSecret");
-  });
-
   document.getElementById("strava-connect-btn-user").addEventListener("click", () => {
     sessionStorage.removeItem("strava_access_token");
     const clientId = clientIdInput.value.trim();
@@ -329,11 +319,13 @@ function addEventListenersForUserKeysPanel() {
         text: "Please enter both a Client ID and a Client Secret.",
       });
     }
-    localStorage.setItem("userStravaClientId", clientId);
-    localStorage.setItem("userStravaClientSecret", clientSecret);
+    // Store keys in memory for authentication (kept for reconnection)
+    tempUserClientId = clientId;
+    tempUserClientSecret = clientSecret;
+
     renderUserKeysPanel();
     stravaPanelContent.lastChild.innerHTML = `<div style="padding:15px; text-align:center;"><p>Waiting for Strava authentication...</p></div>`;
-    const userAuthUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectURI}&response_type=code&scope=${scope}`;
+    const userAuthUrl = `https://www.strava.com/oauth/authorize?client_id=${tempUserClientId}&redirect_uri=${redirectURI}&response_type=code&scope=${scope}`;
     window.open(userAuthUrl, "_blank");
     window.addEventListener("storage", handleStravaAuthReturnForUserKeys);
   });
@@ -379,21 +371,14 @@ async function handleStravaAuthReturnForUserKeys(event) {
     window.removeEventListener("storage", handleStravaAuthReturnForUserKeys);
     stravaPanelContent.lastChild.innerHTML = `<div style="padding:15px; text-align:center;"><p>Authenticating...</p></div>`;
 
-    const userClientId = localStorage.getItem("userStravaClientId");
-    const userClientSecret = localStorage.getItem("userStravaClientSecret");
+    await getAccessToken(authCode, tempUserClientId, tempUserClientSecret);
 
-    const success = await getAccessToken(authCode, userClientId, userClientSecret);
-    if (success) {
-      renderUserKeysPanel();
-    } else {
-      localStorage.removeItem("userStravaClientId");
-      localStorage.removeItem("userStravaClientSecret");
-      renderUserKeysPanel();
-    }
+    renderUserKeysPanel();
   } else if (event.key === "strava_auth_error") {
     console.error("Strava authentication error:", event.newValue);
     localStorage.removeItem("strava_auth_error");
     window.removeEventListener("storage", handleStravaAuthReturnForUserKeys);
+
     renderUserKeysPanel();
   }
 }
