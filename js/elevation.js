@@ -404,6 +404,32 @@ function updateElevationToggleIconColor() {
 }
 
 /**
+ * Checks if a path already has elevation data.
+ * @param {L.LatLng[]} latlngs - Path coordinates
+ * @returns {boolean} True if at least 80% of points have elevation data with meaningful variance
+ */
+function hasExistingElevationData(latlngs) {
+  if (!latlngs || latlngs.length === 0) return false;
+
+  const elevationValues = latlngs
+    .filter((p) => typeof p.alt === "number" && isFinite(p.alt))
+    .map((p) => p.alt);
+
+  // Require at least 80% of points to have elevation data
+  // This allows for some missing values while ensuring sufficient coverage
+  const threshold = latlngs.length * 0.8;
+  if (elevationValues.length < threshold) return false;
+
+  // Check if all elevation values are 0 or very close to 0
+  // Many KML/GPX files use 0 as a placeholder when elevation is unknown
+  // We use a small epsilon to account for floating point precision
+  const allZero = elevationValues.every((val) => Math.abs(val) < 0.01);
+  if (allZero) return false;
+
+  return true;
+}
+
+/**
  * Adds elevation profile for a selected layer.
  * @param {L.Layer} layer - The layer to create an elevation profile for
  */
@@ -418,10 +444,23 @@ async function addElevationProfileForLayer(layer) {
   let latlngs = layer instanceof L.Polyline ? layer.getLatLngs() : layer.getLatLngs()[0];
   if (latlngs?.length > 0) {
     const realDistance = calculatePathDistance(layer);
-    const pointsWithElev = await fetchElevationForPath(latlngs, realDistance);
+    let pointsWithElev;
+    let source;
+
+    // Check if elevation data already exists in the file
+    if (hasExistingElevationData(latlngs)) {
+      console.log("Using existing elevation data from file (no API call needed).");
+      pointsWithElev = latlngs;
+      source = "File";
+    } else {
+      console.log("No elevation data in file, fetching from API...");
+      const provider = localStorage.getItem("elevationProvider") || "google";
+      pointsWithElev = await fetchElevationForPath(latlngs, realDistance);
+      source = provider === "geoadmin" ? "GeoAdmin API" : "Google API";
+    }
 
     if (pointsWithElev?.length > 0) {
-      window.elevationProfile.drawElevationProfile(pointsWithElev, realDistance);
+      window.elevationProfile.drawElevationProfile(pointsWithElev, realDistance, source);
     } else {
       console.warn("No valid elevation data.");
       window.elevationProfile.clearElevationProfile();

@@ -354,8 +354,9 @@ function createElevationChart(targetDivId, isImperial) {
  * This is the main function to call when data changes.
  * @param {Array<L.LatLng>} pointsWithElev - The raw data from fetchElevationForPath
  * @param {number} [realDistance] - The optional, true distance from the original path
+ * @param {string} [source] - The source of elevation data ("file" or "api")
  */
-function drawElevationProfile(pointsWithElev, realDistance) {
+function drawElevationProfile(pointsWithElev, realDistance, source) {
   currentRawData = formatDataForD3(pointsWithElev);
   if (currentRawData.length < 2) {
     clearElevationProfile();
@@ -403,7 +404,8 @@ function drawElevationProfile(pointsWithElev, realDistance) {
         `<span style="${itemStyle}">Descent: ${elevationFormatter(descent)}</span>` +
         `<span style="${itemStyle}">Highest point: ${elevationFormatter(maxElev)}</span>` +
         `<span style="${itemStyle}">Lowest point: ${elevationFormatter(minElev)}</span>` +
-        `<span style="${itemStyle}">Hiking time: ${hikingTimeFormatted}</span>`
+        `<span style="${itemStyle}">Hiking time: ${hikingTimeFormatted}</span>` +
+        (source ? `<span style="${itemStyle}">Source: ${source}</span>` : "")
     );
   }
 
