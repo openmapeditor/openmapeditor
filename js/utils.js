@@ -125,13 +125,27 @@ function simplifyPath(coordinates, type, config) {
       return { simplified: false, coords: pathCoords };
     }
 
-    const points = pathCoords.map((c) => ({ x: c[0], y: c[1] }));
+    // Check if coordinates have altitude data (3D coordinates)
+    const hasAltitude = pathCoords.some((c) => c.length === 3 && c[2] !== undefined);
+
+    // Add index to each point so we can track which ones are kept after simplification
+    const points = pathCoords.map((c, i) => ({ x: c[0], y: c[1], idx: i }));
     const simplifiedPoints = simplify(points, config.TOLERANCE, true);
 
     if (simplifiedPoints.length < pathCoords.length) {
       console.log(
         `Path segment simplified: ${pathCoords.length} -> ${simplifiedPoints.length} points`
       );
+
+      // If original had altitude, restore it using the index
+      if (hasAltitude) {
+        const simplifiedWithAlt = simplifiedPoints.map((p) => {
+          const originalCoord = pathCoords[p.idx];
+          return originalCoord.length === 3 ? [p.x, p.y, originalCoord[2]] : [p.x, p.y];
+        });
+        return { simplified: true, coords: simplifiedWithAlt };
+      }
+
       return { simplified: true, coords: simplifiedPoints.map((p) => [p.x, p.y]) };
     }
 

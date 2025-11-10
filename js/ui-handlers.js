@@ -90,7 +90,11 @@ function createOverviewListItem(layer) {
       } else if (layerToDuplicate instanceof L.Polyline) {
         const originalCoords = layerToDuplicate
           .getLatLngs()
-          .map((latlng) => [latlng.lng, latlng.lat]);
+          .map((latlng) =>
+            latlng.alt !== undefined
+              ? [latlng.lng, latlng.lat, latlng.alt]
+              : [latlng.lng, latlng.lat]
+          );
 
         let coordsToUse = originalCoords;
         let simplificationHappened = false;
@@ -125,7 +129,7 @@ function createOverviewListItem(layer) {
         }
 
         newLayer = L.polyline(
-          coordsToUse.map((c) => [c[1], c[0]]),
+          coordsToUse.map((c) => (c.length === 3 ? [c[1], c[0], c[2]] : [c[1], c[0]])),
           { ...STYLE_CONFIG.path.default, color: color }
         );
         newFeature.properties.totalDistance = calculatePathDistance(newLayer);
