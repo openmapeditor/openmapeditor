@@ -1431,6 +1431,38 @@ function initializeMap() {
       L.DomEvent.stopPropagation
     );
 
+    const preferFileElevationContainer = L.DomUtil.create(
+      "div",
+      "settings-control-item",
+      settingsPanel
+    );
+    const preferFileElevationLabel = L.DomUtil.create("label", "", preferFileElevationContainer);
+    preferFileElevationLabel.htmlFor = "prefer-file-elevation-checkbox";
+    preferFileElevationLabel.innerText = "Prefer file elevation data";
+    const preferFileElevationCheckbox = L.DomUtil.create("input", "", preferFileElevationContainer);
+    preferFileElevationCheckbox.type = "checkbox";
+    preferFileElevationCheckbox.id = "prefer-file-elevation-checkbox";
+    preferFileElevationCheckbox.checked = localStorage.getItem("preferFileElevation") !== "false"; // Default to true
+    L.DomEvent.on(preferFileElevationCheckbox, "change", (e) => {
+      const shouldPrefer = e.target.checked;
+      localStorage.setItem("preferFileElevation", shouldPrefer.toString());
+      clearElevationCache();
+      Swal.fire({
+        toast: true,
+        position: "center",
+        icon: "info",
+        iconColor: "var(--swal-color-info)",
+        title: shouldPrefer ? "Will prefer file elevation data" : "Will prefer API elevation data",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    });
+    L.DomEvent.on(
+      preferFileElevationContainer,
+      "dblclick mousedown wheel",
+      L.DomEvent.stopPropagation
+    );
+
     const privacyPolicyContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
     const privacyPolicyLabel = L.DomUtil.create("label", "", privacyPolicyContainer);
     privacyPolicyLabel.innerText = "Legal";

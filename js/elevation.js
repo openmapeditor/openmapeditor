@@ -447,13 +447,20 @@ async function addElevationProfileForLayer(layer) {
     let pointsWithElev;
     let source;
 
+    // Check if user wants to prefer file elevation data (default: true)
+    const preferFileElevation = localStorage.getItem("preferFileElevation") !== "false";
+
     // Check if elevation data already exists in the file
-    if (hasExistingElevationData(latlngs)) {
+    if (hasExistingElevationData(latlngs) && preferFileElevation) {
       console.log("Using existing elevation data from file (no API call needed).");
       pointsWithElev = latlngs;
       source = "File";
     } else {
-      console.log("No elevation data in file, fetching from API...");
+      if (hasExistingElevationData(latlngs) && !preferFileElevation) {
+        console.log("File has elevation data, but user prefers API. Fetching from API...");
+      } else {
+        console.log("No elevation data in file, fetching from API...");
+      }
       const provider = localStorage.getItem("elevationProvider") || "google";
       pointsWithElev = await fetchElevationForPath(latlngs, realDistance);
       source = provider === "geoadmin" ? "GeoAdmin API" : "Google API";
