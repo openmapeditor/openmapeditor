@@ -83,11 +83,25 @@ function createOverviewListItem(layer) {
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
       const color = colorData ? colorData.css : "#e51b23";
 
-      // Create the appropriate layer type (marker or polyline)
+      // Create the appropriate layer type (marker, polygon, or polyline)
       if (layerToDuplicate instanceof L.Marker) {
         newLayer = L.marker(layerToDuplicate.getLatLng(), {
           icon: createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity),
         });
+      } else if (layerToDuplicate instanceof L.Polygon) {
+        // Handle polygon (must check before Polyline since Polygon extends Polyline)
+        const originalCoords = layerToDuplicate
+          .getLatLngs()[0]
+          .map((latlng) =>
+            latlng.alt !== undefined
+              ? [latlng.lng, latlng.lat, latlng.alt]
+              : [latlng.lng, latlng.lat]
+          );
+
+        newLayer = L.polygon(
+          originalCoords.map((c) => (c.length === 3 ? [c[1], c[0], c[2]] : [c[1], c[0]])),
+          { ...STYLE_CONFIG.path.default, color: color }
+        );
       } else if (layerToDuplicate instanceof L.Polyline) {
         const originalCoords = layerToDuplicate
           .getLatLngs()
