@@ -311,7 +311,36 @@ function toGpx(layer) {
 
   let content = "";
 
-  if (layer instanceof L.Polyline) {
+  if (layer instanceof L.Polygon) {
+    let latlngs = layer.getLatLngs()[0];
+
+    // Close the polygon by adding the first point at the end
+    const closedLatLngs = [...latlngs, latlngs[0]];
+
+    const pathPoints = closedLatLngs
+      .map((p) => {
+        let pt = `<trkpt lat="${p.lat}" lon="${p.lng}">`;
+        if (typeof p.alt !== "undefined" && p.alt !== null) {
+          pt += `<ele>${p.alt}</ele>`;
+        }
+        pt += `</trkpt>`;
+        return pt;
+      })
+      .join("\n      ");
+
+    content = `
+  <trk>
+    <name>${name}</name>
+    <extensions>
+      <gpx_style:line>
+        <gpx_style:color>${gpxColorHex}</gpx_style:color>
+      </gpx_style:line>
+    </extensions>
+    <trkseg>
+      ${pathPoints}
+    </trkseg>
+  </trk>`;
+  } else if (layer instanceof L.Polyline) {
     let latlngs = layer.getLatLngs();
     while (latlngs.length > 0 && Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
       latlngs = latlngs[0];

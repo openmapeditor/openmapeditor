@@ -996,6 +996,7 @@ function initializeMap() {
 
   L.drawLocal.draw.toolbar.buttons.polyline = "Draw path";
   L.drawLocal.draw.toolbar.buttons.marker = "Place marker";
+  L.drawLocal.draw.toolbar.buttons.polygon = "Draw area";
   L.drawLocal.edit.toolbar.buttons.edit = "Edit";
   L.drawLocal.edit.toolbar.buttons.remove = "Delete";
   L.drawLocal.edit.toolbar.buttons.editDisabled = "No items to edit";
@@ -1009,7 +1010,11 @@ function initializeMap() {
         feet: false,
         showLength: false,
       },
-      polygon: false,
+      polygon: {
+        shapeOptions: { ...STYLE_CONFIG.path.default, color: defaultDrawColor },
+        showArea: true,
+        metric: true,
+      },
       rectangle: false,
       circle: false,
       marker: {

@@ -434,12 +434,9 @@ function hasExistingElevationData(latlngs) {
  * @param {L.Layer} layer - The layer to create an elevation profile for
  */
 async function addElevationProfileForLayer(layer) {
-  if (
-    !layer ||
-    (!(layer instanceof L.Polyline) && !(layer instanceof L.Polygon)) ||
-    !isElevationProfileVisible
-  )
-    return;
+  if (!layer || layer instanceof L.Polygon || !isElevationProfileVisible) return;
+
+  if (!(layer instanceof L.Polyline)) return;
 
   let latlngs = layer instanceof L.Polyline ? layer.getLatLngs() : layer.getLatLngs()[0];
   if (latlngs?.length > 0) {

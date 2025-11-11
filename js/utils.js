@@ -243,6 +243,87 @@ function calculatePathDistance(path) {
 }
 
 /**
+ * Calculates the area of a polygon in square meters using geodesic calculations.
+ * @param {L.Polygon} polygon - The polygon to measure
+ * @returns {number} Area in square meters
+ */
+function calculatePolygonArea(polygon) {
+  if (!(polygon instanceof L.Polygon)) return 0;
+  let latlngs = polygon.getLatLngs()[0];
+  if (!latlngs || latlngs.length < 3) return 0;
+
+  // Use L.GeometryUtil.geodesicArea if available, otherwise use spherical approximation
+  if (L.GeometryUtil && typeof L.GeometryUtil.geodesicArea === "function") {
+    return L.GeometryUtil.geodesicArea(latlngs);
+  }
+
+  // Fallback: simple spherical area calculation
+  const earthRadius = 6378137; // meters
+  let area = 0;
+  const len = latlngs.length;
+
+  if (len > 2) {
+    for (let i = 0; i < len; i++) {
+      const p1 = latlngs[i];
+      const p2 = latlngs[(i + 1) % len];
+      area +=
+        (((p2.lng - p1.lng) * Math.PI) / 180) *
+        (2 + Math.sin((p1.lat * Math.PI) / 180) + Math.sin((p2.lat * Math.PI) / 180));
+    }
+    area = (area * earthRadius * earthRadius) / 2;
+  }
+
+  return Math.abs(area);
+}
+
+/**
+ * Formats an area in square meters into a human-readable string respecting the global unit setting.
+ * @param {number} sqMeters - Area in square meters
+ * @param {boolean} [includeSecondary=false] - If true, includes other unit system in parentheses
+ * @returns {string} Formatted area string (e.g., "1.5 hectares" or "3.7 acres")
+ */
+function formatArea(sqMeters, includeSecondary = false) {
+  if (typeof sqMeters !== "number" || isNaN(sqMeters)) {
+    return "";
+  }
+
+  const SQ_METERS_TO_SQ_FEET = 10.7639;
+  const SQ_METERS_TO_ACRES = 0.000247105;
+  const SQ_METERS_TO_HECTARES = 0.0001;
+
+  const hectares = sqMeters * SQ_METERS_TO_HECTARES;
+  const acres = sqMeters * SQ_METERS_TO_ACRES;
+
+  let primaryDisplay, secondaryDisplay;
+
+  if (useImperialUnits) {
+    if (acres < 0.1 && acres > 0) {
+      primaryDisplay = `${Math.round(sqMeters * SQ_METERS_TO_SQ_FEET)} sq ft`;
+    } else {
+      if (sqMeters === 0) {
+        primaryDisplay = "0 acres";
+      } else {
+        primaryDisplay = `${acres.toFixed(2)} acres`;
+      }
+    }
+    secondaryDisplay =
+      hectares < 0.1 ? `${Math.round(sqMeters)} sq m` : `${hectares.toFixed(2)} hectares`;
+  } else {
+    if (hectares < 0.1) {
+      primaryDisplay = `${Math.round(sqMeters)} sq m`;
+    } else {
+      primaryDisplay = `${hectares.toFixed(2)} hectares`;
+    }
+    secondaryDisplay =
+      acres < 0.1
+        ? `${Math.round(sqMeters * SQ_METERS_TO_SQ_FEET)} sq ft`
+        : `${acres.toFixed(2)} acres`;
+  }
+
+  return includeSecondary ? `${primaryDisplay} (${secondaryDisplay})` : primaryDisplay;
+}
+
+/**
  * Resamples a path to have exactly the specified number of evenly-spaced points
  * by interpolating along the original path geometry.
  * @param {Array<L.LatLng>} latlngs - Original array of points

@@ -13,7 +13,8 @@
 function createOverviewListItem(layer) {
   const layerId = L.Util.stamp(layer);
   let layerName =
-    layer.feature?.properties?.name || (layer instanceof L.Marker ? "Marker" : "Unnamed Path");
+    layer.feature?.properties?.name ||
+    (layer instanceof L.Marker ? "Marker" : layer instanceof L.Polygon ? "Area" : "Unnamed Path");
 
   const listItem = document.createElement("div");
   listItem.className = "overview-list-item";
@@ -367,6 +368,13 @@ function showInfoPanel(layer) {
           });
         });
     };
+  } else if (layer instanceof L.Polygon) {
+    name = name || "Area";
+
+    const area = calculatePolygonArea(layer);
+    const perimeter = calculatePathDistance(layer);
+
+    details = `Area: ${formatArea(area)}<br>Perimeter: ${formatDistance(perimeter)}`;
   } else if (layer instanceof L.Polyline) {
     name = name || "Path";
 
@@ -474,7 +482,12 @@ function updateLayerName() {
     let newName = infoPanelName.value.trim();
     if (!newName) {
       // Default name if input is empty
-      newName = globallySelectedItem instanceof L.Marker ? "Marker" : "Path";
+      newName =
+        globallySelectedItem instanceof L.Marker
+          ? "Marker"
+          : globallySelectedItem instanceof L.Polygon
+          ? "Area"
+          : "Path";
       infoPanelName.value = newName;
     }
     globallySelectedItem.feature.properties.name = newName;
