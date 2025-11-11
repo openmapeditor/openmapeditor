@@ -219,12 +219,22 @@ function selectItem(layer) {
       if (selectedPathOutline) {
         map.removeLayer(selectedPathOutline);
       }
-      selectedPathOutline = L.polyline(layer.getLatLngs(), {
-        color: outline.color,
-        weight: STYLE_CONFIG.path.highlight.weight + outline.weightOffset,
-        opacity: STYLE_CONFIG.path.highlight.opacity,
-        interactive: false,
-      });
+      // Use L.polygon for polygons to ensure the closing line has an outline
+      if (layer instanceof L.Polygon) {
+        selectedPathOutline = L.polygon(layer.getLatLngs()[0], {
+          color: outline.color,
+          weight: STYLE_CONFIG.path.highlight.weight + outline.weightOffset,
+          opacity: STYLE_CONFIG.path.highlight.opacity,
+          interactive: false,
+        });
+      } else {
+        selectedPathOutline = L.polyline(layer.getLatLngs(), {
+          color: outline.color,
+          weight: STYLE_CONFIG.path.highlight.weight + outline.weightOffset,
+          opacity: STYLE_CONFIG.path.highlight.opacity,
+          interactive: false,
+        });
+      }
       if (map.hasLayer(layer) && !isEditMode) {
         selectedPathOutline.addTo(map).bringToFront();
       }
