@@ -588,6 +588,11 @@ function replaceDefaultIconsWithMaterialSymbols() {
     pathButton.innerHTML = '<span class="material-symbols">diagonal_line</span>';
   }
 
+  const areaButton = document.querySelector(".leaflet-draw-draw-polygon");
+  if (areaButton) {
+    areaButton.innerHTML = '<span class="material-symbols">hexagon</span>';
+  }
+
   const markerButton = document.querySelector(".leaflet-draw-draw-marker");
   if (markerButton) {
     markerButton.innerHTML = '<span class="material-symbols">location_on</span>';
