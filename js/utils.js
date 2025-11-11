@@ -112,7 +112,7 @@ function parseCoordinateString(inputString) {
 /**
  * Simplifies a geometry's coordinates using the simplify.js library and provided configuration.
  * @param {Array} coordinates - Array of coordinates in [lng, lat] format
- * @param {string} type - Geometry type ('LineString' or 'MultiLineString')
+ * @param {string} type - Geometry type ('LineString', 'Polygon', or 'MultiLineString')
  * @param {object} config - Configuration object with TOLERANCE and MIN_POINTS properties
  * @returns {{simplified: boolean, coords: Array}} Object with simplification flag and resulting coordinates
  */
@@ -152,7 +152,9 @@ function simplifyPath(coordinates, type, config) {
     return { simplified: false, coords: pathCoords };
   };
 
-  if (type === "LineString") {
+  if (type === "LineString" || type === "Polygon") {
+    // LineString and Polygon are both single arrays of coordinates
+    // Polygon is treated as a closed LineString for simplification purposes
     const result = simplifySinglePath(coordinates);
     overallSimplified = result.simplified;
     newCoordinates = result.coords;

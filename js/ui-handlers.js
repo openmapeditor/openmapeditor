@@ -98,8 +98,41 @@ function createOverviewListItem(layer) {
               : [latlng.lng, latlng.lat]
           );
 
+        let coordsToUse = originalCoords;
+        let simplificationHappened = false;
+
+        // Apply simplification if enabled
+        if (enablePathSimplification) {
+          const simplifiedResult = simplifyPath(
+            originalCoords,
+            "Polygon",
+            pathSimplificationConfig
+          );
+
+          // Check if the polygon was actually simplified
+          if (simplifiedResult.simplified) {
+            coordsToUse = simplifiedResult.coords;
+            simplificationHappened = true;
+          }
+        }
+
+        // Show a notification if simplification occurred
+        if (simplificationHappened) {
+          Swal.fire({
+            toast: true,
+            position: "center",
+            icon: "info",
+            iconColor: "var(--swal-color-info)",
+            title: "Area Optimized",
+            text: "The duplicated area was simplified for better performance.",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+          });
+        }
+
         newLayer = L.polygon(
-          originalCoords.map((c) => (c.length === 3 ? [c[1], c[0], c[2]] : [c[1], c[0]])),
+          coordsToUse.map((c) => (c.length === 3 ? [c[1], c[0], c[2]] : [c[1], c[0]])),
           { ...STYLE_CONFIG.path.default, color: color }
         );
       } else if (layerToDuplicate instanceof L.Polyline) {

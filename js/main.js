@@ -1241,7 +1241,7 @@ function initializeMap() {
     labelGroup.style.alignItems = "center";
     const label = L.DomUtil.create("label", "", labelGroup);
     label.htmlFor = "simplification-toggle";
-    label.innerText = "Path Simplification";
+    label.innerText = "Path & Area Simplification";
     const infoIcon = L.DomUtil.create("span", "settings-info-icon", labelGroup);
     infoIcon.innerHTML = '<span class="material-symbols">info</span>';
     infoIcon.title = "What's this?";
@@ -1257,7 +1257,7 @@ function initializeMap() {
         position: "center",
         icon: "info",
         iconColor: "var(--swal-color-info)",
-        title: `Path Simplification ${enablePathSimplification ? "Enabled" : "Disabled"}`,
+        title: `Path & Area Simplification ${enablePathSimplification ? "Enabled" : "Disabled"}`,
         showConfirmButton: false,
         timer: 1500,
       });
@@ -1266,13 +1266,13 @@ function initializeMap() {
       Swal.fire({
         icon: "info",
         iconColor: "var(--swal-color-info)",
-        title: "Path Simplification",
+        title: "Path & Area Simplification",
         html: `
 <p style="text-align: left; margin: 0 0 18px 0">
-  When enabled, this option automatically reduces the number of points in paths to improve performance. This simplification happens at specific times:
+  When enabled, this option automatically reduces the number of points in paths and areas to improve performance. This simplification happens at specific times:
 </p>
 <ul style="text-align: left; padding-left: 20px; margin: 0 0 18px 0;">
-  <li style="margin-bottom: 5px;">When an <strong>imported track</strong> is duplicated.</li>
+  <li style="margin-bottom: 5px;">When an <strong>imported track or area</strong> is duplicated.</li>
   <li style="margin-bottom: 5px;">When a <strong>generated route</strong> is saved.</li>
   <li>When a <strong>Strava activity</strong> is duplicated.</li>
 </ul>
@@ -1280,7 +1280,7 @@ function initializeMap() {
   The original, high-detail files are never modified.
 </p>
 <p style="text-align: left; margin: 0 0 18px 0">
-  <strong>Enabled (Recommended):</strong> Improves performance and makes paths easier to edit. The visual change is often unnoticeable.
+  <strong>Enabled (Recommended):</strong> Improves performance and makes paths and areas easier to edit. The visual change is often unnoticeable.
 </p>
 <p style="text-align: left">
   <strong>Disabled:</strong> Preserves every single point when duplicating or saving. Use this if absolute precision is critical.
