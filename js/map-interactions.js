@@ -199,7 +199,8 @@ function selectItem(layer) {
 
       gpxButton.disabled = false;
       kmlButton.disabled = false;
-      const itemType = layer instanceof L.Marker ? "Marker" : "Path";
+      const itemType =
+        layer instanceof L.Marker ? "Marker" : layer instanceof L.Polygon ? "Area" : "Path";
       gpxButton.textContent = `GPX (Selected ${itemType})`;
       kmlButton.textContent = `KML (Selected ${itemType})`;
     }
@@ -218,30 +219,44 @@ function selectItem(layer) {
       if (selectedPathOutline) {
         map.removeLayer(selectedPathOutline);
       }
-      selectedPathOutline = L.polyline(layer.getLatLngs(), {
-        color: outline.color,
-        weight: STYLE_CONFIG.path.highlight.weight + outline.weightOffset,
-        opacity: STYLE_CONFIG.path.highlight.opacity,
-        interactive: false,
-      });
+      // Use L.polygon for polygons to ensure the closing line has an outline
+      if (layer instanceof L.Polygon) {
+        selectedPathOutline = L.polygon(layer.getLatLngs()[0], {
+          color: outline.color,
+          weight: STYLE_CONFIG.path.highlight.weight + outline.weightOffset,
+          opacity: STYLE_CONFIG.path.highlight.opacity,
+          interactive: false,
+        });
+      } else {
+        selectedPathOutline = L.polyline(layer.getLatLngs(), {
+          color: outline.color,
+          weight: STYLE_CONFIG.path.highlight.weight + outline.weightOffset,
+          opacity: STYLE_CONFIG.path.highlight.opacity,
+          interactive: false,
+        });
+      }
       if (map.hasLayer(layer) && !isEditMode) {
         selectedPathOutline.addTo(map).bringToFront();
       }
     }
 
-    selectedElevationPath = layer;
-    window.elevationProfile.clearElevationProfile();
-    addElevationProfileForLayer(layer);
     layer.setStyle({ ...STYLE_CONFIG.path.highlight, color: highlightColor });
     layer.bringToFront();
-    if (elevationToggleControl) {
-      elevationToggleControl.getContainer().title = "Toggle elevation profile";
-      L.DomUtil.removeClass(elevationToggleControl.getContainer(), "disabled");
-    }
-    const elevationDiv = document.getElementById("elevation-div");
-    if (isElevationProfileVisible || elevationDiv.style.visibility === "visible") {
-      elevationDiv.style.visibility = "visible";
-      isElevationProfileVisible = true;
+
+    // Only enable elevation for polylines, not polygons
+    if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+      selectedElevationPath = layer;
+      window.elevationProfile.clearElevationProfile();
+      addElevationProfileForLayer(layer);
+      if (elevationToggleControl) {
+        elevationToggleControl.getContainer().title = "Toggle elevation profile";
+        L.DomUtil.removeClass(elevationToggleControl.getContainer(), "disabled");
+      }
+      const elevationDiv = document.getElementById("elevation-div");
+      if (isElevationProfileVisible || elevationDiv.style.visibility === "visible") {
+        elevationDiv.style.visibility = "visible";
+        isElevationProfileVisible = true;
+      }
     }
   } else if (layer instanceof L.Marker) {
     const { outline } = STYLE_CONFIG.marker.highlight;

@@ -13,7 +13,8 @@
 function createOverviewListItem(layer) {
   const layerId = L.Util.stamp(layer);
   let layerName =
-    layer.feature?.properties?.name || (layer instanceof L.Marker ? "Marker" : "Unnamed Path");
+    layer.feature?.properties?.name ||
+    (layer instanceof L.Marker ? "Marker" : layer instanceof L.Polygon ? "Area" : "Unnamed Path");
 
   const listItem = document.createElement("div");
   listItem.className = "overview-list-item";
@@ -82,11 +83,58 @@ function createOverviewListItem(layer) {
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
       const color = colorData ? colorData.css : "#e51b23";
 
-      // Create the appropriate layer type (marker or polyline)
+      // Create the appropriate layer type (marker, polygon, or polyline)
       if (layerToDuplicate instanceof L.Marker) {
         newLayer = L.marker(layerToDuplicate.getLatLng(), {
           icon: createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity),
         });
+      } else if (layerToDuplicate instanceof L.Polygon) {
+        // Handle polygon (must check before Polyline since Polygon extends Polyline)
+        const originalCoords = layerToDuplicate
+          .getLatLngs()[0]
+          .map((latlng) =>
+            latlng.alt !== undefined
+              ? [latlng.lng, latlng.lat, latlng.alt]
+              : [latlng.lng, latlng.lat]
+          );
+
+        let coordsToUse = originalCoords;
+        let simplificationHappened = false;
+
+        // Apply simplification if enabled
+        if (enablePathSimplification) {
+          const simplifiedResult = simplifyPath(
+            originalCoords,
+            "Polygon",
+            pathSimplificationConfig
+          );
+
+          // Check if the polygon was actually simplified
+          if (simplifiedResult.simplified) {
+            coordsToUse = simplifiedResult.coords;
+            simplificationHappened = true;
+          }
+        }
+
+        // Show a notification if simplification occurred
+        if (simplificationHappened) {
+          Swal.fire({
+            toast: true,
+            position: "center",
+            icon: "info",
+            iconColor: "var(--swal-color-info)",
+            title: "Area Optimized",
+            text: "The duplicated area was simplified for better performance.",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+          });
+        }
+
+        newLayer = L.polygon(
+          coordsToUse.map((c) => (c.length === 3 ? [c[1], c[0], c[2]] : [c[1], c[0]])),
+          { ...STYLE_CONFIG.path.default, color: color }
+        );
       } else if (layerToDuplicate instanceof L.Polyline) {
         const originalCoords = layerToDuplicate
           .getLatLngs()
@@ -367,6 +415,13 @@ function showInfoPanel(layer) {
           });
         });
     };
+  } else if (layer instanceof L.Polygon) {
+    name = name || "Area";
+
+    const area = calculatePolygonArea(layer);
+    const perimeter = calculatePathDistance(layer);
+
+    details = `Area: ${formatArea(area)}<br>Perimeter: ${formatDistance(perimeter)}`;
   } else if (layer instanceof L.Polyline) {
     name = name || "Path";
 
@@ -474,7 +529,12 @@ function updateLayerName() {
     let newName = infoPanelName.value.trim();
     if (!newName) {
       // Default name if input is empty
-      newName = globallySelectedItem instanceof L.Marker ? "Marker" : "Path";
+      newName =
+        globallySelectedItem instanceof L.Marker
+          ? "Marker"
+          : globallySelectedItem instanceof L.Polygon
+          ? "Area"
+          : "Path";
       infoPanelName.value = newName;
     }
     globallySelectedItem.feature.properties.name = newName;
@@ -573,6 +633,11 @@ function replaceDefaultIconsWithMaterialSymbols() {
   const pathButton = document.querySelector(".leaflet-draw-draw-polyline");
   if (pathButton) {
     pathButton.innerHTML = '<span class="material-symbols">diagonal_line</span>';
+  }
+
+  const areaButton = document.querySelector(".leaflet-draw-draw-polygon");
+  if (areaButton) {
+    areaButton.innerHTML = '<span class="material-symbols">hexagon</span>';
   }
 
   const markerButton = document.querySelector(".leaflet-draw-draw-marker");
