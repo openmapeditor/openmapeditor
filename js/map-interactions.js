@@ -229,19 +229,23 @@ function selectItem(layer) {
       }
     }
 
-    selectedElevationPath = layer;
-    window.elevationProfile.clearElevationProfile();
-    addElevationProfileForLayer(layer);
     layer.setStyle({ ...STYLE_CONFIG.path.highlight, color: highlightColor });
     layer.bringToFront();
-    if (elevationToggleControl) {
-      elevationToggleControl.getContainer().title = "Toggle elevation profile";
-      L.DomUtil.removeClass(elevationToggleControl.getContainer(), "disabled");
-    }
-    const elevationDiv = document.getElementById("elevation-div");
-    if (isElevationProfileVisible || elevationDiv.style.visibility === "visible") {
-      elevationDiv.style.visibility = "visible";
-      isElevationProfileVisible = true;
+
+    // Only enable elevation for polylines, not polygons
+    if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+      selectedElevationPath = layer;
+      window.elevationProfile.clearElevationProfile();
+      addElevationProfileForLayer(layer);
+      if (elevationToggleControl) {
+        elevationToggleControl.getContainer().title = "Toggle elevation profile";
+        L.DomUtil.removeClass(elevationToggleControl.getContainer(), "disabled");
+      }
+      const elevationDiv = document.getElementById("elevation-div");
+      if (isElevationProfileVisible || elevationDiv.style.visibility === "visible") {
+        elevationDiv.style.visibility = "visible";
+        isElevationProfileVisible = true;
+      }
     }
   } else if (layer instanceof L.Marker) {
     const { outline } = STYLE_CONFIG.marker.highlight;
