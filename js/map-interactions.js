@@ -199,7 +199,8 @@ function selectItem(layer) {
 
       gpxButton.disabled = false;
       kmlButton.disabled = false;
-      const itemType = layer instanceof L.Marker ? "Marker" : "Path";
+      const itemType =
+        layer instanceof L.Marker ? "Marker" : layer instanceof L.Polygon ? "Area" : "Path";
       gpxButton.textContent = `GPX (Selected ${itemType})`;
       kmlButton.textContent = `KML (Selected ${itemType})`;
     }
