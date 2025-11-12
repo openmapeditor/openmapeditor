@@ -282,44 +282,27 @@ function calculatePolygonArea(polygon) {
  * Formats an area in square meters into a human-readable string respecting the global unit setting.
  * @param {number} sqMeters - Area in square meters
  * @param {boolean} [includeSecondary=false] - If true, includes other unit system in parentheses
- * @returns {string} Formatted area string (e.g., "1.5 hectares" or "3.7 acres")
+ * @returns {string} Formatted area string (e.g., "41.29 km²" or "15.94 mi²")
  */
 function formatArea(sqMeters, includeSecondary = false) {
   if (typeof sqMeters !== "number" || isNaN(sqMeters)) {
     return "";
   }
 
-  const SQ_METERS_TO_SQ_FEET = 10.7639;
-  const SQ_METERS_TO_ACRES = 0.000247105;
-  const SQ_METERS_TO_HECTARES = 0.0001;
+  const SQ_METERS_TO_SQ_KM = 0.000001;
+  const SQ_METERS_TO_SQ_MILES = 0.0000003861;
 
-  const hectares = sqMeters * SQ_METERS_TO_HECTARES;
-  const acres = sqMeters * SQ_METERS_TO_ACRES;
+  const sqKm = sqMeters * SQ_METERS_TO_SQ_KM;
+  const sqMiles = sqMeters * SQ_METERS_TO_SQ_MILES;
 
   let primaryDisplay, secondaryDisplay;
 
   if (useImperialUnits) {
-    if (acres < 0.1 && acres > 0) {
-      primaryDisplay = `${Math.round(sqMeters * SQ_METERS_TO_SQ_FEET)} sq ft`;
-    } else {
-      if (sqMeters === 0) {
-        primaryDisplay = "0 acres";
-      } else {
-        primaryDisplay = `${acres.toFixed(2)} acres`;
-      }
-    }
-    secondaryDisplay =
-      hectares < 0.1 ? `${Math.round(sqMeters)} sq m` : `${hectares.toFixed(2)} hectares`;
+    primaryDisplay = sqMeters === 0 ? "0 mi²" : `${sqMiles.toFixed(2)} mi²`;
+    secondaryDisplay = `${sqKm.toFixed(2)} km²`;
   } else {
-    if (hectares < 0.1) {
-      primaryDisplay = `${Math.round(sqMeters)} sq m`;
-    } else {
-      primaryDisplay = `${hectares.toFixed(2)} hectares`;
-    }
-    secondaryDisplay =
-      acres < 0.1
-        ? `${Math.round(sqMeters * SQ_METERS_TO_SQ_FEET)} sq ft`
-        : `${acres.toFixed(2)} acres`;
+    primaryDisplay = sqMeters === 0 ? "0 km²" : `${sqKm.toFixed(2)} km²`;
+    secondaryDisplay = `${sqMiles.toFixed(2)} mi²`;
   }
 
   return includeSecondary ? `${primaryDisplay} (${secondaryDisplay})` : primaryDisplay;
