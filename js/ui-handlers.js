@@ -461,6 +461,8 @@ function showInfoPanel(layer) {
       break;
     case "route":
       layerTypeName = "Route";
+      editHint.innerHTML = "To edit, save route in <b>Routing</b> tab.";
+      editHint.style.display = "block";
       break;
     case "strava":
       const activityType = layer.feature.properties.type || "";
