@@ -121,7 +121,7 @@ async function showCreditsPopup() {
     swalContent.querySelector("#credits-app-description").textContent = APP_CREDITS_DESCRIPTION;
 
     Swal.fire({
-      imageUrl: "/img/icon-1024x1024.svg",
+      imageUrl: "/img/icon-1024x1024.png",
       imageWidth: 150,
       imageHeight: "auto",
       html: swalContent,
@@ -1635,7 +1635,7 @@ function initializeMap() {
     "load",
     () => {
       const creditsIcon = new Image();
-      creditsIcon.src = "/img/icon-1024x1024.svg";
+      creditsIcon.src = "/img/icon-1024x1024.png";
 
       const stravaButton = new Image();
       stravaButton.src = "/img/btn_strava_connect_with_orange.svg";

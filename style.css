@@ -866,6 +866,10 @@ a#info-panel-strava-link:hover {
 }
 
 /* Style for credits popup */
+.swal2-credits-popup .swal2-image {
+  margin-top: 10px;
+}
+
 .swal2-credits-popup .swal2-html-container {
   padding-top: 0;
 }
