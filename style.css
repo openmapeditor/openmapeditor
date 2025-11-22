@@ -1762,6 +1762,7 @@ body.using-touch {
     }
     #install-pwa-link {
       margin-left: 0;
+      line-height: 2;
     }
     .leaflet-control-attribution:has(#install-pwa-link:not([style*="display: none"])) {
       padding-left: 0;
