@@ -138,11 +138,7 @@ function generateFullKmzZip(docName) {
   const importedPlacemarks = [];
   const stravaPlacemarks = [];
 
-  const allLayers = [
-    ...editableLayers.getLayers(),
-    ...importedItems.getLayers(),
-    ...kmzLayer.getLayers(),
-  ];
+  const allLayers = [...editableLayers.getLayers(), ...importedItems.getLayers()];
 
   allLayers.forEach(function (layer) {
     const defaultName =
@@ -298,11 +294,7 @@ function exportGeoJson() {
   const features = [];
 
   // Collect all layers
-  const allLayers = [
-    ...editableLayers.getLayers(),
-    ...importedItems.getLayers(),
-    ...kmzLayer.getLayers(),
-  ];
+  const allLayers = [...editableLayers.getLayers(), ...importedItems.getLayers()];
 
   // Add current route if exists
   if (currentRoutePath) {
@@ -522,7 +514,7 @@ function getColorNameFromKmlStyle(properties) {
  * @returns {L.GeoJSON} The created layer group
  */
 function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
-  const targetGroup = fileType === "kmz" ? kmzLayer : importedItems;
+  const targetGroup = importedItems; // All imported files go to the same group
 
   const layerGroup = L.geoJSON(geoJsonData, {
     style: (feature) => {

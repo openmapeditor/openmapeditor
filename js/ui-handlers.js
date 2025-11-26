@@ -37,7 +37,6 @@ function createOverviewListItem(layer) {
       editableLayers.getLayer(layerId) ||
       stravaActivitiesLayer.getLayer(layerId) ||
       importedItems.getLayer(layerId) ||
-      kmzLayer.getLayer(layerId) ||
       (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
     if (!layerToToggle) return;
     const isCurrentlyVisible = map.hasLayer(layerToToggle);
@@ -71,8 +70,7 @@ function createOverviewListItem(layer) {
       const layerToDuplicate =
         editableLayers.getLayer(layerId) ||
         stravaActivitiesLayer.getLayer(layerId) ||
-        importedItems.getLayer(layerId) ||
-        kmzLayer.getLayer(layerId);
+        importedItems.getLayer(layerId);
       if (!layerToDuplicate) return;
       let newLayer;
       const newFeature = JSON.parse(JSON.stringify(layerToDuplicate.feature || { properties: {} }));
@@ -210,7 +208,6 @@ function createOverviewListItem(layer) {
       editableLayers.getLayer(layerId) ||
       stravaActivitiesLayer.getLayer(layerId) ||
       importedItems.getLayer(layerId) ||
-      kmzLayer.getLayer(layerId) ||
       (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
     if (layerToDelete) {
       deleteLayerImmediately(layerToDelete);
@@ -237,7 +234,6 @@ function createOverviewListItem(layer) {
       editableLayers.getLayer(layerId) ||
       stravaActivitiesLayer.getLayer(layerId) ||
       importedItems.getLayer(layerId) ||
-      kmzLayer.getLayer(layerId) ||
       (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
     if (targetLayer) {
       if (targetLayer instanceof L.Polyline || targetLayer instanceof L.Polygon) {
@@ -268,7 +264,6 @@ function updateOverviewList() {
     ...editableLayers.getLayers(),
     ...stravaActivitiesLayer.getLayers(),
     ...importedItems.getLayers(),
-    ...kmzLayer.getLayers(),
   ];
   if (currentRoutePath) {
     allItems.unshift(currentRoutePath);
@@ -297,9 +292,8 @@ function updateOverviewList() {
       case "gpx":
       case "kml":
       case "geojson":
-        return "Imported GPX/KML/GeoJSON";
       case "kmz":
-        return "Imported KMZ";
+        return "Imported Files";
       case "strava":
         return "Strava Activities";
       default:
@@ -317,14 +311,7 @@ function updateOverviewList() {
 
   // 3. Render the groups in a specific order
   const fragment = document.createDocumentFragment();
-  const groupOrder = [
-    "Route",
-    "Drawn Items",
-    "Imported GPX/KML/GeoJSON",
-    "Imported KMZ",
-    "Strava Activities",
-    "Other",
-  ];
+  const groupOrder = ["Route", "Drawn Items", "Imported Files", "Strava Activities", "Other"];
 
   groupOrder.forEach((title) => {
     const itemsInGroup = groupedItems[title];
@@ -452,12 +439,8 @@ function showInfoPanel(layer) {
     case "gpx":
     case "kml":
     case "geojson":
-      layerTypeName = "Imported GPX/KML/GeoJSON";
-      editHint.innerHTML = "To edit, duplicate item in <b>Contents</b> tab.";
-      editHint.style.display = "block";
-      break;
     case "kmz":
-      layerTypeName = "Imported KMZ";
+      layerTypeName = "Imported Item";
       editHint.innerHTML = "To edit, duplicate item in <b>Contents</b> tab.";
       editHint.style.display = "block";
       break;
