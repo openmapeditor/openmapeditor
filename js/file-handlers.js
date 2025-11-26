@@ -156,6 +156,7 @@ function generateFullKmzZip(docName) {
         break;
       case "gpx":
       case "kml":
+      case "geojson":
         importedPlacemarks.push(kmlSnippet);
         break;
       case "kmz":

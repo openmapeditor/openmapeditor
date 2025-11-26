@@ -296,7 +296,8 @@ function initializeMap() {
     Swisstopo: '<span class="fi fi-ch fis"></span> Swisstopo',
     SwissHikingTrails: '<span class="fi fi-ch fis"></span> Swiss Hiking Trails',
     DrawnItems: '<span class="material-symbols layer-icon">edit</span> Drawn Items',
-    ImportedGPXKML: '<span class="material-symbols layer-icon">folder_open</span> Imported GPX/KML',
+    ImportedFiles:
+      '<span class="material-symbols layer-icon">folder_open</span> Imported GPX/KML/GeoJSON',
     ImportedKMZ: '<span class="material-symbols layer-icon">folder_open</span> Imported KMZ',
     StravaActivities:
       '<span class="material-symbols layer-icon">directions_run</span> Strava Activities',
@@ -419,7 +420,7 @@ function initializeMap() {
   const allOverlayMaps = {
     ...staticOverlayMaps,
     DrawnItems: drawnItems,
-    ImportedGPXKML: importedItems,
+    ImportedFiles: importedItems,
     ImportedKMZ: kmzLayer,
     StravaActivities: stravaActivitiesLayer,
   };
@@ -1032,14 +1033,14 @@ function initializeMap() {
         "div",
         "leaflet-bar leaflet-control leaflet-control-custom"
       );
-      container.title = "Import GPX/KML/KMZ file";
+      container.title = "Import GPX/KML/KMZ/GeoJSON file";
       const link = L.DomUtil.create("a", "", container);
       link.href = "#";
       link.role = "button";
       link.innerHTML = "";
       const input = L.DomUtil.create("input", "hidden", container);
       input.type = "file";
-      input.accept = ".gpx,.kml,.kmz";
+      input.accept = ".gpx,.kml,.kmz,.geojson,.json";
       input.style.display = "none";
 
       L.DomEvent.on(link, "click", (e) => {
@@ -1053,6 +1054,63 @@ function initializeMap() {
         const fileNameLower = file.name.toLowerCase();
         if (fileNameLower.endsWith(".kmz")) {
           handleKmzFile(file);
+        } else if (fileNameLower.endsWith(".geojson") || fileNameLower.endsWith(".json")) {
+          const reader = new FileReader();
+          reader.onload = (readEvent) => {
+            try {
+              const geojsonData = JSON.parse(readEvent.target.result);
+
+              // Validate GeoJSON structure
+              if (!geojsonData || !geojsonData.type) {
+                throw new Error("Invalid GeoJSON: missing 'type' property");
+              }
+
+              // Support both FeatureCollection and single Feature
+              let features = [];
+              if (geojsonData.type === "FeatureCollection") {
+                features = geojsonData.features || [];
+              } else if (geojsonData.type === "Feature") {
+                features = [geojsonData];
+              } else {
+                throw new Error("GeoJSON must be a FeatureCollection or Feature");
+              }
+
+              // Filter for supported geometry types
+              const supportedTypes = ["Point", "LineString", "Polygon"];
+              const filteredFeatures = features.filter((feature) => {
+                return feature.geometry && supportedTypes.includes(feature.geometry.type);
+              });
+
+              if (filteredFeatures.length === 0) {
+                return Swal.fire({
+                  icon: "info",
+                  iconColor: "var(--swal-color-info)",
+                  title: "No Supported Geometries",
+                  text: "The GeoJSON file contains no Point, LineString, or Polygon features.",
+                });
+              }
+
+              // Create a valid FeatureCollection with filtered features
+              const filteredGeoJson = {
+                type: "FeatureCollection",
+                features: filteredFeatures,
+              };
+
+              const newLayer = addGeoJsonToMap(filteredGeoJson, "geojson");
+              if (newLayer && newLayer.getBounds().isValid()) {
+                map.fitBounds(newLayer.getBounds());
+              }
+            } catch (error) {
+              console.error("Error parsing GeoJSON file:", error);
+              Swal.fire({
+                icon: "error",
+                iconColor: "var(--swal-color-error)",
+                title: "GeoJSON Parse Error",
+                text: `Could not parse the file: ${error.message}`,
+              });
+            }
+          };
+          reader.readAsText(file);
         } else if (fileNameLower.endsWith(".gpx") || fileNameLower.endsWith(".kml")) {
           const reader = new FileReader();
           reader.onload = (readEvent) => {

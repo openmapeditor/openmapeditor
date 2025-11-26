@@ -296,7 +296,8 @@ function updateOverviewList() {
         return "Drawn Items";
       case "gpx":
       case "kml":
-        return "Imported GPX/KML";
+      case "geojson":
+        return "Imported GPX/KML/GeoJSON";
       case "kmz":
         return "Imported KMZ";
       case "strava":
@@ -319,7 +320,7 @@ function updateOverviewList() {
   const groupOrder = [
     "Route",
     "Drawn Items",
-    "Imported GPX/KML",
+    "Imported GPX/KML/GeoJSON",
     "Imported KMZ",
     "Strava Activities",
     "Other",
@@ -450,7 +451,8 @@ function showInfoPanel(layer) {
       break;
     case "gpx":
     case "kml":
-      layerTypeName = "Imported GPX/KML";
+    case "geojson":
+      layerTypeName = "Imported GPX/KML/GeoJSON";
       editHint.innerHTML = "To edit, duplicate item in <b>Contents</b> tab.";
       editHint.style.display = "block";
       break;
@@ -658,7 +660,7 @@ function replaceDefaultIconsWithMaterialSymbols() {
   }
 
   const importButton = document.querySelector(
-    '.leaflet-control-custom[title="Import GPX/KML/KMZ file"]'
+    '.leaflet-control-custom[title="Import GPX/KML/KMZ/GeoJSON file"]'
   );
   if (importButton) {
     importButton.querySelector("a").innerHTML = '<span class="material-symbols">folder_open</span>';
