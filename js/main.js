@@ -651,6 +651,7 @@ function initializeMap() {
         '<button id="download-kml" disabled>KML (Selected Item)</button>' +
         '<button id="download-strava-original-gpx" style="display: none;">GPX (Original from Strava)</button>' +
         '<button id="download-kmz">KMZ (Everything)</button>' +
+        '<button id="download-geojson">GeoJSON (Everything)</button>' +
         "</div>";
       const subMenu = container.querySelector(".download-submenu");
 
@@ -701,6 +702,11 @@ function initializeMap() {
       L.DomEvent.on(container.querySelector("#download-kmz"), "click", (e) => {
         L.DomEvent.stop(e);
         exportKmz();
+        subMenu.style.display = "none";
+      });
+      L.DomEvent.on(container.querySelector("#download-geojson"), "click", (e) => {
+        L.DomEvent.stop(e);
+        exportGeoJson();
         subMenu.style.display = "none";
       });
       return container;
@@ -1075,10 +1081,33 @@ function initializeMap() {
                 throw new Error("GeoJSON must be a FeatureCollection or Feature");
               }
 
-              // Filter for supported geometry types
+              // Filter for supported geometry types and preserve color information
               const supportedTypes = ["Point", "LineString", "Polygon"];
               const filteredFeatures = features.filter((feature) => {
-                return feature.geometry && supportedTypes.includes(feature.geometry.type);
+                if (!feature.geometry || !supportedTypes.includes(feature.geometry.type)) {
+                  return false;
+                }
+
+                // Preserve omColorName if present (for round-trip)
+                if (feature.properties?.omColorName) {
+                  // Already has our color format - keep it
+                  return true;
+                }
+
+                // Try to parse standard GeoJSON colors for compatibility
+                if (feature.properties?.stroke || feature.properties?.["marker-color"]) {
+                  const colorHex = (
+                    feature.properties.stroke || feature.properties["marker-color"]
+                  ).toLowerCase();
+                  const colorMatch = ORGANIC_MAPS_COLORS.find(
+                    (c) => c.css.toLowerCase() === colorHex
+                  );
+                  if (colorMatch) {
+                    feature.properties.omColorName = colorMatch.name;
+                  }
+                }
+
+                return true;
               });
 
               if (filteredFeatures.length === 0) {

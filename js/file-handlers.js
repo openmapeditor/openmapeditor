@@ -292,6 +292,114 @@ function exportKmz() {
 }
 
 /**
+ * Exports all map items to a GeoJSON file with color preservation.
+ */
+function exportGeoJson() {
+  const features = [];
+
+  // Collect all layers
+  const allLayers = [
+    ...editableLayers.getLayers(),
+    ...importedItems.getLayers(),
+    ...kmzLayer.getLayers(),
+  ];
+
+  // Add current route if exists
+  if (currentRoutePath) {
+    allLayers.push(currentRoutePath);
+  }
+
+  // Add Strava activities
+  stravaActivitiesLayer.eachLayer((layer) => {
+    allLayers.push(layer);
+  });
+
+  if (allLayers.length === 0) {
+    return Swal.fire({
+      icon: "info",
+      iconColor: "var(--swal-color-info)",
+      title: "No Data to Export",
+      text: "There are no items on the map to export.",
+    });
+  }
+
+  // Convert each layer to GeoJSON
+  allLayers.forEach((layer) => {
+    try {
+      const geojson = layer.toGeoJSON();
+
+      // Skip if toGeoJSON didn't produce valid geometry
+      if (!geojson || !geojson.geometry || !geojson.geometry.type) {
+        console.warn("Skipping layer with invalid geometry:", layer);
+        return;
+      }
+
+      // Get color information
+      const colorName = layer.feature?.properties?.omColorName || "Red";
+      const colorData =
+        ORGANIC_MAPS_COLORS.find((c) => c.name === colorName) || ORGANIC_MAPS_COLORS[0];
+
+      // Enhance properties with color data
+      geojson.properties = {
+        ...geojson.properties,
+        omColorName: colorName, // For round-trip with our app
+      };
+
+      // Add standard GeoJSON styling for other tools
+      if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
+        geojson.properties.stroke = colorData.css;
+        geojson.properties["stroke-width"] = 3;
+        geojson.properties["stroke-opacity"] = 1;
+      }
+      if (layer instanceof L.Polygon) {
+        geojson.properties.fill = colorData.css;
+        geojson.properties["fill-opacity"] = 0.2;
+      }
+
+      if (layer instanceof L.Marker) {
+        geojson.properties["marker-color"] = colorData.css;
+      }
+
+      // Ensure type: "Feature" is present
+      geojson.type = "Feature";
+
+      features.push(geojson);
+    } catch (error) {
+      console.error("Error converting layer to GeoJSON:", error, layer);
+      // Skip this layer and continue with others
+    }
+  });
+
+  // Create FeatureCollection
+  const geojsonDoc = {
+    type: "FeatureCollection",
+    features: features,
+  };
+
+  // Generate filename with timestamp
+  const now = new Date();
+  const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now
+    .getDate()
+    .toString()
+    .padStart(2, "0")}${now.getHours().toString().padStart(2, "0")}${now
+    .getMinutes()
+    .toString()
+    .padStart(2, "0")}${now.getSeconds().toString().padStart(2, "0")}`;
+  const fileName = `Map_Export_${timestamp}.geojson`;
+
+  // Download file
+  downloadFile(fileName, JSON.stringify(geojsonDoc, null, 2));
+  Swal.fire({
+    icon: "success",
+    iconColor: "var(--swal-color-success)",
+    title: "Export Successful!",
+    text: "All items have been exported to GeoJSON.",
+    timer: 2000,
+    showConfirmButton: false,
+  });
+}
+
+/**
  * Converts a Leaflet layer to a GPX string, supporting markers and paths with Organic Maps colors.
  * @param {L.Layer} layer - The layer to convert
  * @returns {string} The GPX file content as a string
