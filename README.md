@@ -1,4 +1,8 @@
+<div align="center">
+<img src="img/icon-1024x1024.png" height="100"/>
+
 # OpenMapEditor
+</div>
 
 OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths, areas, and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, KMZ), routing, elevation profiles, custom styling, and Strava activity integration.
 
