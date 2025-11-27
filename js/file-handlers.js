@@ -288,6 +288,14 @@ function exportKmz() {
 }
 
 /**
+ * Properties to exclude from GeoJSON export.
+ * Add any property names here that you don't want included in exported files.
+ */
+const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
+  "totalDistance", // Internal calculated distance - not needed in export
+];
+
+/**
  * Exports all map items to a GeoJSON file with color preservation.
  */
 function exportGeoJson() {
@@ -331,9 +339,17 @@ function exportGeoJson() {
       const colorData =
         ORGANIC_MAPS_COLORS.find((c) => c.name === colorName) || ORGANIC_MAPS_COLORS[0];
 
+      // Filter out excluded properties
+      const filteredProperties = Object.keys(geojson.properties || {}).reduce((acc, key) => {
+        if (!GEOJSON_EXPORT_EXCLUDED_PROPERTIES.includes(key)) {
+          acc[key] = geojson.properties[key];
+        }
+        return acc;
+      }, {});
+
       // Enhance properties with color data
       geojson.properties = {
-        ...geojson.properties,
+        ...filteredProperties,
         omColorName: colorName, // For round-trip with our app
       };
 
