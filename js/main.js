@@ -45,7 +45,6 @@
 let map,
   drawnItems,
   importedItems,
-  kmzLayer,
   stravaActivitiesLayer,
   editableLayers,
   selectedElevationPath = null,
@@ -296,9 +295,7 @@ function initializeMap() {
     Swisstopo: '<span class="fi fi-ch fis"></span> Swisstopo',
     SwissHikingTrails: '<span class="fi fi-ch fis"></span> Swiss Hiking Trails',
     DrawnItems: '<span class="material-symbols layer-icon">edit</span> Drawn Items',
-    ImportedFiles:
-      '<span class="material-symbols layer-icon">folder_open</span> Imported GPX/KML/GeoJSON',
-    ImportedKMZ: '<span class="material-symbols layer-icon">folder_open</span> Imported KMZ',
+    ImportedFiles: '<span class="material-symbols layer-icon">folder_open</span> Imported Files',
     StravaActivities:
       '<span class="material-symbols layer-icon">directions_run</span> Strava Activities',
   };
@@ -413,7 +410,6 @@ function initializeMap() {
 
   drawnItems = new L.FeatureGroup().addTo(map);
   importedItems = new L.FeatureGroup().addTo(map);
-  kmzLayer = new L.FeatureGroup().addTo(map);
   editableLayers = new L.FeatureGroup();
   stravaActivitiesLayer = L.featureGroup().addTo(map);
 
@@ -421,7 +417,6 @@ function initializeMap() {
     ...staticOverlayMaps,
     DrawnItems: drawnItems,
     ImportedFiles: importedItems,
-    ImportedKMZ: kmzLayer,
     StravaActivities: stravaActivitiesLayer,
   };
 

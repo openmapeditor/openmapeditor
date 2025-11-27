@@ -301,8 +301,7 @@ function updateDrawControlStates() {
   const hasLayers =
     editableLayers.getLayers().length > 0 ||
     stravaActivitiesLayer.getLayers().length > 0 ||
-    importedItems.getLayers().length > 0 ||
-    kmzLayer.getLayers().length > 0;
+    importedItems.getLayers().length > 0;
 
   const downloadButtonContainer = document.getElementById("main-download-button");
   if (downloadButtonContainer) {
@@ -364,7 +363,7 @@ function deleteLayerImmediately(layer) {
     deselectCurrentItem();
   }
 
-  [drawnItems, importedItems, kmzLayer, stravaActivitiesLayer].forEach((group) => {
+  [drawnItems, importedItems, stravaActivitiesLayer].forEach((group) => {
     if (group.hasLayer(layer)) {
       group.removeLayer(layer);
     } else {
