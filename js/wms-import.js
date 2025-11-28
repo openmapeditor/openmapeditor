@@ -318,7 +318,6 @@ const WmsImport = (function () {
     const overlaysSection = customPanel.querySelector(".leaflet-control-layers-overlays");
     if (!overlaysSection) return;
 
-    // Create label element
     const label = document.createElement("label");
     label.className = "wms-custom-layer";
     label.innerHTML = `
@@ -330,9 +329,8 @@ const WmsImport = (function () {
           data-layer-type="wms-custom"
           checked="checked"
         />
-        <span>
-          <span class="material-symbols layer-icon">language</span>
-          ${displayName}
+        <span class="layer-name-container" style="padding-left: 0;">
+          <span class="layer-name-text" title="${displayName}"><span class="material-symbols layer-icon">language</span> ${displayName}</span>
           <span
             class="material-symbols material-symbols-fill layer-icon wms-remove-icon"
             data-layer-id="${layerId}"

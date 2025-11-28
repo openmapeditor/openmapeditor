@@ -411,6 +411,20 @@ a#info-panel-strava-link:hover {
   top: 0;
 }
 
+/* WMS custom layer truncation */
+#custom-layers-panel .wms-custom-layer .layer-name-text {
+  max-width: 130px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
+}
+#custom-layers-panel .wms-custom-layer .layer-name-container {
+  display: inline-flex;
+  align-items: center;
+}
+
 /* Remove default Leaflet control styling from the content inside our panel */
 #custom-layers-panel .leaflet-control-layers {
   border: none !important;
