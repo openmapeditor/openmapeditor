@@ -494,10 +494,9 @@ function initializeMap() {
       <button
         id="wms-import-btn"
         class="wms-import-button"
-        style="width: 100%; padding: 8px 12px; cursor: pointer; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 4px; font-size: 0.95em; display: flex; align-items: center; justify-content: center; gap: 8px;"
+        style="width: 100%; padding: 8px 12px; cursor: pointer; background-color: var(--text-color); color: var(--background-color); border: none; border-radius: 4px; font-size: 14px; font-weight: bold; white-space: nowrap;"
       >
-        <span class="material-symbols">language</span>
-        <span>Import WMS Layers</span>
+        Import WMS Layers
       </button>
     </div>
   `;
