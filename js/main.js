@@ -485,7 +485,24 @@ function initializeMap() {
     const displayName = layerDisplayNames[name] || name;
     formContent += `<label><div><input type="checkbox" class="leaflet-control-layers-selector" ${isChecked} data-layer-id="${layerId}" data-layer-name="${name}"><span> ${displayName}</span></div></label>`;
   }
-  formContent += "</div></form>";
+  formContent += "</div>";
+
+  // Add Import Maps button for custom WMS layers
+  formContent += '<div class="leaflet-control-layers-separator"></div>';
+  formContent += `
+    <div style="padding: 8px 10px;">
+      <button
+        id="wms-import-btn"
+        class="wms-import-button"
+        style="width: 100%; padding: 8px 12px; cursor: pointer; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 4px; font-size: 0.95em; display: flex; align-items: center; justify-content: center; gap: 8px;"
+      >
+        <span class="material-symbols">language</span>
+        <span>Import WMS Layers</span>
+      </button>
+    </div>
+  `;
+
+  formContent += "</form>";
 
   customPanel.innerHTML = formContent;
 
@@ -565,6 +582,18 @@ function initializeMap() {
       }
     }
   });
+
+  // Add event listener for Import Maps button
+  const wmsImportBtn = document.getElementById("wms-import-btn");
+  if (wmsImportBtn) {
+    wmsImportBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof WmsImport !== "undefined") {
+        WmsImport.showWmsImportDialog(map);
+      }
+    });
+  }
 
   document.addEventListener(
     "click",
