@@ -91,21 +91,41 @@ const WmsImport = (function () {
       await showLayerSelectionDialog(layers, wmsUrl, map);
     } catch (error) {
       console.error("WMS connection error:", error);
-      Swal.fire({
+
+      // Properly clear the loading state and close the dialog
+      Swal.hideLoading();
+      Swal.close();
+
+      // Wait a moment for the dialog to fully close before opening new one
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Show fresh error dialog
+      const result = await Swal.fire({
         icon: "error",
         iconColor: "var(--swal-color-error)",
         title: "Connection Failed",
         html: `
           <p>Could not connect to the WMS service.</p>
-          <p style="font-size: 0.9em; margin-top: 12px;"><strong>Possible reasons:</strong></p>
-          <ul style="text-align: left; font-size: 0.9em;">
-            <li>The URL is incorrect or the service is unavailable</li>
-            <li>The server doesn't allow cross-origin requests (CORS)</li>
-            <li>The service is not a valid WMS endpoint</li>
-          </ul>
-          <p style="font-size: 0.85em; margin-top: 12px; color: #666;">Error: ${error.message}</p>
+          <div style="text-align: center; margin-top: 12px;">
+            <p style="margin-bottom: 8px;"><strong>Possible reasons:</strong></p>
+            <div style="display: inline-block; text-align: left;">
+              <ul style="margin: 0; padding-left: 20px;">
+                <li>The URL is incorrect or the service is unavailable</li>
+                <li>The server doesn't allow cross-origin requests (CORS)</li>
+                <li>The service is not a valid WMS endpoint</li>
+              </ul>
+            </div>
+          </div>
+          <p style="margin-top: 12px; color: var(--color-red)">Error: ${error.message}</p>
         `,
+        confirmButtonText: "OK",
+        allowOutsideClick: true,
       });
+
+      // Re-open the WMS import dialog after user clicks OK
+      if (result.isConfirmed || result.isDismissed) {
+        await showWmsImportDialog(map);
+      }
     }
   }
 
@@ -194,7 +214,7 @@ const WmsImport = (function () {
             <div style="font-weight: 500;">${layer.title}</div>
             ${
               layer.abstract
-                ? `<div style="font-size: 0.85em; color: #666; margin-top: 4px;">${layer.abstract}</div>`
+                ? `<div style="font-size: 12px; color: var(--text-color); margin-top: 4px;">${layer.abstract}</div>`
                 : ""
             }
           </div>
@@ -207,7 +227,7 @@ const WmsImport = (function () {
       title: "Select Layers to Import",
       html: `
         <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px;">
-          <p style="margin-bottom: 16px; font-size: 0.95em;">
+          <p style="margin-bottom: 16px;">
             Found <strong>${layers.length}</strong> layer(s). Select the layers you want to add as map overlays:
           </p>
           ${layersHtml}
@@ -217,6 +237,10 @@ const WmsImport = (function () {
       confirmButtonText: "Import Selected",
       cancelButtonText: "Cancel",
       width: "600px",
+      customClass: {
+        confirmButton: "wms-connect-button",
+        cancelButton: "wms-cancel-button",
+      },
       preConfirm: () => {
         const selectedLayers = [];
         layers.forEach((layer, index) => {
