@@ -253,7 +253,6 @@ const WmsImport = (function () {
         layers: layer.name,
         format: "image/png",
         transparent: true,
-        attribution: `WMS: ${layer.title}`,
       });
 
       // Store layer information
