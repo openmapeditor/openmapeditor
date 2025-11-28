@@ -925,6 +925,36 @@ a#info-panel-strava-link:hover {
   margin-bottom: 0;
 }
 
+/* WMS Dialog Button Styles */
+/* Connect button - matches routing panel save button */
+.wms-connect-button {
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+  cursor: pointer !important;
+}
+
+.wms-connect-button:not(:disabled) {
+  background-color: var(--text-color) !important;
+  color: var(--background-color) !important;
+}
+
+.wms-connect-button:disabled {
+  cursor: not-allowed !important;
+  box-shadow: inset 0 0 0 1px var(--border-color) !important;
+  opacity: 1 !important;
+}
+
+/* Cancel button - red background with white text */
+.wms-cancel-button {
+  background-color: var(--color-red) !important;
+  color: var(--color-white) !important;
+}
+
+/* WMS URL input placeholder styling */
+#wms-url-input::placeholder {
+  color: var(--text-color);
+}
+
 /* Leaflet control overrides */
 .leaflet-touch .leaflet-control-layers-toggle {
   background-position: center center;

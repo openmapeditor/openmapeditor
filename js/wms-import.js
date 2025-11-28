@@ -19,28 +19,38 @@ const WmsImport = (function () {
       html: `
         <div style="text-align: left;">
           <p style="margin-bottom: 12px;">Enter a WMS service URL to browse and import available map layers.</p>
-          <label for="wms-url-input" style="display: block; margin-bottom: 8px; font-weight: 500;">WMS Service URL:</label>
+          <label for="wms-url-input" style="display: block; margin-bottom: 8px;">WMS Service URL:</label>
           <input
             type="text"
             id="wms-url-input"
             class="swal2-input"
             placeholder="https://example.com/wms"
-            style="width: 100%; margin: 0; box-sizing: border-box;"
+            style="width: 100%; margin: 0; box-sizing: border-box; border: 1px solid var(--border-color);"
           />
-          <p style="margin-top: 12px; font-size: 0.9em; color: #666;">
-            <strong>Example:</strong> https://wms.geo.admin.ch/
-          </p>
+          <p style="margin-top: 12px;">Example: https://wms.geo.admin.ch/</p>
         </div>
       `,
       showCancelButton: true,
       confirmButtonText: "Connect",
       cancelButtonText: "Cancel",
+      customClass: {
+        confirmButton: "wms-connect-button",
+        cancelButton: "wms-cancel-button",
+      },
+      didOpen: () => {
+        const confirmButton = Swal.getConfirmButton();
+        const urlInput = document.getElementById("wms-url-input");
+
+        // Disable button initially
+        confirmButton.disabled = true;
+
+        // Enable/disable button based on input
+        urlInput.addEventListener("input", () => {
+          confirmButton.disabled = !urlInput.value.trim();
+        });
+      },
       preConfirm: () => {
         const url = document.getElementById("wms-url-input").value.trim();
-        if (!url) {
-          Swal.showValidationMessage("Please enter a WMS URL");
-          return false;
-        }
         return url;
       },
     });
