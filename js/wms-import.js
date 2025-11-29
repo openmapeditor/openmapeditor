@@ -431,6 +431,11 @@ const WmsImport = (function () {
 
     // Update localStorage
     saveLayersToStorage();
+
+    // Update overlay order to remove deleted layer reference
+    if (typeof window.saveOverlayOrder === "function") {
+      window.saveOverlayOrder();
+    }
   }
 
   /**
