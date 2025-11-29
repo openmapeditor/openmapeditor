@@ -1,7 +1,7 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
 /**
- * WMS/WMTS Import Module
+ * WMS Import Module
  * Handles custom WMS layer imports with GetCapabilities parsing and layer selection
  */
 
