@@ -8,6 +8,7 @@
 const WmsImport = (function () {
   let customWmsLayers = {}; // Store custom WMS layers by ID
   let layerIdCounter = 0;
+  const STORAGE_KEY = "wms-custom-layers";
 
   /**
    * Shows the main WMS import dialog
@@ -302,6 +303,9 @@ const WmsImport = (function () {
       // Add to layers control
       addToLayersControl(layerId, layer.title, wmsLayer, map);
     });
+
+    // Save to localStorage
+    saveLayersToStorage();
   }
 
   /**
@@ -390,11 +394,89 @@ const WmsImport = (function () {
 
     // Remove from storage
     delete customWmsLayers[layerId];
+
+    // Update localStorage
+    saveLayersToStorage();
+  }
+
+  /**
+   * Saves current WMS layers to localStorage
+   */
+  function saveLayersToStorage() {
+    const layersToSave = Object.values(customWmsLayers).map((layerData) => ({
+      id: layerData.id,
+      name: layerData.name,
+      wmsUrl: layerData.wmsUrl,
+      wmsLayerName: layerData.wmsLayerName,
+      addedToMap: layerData.addedToMap,
+    }));
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(layersToSave));
+    } catch (e) {
+      console.warn("Failed to save WMS layers to localStorage:", e);
+    }
+  }
+
+  /**
+   * Loads WMS layers from localStorage and adds them to the map
+   * @param {L.Map} map - Leaflet map instance
+   */
+  function loadLayersFromStorage(map) {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+
+      const layersData = JSON.parse(saved);
+      layersData.forEach((layerData) => {
+        // Create WMS tile layer
+        const wmsLayer = L.tileLayer.wms(layerData.wmsUrl, {
+          layers: layerData.wmsLayerName,
+          format: "image/png",
+          transparent: true,
+        });
+
+        // Store layer information
+        customWmsLayers[layerData.id] = {
+          id: layerData.id,
+          layer: wmsLayer,
+          name: layerData.name,
+          wmsUrl: layerData.wmsUrl,
+          wmsLayerName: layerData.wmsLayerName,
+          addedToMap: false,
+        };
+
+        // Add to layers control
+        addToLayersControl(layerData.id, layerData.name, wmsLayer, map);
+
+        // Restore map visibility state
+        if (layerData.addedToMap) {
+          map.addLayer(wmsLayer);
+          customWmsLayers[layerData.id].addedToMap = true;
+
+          // Update checkbox state
+          const customPanel = document.getElementById("custom-layers-panel");
+          const checkbox = customPanel?.querySelector(`input[data-layer-id="${layerData.id}"]`);
+          if (checkbox) {
+            checkbox.checked = true;
+          }
+        }
+
+        // Update layerIdCounter to avoid ID conflicts
+        const idNum = parseInt(layerData.id.replace("wms-custom-", ""), 10);
+        if (!isNaN(idNum) && idNum >= layerIdCounter) {
+          layerIdCounter = idNum + 1;
+        }
+      });
+    } catch (e) {
+      console.warn("Failed to load WMS layers from localStorage:", e);
+    }
   }
 
   // Public API
   return {
     showWmsImportDialog,
+    loadLayersFromStorage,
   };
 })();
 

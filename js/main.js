@@ -517,6 +517,11 @@ function initializeMap() {
     });
   }
 
+  // Load saved WMS layers from localStorage
+  if (typeof WmsImport !== "undefined" && WmsImport.loadLayersFromStorage) {
+    WmsImport.loadLayersFromStorage(map);
+  }
+
   const onOverlayToggle = (e) => {
     const isAdding = e.type === "overlayadd";
 
