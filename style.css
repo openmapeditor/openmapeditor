@@ -7,6 +7,7 @@
   --color-blue: #4285f4;
   --color-yellow: #fbbc04;
   --color-green: #25d366;
+  --color-neutral-grey: #f5f5f5;
 
   --routing-color-start: var(--color-green);
   --routing-color-end: var(--color-red);
@@ -70,6 +71,10 @@ select:focus {
   height: 100dvh; /* Fix content hidden under Android nav bar */
   width: 100%;
   position: relative; /* Needed for absolute positioning of children */
+}
+
+.leaflet-container {
+  background: var(--color-neutral-grey);
 }
 
 /* Unified icon styling */
