@@ -337,6 +337,7 @@ const WmsImport = (function () {
 
     const label = document.createElement("label");
     label.className = "wms-custom-layer";
+    label.setAttribute("data-layer-id", layerId);
     label.innerHTML = `
       <div>
         <input
@@ -347,7 +348,7 @@ const WmsImport = (function () {
           checked="checked"
         />
         <span class="layer-name-container" style="padding-left: 0;">
-          <span class="layer-name-text" title="${displayName}"><span class="material-symbols layer-icon">language</span> ${displayName}</span>
+          <span class="layer-name-text" title="${displayName}"><span class="drag-handle material-symbols layer-icon" title="Drag to reorder" style="cursor: move;">drag_indicator</span> ${displayName}</span>
           <span
             class="material-symbols material-symbols-fill layer-icon wms-remove-icon"
             data-layer-id="${layerId}"
@@ -364,12 +365,21 @@ const WmsImport = (function () {
     map.addLayer(wmsLayer);
     customWmsLayers[layerId].addedToMap = true;
 
+    // Reapply z-index to ensure visual order matches list order
+    if (typeof window.reapplyOverlayZIndex === "function") {
+      window.reapplyOverlayZIndex();
+    }
+
     // Add event listener for checkbox toggle
     const checkbox = label.querySelector("input");
     checkbox.addEventListener("change", (e) => {
       if (e.target.checked) {
         map.addLayer(wmsLayer);
         customWmsLayers[layerId].addedToMap = true;
+        // Reapply z-index to ensure layer respects list order
+        if (typeof window.reapplyOverlayZIndex === "function") {
+          window.reapplyOverlayZIndex();
+        }
       } else {
         map.removeLayer(wmsLayer);
         customWmsLayers[layerId].addedToMap = false;

@@ -144,6 +144,8 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: <https://registry.npmjs.org/proj4/-/proj4-2.19.10.tgz>
 - **simplify-js-1.2.4**
   - Download URL: <https://registry.npmjs.org/simplify-js/-/simplify-js-1.2.4.tgz>
+- **sortablejs-1.15.6**
+  - Download URL: <https://registry.npmjs.org/sortablejs/-/sortablejs-1.15.6.tgz>
 - **sweetalert2-11.23.0**
   - Download URL: <https://registry.npmjs.org/sweetalert2/-/sweetalert2-11.23.0.tgz>
 - **togeojson-0.16.2**
