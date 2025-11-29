@@ -1848,6 +1848,11 @@ body.using-touch {
       width: 100%;
     }
 
+    #custom-layers-panel {
+      /* Expand width on mobile */
+      width: calc(100vw - 63px);
+    }
+
     /* Mobile Bottom Sheet Styles Start */
     #main-right-container {
       display: flex !important;
