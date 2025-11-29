@@ -379,6 +379,7 @@ a#info-panel-strava-link:hover {
   border-radius: 8px;
   max-height: 70vh;
   overflow-y: auto;
+  width: 200px;
 }
 
 /* Style the form content that we will move into the panel */
@@ -408,7 +409,7 @@ a#info-panel-strava-link:hover {
 
 /* WMS custom layer truncation */
 #custom-layers-panel .wms-custom-layer .layer-name-text {
-  width: 130px;
+  width: 150px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
