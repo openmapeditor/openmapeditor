@@ -294,6 +294,7 @@ function initializeMap() {
     TopPlusOpen: '<span class="fi fi-de fis"></span> TopPlusOpen',
     Swisstopo: '<span class="fi fi-ch fis"></span> Swisstopo',
     SwissHikingTrails: '<span class="fi fi-ch fis"></span> Swiss Hiking Trails',
+    Empty: '<span class="material-symbols layer-icon">cancel</span> Empty',
     DrawnItems: '<span class="material-symbols layer-icon">edit</span> Drawn Items',
     ImportedFiles: '<span class="material-symbols layer-icon">folder_open</span> Imported Files',
     StravaActivities:
@@ -325,6 +326,7 @@ function initializeMap() {
       layers: "ch.swisstopo.pixelkarte-farbe",
       format: "image/jpeg",
     }),
+    Empty: L.layerGroup(), // Empty layer group for no basemap
   };
 
   const staticOverlayMaps = {
