@@ -289,7 +289,7 @@ a#info-panel-strava-link:hover {
   margin: 0;
   overflow-y: auto;
   flex-grow: 1;
-  max-height: calc(100vh - 400px);
+  max-height: calc(100dvh - 400px);
 }
 .overview-list-item {
   display: flex;
@@ -377,7 +377,7 @@ a#info-panel-strava-link:hover {
   background-color: var(--background-color);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  max-height: calc(100vh - 272px);
+  max-height: calc(100dvh - 60px);
   overflow-y: auto;
   width: 200px;
 }
