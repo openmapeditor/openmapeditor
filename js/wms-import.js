@@ -327,8 +327,9 @@ const WmsImport = (function () {
    * @param {string} displayName - Display name for the layer
    * @param {L.TileLayer.WMS} wmsLayer - Leaflet WMS layer
    * @param {L.Map} map - Leaflet map instance
+   * @param {boolean} autoEnable - Whether to auto-enable the layer (default: true)
    */
-  function addToLayersControl(layerId, displayName, wmsLayer, map) {
+  function addToLayersControl(layerId, displayName, wmsLayer, map, autoEnable = true) {
     const customPanel = document.getElementById("custom-layers-panel");
     if (!customPanel) return;
 
@@ -338,6 +339,7 @@ const WmsImport = (function () {
     const label = document.createElement("label");
     label.className = "wms-custom-layer";
     label.setAttribute("data-layer-id", layerId);
+    const checkedAttr = autoEnable ? 'checked="checked"' : "";
     label.innerHTML = `
       <div>
         <input
@@ -345,7 +347,7 @@ const WmsImport = (function () {
           class="leaflet-control-layers-selector"
           data-layer-id="${layerId}"
           data-layer-type="wms-custom"
-          checked="checked"
+          ${checkedAttr}
         />
         <span class="layer-name-container" style="padding-left: 0;">
           <span class="layer-name-text" title="${displayName}"><span class="drag-handle material-symbols layer-icon" title="Drag to reorder" style="cursor: move;">drag_indicator</span> ${displayName}</span>
@@ -361,9 +363,11 @@ const WmsImport = (function () {
 
     overlaysSection.appendChild(label);
 
-    // Auto-enable the layer on import
-    map.addLayer(wmsLayer);
-    customWmsLayers[layerId].addedToMap = true;
+    // Auto-enable the layer on import if requested
+    if (autoEnable) {
+      map.addLayer(wmsLayer);
+      customWmsLayers[layerId].addedToMap = true;
+    }
 
     // Reapply z-index to ensure visual order matches list order
     if (typeof window.reapplyOverlayZIndex === "function") {
@@ -384,6 +388,8 @@ const WmsImport = (function () {
         map.removeLayer(wmsLayer);
         customWmsLayers[layerId].addedToMap = false;
       }
+      // Save the updated state to localStorage
+      saveLayersToStorage();
     });
 
     // Add event listener for remove icon
@@ -466,24 +472,11 @@ const WmsImport = (function () {
           name: layerData.name,
           wmsUrl: layerData.wmsUrl,
           wmsLayerName: layerData.wmsLayerName,
-          addedToMap: false,
+          addedToMap: layerData.addedToMap,
         };
 
-        // Add to layers control
-        addToLayersControl(layerData.id, layerData.name, wmsLayer, map);
-
-        // Restore map visibility state
-        if (layerData.addedToMap) {
-          map.addLayer(wmsLayer);
-          customWmsLayers[layerData.id].addedToMap = true;
-
-          // Update checkbox state
-          const customPanel = document.getElementById("custom-layers-panel");
-          const checkbox = customPanel?.querySelector(`input[data-layer-id="${layerData.id}"]`);
-          if (checkbox) {
-            checkbox.checked = true;
-          }
-        }
+        // Add to layers control with saved visibility state
+        addToLayersControl(layerData.id, layerData.name, wmsLayer, map, layerData.addedToMap);
 
         // Update layerIdCounter to avoid ID conflicts
         const idNum = parseInt(layerData.id.replace("wms-custom-", ""), 10);
