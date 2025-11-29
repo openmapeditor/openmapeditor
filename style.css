@@ -96,16 +96,6 @@ select:focus {
   background-image: none !important;
 }
 
-/* Hide layers icon when its menu is open */
-.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
-  display: none !important;
-}
-
-/* Change width when layers menu is open */
-.leaflet-control-layers-expanded {
-  width: 205px;
-}
-
 /* Clear style for disabled draw buttons */
 .leaflet-draw-toolbar a.leaflet-disabled {
   background-color: var(--background2-color) !important;
