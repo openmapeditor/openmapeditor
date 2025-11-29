@@ -28,7 +28,12 @@ const WmsImport = (function () {
             placeholder="https://example.com/wms"
             style="width: 100%; margin: 0; box-sizing: border-box; border: 1px solid var(--border-color);"
           />
-          <p style="margin-top: 12px;">Example: https://wms.geo.admin.ch/</p>
+          <p style="margin-top: 12px;">Examples:</p>
+          <ul style="margin: 4px 0; padding-left: 20px; text-align: left;">
+            <li>https://wms.geo.admin.ch/</li>            
+            <li>https://ows.terrestris.de/osm/service?</li>
+            <li>https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?</li>
+          </ul>
         </div>
       `,
       showCancelButton: true,
