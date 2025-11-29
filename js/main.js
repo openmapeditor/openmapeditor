@@ -583,6 +583,29 @@ function initializeMap() {
             map.addLayer(baseMaps[name]);
           }
         }
+        // Bring all overlay layers to front after base layer change
+        for (const name in allOverlayMaps) {
+          const layer = allOverlayMaps[name];
+          if (map.hasLayer(layer) && typeof layer.bringToFront === "function") {
+            layer.bringToFront();
+          }
+        }
+        // Also bring custom WMS layers to front
+        if (
+          typeof WmsImport !== "undefined" &&
+          typeof WmsImport.getCustomWmsLayers === "function"
+        ) {
+          const customWmsLayers = WmsImport.getCustomWmsLayers();
+          Object.values(customWmsLayers).forEach((layerData) => {
+            if (
+              layerData.addedToMap &&
+              map.hasLayer(layerData.layer) &&
+              typeof layerData.layer.bringToFront === "function"
+            ) {
+              layerData.layer.bringToFront();
+            }
+          });
+        }
       } else {
         for (const name in allOverlayMaps) {
           const layer = allOverlayMaps[name];

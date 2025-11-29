@@ -490,6 +490,7 @@ const WmsImport = (function () {
   return {
     showWmsImportDialog,
     loadLayersFromStorage,
+    getCustomWmsLayers: () => customWmsLayers, // Expose custom WMS layers for layer management
   };
 })();
 
