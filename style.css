@@ -413,7 +413,7 @@ a#info-panel-strava-link:hover {
 
 /* WMS custom layer truncation */
 #custom-layers-panel .wms-custom-layer .layer-name-text {
-  max-width: 130px;
+  width: 130px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
