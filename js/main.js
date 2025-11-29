@@ -505,6 +505,18 @@ function initializeMap() {
 
   customPanel.innerHTML = formContent;
 
+  // Add event listener for Import WMS Layers button
+  const wmsImportBtn = document.getElementById("wms-import-btn");
+  if (wmsImportBtn) {
+    wmsImportBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof WmsImport !== "undefined") {
+        WmsImport.showWmsImportDialog(map);
+      }
+    });
+  }
+
   const onOverlayToggle = (e) => {
     const isAdding = e.type === "overlayadd";
 
@@ -581,18 +593,6 @@ function initializeMap() {
       }
     }
   });
-
-  // Add event listener for Import Maps button
-  const wmsImportBtn = document.getElementById("wms-import-btn");
-  if (wmsImportBtn) {
-    wmsImportBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (typeof WmsImport !== "undefined") {
-        WmsImport.showWmsImportDialog(map);
-      }
-    });
-  }
 
   document.addEventListener(
     "click",
