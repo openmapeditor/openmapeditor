@@ -374,6 +374,11 @@ const WmsImport = (function () {
       window.reapplyOverlayZIndex();
     }
 
+    // Save the updated overlay order to localStorage
+    if (typeof window.saveOverlayOrder === "function") {
+      window.saveOverlayOrder();
+    }
+
     // Add event listener for checkbox toggle
     const checkbox = label.querySelector("input");
     checkbox.addEventListener("change", (e) => {

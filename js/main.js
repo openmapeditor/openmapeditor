@@ -661,8 +661,9 @@ function initializeMap() {
     localStorage.setItem("overlayLayerOrder", JSON.stringify(order));
   }
 
-  // Expose reapplyOverlayZIndex globally for WmsImport module
+  // Expose reapplyOverlayZIndex and saveOverlayOrder globally for WmsImport module
   window.reapplyOverlayZIndex = reapplyOverlayZIndex;
+  window.saveOverlayOrder = saveOverlayOrder;
 
   // Apply z-index on initial load to ensure layers from localStorage respect list order
   reapplyOverlayZIndex();
