@@ -338,9 +338,9 @@ function addEventListenersForUserKeysPanel() {
  * @param {StorageEvent} event - The storage event
  */
 async function handleStravaAuthReturn(event) {
-  if (event.key === "strava_auth_code" && event.newValue) {
+  if (event.key === "stravaAuthCode" && event.newValue) {
     const authCode = event.newValue;
-    localStorage.removeItem("strava_auth_code");
+    localStorage.removeItem("stravaAuthCode");
     window.removeEventListener("storage", handleStravaAuthReturn);
     stravaPanelContent.innerHTML = "<p>Authenticating...</p>";
 
@@ -350,9 +350,9 @@ async function handleStravaAuthReturn(event) {
     } else {
       setTimeout(showConnectUI, 5000);
     }
-  } else if (event.key === "strava_auth_error") {
+  } else if (event.key === "stravaAuthError") {
     console.error("Strava authentication error:", event.newValue);
-    localStorage.removeItem("strava_auth_error");
+    localStorage.removeItem("stravaAuthError");
     window.removeEventListener("storage", handleStravaAuthReturn);
     stravaPanelContent.innerHTML =
       '<p style="color: red;">Authentication was cancelled or failed.</p>';
@@ -365,18 +365,18 @@ async function handleStravaAuthReturn(event) {
  * @param {StorageEvent} event - The storage event
  */
 async function handleStravaAuthReturnForUserKeys(event) {
-  if (event.key === "strava_auth_code" && event.newValue) {
+  if (event.key === "stravaAuthCode" && event.newValue) {
     const authCode = event.newValue;
-    localStorage.removeItem("strava_auth_code");
+    localStorage.removeItem("stravaAuthCode");
     window.removeEventListener("storage", handleStravaAuthReturnForUserKeys);
     stravaPanelContent.lastChild.innerHTML = `<div style="padding:15px; text-align:center;"><p>Authenticating...</p></div>`;
 
     await getAccessToken(authCode, tempUserClientId, tempUserClientSecret);
 
     renderUserKeysPanel();
-  } else if (event.key === "strava_auth_error") {
+  } else if (event.key === "stravaAuthError") {
     console.error("Strava authentication error:", event.newValue);
-    localStorage.removeItem("strava_auth_error");
+    localStorage.removeItem("stravaAuthError");
     window.removeEventListener("storage", handleStravaAuthReturnForUserKeys);
 
     renderUserKeysPanel();

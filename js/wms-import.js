@@ -8,7 +8,7 @@
 const WmsImport = (function () {
   let customWmsLayers = {}; // Store custom WMS layers by ID
   let layerIdCounter = 0;
-  const STORAGE_KEY = "wms-custom-layers";
+  const STORAGE_KEY = "wmsCustomLayers";
 
   /**
    * Shows the main WMS import dialog
