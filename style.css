@@ -1841,7 +1841,7 @@ body.using-touch {
 
     #custom-layers-panel {
       /* Expand width on mobile */
-      width: calc(100vw - 63px);
+      /* width: calc(100vw - 63px); */
     }
 
     /* Mobile Bottom Sheet Styles Start */
