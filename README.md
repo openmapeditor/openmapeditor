@@ -18,6 +18,7 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 - **Performance Optimized:** Optional path and area simplification (on by default) for smoother performance. When enabled, simplified copies are made when duplicating tracks/activities/areas (originals preserved), and generated routes are simplified when saved. Configurable in settings.
 - **Routing:** Generate routes for driving, biking, or walking. You can then save the generated route as an editable path.
 - **Elevation Profiles:** Instantly visualize the elevation profile for any path.
+- **Custom WMS Layers:** Import map layers from any WMS-compatible service. Browse available layers, add them to your map as overlays, and reorder them with drag-and-drop. Your WMS layers are saved locally and persist between sessions.
 - **Strava Integration:** Connect your Strava account to view your activities on the map, download their original high-resolution GPX tracks, or duplicate them for editing.
 
 ---
