@@ -30,9 +30,9 @@ const WmsImport = (function () {
           />
           <p style="margin-top: 12px;">Examples:</p>
           <ul style="margin: 4px 0; padding-left: 20px; text-align: left;">
-            <li>https://wms.geo.admin.ch/</li>            
-            <li>https://ows.terrestris.de/osm/service?</li>
-            <li>https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?</li>
+            <li class="wms-example-url" data-url="https://wms.geo.admin.ch/" style="cursor: pointer;">https://wms.geo.admin.ch/</li>
+            <li class="wms-example-url" data-url="https://ows.terrestris.de/osm/service?" style="cursor: pointer;">https://ows.terrestris.de/osm/service?</li>
+            <li class="wms-example-url" data-url="https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?" style="cursor: pointer;">https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?</li>
           </ul>
         </div>
       `,
@@ -53,6 +53,14 @@ const WmsImport = (function () {
         // Enable/disable button based on input
         urlInput.addEventListener("input", () => {
           confirmButton.disabled = !urlInput.value.trim();
+        });
+
+        // Add click handlers for example URLs
+        document.querySelectorAll(".wms-example-url").forEach((li) => {
+          li.addEventListener("click", () => {
+            urlInput.value = li.dataset.url;
+            confirmButton.disabled = false;
+          });
         });
       },
       preConfirm: () => {
