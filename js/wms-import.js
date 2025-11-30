@@ -24,9 +24,8 @@ const WmsImport = (function () {
           <input
             type="text"
             id="wms-url-input"
-            class="swal2-input"
+            class="swal2-input swal-input-field"
             placeholder="https://example.com/wms"
-            style="width: 100%; margin: 0; box-sizing: border-box; border: 1px solid var(--border-color);"
           />
           <p style="margin-top: 12px;">Examples:</p>
           <ul style="margin: 4px 0; padding-left: 20px; text-align: left;">
@@ -217,7 +216,9 @@ const WmsImport = (function () {
     const layersHtml = layers
       .map(
         (layer, index) => `
-        <label style="display: flex; align-items: start; margin-bottom: 12px; text-align: left; cursor: pointer;">
+        <label class="wms-layer-item" data-layer-index="${index}" data-layer-title="${layer.title.toLowerCase()}" data-layer-abstract="${(
+          layer.abstract || ""
+        ).toLowerCase()}" style="display: flex; align-items: start; margin-bottom: 12px; text-align: left; cursor: pointer;">
           <input
             type="checkbox"
             id="wms-layer-${index}"
@@ -240,11 +241,20 @@ const WmsImport = (function () {
     const result = await Swal.fire({
       title: "Select Layers to Import",
       html: `
-        <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px;">
-          <p style="margin-bottom: 16px;">
-            Found <strong>${layers.length}</strong> layer(s). Select the layers you want to add as map overlays:
+        <div style="text-align: left;">
+          <input
+            type="text"
+            id="wms-layer-search"
+            class="swal2-input swal-input-field"
+            placeholder="Search layers"
+            style="margin-bottom: 12px;"
+          />
+          <p style="margin-bottom: 12px;">
+            Found <strong id="wms-layer-count">${layers.length}</strong> layer(s). Select the layers you want to add as map overlays:
           </p>
-          ${layersHtml}
+          <div id="wms-layers-container" style="max-height: 400px; overflow-y: auto; padding: 10px;">
+            ${layersHtml}
+          </div>
         </div>
       `,
       showCancelButton: true,
@@ -254,6 +264,33 @@ const WmsImport = (function () {
       customClass: {
         confirmButton: "wms-connect-button",
         cancelButton: "wms-cancel-button",
+      },
+      didOpen: () => {
+        const searchInput = document.getElementById("wms-layer-search");
+        const layerItems = document.querySelectorAll(".wms-layer-item");
+        const layerCountEl = document.getElementById("wms-layer-count");
+
+        // Add search/filter functionality
+        searchInput.addEventListener("input", () => {
+          const searchTerm = searchInput.value.toLowerCase().trim();
+          let visibleCount = 0;
+
+          layerItems.forEach((item) => {
+            const title = item.dataset.layerTitle || "";
+            const abstract = item.dataset.layerAbstract || "";
+
+            // Check if search term matches title or abstract
+            if (title.includes(searchTerm) || abstract.includes(searchTerm)) {
+              item.style.display = "flex";
+              visibleCount++;
+            } else {
+              item.style.display = "none";
+            }
+          });
+
+          // Update the count display
+          layerCountEl.textContent = visibleCount;
+        });
       },
       preConfirm: () => {
         const selectedLayers = [];

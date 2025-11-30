@@ -960,8 +960,38 @@ a#info-panel-strava-link:hover {
   color: var(--color-white) !important;
 }
 
-/* WMS URL input placeholder styling */
+/* Generic Sweet Alert Input Field Styles */
+/* These styles can be reused across all Sweet Alert dialogs */
+.swal-input-field {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--border-color) !important;
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+}
+
+.swal-input-field:focus {
+  border: 1px solid var(--border-color) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.swal-input-field::placeholder {
+  color: var(--text-color);
+}
+
+/* WMS URL input placeholder styling (uses generic class) */
 #wms-url-input::placeholder {
+  color: var(--text-color);
+}
+
+/* Search input in WMS layer selection */
+#wms-layer-search {
+  margin-bottom: 12px;
+}
+
+#wms-layer-search::placeholder {
   color: var(--text-color);
 }
 
