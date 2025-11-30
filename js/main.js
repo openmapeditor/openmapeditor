@@ -334,6 +334,7 @@ function initializeMap() {
       layers: "ch.swisstopo.swisstlm3d-wanderwege",
       format: "image/png",
       transparent: true,
+      pane: "wmsPane",
     }),
   };
 
@@ -344,6 +345,10 @@ function initializeMap() {
     doubleClickZoom: false,
     worldCopyJump: true,
   });
+
+  // Create a dedicated pane for WMS layers
+  map.createPane("wmsPane");
+  map.getPane("wmsPane").style.zIndex = 250;
 
   const initialView = parseMapHash(window.location.hash);
   let isUpdatingUrl = false;

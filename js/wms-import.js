@@ -381,6 +381,7 @@ const WmsImport = (function () {
         layers: layer.name,
         format: "image/png",
         transparent: true,
+        pane: "wmsPane",
       });
 
       // Store layer information
@@ -553,6 +554,7 @@ const WmsImport = (function () {
           layers: layerData.wmsLayerName,
           format: "image/png",
           transparent: true,
+          pane: "wmsPane",
         });
 
         // Store layer information
