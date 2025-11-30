@@ -252,7 +252,7 @@ const WmsImport = (function () {
             }
             ${
               layer.abstract
-                ? `<div style="font-size: 12px; color: var(--text-color); margin-top: 4px;">${layer.abstract}</div>`
+                ? `<div class="wms-layer-description" style="font-size: 12px; color: var(--text-color); margin-top: 4px;">${layer.abstract}</div>`
                 : ""
             }
           </div>
