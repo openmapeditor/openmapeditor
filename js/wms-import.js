@@ -207,6 +207,18 @@ const WmsImport = (function () {
   }
 
   /**
+   * Checks if a layer is already imported
+   * @param {string} wmsUrl - WMS service URL
+   * @param {string} layerName - WMS layer name
+   * @returns {boolean} True if layer is already imported
+   */
+  function isLayerAlreadyImported(wmsUrl, layerName) {
+    return Object.values(customWmsLayers).some(
+      (layerData) => layerData.wmsUrl === wmsUrl && layerData.wmsLayerName === layerName
+    );
+  }
+
+  /**
    * Shows layer selection dialog with checkboxes
    * @param {Array} layers - Array of available layers
    * @param {string} wmsUrl - Base WMS URL
@@ -214,19 +226,30 @@ const WmsImport = (function () {
    */
   async function showLayerSelectionDialog(layers, wmsUrl, map) {
     const layersHtml = layers
-      .map(
-        (layer, index) => `
+      .map((layer, index) => {
+        const alreadyImported = isLayerAlreadyImported(wmsUrl, layer.name);
+        const disabledAttr = alreadyImported ? "disabled" : "";
+        const cursorStyle = alreadyImported ? "cursor: default;" : "cursor: pointer;";
+        const opacityStyle = alreadyImported ? "opacity: 0.6;" : "";
+
+        return `
         <label class="wms-layer-item" data-layer-index="${index}" data-layer-title="${layer.title.toLowerCase()}" data-layer-abstract="${(
           layer.abstract || ""
-        ).toLowerCase()}" style="display: flex; align-items: start; margin-bottom: 12px; text-align: left; cursor: pointer;">
+        ).toLowerCase()}" style="display: flex; align-items: start; margin-bottom: 12px; text-align: left; ${cursorStyle} ${opacityStyle}">
           <input
             type="checkbox"
             id="wms-layer-${index}"
             value="${layer.name}"
+            ${disabledAttr}
             style="margin-right: 10px; margin-top: 4px; cursor: pointer;"
           />
           <div>
             <div style="font-weight: 500;">${layer.title}</div>
+            ${
+              alreadyImported
+                ? '<div style="color: var(--color-red); font-size: 12px; margin-top: 4px;">Already imported</div>'
+                : ""
+            }
             ${
               layer.abstract
                 ? `<div style="font-size: 12px; color: var(--text-color); margin-top: 4px;">${layer.abstract}</div>`
@@ -234,8 +257,8 @@ const WmsImport = (function () {
             }
           </div>
         </label>
-      `
-      )
+      `;
+      })
       .join("");
 
     const result = await Swal.fire({
