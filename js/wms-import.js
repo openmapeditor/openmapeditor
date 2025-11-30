@@ -382,6 +382,7 @@ const WmsImport = (function () {
         format: "image/png",
         transparent: true,
         pane: "wmsPane",
+        tileSize: 512,
       });
 
       // Store layer information
@@ -555,6 +556,7 @@ const WmsImport = (function () {
           format: "image/png",
           transparent: true,
           pane: "wmsPane",
+          tileSize: 512,
         });
 
         // Store layer information
