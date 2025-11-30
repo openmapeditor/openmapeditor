@@ -39,7 +39,7 @@ const WmsImport = (function () {
       confirmButtonText: "Connect",
       cancelButtonText: "Cancel",
       customClass: {
-        confirmButton: "wms-connect-button",
+        confirmButton: "wms-confirm-button",
         cancelButton: "wms-cancel-button",
       },
       didOpen: () => {
@@ -285,13 +285,38 @@ const WmsImport = (function () {
       cancelButtonText: "Cancel",
       width: "600px",
       customClass: {
-        confirmButton: "wms-connect-button",
+        confirmButton: "wms-confirm-button",
         cancelButton: "wms-cancel-button",
       },
       didOpen: () => {
+        const confirmButton = Swal.getConfirmButton();
         const searchInput = document.getElementById("wms-layer-search");
         const layerItems = document.querySelectorAll(".wms-layer-item");
         const layerCountEl = document.getElementById("wms-layer-count");
+
+        // Disable import button initially
+        confirmButton.disabled = true;
+
+        // Function to update button state
+        const updateButtonState = () => {
+          // Get all checkboxes in the container
+          const allCheckboxes = document.querySelectorAll(
+            '#wms-layers-container input[type="checkbox"]'
+          );
+          // Filter to only enabled checkboxes and check if any are checked
+          const hasSelection = Array.from(allCheckboxes).some((cb) => !cb.disabled && cb.checked);
+          confirmButton.disabled = !hasSelection;
+        };
+
+        // Add change listeners to all checkboxes (including disabled ones, but they won't fire)
+        const allCheckboxes = document.querySelectorAll(
+          '#wms-layers-container input[type="checkbox"]'
+        );
+        allCheckboxes.forEach((checkbox) => {
+          if (!checkbox.disabled) {
+            checkbox.addEventListener("change", updateButtonState);
+          }
+        });
 
         // Add search/filter functionality
         searchInput.addEventListener("input", () => {
@@ -323,11 +348,6 @@ const WmsImport = (function () {
             selectedLayers.push(layer);
           }
         });
-
-        if (selectedLayers.length === 0) {
-          Swal.showValidationMessage("Please select at least one layer");
-          return false;
-        }
 
         return selectedLayers;
       },

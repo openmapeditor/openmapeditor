@@ -936,22 +936,16 @@ a#info-panel-strava-link:hover {
 }
 
 /* WMS Dialog Button Styles */
-/* Connect button - matches routing panel save button */
-.wms-connect-button {
+/* Confirm button (Connect/Import) - matches routing panel save button */
+.wms-confirm-button {
   background-color: var(--background-color) !important;
   color: var(--text-color) !important;
   cursor: pointer !important;
 }
 
-.wms-connect-button:not(:disabled) {
+.wms-confirm-button:not(:disabled) {
   background-color: var(--text-color) !important;
   color: var(--background-color) !important;
-}
-
-.wms-connect-button:disabled {
-  cursor: not-allowed !important;
-  box-shadow: inset 0 0 0 1px var(--border-color) !important;
-  opacity: 1 !important;
 }
 
 /* Cancel button - red background with white text */
@@ -979,6 +973,18 @@ a#info-panel-strava-link:hover {
 
 .swal-input-field::placeholder {
   color: var(--text-color);
+}
+
+/* Generic Sweet Alert Button Disabled State */
+/* Applies to any SweetAlert button with a custom class when disabled */
+.swal2-confirm:disabled,
+.swal2-cancel:disabled,
+.swal2-deny:disabled {
+  cursor: not-allowed !important;
+  box-shadow: inset 0 0 0 1px var(--border-color) !important;
+  opacity: 1 !important;
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
 }
 
 /* WMS URL input placeholder styling (uses generic class) */
