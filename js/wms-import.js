@@ -376,13 +376,14 @@ const WmsImport = (function () {
     selectedLayers.forEach((layer) => {
       const layerId = `wms-custom-${layerIdCounter++}`;
 
-      // Create WMS tile layer
-      const wmsLayer = L.tileLayer.wms(wmsUrl, {
+      // Create WMS tile layer with gutter support to prevent icon cutoff
+      const wmsLayer = L.tileLayer.wms.gutter(wmsUrl, {
         layers: layer.name,
         format: "image/png",
         transparent: true,
         pane: "wmsPane",
         tileSize: 512,
+        gutter: 64, // Add 64px overlap on each side to prevent icon cutoff
       });
 
       // Store layer information
@@ -550,13 +551,14 @@ const WmsImport = (function () {
 
       const layersData = JSON.parse(saved);
       layersData.forEach((layerData) => {
-        // Create WMS tile layer
-        const wmsLayer = L.tileLayer.wms(layerData.wmsUrl, {
+        // Create WMS tile layer with gutter support to prevent icon cutoff
+        const wmsLayer = L.tileLayer.wms.gutter(layerData.wmsUrl, {
           layers: layerData.wmsLayerName,
           format: "image/png",
           transparent: true,
           pane: "wmsPane",
           tileSize: 512,
+          gutter: 64, // Add 64px overlap on each side to prevent icon cutoff
         });
 
         // Store layer information
