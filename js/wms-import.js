@@ -39,8 +39,7 @@ const WmsImport = (function () {
       confirmButtonText: "Connect",
       cancelButtonText: "Cancel",
       customClass: {
-        confirmButton: "wms-confirm-button",
-        cancelButton: "wms-cancel-button",
+        confirmButton: "swal-confirm-button",
       },
       didOpen: () => {
         const confirmButton = Swal.getConfirmButton();
@@ -285,8 +284,7 @@ const WmsImport = (function () {
       cancelButtonText: "Cancel",
       width: "600px",
       customClass: {
-        confirmButton: "wms-confirm-button",
-        cancelButton: "wms-cancel-button",
+        confirmButton: "swal-confirm-button",
       },
       didOpen: () => {
         const confirmButton = Swal.getConfirmButton();

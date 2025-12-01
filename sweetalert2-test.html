@@ -181,6 +181,48 @@
             });
           },
         },
+        {
+          text: "Button Styles",
+          action: () =>
+            Swal.fire({
+              title: "Confirm Action",
+              text: "Testing themed button styles - Cancel is red by default",
+              showCancelButton: true,
+              confirmButtonText: "Confirm",
+              cancelButtonText: "Cancel",
+              customClass: {
+                confirmButton: "swal-confirm-button",
+              },
+            }),
+        },
+        {
+          text: "Disabled Button",
+          action: () => {
+            Swal.fire({
+              title: "Enter Something",
+              input: "text",
+              inputPlaceholder: "Type here to enable button",
+              showCancelButton: true,
+              confirmButtonText: "Submit",
+              cancelButtonText: "Cancel",
+              customClass: {
+                confirmButton: "swal-confirm-button",
+              },
+              didOpen: () => {
+                const confirmButton = Swal.getConfirmButton();
+                const input = Swal.getInput();
+
+                // Disable button initially
+                confirmButton.disabled = true;
+
+                // Enable/disable based on input
+                input.addEventListener("input", () => {
+                  confirmButton.disabled = !input.value.trim();
+                });
+              },
+            });
+          },
+        },
       ];
 
       // Create a button for each test case

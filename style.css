@@ -875,15 +875,6 @@ a#info-panel-strava-link:hover {
   color: var(--text-color) !important;
 }
 
-/* Style for credits popup */
-.swal2-credits-popup .swal2-image {
-  margin-top: 10px;
-}
-
-.swal2-credits-popup .swal2-html-container {
-  padding-top: 0;
-}
-
 /* Title text */
 .swal2-title {
   color: var(--text-color) !important;
@@ -894,7 +885,7 @@ a#info-panel-strava-link:hover {
   color: var(--text-color) !important;
 }
 
-/* Action buttons (Confirm, Cancel, Deny) */
+/* Action buttons (Confirm, Cancel, Deny) - default styles */
 .swal2-confirm,
 .swal2-cancel,
 .swal2-deny {
@@ -903,95 +894,25 @@ a#info-panel-strava-link:hover {
   font-weight: bold !important;
 }
 
-/* Confirm button style */
+/* Default confirm button style */
 .swal2-confirm {
   background-color: var(--text-color) !important;
   color: var(--background-color) !important;
 }
 
-/* Cancel and Deny button styles */
-.swal2-cancel,
+/* Default cancel button style - red background */
+.swal2-cancel {
+  background-color: var(--color-red) !important;
+  color: var(--color-white) !important;
+}
+
+/* Default deny button style */
 .swal2-deny {
   background-color: var(--background2-color) !important;
   color: var(--text-color) !important;
 }
 
-/* Close button (the 'X' in the corner) */
-.swal2-close {
-  color: var(--text-color) !important;
-}
-.swal2-close:hover {
-  color: var(--highlight-color) !important;
-}
-
-/* Progress bar for timers */
-.swal2-timer-progress-bar {
-  background-color: var(--highlight-color) !important;
-}
-
-/* Loading spinner for SweetAlert */
-.swal2-loader {
-  border-color: var(--highlight-color) transparent var(--highlight-color) transparent !important;
-}
-
-/* Remove margins of image at top in credits */
-.swal2-image {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-/* WMS Dialog Button Styles */
-/* Confirm button (Connect/Import) - matches routing panel save button */
-.wms-confirm-button {
-  background-color: var(--background-color) !important;
-  color: var(--text-color) !important;
-  cursor: pointer !important;
-}
-
-.wms-confirm-button:not(:disabled) {
-  background-color: var(--text-color) !important;
-  color: var(--background-color) !important;
-}
-
-/* Cancel button - red background with white text */
-.wms-cancel-button {
-  background-color: var(--color-red) !important;
-  color: var(--color-white) !important;
-}
-
-/* Generic Sweet Alert Input Field Styles */
-/* These styles apply to all Sweet Alert input fields */
-.swal2-input,
-.swal2-textarea,
-.swal-input-field {
-  box-sizing: border-box;
-  border: 1px solid var(--border-color) !important;
-  background-color: var(--background-color) !important;
-  color: var(--text-color) !important;
-}
-
-/* Only apply width: 100% and margin: 0 to custom input fields */
-.swal-input-field {
-  width: 100%;
-  margin: 0;
-}
-
-.swal2-input:focus,
-.swal2-textarea:focus,
-.swal-input-field:focus {
-  border: 1px solid var(--border-color) !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-.swal2-input::placeholder,
-.swal2-textarea::placeholder,
-.swal-input-field::placeholder {
-  color: var(--text-color) !important;
-}
-
-/* Generic Sweet Alert Button Disabled State */
-/* Applies to any SweetAlert button with a custom class when disabled */
+/* Disabled state for all buttons */
 .swal2-confirm:disabled,
 .swal2-cancel:disabled,
 .swal2-deny:disabled {
@@ -1002,18 +923,94 @@ a#info-panel-strava-link:hover {
   color: var(--text-color) !important;
 }
 
-/* WMS URL input placeholder styling (uses generic class) */
-#wms-url-input::placeholder {
-  color: var(--text-color);
+/* Close button (the 'X' in the corner) */
+.swal2-close {
+  color: var(--text-color) !important;
 }
 
-/* Search input in WMS layer selection */
+.swal2-close:hover {
+  color: var(--highlight-color) !important;
+}
+
+/* Progress bar for timers */
+.swal2-timer-progress-bar {
+  background-color: var(--highlight-color) !important;
+}
+
+/* Loading spinner */
+.swal2-loader {
+  border-color: var(--highlight-color) transparent var(--highlight-color) transparent !important;
+}
+
+/* Image styling */
+.swal2-image {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Credits popup specific styles */
+.swal2-credits-popup .swal2-image {
+  margin-top: 10px;
+}
+
+.swal2-credits-popup .swal2-html-container {
+  padding-top: 0;
+}
+
+/* Custom Button Classes */
+/* Use these classes for custom button styling in specific dialogs */
+
+/* Confirm button with disabled/enabled state - inverts theme colors when enabled */
+.swal-confirm-button {
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+  cursor: pointer !important;
+}
+
+.swal-confirm-button:not(:disabled) {
+  background-color: var(--text-color) !important;
+  color: var(--background-color) !important;
+}
+
+/* Input Field Styles */
+
+/* All SweetAlert input fields */
+.swal2-input,
+.swal2-textarea,
+.swal-input-field {
+  box-sizing: border-box;
+  border: 1px solid var(--border-color) !important;
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Custom input field class for full-width inputs */
+.swal-input-field {
+  width: 100%;
+  margin: 0;
+}
+
+/* Focus state */
+.swal2-input:focus,
+.swal2-textarea:focus,
+.swal-input-field:focus {
+  border: 1px solid var(--border-color) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Placeholder styling */
+.swal2-input::placeholder,
+.swal2-textarea::placeholder,
+.swal-input-field::placeholder {
+  color: var(--text-color) !important;
+}
+
+/* WMS Dialog Specific Styles */
+
+/* WMS layer search input */
 #wms-layer-search {
   margin-bottom: 12px;
-}
-
-#wms-layer-search::placeholder {
-  color: var(--text-color);
 }
 
 /* Style for links in WMS layer descriptions */
