@@ -7,6 +7,7 @@
   --color-blue: #4285f4;
   --color-yellow: #fbbc04;
   --color-green: #25d366;
+  --color-neutral-grey: #f5f5f5;
 
   --routing-color-start: var(--color-green);
   --routing-color-end: var(--color-red);
@@ -72,6 +73,10 @@ select:focus {
   position: relative; /* Needed for absolute positioning of children */
 }
 
+.leaflet-container {
+  background: var(--color-neutral-grey);
+}
+
 /* Unified icon styling */
 
 /* 1. Center all icons in their button containers using flexbox */
@@ -89,16 +94,6 @@ select:focus {
 /* 2. Remove default background image from leaflet.draw icons */
 .leaflet-draw-toolbar a {
   background-image: none !important;
-}
-
-/* Hide layers icon when its menu is open */
-.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
-  display: none !important;
-}
-
-/* Change width when layers menu is open */
-.leaflet-control-layers-expanded {
-  width: 205px;
 }
 
 /* Clear style for disabled draw buttons */
@@ -294,7 +289,7 @@ a#info-panel-strava-link:hover {
   margin: 0;
   overflow-y: auto;
   flex-grow: 1;
-  max-height: calc(100vh - 400px);
+  max-height: calc(100dvh - 400px);
 }
 .overview-list-item {
   display: flex;
@@ -382,8 +377,9 @@ a#info-panel-strava-link:hover {
   background-color: var(--background-color);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  max-height: 70vh;
+  max-height: calc(100dvh - 60px);
   overflow-y: auto;
+  width: 200px;
 }
 
 /* Style the form content that we will move into the panel */
@@ -409,6 +405,20 @@ a#info-panel-strava-link:hover {
   margin-top: 0;
   position: relative;
   top: 0;
+}
+
+/* WMS custom layer truncation */
+#custom-layers-panel .wms-custom-layer .layer-name-text {
+  width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
+}
+#custom-layers-panel .wms-custom-layer .layer-name-container {
+  display: inline-flex;
+  align-items: center;
 }
 
 /* Remove default Leaflet control styling from the content inside our panel */
@@ -865,15 +875,6 @@ a#info-panel-strava-link:hover {
   color: var(--text-color) !important;
 }
 
-/* Style for credits popup */
-.swal2-credits-popup .swal2-image {
-  margin-top: 10px;
-}
-
-.swal2-credits-popup .swal2-html-container {
-  padding-top: 0;
-}
-
 /* Title text */
 .swal2-title {
   color: var(--text-color) !important;
@@ -884,7 +885,7 @@ a#info-panel-strava-link:hover {
   color: var(--text-color) !important;
 }
 
-/* Action buttons (Confirm, Cancel, Deny) */
+/* Action buttons (Confirm, Cancel, Deny) - default styles */
 .swal2-confirm,
 .swal2-cancel,
 .swal2-deny {
@@ -893,16 +894,32 @@ a#info-panel-strava-link:hover {
   font-weight: bold !important;
 }
 
-/* Confirm button style */
+/* Default confirm button style */
 .swal2-confirm {
   background-color: var(--text-color) !important;
   color: var(--background-color) !important;
 }
 
-/* Cancel and Deny button styles */
-.swal2-cancel,
+/* Default cancel button style - red background */
+.swal2-cancel {
+  background-color: var(--color-red) !important;
+  color: var(--color-white) !important;
+}
+
+/* Default deny button style */
 .swal2-deny {
   background-color: var(--background2-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Disabled state for all buttons */
+.swal2-confirm:disabled,
+.swal2-cancel:disabled,
+.swal2-deny:disabled {
+  cursor: not-allowed !important;
+  box-shadow: inset 0 0 0 1px var(--border-color) !important;
+  opacity: 1 !important;
+  background-color: var(--background-color) !important;
   color: var(--text-color) !important;
 }
 
@@ -910,6 +927,7 @@ a#info-panel-strava-link:hover {
 .swal2-close {
   color: var(--text-color) !important;
 }
+
 .swal2-close:hover {
   color: var(--highlight-color) !important;
 }
@@ -919,10 +937,94 @@ a#info-panel-strava-link:hover {
   background-color: var(--highlight-color) !important;
 }
 
-/* Remove margins of image at top in credits */
+/* Loading spinner */
+.swal2-loader {
+  border-color: var(--highlight-color) transparent var(--highlight-color) transparent !important;
+}
+
+/* Image styling */
 .swal2-image {
   margin-top: 0;
   margin-bottom: 0;
+}
+
+/* Credits popup specific styles */
+.swal2-credits-popup .swal2-image {
+  margin-top: 10px;
+}
+
+.swal2-credits-popup .swal2-html-container {
+  padding-top: 0;
+}
+
+/* Custom Button Classes */
+/* Use these classes for custom button styling in specific dialogs */
+
+/* Confirm button with disabled/enabled state - inverts theme colors when enabled */
+.swal-confirm-button {
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+  cursor: pointer !important;
+}
+
+.swal-confirm-button:not(:disabled) {
+  background-color: var(--text-color) !important;
+  color: var(--background-color) !important;
+}
+
+/* Input Field Styles */
+
+/* All SweetAlert input fields */
+.swal2-input,
+.swal2-textarea,
+.swal-input-field {
+  box-sizing: border-box;
+  border: 1px solid var(--border-color) !important;
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Custom input field class for full-width inputs */
+.swal-input-field {
+  width: 100%;
+  margin: 0;
+}
+
+/* Focus state */
+.swal2-input:focus,
+.swal2-textarea:focus,
+.swal-input-field:focus {
+  border: 1px solid var(--border-color) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Placeholder styling */
+.swal2-input::placeholder,
+.swal2-textarea::placeholder,
+.swal-input-field::placeholder {
+  color: var(--text-color) !important;
+}
+
+/* WMS Dialog Specific Styles */
+
+/* WMS layer search input */
+#wms-layer-search {
+  margin-bottom: 12px;
+}
+
+/* Style for links in WMS layer descriptions */
+.wms-layer-description a {
+  color: var(--highlight-color);
+  text-decoration: none;
+}
+
+.wms-layer-description a:hover {
+  text-decoration: underline;
+}
+
+.wms-layer-description a:visited {
+  color: var(--highlight-color);
 }
 
 /* Leaflet control overrides */
@@ -1797,6 +1899,11 @@ body.using-touch {
     #search-input:focus {
       /* Expand to fill the container when the user taps on it */
       width: 100%;
+    }
+
+    #custom-layers-panel {
+      /* Expand width on mobile */
+      /* width: calc(100vw - 63px); */
     }
 
     /* Mobile Bottom Sheet Styles Start */

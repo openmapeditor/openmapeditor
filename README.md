@@ -18,6 +18,7 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 - **Performance Optimized:** Optional path and area simplification (on by default) for smoother performance. When enabled, simplified copies are made when duplicating tracks/activities/areas (originals preserved), and generated routes are simplified when saved. Configurable in settings.
 - **Routing:** Generate routes for driving, biking, or walking. You can then save the generated route as an editable path.
 - **Elevation Profiles:** Instantly visualize the elevation profile for any path.
+- **Custom WMS Layers:** Import map layers from any WMS-compatible service. Browse available layers, add them to your map as overlays, and reorder them with drag-and-drop. Your WMS layers are saved locally and persist between sessions.
 - **Strava Integration:** Connect your Strava account to view your activities on the map, download their original high-resolution GPX tracks, or duplicate them for editing.
 
 ---
@@ -144,6 +145,8 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: <https://registry.npmjs.org/proj4/-/proj4-2.19.10.tgz>
 - **simplify-js-1.2.4**
   - Download URL: <https://registry.npmjs.org/simplify-js/-/simplify-js-1.2.4.tgz>
+- **sortablejs-1.15.6**
+  - Download URL: <https://registry.npmjs.org/sortablejs/-/sortablejs-1.15.6.tgz>
 - **sweetalert2-11.23.0**
   - Download URL: <https://registry.npmjs.org/sweetalert2/-/sweetalert2-11.23.0.tgz>
 - **togeojson-0.16.2**

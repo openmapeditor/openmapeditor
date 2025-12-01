@@ -294,6 +294,7 @@ function initializeMap() {
     TopPlusOpen: '<span class="fi fi-de fis"></span> TopPlusOpen',
     Swisstopo: '<span class="fi fi-ch fis"></span> Swisstopo',
     SwissHikingTrails: '<span class="fi fi-ch fis"></span> Swiss Hiking Trails',
+    Empty: '<span class="material-symbols layer-icon">cancel</span> No Base Layer',
     DrawnItems: '<span class="material-symbols layer-icon">edit</span> Drawn Items',
     ImportedFiles: '<span class="material-symbols layer-icon">folder_open</span> Imported Files',
     StravaActivities:
@@ -325,6 +326,7 @@ function initializeMap() {
       layers: "ch.swisstopo.pixelkarte-farbe",
       format: "image/jpeg",
     }),
+    Empty: L.layerGroup(), // Empty layer group for no basemap
   };
 
   const staticOverlayMaps = {
@@ -332,6 +334,7 @@ function initializeMap() {
       layers: "ch.swisstopo.swisstlm3d-wanderwege",
       format: "image/png",
       transparent: true,
+      pane: "wmsPane",
     }),
   };
 
@@ -342,6 +345,10 @@ function initializeMap() {
     doubleClickZoom: false,
     worldCopyJump: true,
   });
+
+  // Create a dedicated pane for WMS layers
+  map.createPane("wmsPane");
+  map.getPane("wmsPane").style.zIndex = 250;
 
   const initialView = parseMapHash(window.location.hash);
   let isUpdatingUrl = false;
@@ -477,17 +484,194 @@ function initializeMap() {
 
   formContent += '<div class="leaflet-control-layers-separator"></div>';
 
-  formContent += '<div class="leaflet-control-layers-overlays">';
-  for (const name in allOverlayMaps) {
-    const layer = allOverlayMaps[name];
-    const layerId = L.Util.stamp(layer);
-    const isChecked = map.hasLayer(layer) ? 'checked="checked"' : "";
-    const displayName = layerDisplayNames[name] || name;
-    formContent += `<label><div><input type="checkbox" class="leaflet-control-layers-selector" ${isChecked} data-layer-id="${layerId}" data-layer-name="${name}"><span> ${displayName}</span></div></label>`;
+  const wmsOverlayNames = ["SwissHikingTrails"]; // Static WMS overlays
+  const userContentNames = ["DrawnItems", "ImportedFiles", "StravaActivities"]; // Always on top
+
+  // User content layers (not sortable, always on top)
+  formContent += '<div class="leaflet-control-layers-user-content">';
+  for (const name of userContentNames) {
+    if (allOverlayMaps[name]) {
+      const layer = allOverlayMaps[name];
+      const layerId = L.Util.stamp(layer);
+      const isChecked = map.hasLayer(layer) ? 'checked="checked"' : "";
+      const displayName = layerDisplayNames[name] || name;
+      formContent += `<label data-layer-name="${name}"><div><input type="checkbox" class="leaflet-control-layers-selector" ${isChecked} data-layer-id="${layerId}" data-layer-name="${name}"><span> ${displayName}</span></div></label>`;
+    }
   }
-  formContent += "</div></form>";
+  formContent += "</div>";
+
+  formContent += '<div class="leaflet-control-layers-separator"></div>';
+
+  // WMS overlay layers (sortable)
+  formContent += '<div class="leaflet-control-layers-overlays" id="overlays-sortable-list">';
+  for (const name of wmsOverlayNames) {
+    if (allOverlayMaps[name]) {
+      const layer = allOverlayMaps[name];
+      const layerId = L.Util.stamp(layer);
+      const isChecked = map.hasLayer(layer) ? 'checked="checked"' : "";
+      const displayName = layerDisplayNames[name] || name;
+      // Extract text without icon for WMS layers and use drag indicator as icon
+      const displayNameText = displayName.replace(/<[^>]*>/g, "").trim();
+      const wmsDisplayName = `<span class="drag-handle material-symbols layer-icon" title="Drag to reorder" style="cursor: move;">drag_indicator</span> ${displayNameText}`;
+      formContent += `<label data-layer-name="${name}"><div><input type="checkbox" class="leaflet-control-layers-selector" ${isChecked} data-layer-id="${layerId}" data-layer-name="${name}"><span> ${wmsDisplayName}</span></div></label>`;
+    }
+  }
+  formContent += "</div>";
+
+  // Custom WMS layers will be dynamically added to the sortable list above
+
+  // Add Import Maps button for custom WMS layers
+  formContent += '<div class="leaflet-control-layers-separator"></div>';
+  formContent += `
+    <div style="padding: 8px 10px;">
+      <button
+        id="wms-import-btn"
+        class="wms-import-button"
+        style="width: 100%; padding: 8px 12px; cursor: pointer; background-color: var(--text-color); color: var(--background-color); border: none; border-radius: 4px; font-size: 14px; font-weight: bold; white-space: nowrap;"
+      >
+        Import WMS Layers
+      </button>
+    </div>
+  `;
+
+  formContent += "</form>";
 
   customPanel.innerHTML = formContent;
+
+  // Add event listener for Import WMS Layers button
+  const wmsImportBtn = document.getElementById("wms-import-btn");
+  if (wmsImportBtn) {
+    wmsImportBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof WmsImport !== "undefined") {
+        WmsImport.showWmsImportDialog(map);
+      }
+    });
+  }
+
+  // Load saved WMS layers from localStorage
+  if (typeof WmsImport !== "undefined" && WmsImport.loadLayersFromStorage) {
+    WmsImport.loadLayersFromStorage(map);
+  }
+
+  // Function to restore saved overlay order from localStorage
+  function restoreOverlayOrder() {
+    const savedOrder = localStorage.getItem("overlayLayerOrder");
+    if (!savedOrder) return;
+
+    try {
+      const order = JSON.parse(savedOrder);
+      const overlaysList = document.getElementById("overlays-sortable-list");
+      if (!overlaysList) return;
+
+      const labels = Array.from(overlaysList.querySelectorAll("label"));
+      const labelMap = new Map();
+
+      // Create a map of layer name/id to label element
+      labels.forEach((label) => {
+        const key = label.getAttribute("data-layer-name") || label.getAttribute("data-layer-id");
+        if (key) labelMap.set(key, label);
+      });
+
+      // Reorder labels based on saved order
+      order.forEach((key) => {
+        const label = labelMap.get(key);
+        if (label) {
+          overlaysList.appendChild(label);
+        }
+      });
+    } catch (e) {
+      console.warn("Failed to restore overlay order:", e);
+    }
+  }
+
+  // Restore saved overlay order
+  restoreOverlayOrder();
+
+  // Initialize SortableJS for overlay layer reordering
+  const overlaysList = document.getElementById("overlays-sortable-list");
+  if (overlaysList && typeof Sortable !== "undefined") {
+    new Sortable(overlaysList, {
+      // No handle restriction - can drag anywhere on the row
+      animation: 150,
+      delayOnTouchOnly: true,
+      delay: 150, // Long press delay for touch devices to distinguish from click
+      touchStartThreshold: 10, // Increased tolerance for touch movement
+      forceFallback: false, // Use native HTML5 drag when possible
+      onEnd: function () {
+        // After reordering, update z-index by calling bringToFront in order
+        reapplyOverlayZIndex();
+        saveOverlayOrder();
+      },
+    });
+  }
+
+  // Function to reapply z-index to all overlay layers based on DOM order
+  function reapplyOverlayZIndex() {
+    // First, bring WMS layers to front in order
+    const overlayLabels = Array.from(overlaysList.querySelectorAll("label"));
+
+    // Reverse the order because bringToFront() makes the last called layer appear on top
+    // We want the first item in the list to be on bottom, last item on top
+    overlayLabels.reverse().forEach((label) => {
+      const layerName = label.getAttribute("data-layer-name");
+      const layerId = label.getAttribute("data-layer-id");
+
+      // Handle static WMS overlays
+      if (layerName && allOverlayMaps[layerName]) {
+        const layer = allOverlayMaps[layerName];
+        if (map.hasLayer(layer) && typeof layer.bringToFront === "function") {
+          layer.bringToFront();
+        }
+      }
+
+      // Handle custom WMS layers
+      if (
+        layerId &&
+        typeof WmsImport !== "undefined" &&
+        typeof WmsImport.getCustomWmsLayers === "function"
+      ) {
+        const customWmsLayers = WmsImport.getCustomWmsLayers();
+        const layerData = customWmsLayers[layerId];
+        if (
+          layerData &&
+          layerData.addedToMap &&
+          map.hasLayer(layerData.layer) &&
+          typeof layerData.layer.bringToFront === "function"
+        ) {
+          layerData.layer.bringToFront();
+        }
+      }
+    });
+
+    // Then, always bring user content layers to the very top
+    const userContentLayers = ["DrawnItems", "ImportedFiles", "StravaActivities"];
+    userContentLayers.forEach((name) => {
+      if (allOverlayMaps[name] && map.hasLayer(allOverlayMaps[name])) {
+        const layer = allOverlayMaps[name];
+        if (typeof layer.bringToFront === "function") {
+          layer.bringToFront();
+        }
+      }
+    });
+  }
+
+  // Function to save overlay order to localStorage
+  function saveOverlayOrder() {
+    const overlayLabels = overlaysList.querySelectorAll("label");
+    const order = Array.from(overlayLabels).map((label) => {
+      return label.getAttribute("data-layer-name") || label.getAttribute("data-layer-id");
+    });
+    localStorage.setItem("overlayLayerOrder", JSON.stringify(order));
+  }
+
+  // Expose reapplyOverlayZIndex and saveOverlayOrder globally for WmsImport module
+  window.reapplyOverlayZIndex = reapplyOverlayZIndex;
+  window.saveOverlayOrder = saveOverlayOrder;
+
+  // Apply z-index on initial load to ensure layers from localStorage respect list order
+  reapplyOverlayZIndex();
 
   const onOverlayToggle = (e) => {
     const isAdding = e.type === "overlayadd";
@@ -548,6 +732,8 @@ function initializeMap() {
             map.addLayer(baseMaps[name]);
           }
         }
+        // Reapply overlay layer z-index after base layer change
+        reapplyOverlayZIndex();
       } else {
         for (const name in allOverlayMaps) {
           const layer = allOverlayMaps[name];
@@ -555,6 +741,8 @@ function initializeMap() {
             if (e.target.checked) {
               map.addLayer(layer);
               onOverlayToggle({ type: "overlayadd", layer: layer });
+              // Reapply z-index to ensure layer respects list order
+              reapplyOverlayZIndex();
             } else {
               map.removeLayer(layer);
               onOverlayToggle({ type: "overlayremove", layer: layer });

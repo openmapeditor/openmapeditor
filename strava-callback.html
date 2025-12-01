@@ -12,13 +12,13 @@
 
         if (code) {
           // Pass the code to the main app via localStorage
-          localStorage.setItem("strava_auth_code", code);
+          localStorage.setItem("stravaAuthCode", code);
           document.getElementById("message").textContent = "Success! You can now close this tab.";
         } else if (error) {
           document.getElementById("message").textContent =
             "Authentication failed or was denied. Please try again.";
           // Optional: Pass error back to the main app
-          localStorage.setItem("strava_auth_error", error);
+          localStorage.setItem("stravaAuthError", error);
         }
 
         // Close the window automatically
