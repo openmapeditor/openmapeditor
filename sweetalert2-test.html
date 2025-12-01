@@ -130,6 +130,57 @@
               inputPlaceholder: "e.g., Alex",
             }),
         },
+        {
+          text: "Loading Spinner",
+          action: () => {
+            Swal.fire({
+              title: "Loading...",
+              text: "Testing the loading spinner",
+              allowOutsideClick: false,
+              didOpen: () => {
+                Swal.showLoading();
+                // Auto-close after 3 seconds
+                setTimeout(() => {
+                  Swal.close();
+                }, 3000);
+              },
+            });
+          },
+        },
+        {
+          text: "Timer Progress Bar",
+          action: () =>
+            Swal.fire({
+              icon: "success",
+              iconColor: "var(--swal-color-success)",
+              title: "Timer Test",
+              text: "This will close in 3 seconds",
+              timer: 3000,
+              timerProgressBar: true,
+            }),
+        },
+        {
+          text: "Loop Timer (3x)",
+          action: async () => {
+            for (let i = 1; i <= 3; i++) {
+              await Swal.fire({
+                icon: "info",
+                iconColor: "var(--swal-color-info)",
+                title: `Timer Loop ${i}/3`,
+                text: "Watch the progress bar!",
+                timer: 2000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+              });
+            }
+            Swal.fire({
+              icon: "success",
+              iconColor: "var(--swal-color-success)",
+              title: "Loop Complete!",
+              text: "All timers finished",
+            });
+          },
+        },
       ];
 
       // Create a button for each test case

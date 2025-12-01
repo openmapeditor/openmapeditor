@@ -929,6 +929,11 @@ a#info-panel-strava-link:hover {
   background-color: var(--highlight-color) !important;
 }
 
+/* Loading spinner for SweetAlert */
+.swal2-loader {
+  border-color: var(--highlight-color) transparent var(--highlight-color) transparent !important;
+}
+
 /* Remove margins of image at top in credits */
 .swal2-image {
   margin-top: 0;
