@@ -960,24 +960,34 @@ a#info-panel-strava-link:hover {
 }
 
 /* Generic Sweet Alert Input Field Styles */
-/* These styles can be reused across all Sweet Alert dialogs */
+/* These styles apply to all Sweet Alert input fields */
+.swal2-input,
+.swal2-textarea,
 .swal-input-field {
-  width: 100%;
-  margin: 0;
   box-sizing: border-box;
   border: 1px solid var(--border-color) !important;
   background-color: var(--background-color) !important;
   color: var(--text-color) !important;
 }
 
+/* Only apply width: 100% and margin: 0 to custom input fields */
+.swal-input-field {
+  width: 100%;
+  margin: 0;
+}
+
+.swal2-input:focus,
+.swal2-textarea:focus,
 .swal-input-field:focus {
   border: 1px solid var(--border-color) !important;
   box-shadow: none !important;
   outline: none !important;
 }
 
+.swal2-input::placeholder,
+.swal2-textarea::placeholder,
 .swal-input-field::placeholder {
-  color: var(--text-color);
+  color: var(--text-color) !important;
 }
 
 /* Generic Sweet Alert Button Disabled State */
