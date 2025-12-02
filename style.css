@@ -877,7 +877,7 @@ a#info-panel-strava-link:hover {
   max-height: calc(100dvh - calc(var(--swal2-container-padding) * 2)) !important;
   display: flex !important;
   flex-direction: column !important;
-  overflow-y: auto !important;
+  overflow: hidden !important;
   padding-bottom: 0 !important;
 }
 
@@ -889,6 +889,8 @@ a#info-panel-strava-link:hover {
 /* Content text (main message) */
 .swal2-html-container {
   color: var(--text-color) !important;
+  overflow-y: auto !important;
+  flex: 1 1 auto !important;
 }
 
 /* Center text in toast notifications */
@@ -900,13 +902,12 @@ a#info-panel-strava-link:hover {
   text-align: center !important;
 }
 
-/* Action buttons container - sticky at bottom */
+/* Action buttons container - always at bottom */
 .swal2-actions {
-  position: sticky !important;
-  bottom: 0 !important;
   background-color: var(--background-color) !important;
   margin: 0 !important;
   padding: 5px !important;
+  flex-shrink: 0 !important;
 }
 
 /* Action buttons (Confirm, Cancel, Deny) - default styles */
