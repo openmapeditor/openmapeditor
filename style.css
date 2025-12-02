@@ -333,12 +333,8 @@ a#info-panel-strava-link:hover {
 .overview-list-item:last-child {
   border-bottom: none !important;
 }
-.overview-list-item[data-layer-id]:hover {
-  /* background-color: #006ec7; */
-}
 .overview-list-item.selected {
   background-color: var(--highlight-color);
-  /* font-weight: bold; */
 }
 
 /* Style for the arrow element (kept for directions panel) */
@@ -869,10 +865,20 @@ a#info-panel-strava-link:hover {
 /* This block styles all SweetAlert2 popups to respect the selected
    light or dark theme by using the application's CSS variables. */
 
+/* Hide icons for regular dialogs, but keep them visible for toasts */
+.swal2-popup:not(.swal2-toast) .swal2-icon {
+  display: none !important;
+}
+
 /* Main popup container */
 .swal2-popup {
   background-color: var(--background-color) !important;
   color: var(--text-color) !important;
+  max-height: calc(100dvh - calc(var(--swal2-container-padding) * 2)) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow-y: auto !important;
+  padding-bottom: 0 !important;
 }
 
 /* Title text */
@@ -883,6 +889,24 @@ a#info-panel-strava-link:hover {
 /* Content text (main message) */
 .swal2-html-container {
   color: var(--text-color) !important;
+}
+
+/* Center text in toast notifications */
+.swal2-toast .swal2-title {
+  text-align: center !important;
+}
+
+.swal2-toast .swal2-html-container {
+  text-align: center !important;
+}
+
+/* Action buttons container - sticky at bottom */
+.swal2-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  background-color: var(--background-color) !important;
+  margin: 0 !important;
+  padding: 5px !important;
 }
 
 /* Action buttons (Confirm, Cancel, Deny) - default styles */
@@ -948,13 +972,12 @@ a#info-panel-strava-link:hover {
   margin-bottom: 0;
 }
 
-/* Credits popup specific styles */
-.swal2-credits-popup .swal2-image {
-  margin-top: 10px;
-}
-
-.swal2-credits-popup .swal2-html-container {
-  padding-top: 0;
+/* WMS layer selection popup with scrollable list */
+.wms-layer-selection-popup .swal2-html-container {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
 }
 
 /* Custom Button Classes */
@@ -1075,17 +1098,6 @@ a#info-panel-strava-link:hover {
 .axis text {
   fill: var(--text-color);
   font-size: 10px;
-}
-
-/* This class is on the <svg> element itself */
-.d3-elevation-svg {
-  /* You can add styles like background or border here */
-  /* example: background-color: rgba(0, 0, 255, 0.1); */
-}
-
-/* This class is on the <g> element that contains the chart */
-.d3-chart-group {
-  /* This element is positioned by the 'margin' object in d3-elevation.js */
 }
 
 .elevation-hover-tooltip-path {
@@ -1780,8 +1792,8 @@ body.leaflet-is-drawing .leaflet-marker-icon {
 }
 
 /* Styles for mouse input */
-body:not(.using-touch) {
-}
+/* body:not(.using-touch) {
+} */
 
 /* Styles for touch input */
 body.using-touch {
@@ -1901,11 +1913,6 @@ body.using-touch {
       width: 100%;
     }
 
-    #custom-layers-panel {
-      /* Expand width on mobile */
-      /* width: calc(100vw - 63px); */
-    }
-
     /* Mobile Bottom Sheet Styles Start */
     #main-right-container {
       display: flex !important;
@@ -1926,10 +1933,6 @@ body.using-touch {
 
     #main-right-container.hidden {
       top: var(--mobile-main-right-container-top);
-    }
-
-    .leaflet-control-toggle-panels {
-      /* display: none !important; */
     }
 
     #sheet-handle {

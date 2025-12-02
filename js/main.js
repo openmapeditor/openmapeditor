@@ -120,15 +120,9 @@ async function showCreditsPopup() {
     swalContent.querySelector("#credits-app-description").textContent = APP_CREDITS_DESCRIPTION;
 
     Swal.fire({
-      imageUrl: "/img/icon-1024x1024.png",
-      imageWidth: 150,
-      imageHeight: "auto",
       html: swalContent,
       confirmButtonText: "Close",
       width: "500px",
-      customClass: {
-        popup: "swal2-credits-popup",
-      },
     });
   } catch (error) {
     console.error("Could not load credits.html:", error);

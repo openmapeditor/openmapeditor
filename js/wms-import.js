@@ -263,18 +263,20 @@ const WmsImport = (function () {
     const result = await Swal.fire({
       title: "Select Layers to Import",
       html: `
-        <div style="text-align: left;">
-          <input
-            type="text"
-            id="wms-layer-search"
-            class="swal2-input swal-input-field"
-            placeholder="Search layers"
-            style="margin-bottom: 12px;"
-          />
-          <p style="margin-bottom: 12px;">
-            Found <strong id="wms-layer-count">${layers.length}</strong> layer(s). Select the layers you want to add as map overlays:
-          </p>
-          <div id="wms-layers-container" style="max-height: 400px; overflow-y: auto; padding: 10px;">
+        <div style="text-align: left; display: flex; flex-direction: column; height: 100%; min-height: 0;">
+          <div id="wms-search-header" style="flex-shrink: 0; background-color: var(--background-color); z-index: 10; padding-bottom: 0px;">
+            <input
+              type="text"
+              id="wms-layer-search"
+              class="swal2-input swal-input-field"
+              placeholder="Search layers"
+              style="margin-bottom: 10px;"
+            />
+            <p style="margin-bottom: 5px;">
+              Found <strong id="wms-layer-count">${layers.length}</strong> layer(s):
+            </p>
+          </div>
+          <div id="wms-layers-container" style="flex: 1 1 auto; overflow-y: auto; padding: 10px; min-height: 0;">
             ${layersHtml}
           </div>
         </div>
@@ -284,6 +286,7 @@ const WmsImport = (function () {
       cancelButtonText: "Cancel",
       width: "600px",
       customClass: {
+        popup: "wms-layer-selection-popup",
         confirmButton: "swal-confirm-button",
       },
       didOpen: () => {
