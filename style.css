@@ -337,22 +337,6 @@ a#info-panel-strava-link:hover {
   background-color: var(--highlight-color);
 }
 
-/* Style for the arrow element (kept for directions panel) */
-.header-arrow {
-  border: solid var(--color-black);
-  border-width: 0 2px 2px 0;
-  display: inline-block;
-  padding: 2.5px;
-  margin-right: 8px;
-  transition: transform 0.2s ease-in-out;
-  /* Default state (expanded): arrow points up */
-  transform: rotate(-135deg);
-}
-
-#directions-panel.collapsed .header-arrow {
-  transform: rotate(45deg);
-}
-
 /* Custom Layers Panel Styles */
 .layer-icon {
   vertical-align: middle;
@@ -724,17 +708,36 @@ a#info-panel-strava-link:hover {
 }
 
 #directions-panel-header {
-  padding: 4px 12px;
+  padding: 0 12px;
+  height: 30px;
+  display: flex;
+  align-items: center;
   font-weight: normal;
   background-color: var(--background-color);
   cursor: pointer;
   user-select: none;
   font-size: 12px;
   border-bottom: 1px solid var(--border-color);
+  box-sizing: border-box;
 }
 
 #directions-panel.collapsed #directions-panel-header {
   border-bottom: none;
+}
+
+.directions-panel-header-arrow {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* Default state (collapsed): arrow points down */
+#directions-panel.collapsed .directions-panel-header-arrow::before {
+  content: "keyboard_arrow_down";
+}
+
+/* Expanded state: arrow points up */
+#directions-panel:not(.collapsed) .directions-panel-header-arrow::before {
+  content: "keyboard_arrow_up";
 }
 
 #directions-list {
@@ -751,21 +754,17 @@ a#info-panel-strava-link:hover {
 }
 
 .direction-item {
-  padding: 6px 12px;
+  padding: 8px 12px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
   font-size: 12px;
   border-bottom: 1px solid var(--divider-color);
+  box-sizing: border-box;
 }
 
 .direction-item:last-child {
   border-bottom: none;
-}
-
-#directions-panel .header-arrow {
-  transform: rotate(-135deg); /* Expanded state */
-}
-
-#directions-panel.collapsed .header-arrow {
-  transform: rotate(45deg); /* Collapsed state */
 }
 
 /* Tab System Styles */
@@ -1474,16 +1473,6 @@ body.route-point-select-mode * {
   gap: 10px; /* Space between panels */
   max-width: calc(100vw - 61px);
   cursor: auto;
-}
-
-#directions-panel-header {
-  display: flex;
-  align-items: center;
-}
-#directions-panel-header .header-arrow {
-  padding: 2.5px;
-  border-width: 0 1.5px 1.5px 0;
-  border-color: var(--text-color);
 }
 
 /* Panels Toggle Button */
