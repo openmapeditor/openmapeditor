@@ -546,19 +546,18 @@ const NearbyPlaces = (function () {
    * @param {L.Map} map - Leaflet map instance
    */
   function addPlaceAsMarker(place, categoryName, map) {
-    const categoryData = CATEGORIES[categoryName];
-    const colorName = categoryData.color;
-    const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
+    const defaultDrawColorName = "Red";
+    const defaultDrawColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === defaultDrawColorName);
 
     const newMarker = L.marker([place.lat, place.lon], {
-      icon: createMarkerIcon(colorData.css, STYLE_CONFIG.marker.default.opacity),
+      icon: createMarkerIcon(defaultDrawColorData.css, STYLE_CONFIG.marker.default.opacity),
     });
 
     newMarker.pathType = "drawn";
     newMarker.feature = {
       properties: {
         name: place.name,
-        omColorName: colorName,
+        omColorName: defaultDrawColorName,
         osmType: getPlaceTypeLabel(place.tags),
         osmTags: place.tags,
         nearbyPlaceCategory: categoryName,
