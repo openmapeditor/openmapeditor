@@ -242,16 +242,25 @@ const WmsImport = (function () {
             ${disabledAttr}
             style="margin-right: 10px; margin-top: 4px; cursor: pointer;"
           />
-          <div>
-            <div style="font-weight: 500;">${layer.title}</div>
-            ${
-              alreadyImported
-                ? '<div style="color: var(--color-red); font-size: 12px; margin-top: 4px;">Already imported</div>'
-                : ""
-            }
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-weight: 500; display: flex; align-items: flex-start; gap: 6px;">
+              <span style="flex: 1; min-width: 0;">
+                ${layer.title}
+                ${
+                  alreadyImported
+                    ? ' <span style="color: var(--color-red); font-size: 12px; font-weight: 400;">(Already imported)</span>'
+                    : ""
+                }
+              </span>
+              ${
+                layer.abstract
+                  ? `<span class="material-symbols wms-layer-info-icon" data-layer-index="${index}" style="font-size: 18px; cursor: pointer; user-select: none;">info</span>`
+                  : ""
+              }
+            </div>
             ${
               layer.abstract
-                ? `<div class="wms-layer-description" style="font-size: 12px; color: var(--text-color); margin-top: 4px;">${layer.abstract}</div>`
+                ? `<div class="wms-layer-description" id="wms-description-${index}" style="display: none; font-size: 12px; color: var(--text-color); margin-top: 4px; line-height: 1.4;">${layer.abstract}</div>`
                 : ""
             }
           </div>
@@ -339,6 +348,31 @@ const WmsImport = (function () {
 
           // Update the count display
           layerCountEl.textContent = visibleCount;
+        });
+
+        // Add click handler for info icons to toggle description visibility
+        const infoIcons = document.querySelectorAll(".wms-layer-info-icon");
+        infoIcons.forEach((icon) => {
+          icon.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const layerIndex = icon.dataset.layerIndex;
+            const description = document.getElementById(`wms-description-${layerIndex}`);
+
+            if (description) {
+              // Toggle description visibility
+              const isHidden = description.style.display === "none";
+              description.style.display = isHidden ? "block" : "none";
+
+              // Toggle icon fill state
+              if (isHidden) {
+                icon.classList.add("material-symbols-fill");
+              } else {
+                icon.classList.remove("material-symbols-fill");
+              }
+            }
+          });
         });
       },
       preConfirm: () => {

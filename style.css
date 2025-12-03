@@ -1037,6 +1037,11 @@ a#info-panel-strava-link:hover {
   margin-bottom: 12px;
 }
 
+/* WMS layer info icon styles */
+.wms-layer-info-icon {
+  flex-shrink: 0;
+}
+
 /* Style for links in WMS layer descriptions */
 .wms-layer-description a {
   color: var(--highlight-color);
