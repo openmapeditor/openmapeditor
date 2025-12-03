@@ -98,6 +98,15 @@ function initializeContextMenu(map) {
     );
 
     popupContent.appendChild(
+      createMenuItem("Find nearby places", () => {
+        map.closePopup();
+        if (window.NearbyPlaces && typeof window.NearbyPlaces.findNearbyPlaces === "function") {
+          window.NearbyPlaces.findNearbyPlaces(latlng, map);
+        }
+      })
+    );
+
+    popupContent.appendChild(
       createMenuItem("Edit on OpenStreetMap", () => {
         const zoom = map.getZoom();
         const url = `https://www.openstreetmap.org/edit?editor=id#map=${zoom}/${latlng.lat}/${latlng.lng}`;

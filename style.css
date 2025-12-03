@@ -1055,6 +1055,164 @@ a#info-panel-strava-link:hover {
   color: var(--highlight-color);
 }
 
+/* Nearby Places Dialog Specific Styles */
+
+/* Make nearby places popup similar to WMS import */
+.nearby-places-popup .swal2-html-container {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Nearby places search input */
+#nearby-search-input {
+  margin-bottom: 12px;
+}
+
+/* Category header */
+.nearby-category {
+  margin-bottom: 16px;
+}
+
+.nearby-category-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--panel-bg);
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.nearby-category-header:hover {
+  background-color: var(--highlight-color-fade);
+}
+
+.nearby-category-icon {
+  font-size: 20px;
+  color: var(--highlight-color);
+}
+
+.nearby-category-title {
+  font-weight: 600;
+  flex: 1;
+}
+
+.nearby-category-count {
+  font-size: 12px;
+  color: var(--text-secondary-color);
+}
+
+.nearby-category-toggle {
+  font-size: 20px;
+  transition: transform 0.2s;
+}
+
+.nearby-category-content {
+  padding-left: 8px;
+  margin-top: 8px;
+}
+
+/* Place item */
+.nearby-place-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid var(--divider-color);
+  border-radius: 4px;
+  background: var(--panel-bg);
+}
+
+.nearby-place-item:hover {
+  background: var(--highlight-color-fade);
+}
+
+.nearby-place-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nearby-place-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.nearby-place-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nearby-place-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-secondary-color);
+}
+
+.nearby-place-type {
+  text-transform: capitalize;
+}
+
+.nearby-place-distance {
+  font-weight: 600;
+  color: var(--text-secondary-color);
+}
+
+.nearby-place-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.nearby-place-info-icon,
+.nearby-place-marker-icon {
+  font-size: 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.nearby-place-marker-icon {
+  color: var(--color-red);
+}
+
+/* Place details */
+.nearby-place-details {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--divider-color);
+}
+
+.nearby-place-details-content {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.nearby-place-details-content div {
+  margin-bottom: 4px;
+}
+
+.nearby-place-details-content strong {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.nearby-place-details-content a {
+  color: var(--highlight-color);
+  text-decoration: none;
+}
+
+.nearby-place-details-content a:hover {
+  text-decoration: underline;
+}
+
 /* Leaflet control overrides */
 .leaflet-touch .leaflet-control-layers-toggle {
   background-position: center center;
