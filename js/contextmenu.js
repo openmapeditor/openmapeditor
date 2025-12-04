@@ -80,6 +80,38 @@ function initializeContextMenu(map) {
     );
 
     popupContent.appendChild(
+      createMenuItem("Place Marker", () => {
+        const defaultDrawColorName = "Red";
+        const defaultDrawColorData = ORGANIC_MAPS_COLORS.find(
+          (c) => c.name === defaultDrawColorName
+        );
+
+        const newMarker = L.marker(latlng, {
+          icon: createMarkerIcon(defaultDrawColorData.css, STYLE_CONFIG.marker.default.opacity),
+        });
+
+        newMarker.pathType = "drawn";
+        newMarker.feature = {
+          properties: {
+            omColorName: defaultDrawColorName,
+          },
+        };
+
+        drawnItems.addLayer(newMarker);
+        editableLayers.addLayer(newMarker);
+        newMarker.on("click", (ev) => {
+          L.DomEvent.stopPropagation(ev);
+          selectItem(newMarker);
+        });
+
+        selectItem(newMarker);
+        updateDrawControlStates();
+        updateOverviewList();
+        map.closePopup();
+      })
+    );
+
+    popupContent.appendChild(
       createMenuItem("Route from here", () => {
         if (window.app && typeof window.app.updateRoutingPoint === "function") {
           window.app.updateRoutingPoint(latlng, "start");
