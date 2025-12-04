@@ -58,7 +58,7 @@ function createMarkerIcon(
     html: `<span class="material-symbols ${fillClass} material-symbols-map-marker" style="font-size: ${size}px; color: ${color}; opacity: ${opacity}; line-height: 1;">location_on</span>`,
     className: "svg-marker-icon",
     iconSize: [size, size],
-    iconAnchor: [size / 2, size + anchorOffsetY],
+    iconAnchor: [size / 2, size * 0.9 + anchorOffsetY],
   });
 }
 
