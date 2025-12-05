@@ -1702,17 +1702,26 @@ button.strava-button-secondary:not(:disabled) {
 }
 
 /* Material Symbols Styles Start */
-
-/* For self hosting the font */
-/* @font-face {
+/* Instructions for self hosting: https://developers.google.com/fonts/docs/material_symbols#self-hosting_the_font */
+/* Downloaded font here: https://github.com/google/material-design-icons/tree/master/variablefont */
+@font-face {
   font-family: "Material Symbols Outlined";
   font-style: normal;
-  src: url(MaterialSymbolsOutlined[FILLGRADopszwght].woff2) format("woff");
-} */
+  src: url(/fonts/MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].woff2) format("woff2");
+}
 
 .material-symbols {
   font-family: "Material Symbols Outlined" !important;
+  font-weight: normal;
+  font-style: normal;
   font-size: 20px !important;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
   color: var(--icon-color);
   font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24 !important;
 }
