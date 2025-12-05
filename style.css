@@ -1716,6 +1716,7 @@ button.strava-button-secondary:not(:disabled) {
 @font-face {
   font-family: "Material Symbols Outlined";
   font-style: normal;
+  font-display: block;
   src: url(/fonts/MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].woff2) format("woff2");
 }
 
@@ -1733,6 +1734,13 @@ button.strava-button-secondary:not(:disabled) {
   direction: ltr;
   color: var(--icon-color);
   font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24 !important;
+  /* Hide text content until font is loaded */
+  visibility: hidden;
+}
+
+/* Show icons once font is loaded */
+body.material-symbols-loaded .material-symbols {
+  visibility: visible;
 }
 
 .material-symbols-fill {

@@ -41,6 +41,28 @@
   window.addEventListener("pointerdown", updateInputType, { passive: true });
 })();
 
+// Material Symbols font loading detection
+(function () {
+  // Check if the Font Loading API is supported
+  if ("fonts" in document) {
+    document.fonts
+      .load('20px "Material Symbols Outlined"')
+      .then(function () {
+        document.body.classList.add("material-symbols-loaded");
+      })
+      .catch(function () {
+        // If font loading fails, show icons anyway to prevent permanent invisibility
+        document.body.classList.add("material-symbols-loaded");
+      });
+  } else {
+    // Fallback for browsers without Font Loading API
+    // Show icons after a short delay
+    setTimeout(function () {
+      document.body.classList.add("material-symbols-loaded");
+    }, 100);
+  }
+})();
+
 // Global variables
 let map,
   drawnItems,
