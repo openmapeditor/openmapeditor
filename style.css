@@ -1701,6 +1701,15 @@ button.strava-button-secondary:not(:disabled) {
   text-decoration: underline;
 }
 
+/* Roboto Font Styles Start */
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 100 900;
+  src: url(/fonts/Roboto-VariableFont_wdth,wght.woff2) format("woff2");
+}
+/* Roboto Font Styles End */
+
 /* Material Symbols Styles Start */
 /* Instructions for self hosting: https://developers.google.com/fonts/docs/material_symbols#self-hosting_the_font */
 /* Downloaded font here: https://github.com/google/material-design-icons/tree/master/variablefont */
