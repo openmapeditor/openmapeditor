@@ -129,6 +129,16 @@ function initializeContextMenu(map) {
       })
     );
 
+    // Show WMS feature info option only if there are WMS layers
+    if (window.WmsGetFeatureInfo && WmsGetFeatureInfo.hasWmsLayers(map)) {
+      popupContent.appendChild(
+        createMenuItem("WMS Feature Info", () => {
+          map.closePopup();
+          WmsGetFeatureInfo.queryAtLocation(latlng, map);
+        })
+      );
+    }
+
     popupContent.appendChild(
       createMenuItem("Edit on OpenStreetMap", () => {
         const zoom = map.getZoom();

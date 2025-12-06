@@ -344,6 +344,11 @@ function initializeMap() {
   map.createPane("wmsPane");
   map.getPane("wmsPane").style.zIndex = 250;
 
+  // Initialize WMS GetFeatureInfo functionality
+  if (window.WmsGetFeatureInfo) {
+    WmsGetFeatureInfo.initialize(map);
+  }
+
   const initialView = parseMapHash(window.location.hash);
   let isUpdatingUrl = false;
 
