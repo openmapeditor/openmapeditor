@@ -129,6 +129,8 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: <https://d3js.org/d3.v7.min.js>
 - **flag-icons-7.5.0**
   - Download URL: <https://github.com/lipis/flag-icons/archive/refs/tags/v7.5.0.zip>
+- **idb-8.0.3**
+  - Download URL: <https://registry.npmjs.org/idb/-/idb-8.0.3.tgz>
 - **jszip-3.10.1**
   - Download URL: <https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz>
 - **leaflet-1.9.4**
@@ -139,6 +141,8 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: <https://registry.npmjs.org/leaflet-geosearch/-/leaflet-geosearch-4.2.1.tgz>
 - **leaflet-locatecontrol-0.85.1**
   - Download URL: <https://registry.npmjs.org/leaflet.locatecontrol/-/leaflet.locatecontrol-0.85.1.tgz>
+- **leaflet-offline-3.2.0**
+  - Download URL: <https://registry.npmjs.org/leaflet.offline/-/leaflet.offline-3.2.0.tgz>
 - **leaflet-routing-machine-3.2.12**
   - Download URL: <https://registry.npmjs.org/leaflet-routing-machine/-/leaflet-routing-machine-3.2.12.tgz>
 - **polyline-encoded-0.0.9**

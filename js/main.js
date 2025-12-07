@@ -295,8 +295,10 @@ function initializeMap() {
       '<span class="material-symbols layer-icon">directions_run</span> Strava Activities',
   };
 
-  const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  // Use offline-capable tile layer for OpenStreetMap
+  const osmLayer = L.tileLayer.offline("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
+    crossOrigin: true,
   });
 
   const baseMaps = {
@@ -544,6 +546,46 @@ function initializeMap() {
     });
   }
 
+  // Add Offline Maps button after WMS button (only shown when OSM layer is active)
+  const wmsButtonContainer = wmsImportBtn?.parentElement;
+  if (wmsButtonContainer) {
+    const offlineButtonHtml = `
+      <button
+        id="offline-maps-btn"
+        class="offline-maps-button"
+        style="width: 100%; padding: 8px 12px; cursor: pointer; background-color: var(--text-color); color: var(--background-color); border: none; border-radius: 4px; font-size: 14px; font-weight: bold; white-space: nowrap; margin-top: 8px; display: none;"
+      >
+        Offline Map
+      </button>
+    `;
+    wmsButtonContainer.insertAdjacentHTML("beforeend", offlineButtonHtml);
+
+    // Add event listener for Offline Maps button
+    const offlineMapsBtn = document.getElementById("offline-maps-btn");
+    if (offlineMapsBtn) {
+      offlineMapsBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof OfflineManager !== "undefined") {
+          OfflineManager.initialize(map, osmLayer);
+          OfflineManager.showOfflineDialog();
+        }
+      });
+    }
+
+    // Function to update offline button visibility based on active base layer
+    window.updateOfflineButtonVisibility = () => {
+      const offlineBtn = document.getElementById("offline-maps-btn");
+      if (offlineBtn) {
+        // Show button only if OSM layer is active
+        offlineBtn.style.display = map.hasLayer(osmLayer) ? "block" : "none";
+      }
+    };
+
+    // Initial visibility check
+    window.updateOfflineButtonVisibility();
+  }
+
   // Load saved WMS layers from localStorage
   if (typeof WmsImport !== "undefined" && WmsImport.loadLayersFromStorage) {
     WmsImport.loadLayersFromStorage(map);
@@ -728,6 +770,10 @@ function initializeMap() {
         }
         // Reapply overlay layer z-index after base layer change
         reapplyOverlayZIndex();
+        // Update offline button visibility
+        if (window.updateOfflineButtonVisibility) {
+          window.updateOfflineButtonVisibility();
+        }
       } else {
         for (const name in allOverlayMaps) {
           const layer = allOverlayMaps[name];
