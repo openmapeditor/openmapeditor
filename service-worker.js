@@ -41,7 +41,7 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Fetch event - Network First strategy with automatic caching
+// Fetch event - Network First strategy with automatic caching and timeout
 self.addEventListener("fetch", (event) => {
   // Skip cross-origin requests (external APIs, map tiles, etc)
   if (!event.request.url.startsWith(self.location.origin)) {
@@ -49,8 +49,14 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
+    (async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      try {
+        const response = await fetch(event.request, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
         // Clone the response before caching
         const responseToCache = response.clone();
 
@@ -62,20 +68,23 @@ self.addEventListener("fetch", (event) => {
         }
 
         return response;
-      })
-      .catch(() => {
-        // Network failed, try cache
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
+      } catch (error) {
+        clearTimeout(timeoutId);
 
-          // If no cache and it's an HTML request, return the main page
-          const acceptHeader = event.request.headers.get("accept");
-          if (acceptHeader && acceptHeader.includes("text/html")) {
-            return caches.match("/index.html");
-          }
-        });
-      })
+        // Network failed or timed out, try cache
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        // If no cache and it's an HTML request, return the main page
+        const acceptHeader = event.request.headers.get("accept");
+        if (acceptHeader && acceptHeader.includes("text/html")) {
+          return caches.match("/index.html");
+        }
+
+        throw error;
+      }
+    })()
   );
 });
