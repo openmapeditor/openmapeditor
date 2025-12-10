@@ -1440,7 +1440,8 @@ body.route-point-select-mode * {
   width: 50px; /* Match the icon's font-size */
   height: 50px; /* Match the icon's font-size */
   /* Anchor the cursor so the bottom-center of the icon is at the mouse pointer */
-  transform: translate(-25px, -62.5px);
+  /* Uses 0.9 multiplier to match marker iconAnchor positioning */
+  transform: translate(-25px, calc(-50px * 0.9));
 }
 #custom-cursor-start .material-symbols {
   color: var(--routing-color-start);
