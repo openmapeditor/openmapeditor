@@ -449,24 +449,6 @@ function displayActivitiesOnMap(activities) {
 }
 
 /**
- * Generates a timestamped filename.
- * @param {string} baseName - The base name for the file
- * @param {string} extension - The file extension
- * @returns {string} The complete, timestamped filename
- */
-function generateTimestampedFilename(baseName, extension) {
-  const now = new Date();
-  const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now
-    .getDate()
-    .toString()
-    .padStart(2, "0")}${now.getHours().toString().padStart(2, "0")}${now
-    .getMinutes()
-    .toString()
-    .padStart(2, "0")}${now.getSeconds().toString().padStart(2, "0")}`;
-  return `${baseName}_${timestamp}.${extension}`;
-}
-
-/**
  * Creates and triggers a download for a KML file of all loaded Strava activities.
  */
 async function exportStravaActivitiesAsKml() {
