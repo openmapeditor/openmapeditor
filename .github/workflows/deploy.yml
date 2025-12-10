@@ -78,10 +78,11 @@ jobs:
           # The path now correctly starts with a '/' to match your HTML style.
           sed -i '/<!-- START-BUNDLE -->/,/<!-- END-BUNDLE -->/c\    <script src="/js/app.min.js"><\/script>' index.html
 
-      - name: Inject Build Timestamp into Service Worker
+      - name: Inject Build Timestamp
         run: |
           BUILD_TIMESTAMP=$(date -u +"%Y%m%d%H%M%S")
           sed -i "s|__BUILD_TIMESTAMP__|${BUILD_TIMESTAMP}|g" service-worker.js
+          sed -i "s|__BUILD_TIMESTAMP__|${BUILD_TIMESTAMP}|g" credits.html
           echo "Injected build timestamp: $BUILD_TIMESTAMP"
 
       # Upload the entire directory
