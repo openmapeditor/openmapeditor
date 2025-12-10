@@ -1915,5 +1915,19 @@ function initializeMap() {
 
 document.addEventListener("DOMContentLoaded", initializeMap);
 
+// Register service worker for offline functionality
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .then((registration) => {
+        console.log("[ServiceWorker] Registered successfully:", registration.scope);
+      })
+      .catch((error) => {
+        console.log("[ServiceWorker] Registration failed:", error);
+      });
+  });
+}
+
 // console.log("User Agent:", navigator.userAgent);
 // console.log("Leaflet Version:", L.version);
