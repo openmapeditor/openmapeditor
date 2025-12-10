@@ -5,7 +5,15 @@ const CACHE_VERSION = "__BUILD_TIMESTAMP__";
 const CACHE_NAME = `openmapeditor-${CACHE_VERSION}`;
 
 // Critical files to pre-cache during installation
-const PRECACHE_URLS = ["/", "/index.html", "/style.css", "/credits.html", "/manifest.json"];
+const PRECACHE_URLS = [
+  "/",
+  "/index.html",
+  "/style.css",
+  "/credits.html",
+  "/manifest.json",
+  "/flag-icons-7.5.0/flags/1x1/de.svg",
+  "/flag-icons-7.5.0/flags/1x1/ch.svg",
+];
 
 // Install event - pre-cache critical files
 self.addEventListener("install", (event) => {
