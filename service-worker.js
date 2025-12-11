@@ -9,9 +9,10 @@ const PRECACHE_URLS = [
   "/",
   "/index.html",
   "/style.css",
-  "/js/app.min.js",
   "/credits.html",
   "/manifest.json",
+  "/flag-icons-7.5.0/flags/1x1/de.svg",
+  "/flag-icons-7.5.0/flags/1x1/ch.svg",
 ];
 
 // Install event - pre-cache critical files
@@ -48,7 +49,7 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Fetch event - Network First strategy with automatic caching
+// Fetch event - Network First strategy with automatic caching and timeout
 self.addEventListener("fetch", (event) => {
   // Skip cross-origin requests (external APIs, map tiles, etc)
   if (!event.request.url.startsWith(self.location.origin)) {
@@ -56,8 +57,26 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
+    (async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      try {
+        const response = await fetch(event.request, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        // Check if response has content
+        const contentLength = response.headers.get("content-length");
+        if (contentLength === "0" || contentLength === null) {
+          // Empty response from network, try cache instead
+          console.warn("[ServiceWorker] Network returned empty response, trying cache");
+          const cachedResponse = await caches.match(event.request);
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Fall through to cache the empty response if no cache exists
+        }
+
         // Clone the response before caching
         const responseToCache = response.clone();
 
@@ -69,20 +88,23 @@ self.addEventListener("fetch", (event) => {
         }
 
         return response;
-      })
-      .catch(() => {
-        // Network failed, try cache
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
+      } catch (error) {
+        clearTimeout(timeoutId);
 
-          // If no cache and it's an HTML request, return the main page
-          const acceptHeader = event.request.headers.get("accept");
-          if (acceptHeader && acceptHeader.includes("text/html")) {
-            return caches.match("/index.html");
-          }
-        });
-      })
+        // Network failed or timed out, try cache
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        // If no cache and it's an HTML request, return the main page
+        const acceptHeader = event.request.headers.get("accept");
+        if (acceptHeader && acceptHeader.includes("text/html")) {
+          return caches.match("/index.html");
+        }
+
+        throw error;
+      }
+    })()
   );
 });
