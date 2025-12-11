@@ -69,7 +69,6 @@ jobs:
       - name: Inject build timestamp
         run: |
           BUILD_TIMESTAMP=$(date -u +"%Y%m%d%H%M%S")
-          sed -i "s|__BUILD_TIMESTAMP__|${BUILD_TIMESTAMP}|g" service-worker.js
           sed -i "s|__BUILD_TIMESTAMP__|${BUILD_TIMESTAMP}|g" credits.html
           echo "Injected build timestamp: $BUILD_TIMESTAMP"
 
