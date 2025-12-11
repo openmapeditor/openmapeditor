@@ -221,6 +221,31 @@ function downloadFile(filename, text) {
 }
 
 /**
+ * Generates a timestamp string in YYYYMMDDHHmmss format.
+ * @returns {string} Timestamp string (14 digits)
+ */
+function generateTimestamp() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = (now.getMonth() + 1).toString().padStart(2, "0");
+  const day = now.getDate().toString().padStart(2, "0");
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  const seconds = now.getSeconds().toString().padStart(2, "0");
+  return `${year}${month}${day}${hours}${minutes}${seconds}`;
+}
+
+/**
+ * Generates a timestamped filename.
+ * @param {string} baseName - Base name for the file (e.g., "Map_Export", "Strava_Export")
+ * @param {string} extension - File extension without dot (e.g., "kmz", "geojson", "kml", "json")
+ * @returns {string} Filename with timestamp (e.g., "Map_Export_20251210143025.kmz")
+ */
+function generateTimestampedFilename(baseName, extension) {
+  return `${baseName}_${generateTimestamp()}.${extension}`;
+}
+
+/**
  * Calculates the total distance of a path in meters.
  * @param {L.Polyline | L.Polygon} path - The layer to measure
  * @returns {number} Total distance in meters

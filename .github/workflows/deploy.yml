@@ -1,5 +1,3 @@
-# In .github/workflows/deploy.yml
-
 name: Deploy to GitHub Pages
 
 on:
@@ -7,14 +5,12 @@ on:
     branches:
       - main
 
-# Add this permissions block to grant the necessary access
 permissions:
   contents: read
   pages: write
   id-token: write
 
 jobs:
-  # Build job: prepares your site files
   build:
     runs-on: ubuntu-latest
     steps:
@@ -23,76 +19,65 @@ jobs:
 
       - name: Create secrets.js
         run: |
-          mkdir -p js # Ensure the js directory exists
+          mkdir -p js
           echo "const googleApiKey = \"${{ secrets.GOOGLE_API_KEY }}\";" > js/secrets.js
           echo "const mapboxAccessToken = \"${{ secrets.MAPBOX_ACCESS_TOKEN }}\";" >> js/secrets.js
           echo "const tracestrackApiKey = \"${{ secrets.TRACESTRACK_API_KEY }}\";" >> js/secrets.js
           echo "const stravaClientId = \"${{ secrets.STRAVA_CLIENT_ID }}\";" >> js/secrets.js
           echo "const stravaClientSecret = \"${{ secrets.STRAVA_CLIENT_SECRET }}\";" >> js/secrets.js
 
-      - name: Replace Placeholders
+      - name: Replace placeholders
         run: |
           # Extract values from config.js
           APP_NAME_VALUE=$(grep 'const APP_NAME' js/config.js | cut -d '"' -f 2)
           APP_TITLE_VALUE=$(grep 'const APP_TITLE' js/config.js | cut -d '"' -f 2)
           APP_DESC_VALUE=$(grep 'const APP_DESCRIPTION' js/config.js | cut -d '"' -f 2)
 
-          # Escape special characters for sed (& and \)
+          # Escape special characters (& and \) for sed
           APP_NAME_VALUE_ESCAPED=$(echo "$APP_NAME_VALUE" | sed 's/[&\]/\\&/g')
           APP_TITLE_VALUE_ESCAPED=$(echo "$APP_TITLE_VALUE" | sed 's/[&\]/\\&/g')
           APP_DESC_VALUE_ESCAPED=$(echo "$APP_DESC_VALUE" | sed 's/[&\]/\\&/g')
 
-          # Replace in index.html
+          # Replace in HTML and manifest
           sed -i "s|__APP_TITLE__|${APP_TITLE_VALUE_ESCAPED}|g" index.html
           sed -i "s|__APP_DESCRIPTION__|${APP_DESC_VALUE_ESCAPED}|g" index.html
-
-          # Replace in manifest.json
           sed -i "s|__APP_NAME__|${APP_NAME_VALUE_ESCAPED}|g" manifest.json
           sed -i "s|__APP_DESCRIPTION__|${APP_DESC_VALUE_ESCAPED}|g" manifest.json
 
-      # Steps for JavaScript Minification ---
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Install JavaScript minifier (Terser)
+      - name: Install Terser
         run: npm install -g terser
 
-      - name: Bundle, Minify, and Update HTML
+      - name: Bundle and minify JavaScript
         run: |
-          # 1. Extract script paths. The "| sed 's|^/||'" is the CRITICAL FIX.
-          # It removes the leading '/' from paths like "/js/main.js" to make them "js/main.js"
-          # so that the 'cat' command can find the files correctly.
+          # Extract script paths and remove leading slashes for file access
           scripts=$(sed -n '/<!-- START-BUNDLE -->/,/<!-- END-BUNDLE -->/p' index.html | grep '<script src' | sed 's/.*src="\([^"]*\)".*/\1/' | sed 's|^/||')
           echo "Found scripts to bundle:"
           echo "$scripts"
 
-          # 2. Concatenate the scripts into a single file
+          # Concatenate and minify
           cat $scripts > js/bundle.js
-
-          # 3. Minify the bundled file
           terser js/bundle.js -c -m -o js/app.min.js --source-map "filename='js/app.min.js.map'"
 
-          # 4. Replace the original script block with the single minified script tag.
-          # The path now correctly starts with a '/' to match your HTML style.
+          # Replace bundle section with single minified script
           sed -i '/<!-- START-BUNDLE -->/,/<!-- END-BUNDLE -->/c\    <script src="/js/app.min.js"><\/script>' index.html
 
-      - name: Inject Build Timestamp into Service Worker
+      - name: Inject build timestamp
         run: |
           BUILD_TIMESTAMP=$(date -u +"%Y%m%d%H%M%S")
-          sed -i "s|__BUILD_TIMESTAMP__|${BUILD_TIMESTAMP}|g" service-worker.js
+          sed -i "s|__BUILD_TIMESTAMP__|${BUILD_TIMESTAMP}|g" credits.html
           echo "Injected build timestamp: $BUILD_TIMESTAMP"
 
-      # Upload the entire directory
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: "."
 
-  # Deploy job: takes the prepared files and deploys them
   deploy:
-    # Requires the build job to succeed first
     needs: build
     runs-on: ubuntu-latest
     environment:
