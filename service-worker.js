@@ -65,6 +65,18 @@ self.addEventListener("fetch", (event) => {
         const response = await fetch(event.request, { signal: controller.signal });
         clearTimeout(timeoutId);
 
+        // Check if response has content
+        const contentLength = response.headers.get("content-length");
+        if (contentLength === "0" || contentLength === null) {
+          // Empty response from network, try cache instead
+          console.warn("[ServiceWorker] Network returned empty response, trying cache");
+          const cachedResponse = await caches.match(event.request);
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Fall through to cache the empty response if no cache exists
+        }
+
         // Clone the response before caching
         const responseToCache = response.clone();
 
