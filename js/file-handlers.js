@@ -235,14 +235,7 @@ function generateFullKmzZip(docName) {
  * Handles the final export and download of the KMZ file.
  */
 function exportKmz() {
-  const now = new Date();
-  const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now
-    .getDate()
-    .toString()
-    .padStart(2, "0")}${now.getHours().toString().padStart(2, "0")}${now
-    .getMinutes()
-    .toString()
-    .padStart(2, "0")}${now.getSeconds().toString().padStart(2, "0")}`;
+  const timestamp = generateTimestamp();
   const fileName = `Map_Export_${timestamp}.kmz`;
   const docName = `Map Export ${timestamp}`;
 
@@ -385,15 +378,7 @@ function exportGeoJson() {
   };
 
   // Generate filename with timestamp
-  const now = new Date();
-  const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now
-    .getDate()
-    .toString()
-    .padStart(2, "0")}${now.getHours().toString().padStart(2, "0")}${now
-    .getMinutes()
-    .toString()
-    .padStart(2, "0")}${now.getSeconds().toString().padStart(2, "0")}`;
-  const fileName = `Map_Export_${timestamp}.geojson`;
+  const fileName = generateTimestampedFilename("Map_Export", "geojson");
 
   // Download file
   downloadFile(fileName, JSON.stringify(geojsonDoc, null, 2));
