@@ -99,7 +99,7 @@ For the deployment to succeed, you must provide your production API keys as GitH
 >
 > - **Geolocation API** (for automatic map centering based on user location)
 > - **Maps Elevation API** (for elevation profiles)
-> - **Maps JavaScript API** (for elevation profiles)
+> - **Maps JavaScript API** (required dependency for the Maps Elevation API)
 
 > **GeoAdmin API Note:** The GeoAdmin API is free and does not require an API key. It only works for paths within Switzerland.
 
