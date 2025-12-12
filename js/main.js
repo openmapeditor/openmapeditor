@@ -352,7 +352,7 @@ function initializeMap() {
     map.setView([initialView.lat, initialView.lon], initialView.zoom);
     isUpdatingUrl = false;
   } else {
-    fetch("https://ipinfo.io/json")
+    fetch("http://ip-api.com/json/")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Response not OK");
@@ -360,12 +360,9 @@ function initializeMap() {
         return response.json();
       })
       .then((data) => {
-        if (data && data.loc) {
-          const [lat, lon] = data.loc.split(",").map(Number);
-          if (lat && lon) {
-            console.log(`Centering map on ${data.city}, ${data.country} via IP Geolocation.`);
-            map.setView([lat, lon], 5);
-          }
+        if (data && data.status === "success" && data.lat && data.lon) {
+          console.log(`Centering map on ${data.city}, ${data.country} via IP Geolocation.`);
+          map.setView([data.lat, data.lon], 5);
         }
       })
       .catch((error) => {
