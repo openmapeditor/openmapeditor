@@ -352,7 +352,10 @@ function initializeMap() {
     map.setView([initialView.lat, initialView.lon], initialView.zoom);
     isUpdatingUrl = false;
   } else {
-    fetch("http://ip-api.com/json/")
+    fetch(`https://www.googleapis.com/geolocation/v1/geolocate?key=${googleApiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
       .then((response) => {
         if (!response.ok) {
           throw new Error("Response not OK");
@@ -360,13 +363,13 @@ function initializeMap() {
         return response.json();
       })
       .then((data) => {
-        if (data && data.status === "success" && data.lat && data.lon) {
-          console.log(`Centering map on ${data.city}, ${data.country} via IP Geolocation.`);
-          map.setView([data.lat, data.lon], 5);
+        if (data && data.location) {
+          console.log(`Centering map on user location via Google Geolocation API.`);
+          map.setView([data.location.lat, data.location.lng], 5);
         }
       })
       .catch((error) => {
-        console.error("IP Geolocation fetch failed, using default map view.", error);
+        console.error("Geolocation failed, using default map view.", error);
       });
   }
 

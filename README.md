@@ -95,7 +95,11 @@ For the deployment to succeed, you must provide your production API keys as GitH
 
 ### Important API Notes
 
-> **Google API Note:** To use the Google Maps Elevation API, your `GOOGLE_API_KEY` must have both the **Maps Elevation API** and the **Maps JavaScript API** enabled in your Google Cloud Platform project.
+> **Google API Note:** Your `GOOGLE_API_KEY` must have the following APIs enabled in your Google Cloud Platform project:
+>
+> - **Geolocation API** (for automatic map centering based on user location)
+> - **Maps Elevation API** (for elevation profiles)
+> - **Maps JavaScript API** (for elevation profiles)
 
 > **GeoAdmin API Note:** The GeoAdmin API is free and does not require an API key. It only works for paths within Switzerland.
 
