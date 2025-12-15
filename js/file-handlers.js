@@ -48,16 +48,18 @@ function generateKmlForLayer(layer, defaultName, defaultDescription = "") {
   if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
     let latlngs;
     let coords;
-    if (layer instanceof L.Polyline) {
+    if (layer instanceof L.Polygon) {
+      // Polygon: close the ring by adding the first point at the end
+      latlngs = layer.getLatLngs()[0];
+      const closedLatLngs = [...latlngs, latlngs[0]];
+      coords = closedLatLngs
+        .map((p) => `${p.lng},${p.lat},${typeof p.alt === "number" ? p.alt : 0}`)
+        .join(" ");
+    } else if (layer instanceof L.Polyline) {
       latlngs = layer.getLatLngs();
       while (latlngs.length > 0 && Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
         latlngs = latlngs[0];
       }
-      coords = latlngs
-        .map((p) => `${p.lng},${p.lat},${typeof p.alt === "number" ? p.alt : 0}`)
-        .join(" ");
-    } else {
-      latlngs = layer.getLatLngs()[0];
       coords = latlngs
         .map((p) => `${p.lng},${p.lat},${typeof p.alt === "number" ? p.alt : 0}`)
         .join(" ");
