@@ -1214,6 +1214,10 @@ a#info-panel-strava-link:hover {
   color: var(--text-color);
 }
 
+#search-input.offline::placeholder {
+  color: white !important;
+}
+
 /* The dropdown container for suggestions */
 #search-suggestions {
   /* Uses the .autocomplete-suggestions class for most styling */
