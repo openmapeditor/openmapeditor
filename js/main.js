@@ -314,11 +314,12 @@ function initializeMap() {
     ),
     TopPlusOpen: L.tileLayer(
       "http://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web/default/WEBMERCATOR/{z}/{y}/{x}.png",
-      { maxZoom: 19 }
+      { maxZoom: 18 }
     ),
     Swisstopo: L.tileLayer.wms("https://wms.geo.admin.ch/", {
       layers: "ch.swisstopo.pixelkarte-farbe",
       format: "image/jpeg",
+      maxZoom: 18,
     }),
     Empty: L.layerGroup(), // Empty layer group for no basemap
   };
