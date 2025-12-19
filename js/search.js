@@ -85,6 +85,12 @@ async function showSearchModal(title, placeholder, currentValue, callback) {
  * @param {function(L.LatLng, string): void} callback - Callback when location is selected
  */
 function attachSearchModalToInput(inputEl, modalTitle, callback) {
+  // Prevent duplicate attachment - guard against multiple calls on the same input
+  if (inputEl._searchModalAttached) {
+    return;
+  }
+  inputEl._searchModalAttached = true;
+
   // Store original placeholder for offline state handling
   const originalPlaceholder = inputEl.placeholder;
 
@@ -141,9 +147,9 @@ function attachSearchModalToInput(inputEl, modalTitle, callback) {
     openModal();
   });
 
-  // Focus handler for accessibility
-  inputEl.addEventListener("focus", () => {
-    // Don't auto-open on focus - let user decide to click or type
-    // This prevents unwanted modal opens when tabbing through fields
+  // Prevent focus to eliminate cursor/keyboard flicker on mobile
+  inputEl.addEventListener("focus", (e) => {
+    e.preventDefault();
+    inputEl.blur();
   });
 }
