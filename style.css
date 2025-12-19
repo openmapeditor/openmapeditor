@@ -1930,11 +1930,6 @@ body.using-touch {
       transition: width 0.3s ease-in-out; /* Smooth expansion animation */
     }
 
-    #search-input:focus {
-      /* Expand to fill the container when the user taps on it */
-      /* width: 100%; */
-    }
-
     /* Mobile Bottom Sheet Styles Start */
     #main-right-container {
       display: flex !important;
