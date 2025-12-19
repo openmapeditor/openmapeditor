@@ -19,11 +19,11 @@ async function showSearchModal(title, placeholder, currentValue, callback) {
     title: title,
     html: `
       <div>
-        <p style="margin-bottom: 12px;">Search for a place or enter coordinates.<br>Example: 47.5, 8.5 or N 47° 30\' 0" E 8° 30\' 0"</p>
+        <p style="margin-bottom: 8px;">Search for a place or enter coordinates.<br>Example: 47.5, 8.5 or N 47° 30\' 0" E 8° 30\' 0"</p>
         <input
           type="text"
           id="search-modal-input"
-          class="swal2-input"
+          class="swal2-input swal-input-field"
           placeholder="${placeholder}"
           value="${currentValue || ""}"
           autocomplete="off"
