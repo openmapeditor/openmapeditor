@@ -435,6 +435,8 @@ a#info-panel-strava-link:hover {
   flex-grow: 1;
   background-color: var(--background-color) !important;
   color: var(--text-color) !important;
+  /* Prevent cursor/caret from appearing since these are readonly */
+  caret-color: transparent;
 }
 .routing-input-group input::placeholder {
   color: var(--text-color) !important;
@@ -1208,6 +1210,8 @@ a#info-panel-strava-link:hover {
   background-color: var(--background-color);
   color: var(--text-color);
   font-size: 14px;
+  /* Prevent cursor/caret from appearing since this is readonly */
+  caret-color: transparent;
 }
 
 #search-input::placeholder {
@@ -1928,7 +1932,7 @@ body.using-touch {
 
     #search-input:focus {
       /* Expand to fill the container when the user taps on it */
-      width: 100%;
+      /* width: 100%; */
     }
 
     /* Mobile Bottom Sheet Styles Start */

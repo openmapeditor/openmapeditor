@@ -98,6 +98,9 @@ function attachSearchModalToInput(inputEl, modalTitle, callback) {
   inputEl.style.cursor = "pointer";
   inputEl.setAttribute("title", "Click to search");
 
+  // Make input readonly to prevent keyboard from appearing and cursor from blinking
+  inputEl.setAttribute("readonly", "true");
+
   // Track if modal is currently open to avoid double-opening
   let modalOpen = false;
 
@@ -105,6 +108,9 @@ function attachSearchModalToInput(inputEl, modalTitle, callback) {
   const openModal = () => {
     if (modalOpen) return;
     modalOpen = true;
+
+    // Immediately blur the input to prevent keyboard from staying open on mobile
+    inputEl.blur();
 
     // Check if offline
     const isOffline = !navigator.onLine || inputEl.classList.contains("offline");
