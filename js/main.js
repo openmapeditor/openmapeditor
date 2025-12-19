@@ -522,7 +522,7 @@ function initializeMap() {
       <button
         id="wms-import-btn"
         class="wms-import-button"
-        style="width: 100%; padding: 8px 12px; cursor: pointer; background-color: var(--text-color); color: var(--background-color); border: none; border-radius: 4px; font-size: 14px; font-weight: bold; white-space: nowrap;"
+        style="width: 100%; padding: 8px 12px; cursor: pointer; background-color: var(--text-color); color: var(--background-color); border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: bold; white-space: nowrap;"
       >
         Import WMS Layers
       </button>
@@ -1098,7 +1098,7 @@ function initializeMap() {
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save to Map";
     saveButton.style.cssText =
-      "padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background-color: #f0f0f0;";
+      "padding: 5px 10px; border: 1px solid #ccc; border-radius: var(--border-radius); cursor: pointer; background-color: #f0f0f0;";
     popupContent.appendChild(saveButton);
 
     L.DomEvent.on(saveButton, "click", () => {
