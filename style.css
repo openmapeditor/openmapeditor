@@ -655,27 +655,7 @@ a#info-panel-strava-link:hover {
   transition: background-color 0.2s ease-in-out;
 }
 
-/* Autocomplete suggestion list styles */
-.autocomplete-suggestions {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background-color: var(--background-color);
-  border: 1px solid var(--divider-color);
-  border-top: none;
-  z-index: 1002;
-  border-radius: 0 0 8px 8px;
-  padding-bottom: 5px;
-}
-
-#routing-panel .autocomplete-suggestions {
-  /* This value is the calculated space for the 3 buttons. */
-  /* It aligns the suggestion box with the input field above it. */
-  right: 99px;
-}
-
+/* Autocomplete suggestion item styles (used inside search modal) */
 .autocomplete-suggestion-item {
   padding: 8px 10px;
   cursor: pointer;
@@ -690,13 +670,122 @@ a#info-panel-strava-link:hover {
   background-color: var(--highlight-color) !important;
 }
 
-/* Seamless Input/Suggestion Box Connection */
-/* This is traditionally difficult with CSS alone, but the modern :has() selector makes it possible.
-   We select the parent group if it :has() a visible suggestion list, then style the input inside it. */
-.routing-input-group:has(.autocomplete-suggestions[style*="display: block"]) > input[type="text"] {
-  /* Make the bottom corners sharp to connect to the box below */
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+/* Search Modal Styles */
+/* Modal container customization */
+.search-modal {
+  font-family: inherit !important;
+  max-width: 500px !important;
+}
+
+.search-modal-container {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Align text paragraphs with input field */
+.search-modal-container p {
+  margin-left: 20px !important;
+  margin-right: 20px !important;
+}
+
+/* Search modal input field */
+#search-modal-input {
+  width: calc(100% - 40px) !important;
+  margin-left: 20px !important;
+  margin-right: 20px !important;
+  box-sizing: border-box !important;
+}
+
+#search-modal-input:focus {
+  outline: none !important;
+  border-color: var(--border-color) !important;
+  box-shadow: none !important;
+}
+
+#search-modal-input[data-offline="true"] {
+  background-color: var(--color-red) !important;
+  color: white !important;
+  border-color: var(--color-red) !important;
+}
+
+#search-modal-input[data-offline="true"]::placeholder {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Suggestions dropdown inside modal - match swal2-input width exactly */
+.search-modal-suggestions {
+  display: none;
+  position: relative;
+  width: calc(100% - 40px) !important;
+  margin-left: 20px !important;
+  margin-right: 20px !important;
+  padding: 0 !important;
+  background-color: var(--background-color);
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box !important;
+}
+
+/* Make input connect visually with suggestions when open */
+.search-modal-container:has(.search-modal-suggestions[style*="display: block"])
+  #search-modal-input {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.search-modal-suggestions[style*="display: block"] {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  margin-top: 0 !important;
+  border-top: none !important;
+}
+
+/* Suggestion items inherit from existing styles */
+.search-modal-suggestions .autocomplete-suggestion-item {
+  padding: 12px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--divider-color);
+  text-align: left;
+}
+
+.search-modal-suggestions .autocomplete-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.search-modal-suggestions .autocomplete-suggestion-item:hover,
+.search-modal-suggestions .autocomplete-suggestion-item.active {
+  background-color: var(--highlight-color) !important;
+}
+
+/* Mobile responsive adjustments for search modal */
+@media (max-width: 768px) {
+  .search-modal {
+    width: 95% !important;
+    max-width: 95% !important;
+  }
+
+  .search-modal-suggestions {
+    max-height: 40vh;
+  }
+
+  #search-modal-input {
+    font-size: 16px !important; /* Prevent iOS zoom on focus */
+  }
+}
+
+/* Ensure modal works well with mobile keyboard */
+@media (max-height: 600px) {
+  .search-modal-suggestions {
+    max-height: 25vh;
+  }
 }
 
 /* Directions Panel Styles */
@@ -1220,22 +1309,6 @@ a#info-panel-strava-link:hover {
 
 #search-input.offline::placeholder {
   color: white !important;
-}
-
-/* The dropdown container for suggestions */
-#search-suggestions {
-  /* Uses the .autocomplete-suggestions class for most styling */
-  width: 100%;
-  box-sizing: border-box;
-  position: absolute;
-  top: 100%;
-  left: 0;
-}
-
-/* Makes the input and suggestion box visually connect when open */
-#search-container:has(.autocomplete-suggestions[style*="display: block"]) #search-input {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
 }
 
 /* Search result popup */
@@ -2114,124 +2187,3 @@ body.using-touch {
   }
 }
 /* Mobile Specific Styles End */
-
-/* ============================================
-   Search Modal Styles
-   ============================================ */
-
-/* Modal container customization */
-.search-modal {
-  font-family: inherit !important;
-  max-width: 500px !important;
-}
-
-.search-modal-container {
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-/* Align text paragraphs with input field */
-.search-modal-container p {
-  margin-left: 20px !important;
-  margin-right: 20px !important;
-}
-
-/* Search modal input field */
-#search-modal-input {
-  width: calc(100% - 40px) !important;
-  margin-left: 20px !important;
-  margin-right: 20px !important;
-  box-sizing: border-box !important;
-}
-
-#search-modal-input:focus {
-  outline: none !important;
-  border-color: var(--border-color) !important;
-  box-shadow: none !important;
-}
-
-#search-modal-input[data-offline="true"] {
-  background-color: var(--color-red) !important;
-  color: white !important;
-  border-color: var(--color-red) !important;
-}
-
-#search-modal-input[data-offline="true"]::placeholder {
-  color: rgba(255, 255, 255, 0.7) !important;
-}
-
-/* Suggestions dropdown inside modal - match swal2-input width exactly */
-.search-modal-suggestions {
-  display: none;
-  position: relative;
-  width: calc(100% - 40px) !important;
-  margin-left: 20px !important;
-  margin-right: 20px !important;
-  padding: 0 !important;
-  background-color: var(--background-color);
-  border: 1px solid var(--divider-color);
-  border-radius: 8px;
-  max-height: 300px;
-  overflow-y: auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box !important;
-}
-
-/* Make input connect visually with suggestions when open */
-.search-modal-container:has(.search-modal-suggestions[style*="display: block"])
-  #search-modal-input {
-  border-bottom-left-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-.search-modal-suggestions[style*="display: block"] {
-  border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
-  margin-top: 0 !important;
-  border-top: none !important;
-}
-
-/* Suggestion items inherit from existing styles */
-.search-modal-suggestions .autocomplete-suggestion-item {
-  padding: 12px 10px;
-  cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--text-color);
-  border-bottom: 1px solid var(--divider-color);
-  text-align: left;
-}
-
-.search-modal-suggestions .autocomplete-suggestion-item:last-child {
-  border-bottom: none;
-}
-
-.search-modal-suggestions .autocomplete-suggestion-item:hover,
-.search-modal-suggestions .autocomplete-suggestion-item.active {
-  background-color: var(--highlight-color) !important;
-}
-
-/* Mobile responsive adjustments for search modal */
-@media (max-width: 768px) {
-  .search-modal {
-    width: 95% !important;
-    max-width: 95% !important;
-  }
-
-  .search-modal-suggestions {
-    max-height: 40vh;
-  }
-
-  #search-modal-input {
-    font-size: 16px !important; /* Prevent iOS zoom on focus */
-  }
-}
-
-/* Ensure modal works well with mobile keyboard */
-@media (max-height: 600px) {
-  .search-modal-suggestions {
-    max-height: 25vh;
-  }
-}

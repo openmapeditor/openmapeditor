@@ -712,7 +712,6 @@ function initializeRouting() {
     if (btn) {
       btn.addEventListener("click", (e) => {
         L.DomEvent.stop(e);
-        document.getElementById(`route-${type}-suggestions`).style.display = "none";
         clearRoutingPoint(type);
       });
     }

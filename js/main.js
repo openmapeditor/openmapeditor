@@ -1079,7 +1079,6 @@ function initializeMap() {
   new FullscreenToggleControl().addTo(map);
 
   const searchInput = document.getElementById("search-input");
-  const searchSuggestions = document.getElementById("search-suggestions");
 
   const onSearchResult = (locationLatLng, label) => {
     if (temporarySearchMarker) {
