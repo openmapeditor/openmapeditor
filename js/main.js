@@ -122,7 +122,6 @@ async function showCreditsPopup() {
     Swal.fire({
       html: swalContent,
       confirmButtonText: "Close",
-      width: "500px",
     });
   } catch (error) {
     console.error("Could not load credits.html:", error);

@@ -293,7 +293,6 @@ const WmsImport = (function () {
       showCancelButton: true,
       confirmButtonText: "Import Selected",
       cancelButtonText: "Cancel",
-      width: "600px",
       customClass: {
         popup: "wms-layer-selection-popup",
         confirmButton: "swal-confirm-button",
