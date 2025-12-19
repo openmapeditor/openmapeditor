@@ -679,7 +679,6 @@ a#info-panel-strava-link:hover {
 /* Modal container customization */
 .search-modal {
   font-family: inherit !important;
-  max-width: 500px !important;
 }
 
 .search-modal-container {
@@ -768,29 +767,6 @@ a#info-panel-strava-link:hover {
 .search-modal-suggestions .autocomplete-suggestion-item:hover,
 .search-modal-suggestions .autocomplete-suggestion-item.active {
   background-color: var(--highlight-color) !important;
-}
-
-/* Mobile responsive adjustments for search modal */
-@media (max-width: 768px) {
-  .search-modal {
-    width: 95% !important;
-    max-width: 95% !important;
-  }
-
-  .search-modal-suggestions {
-    max-height: 40vh;
-  }
-
-  #search-modal-input {
-    font-size: 16px !important; /* Prevent iOS zoom on focus */
-  }
-}
-
-/* Ensure modal works well with mobile keyboard */
-@media (max-height: 600px) {
-  .search-modal-suggestions {
-    max-height: 25vh;
-  }
 }
 
 /* Directions Panel Styles */
