@@ -57,7 +57,12 @@
     <div id="map">
       <div id="search-container">
         <input type="text" id="search-input" placeholder="Search" autocomplete="off" />
-        <div id="search-suggestions" class="autocomplete-suggestions"></div>
+        <!-- search-suggestions div kept for backwards compatibility but hidden via CSS -->
+        <div
+          id="search-suggestions"
+          class="autocomplete-suggestions"
+          style="display: none !important"
+        ></div>
       </div>
       <div id="main-right-container">
         <div id="sheet-handle">
@@ -128,7 +133,11 @@
                       >cancel</span
                     >
                   </button>
-                  <div id="route-start-suggestions" class="autocomplete-suggestions"></div>
+                  <div
+                    id="route-start-suggestions"
+                    class="autocomplete-suggestions"
+                    style="display: none !important"
+                  ></div>
                 </div>
                 <div class="routing-input-group" id="routing-via-group">
                   <input
@@ -155,7 +164,11 @@
                       >cancel</span
                     >
                   </button>
-                  <div id="route-via-suggestions" class="autocomplete-suggestions"></div>
+                  <div
+                    id="route-via-suggestions"
+                    class="autocomplete-suggestions"
+                    style="display: none !important"
+                  ></div>
                 </div>
                 <div class="routing-input-group">
                   <input type="text" id="route-end" placeholder="End" autocomplete="off" />
@@ -177,7 +190,11 @@
                       >cancel</span
                     >
                   </button>
-                  <div id="route-end-suggestions" class="autocomplete-suggestions"></div>
+                  <div
+                    id="route-end-suggestions"
+                    class="autocomplete-suggestions"
+                    style="display: none !important"
+                  ></div>
                 </div>
                 <div class="routing-input-group">
                   <div id="routing-profile-selector" class="routing-profile-selector">
@@ -253,6 +270,7 @@
     <script src="/js/contextmenu.js"></script>
     <script src="/js/leaflet-wms-gutter.js"></script>
     <script src="/js/wms-import.js"></script>
+    <script src="/js/search.js"></script>
     <script src="/js/main.js"></script>
     <!-- END-BUNDLE -->
   </body>

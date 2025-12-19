@@ -1165,7 +1165,8 @@ function initializeMap() {
     map.flyTo(locationLatLng, map.getZoom() < 16 ? 16 : map.getZoom());
   };
 
-  setupAutocomplete(searchInput, searchSuggestions, onSearchResult);
+  // Use search modal instead of inline autocomplete
+  attachSearchModalToInput(searchInput, "Search Location", onSearchResult);
 
   window.elevationProfile.createElevationChart("elevation-div", useImperialUnits);
 

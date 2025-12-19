@@ -407,7 +407,8 @@ function initializeRouting() {
     directionsPanel.classList.toggle("collapsed");
   });
 
-  setupAutocomplete(startInput, document.getElementById("route-start-suggestions"), (latlng) => {
+  // Use search modal for start input
+  attachSearchModalToInput(startInput, "Set Start Point", (latlng, label) => {
     currentStartLatLng = latlng;
     startInput.style.color = "var(--color-black)";
     if (startMarker) {
@@ -424,7 +425,8 @@ function initializeRouting() {
     calculateNewRoute();
   });
 
-  setupAutocomplete(endInput, document.getElementById("route-end-suggestions"), (latlng) => {
+  // Use search modal for end input
+  attachSearchModalToInput(endInput, "Set End Point", (latlng, label) => {
     currentEndLatLng = latlng;
     endInput.style.color = "var(--color-black)";
     if (endMarker) {
@@ -441,7 +443,8 @@ function initializeRouting() {
     calculateNewRoute();
   });
 
-  setupAutocomplete(viaInput, document.getElementById("route-via-suggestions"), (latlng) => {
+  // Use search modal for via input
+  attachSearchModalToInput(viaInput, "Set Via Point", (latlng, label) => {
     currentViaLatLng = latlng;
     viaInput.style.color = "var(--color-black)";
     if (viaMarker) {
