@@ -2135,6 +2135,12 @@ body.using-touch {
   margin: 0 !important;
 }
 
+/* Align text paragraphs with input field */
+.search-modal-container p {
+  margin-left: 20px !important;
+  margin-right: 20px !important;
+}
+
 /* Search modal input field */
 #search-modal-input {
   width: calc(100% - 40px) !important;

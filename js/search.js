@@ -23,7 +23,7 @@ async function showSearchModal(title, placeholder, currentValue, callback, isOff
         ${
           isOffline
             ? '<p style="color: var(--color-red); margin-bottom: 12px;">You are offline. Search will not work.</p>'
-            : '<p style="margin-bottom: 12px;">Search for a place or enter coordinates.<br>Example: 47.5, 8.5</p>'
+            : '<p style="margin-bottom: 12px;">Search for a place or enter coordinates.<br>Example: 47.5, 8.5 or N 47° 30\' 0" E 8° 30\' 0"</p>'
         }
         <input
           type="text"
