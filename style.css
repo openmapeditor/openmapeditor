@@ -435,7 +435,10 @@ a#info-panel-strava-link:hover {
   flex-grow: 1;
   background-color: var(--background-color) !important;
   color: var(--text-color) !important;
-  /* Prevent cursor/caret from appearing since these are readonly */
+}
+
+/* Prevent cursor/caret from appearing in readonly routing inputs */
+.routing-input-group input[readonly] {
   caret-color: transparent;
 }
 .routing-input-group input::placeholder {
