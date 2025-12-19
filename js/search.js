@@ -12,19 +12,14 @@
  * @param {string} placeholder - Input placeholder text
  * @param {string} currentValue - Current value of the input (if any)
  * @param {function(L.LatLng, string): void} callback - Callback when location is selected
- * @param {boolean} isOffline - Whether the app is currently offline
  * @returns {Promise<void>}
  */
-async function showSearchModal(title, placeholder, currentValue, callback, isOffline = false) {
+async function showSearchModal(title, placeholder, currentValue, callback) {
   await Swal.fire({
     title: title,
     html: `
       <div>
-        ${
-          isOffline
-            ? '<p style="color: var(--color-red); margin-bottom: 12px;">You are offline. Search will not work.</p>'
-            : '<p style="margin-bottom: 12px;">Search for a place or enter coordinates.<br>Example: 47.5, 8.5 or N 47° 30\' 0" E 8° 30\' 0"</p>'
-        }
+        <p style="margin-bottom: 12px;">Search for a place or enter coordinates.<br>Example: 47.5, 8.5 or N 47° 30\' 0" E 8° 30\' 0"</p>
         <input
           type="text"
           id="search-modal-input"
@@ -32,7 +27,6 @@ async function showSearchModal(title, placeholder, currentValue, callback, isOff
           placeholder="${placeholder}"
           value="${currentValue || ""}"
           autocomplete="off"
-          ${isOffline ? 'disabled data-offline="true"' : ""}
         />
         <div id="search-modal-suggestions" class="search-modal-suggestions"></div>
       </div>
@@ -107,26 +101,21 @@ function attachSearchModalToInput(inputEl, modalTitle, callback) {
   // Helper function to open the modal
   const openModal = () => {
     if (modalOpen) return;
+
+    // Don't open modal if input is disabled (offline)
+    if (inputEl.disabled) return;
+
     modalOpen = true;
 
     // Immediately blur the input to prevent keyboard from staying open on mobile
     inputEl.blur();
 
-    // Check if offline
-    const isOffline = !navigator.onLine || inputEl.classList.contains("offline");
-
-    showSearchModal(
-      modalTitle,
-      originalPlaceholder,
-      inputEl.value,
-      (latLng, label) => {
-        // Update input display
-        inputEl.value = label;
-        // Trigger the original callback
-        callback(latLng, label);
-      },
-      isOffline
-    ).finally(() => {
+    showSearchModal(modalTitle, originalPlaceholder, inputEl.value, (latLng, label) => {
+      // Update input display
+      inputEl.value = label;
+      // Trigger the original callback
+      callback(latLng, label);
+    }).finally(() => {
       modalOpen = false;
     });
   };

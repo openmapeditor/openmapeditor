@@ -1915,25 +1915,52 @@ document.addEventListener("DOMContentLoaded", initializeMap);
 // Offline indicator
 (function () {
   const s = document.getElementById("search-input");
+  const routeStart = document.getElementById("route-start");
+  const routeEnd = document.getElementById("route-end");
+  const routeVia = document.getElementById("route-via");
+
+  const setOffline = (input) => {
+    input.disabled = true;
+    input.className = "offline";
+    if (input === s) {
+      input.placeholder = "OFFLINE";
+      input.style.cssText =
+        "background: red !important; color: white !important; border-color: red !important;";
+    }
+  };
+
+  const setOnline = (input) => {
+    input.disabled = false;
+    input.className = "";
+    if (input === s) {
+      input.placeholder = "Search";
+      input.style.cssText = "";
+    }
+  };
+
   window.addEventListener("offline", () => {
-    s.disabled = true;
-    s.placeholder = "OFFLINE";
-    s.className = "offline";
-    s.style.cssText =
-      "background: red !important; color: white !important; border-color: red !important;";
+    setOffline(s);
+    setOffline(routeStart);
+    setOffline(routeEnd);
+    setOffline(routeVia);
+    // Close any open search modal
+    if (typeof Swal !== "undefined" && Swal.isVisible()) {
+      Swal.close();
+    }
   });
+
   window.addEventListener("online", () => {
-    s.disabled = false;
-    s.placeholder = "Search";
-    s.className = "";
-    s.style.cssText = "";
+    setOnline(s);
+    setOnline(routeStart);
+    setOnline(routeEnd);
+    setOnline(routeVia);
   });
+
   if (!navigator.onLine) {
-    s.disabled = true;
-    s.placeholder = "OFFLINE";
-    s.className = "offline";
-    s.style.cssText =
-      "background: red !important; color: white !important; border-color: red !important;";
+    setOffline(s);
+    setOffline(routeStart);
+    setOffline(routeEnd);
+    setOffline(routeVia);
   }
 })();
 
