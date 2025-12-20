@@ -19,8 +19,6 @@ const WmsImport = (function () {
       title: "Import WMS Layers",
       html: `
         <div style="text-align: left;">
-          <p style="margin-bottom: 12px;">Enter a WMS service URL to browse and import available map layers.</p>
-          <label for="wms-url-input" style="display: block; margin-bottom: 8px;">WMS Service URL:</label>
           <input
             type="text"
             id="wms-url-input"
@@ -38,6 +36,7 @@ const WmsImport = (function () {
       showCancelButton: true,
       confirmButtonText: "Connect",
       cancelButtonText: "Cancel",
+      position: "top",
       customClass: {
         confirmButton: "swal-confirm-button",
       },
@@ -82,6 +81,7 @@ const WmsImport = (function () {
       title: "Connecting...",
       text: "Fetching available layers from WMS service",
       allowOutsideClick: false,
+      position: "top",
       didOpen: () => {
         Swal.showLoading();
       },
@@ -96,6 +96,7 @@ const WmsImport = (function () {
           iconColor: "var(--swal-color-warning)",
           title: "No Layers Found",
           text: "The WMS service did not return any queryable layers.",
+          position: "top",
         });
         return;
       }
@@ -132,6 +133,7 @@ const WmsImport = (function () {
         `,
         confirmButtonText: "OK",
         allowOutsideClick: true,
+        position: "top",
       });
 
       // Re-open the WMS import dialog after user clicks OK
@@ -293,6 +295,7 @@ const WmsImport = (function () {
       showCancelButton: true,
       confirmButtonText: "Import Selected",
       cancelButtonText: "Cancel",
+      position: "top",
       customClass: {
         popup: "wms-layer-selection-popup",
         confirmButton: "swal-confirm-button",
@@ -396,6 +399,7 @@ const WmsImport = (function () {
         text: `Successfully added ${result.value.length} layer(s) to the map. Toggle them in the Layers panel.`,
         timer: 3000,
         timerProgressBar: true,
+        position: "top",
       });
     }
   }
