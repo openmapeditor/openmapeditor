@@ -54,7 +54,6 @@ function initializeContextMenu(map) {
             map.closePopup();
             Swal.fire({
               toast: true,
-              position: "center",
               icon: "success",
               iconColor: "var(--swal-color-success)",
               title: "Coordinates Copied!",
@@ -68,7 +67,6 @@ function initializeContextMenu(map) {
             map.closePopup();
             Swal.fire({
               toast: true,
-              position: "center",
               icon: "error",
               iconColor: "var(--swal-color-error)",
               title: "Failed to Copy",

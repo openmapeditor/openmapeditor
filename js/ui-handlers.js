@@ -118,7 +118,6 @@ function createOverviewListItem(layer) {
         if (simplificationHappened) {
           Swal.fire({
             toast: true,
-            position: "center",
             icon: "info",
             iconColor: "var(--swal-color-info)",
             title: "Area Optimized",
@@ -163,7 +162,6 @@ function createOverviewListItem(layer) {
         if (simplificationHappened) {
           Swal.fire({
             toast: true,
-            position: "center",
             icon: "info",
             iconColor: "var(--swal-color-info)",
             title: "Path Optimized",
@@ -381,7 +379,6 @@ function showInfoPanel(layer) {
         .then(() => {
           Swal.fire({
             toast: true,
-            position: "center",
             icon: "success",
             iconColor: "var(--swal-color-success)",
             title: "Coordinates Copied!",
@@ -394,7 +391,6 @@ function showInfoPanel(layer) {
           console.error("Could not copy text: ", err);
           Swal.fire({
             toast: true,
-            position: "center",
             icon: "error",
             iconColor: "var(--swal-color-error)",
             title: "Failed to Copy",

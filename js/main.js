@@ -1139,7 +1139,6 @@ function initializeMap() {
 
       Swal.fire({
         toast: true,
-        position: "center",
         icon: "success",
         iconColor: "var(--swal-color-success)",
         title: "Marker Saved!",
@@ -1518,7 +1517,6 @@ function initializeMap() {
       localStorage.setItem("enablePathSimplification", enablePathSimplification);
       Swal.fire({
         toast: true,
-        position: "center",
         icon: "info",
         iconColor: "var(--swal-color-info)",
         title: `Path & Area Simplification ${enablePathSimplification ? "Enabled" : "Disabled"}`,
@@ -1604,7 +1602,6 @@ function initializeMap() {
 
       Swal.fire({
         toast: true,
-        position: "center",
         icon: "info",
         iconColor: "var(--swal-color-info)",
         title: `Units set to ${useImperialUnits ? "Imperial" : "Metric"}`,
@@ -1658,7 +1655,6 @@ function initializeMap() {
       window.app.setupRoutingControl(newProvider);
       Swal.fire({
         toast: true,
-        position: "center",
         icon: "info",
         iconColor: "var(--swal-color-info)",
         title: `Routing provider set to ${e.target.options[e.target.selectedIndex].text}`,
@@ -1686,7 +1682,6 @@ function initializeMap() {
       clearElevationCache();
       Swal.fire({
         toast: true,
-        position: "center",
         icon: "info",
         iconColor: "var(--swal-color-info)",
         title: `Elevation provider set to ${e.target.options[e.target.selectedIndex].text}`,
@@ -1718,7 +1713,6 @@ function initializeMap() {
       clearElevationCache();
       Swal.fire({
         toast: true,
-        position: "center",
         icon: "info",
         iconColor: "var(--swal-color-info)",
         title: shouldPrefer ? "Will prefer file elevation data" : "Will prefer API elevation data",

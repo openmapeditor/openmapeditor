@@ -291,7 +291,6 @@ function addEventListenersForUserKeysPanel() {
           copyToClipboard(`${APP_DOMAIN}`).then(() => {
             Swal.fire({
               toast: true,
-              position: "center",
               icon: "success",
               iconColor: "var(--swal-color-success)",
               title: "Domain Copied!",
