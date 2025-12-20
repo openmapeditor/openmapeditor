@@ -94,8 +94,6 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
     await ensureGoogleApiIsLoaded();
   } catch (error) {
     Swal.fire({
-      icon: "error",
-      iconColor: "var(--swal-color-error)",
       title: "API Error",
       text: error.message,
     });
@@ -147,8 +145,6 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
     } catch (error) {
       console.error("Error fetching elevation data from Google:", error);
       Swal.fire({
-        icon: "error",
-        iconColor: "var(--swal-color-error)",
         title: "Google Elevation Error",
         text: `Failed to fetch elevation data: ${error}`,
       });
@@ -346,8 +342,6 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
   } catch (error) {
     console.error("Error fetching elevation from GeoAdmin API:", error);
     Swal.fire({
-      icon: "error",
-      iconColor: "var(--swal-color-error)",
       title: "GeoAdmin Elevation Error",
       text: `Failed to fetch elevation data: ${error.message}`,
     });

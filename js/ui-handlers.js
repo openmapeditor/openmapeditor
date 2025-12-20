@@ -119,7 +119,6 @@ function createOverviewListItem(layer) {
           Swal.fire({
             toast: true,
             icon: "info",
-            iconColor: "var(--swal-color-info)",
             title: "Area Optimized",
             text: "The duplicated area was simplified for better performance.",
             showConfirmButton: false,
@@ -163,7 +162,6 @@ function createOverviewListItem(layer) {
           Swal.fire({
             toast: true,
             icon: "info",
-            iconColor: "var(--swal-color-info)",
             title: "Path Optimized",
             text: "The duplicated path was simplified for better performance.",
             showConfirmButton: false,
@@ -380,7 +378,6 @@ function showInfoPanel(layer) {
           Swal.fire({
             toast: true,
             icon: "success",
-            iconColor: "var(--swal-color-success)",
             title: "Coordinates Copied!",
             html: coordString,
             showConfirmButton: false,
@@ -392,7 +389,6 @@ function showInfoPanel(layer) {
           Swal.fire({
             toast: true,
             icon: "error",
-            iconColor: "var(--swal-color-error)",
             title: "Failed to Copy",
             showConfirmButton: false,
             timer: 2000,

@@ -64,8 +64,6 @@ async function getAccessToken(code, clientId, clientSecret) {
   } catch (error) {
     console.error("Error getting Strava access token:", error);
     Swal.fire({
-      icon: "error",
-      iconColor: "var(--swal-color-error)",
       title: "Authentication Failed",
       text: `Please check your API keys and try again. Error: ${error.message}`,
     });
@@ -274,8 +272,6 @@ function addEventListenersForUserKeysPanel() {
   document.getElementById("strava-info-icon").addEventListener("click", () => {
     const mainAlertOptions = {
       title: "Using Your Own Strava API Keys",
-      icon: "info",
-      iconColor: "var(--swal-color-info)",
       html: `
         <p style="text-align: left;">This application uses your personal Strava API credentials for performance and data control.</p>
         <p style="text-align: left; margin-top: 15px;"><strong>How to get your keys:</strong></p>
@@ -292,7 +288,6 @@ function addEventListenersForUserKeysPanel() {
             Swal.fire({
               toast: true,
               icon: "success",
-              iconColor: "var(--swal-color-success)",
               title: "Domain Copied!",
               showConfirmButton: false,
               timer: 1500,
@@ -312,8 +307,6 @@ function addEventListenersForUserKeysPanel() {
     const clientSecret = clientSecretInput.value.trim();
     if (!clientId || !clientSecret) {
       return Swal.fire({
-        icon: "warning",
-        iconColor: "var(--swal-color-warning)",
         title: "Missing Keys",
         text: "Please enter both a Client ID and a Client Secret.",
       });
@@ -453,8 +446,6 @@ function displayActivitiesOnMap(activities) {
 async function exportStravaActivitiesAsKml() {
   if (stravaActivitiesLayer.getLayers().length === 0) {
     return Swal.fire({
-      icon: "info",
-      iconColor: "var(--swal-color-info)",
       title: "No Activities Loaded",
       text: "Please fetch your activities before exporting.",
     });
@@ -467,8 +458,6 @@ async function exportStravaActivitiesAsKml() {
   });
   if (stravaPlacemarks.length === 0) {
     return Swal.fire({
-      icon: "warning",
-      iconColor: "var(--swal-color-warning)",
       title: "No Exportable Data",
       text: "Could not generate KML for loaded activities.",
     });
@@ -483,8 +472,6 @@ async function exportStravaActivitiesAsKml() {
 async function exportStravaActivitiesAsJson() {
   if (allFetchedActivities.length === 0) {
     return Swal.fire({
-      icon: "info",
-      iconColor: "var(--swal-color-info)",
       title: "No Activities Loaded",
       text: "Please fetch your activities before exporting.",
     });

@@ -90,8 +90,6 @@ const WmsImport = (function () {
 
       if (!layers || layers.length === 0) {
         Swal.fire({
-          icon: "warning",
-          iconColor: "var(--swal-color-warning)",
           title: "No Layers Found",
           text: "The WMS service did not return any queryable layers.",
         });
@@ -111,8 +109,6 @@ const WmsImport = (function () {
 
       // Show fresh error dialog
       const result = await Swal.fire({
-        icon: "error",
-        iconColor: "var(--swal-color-error)",
         title: "Connection Failed",
         html: `
           <p>Could not connect to the WMS service.</p>
@@ -388,8 +384,6 @@ const WmsImport = (function () {
     if (result.isConfirmed && result.value) {
       addWmsOverlays(result.value, wmsUrl, map);
       Swal.fire({
-        icon: "success",
-        iconColor: "var(--swal-color-success)",
         title: "Layers Imported",
         text: `Successfully added ${result.value.length} layer(s) to the map. Toggle them in the Layers panel.`,
         timer: 3000,

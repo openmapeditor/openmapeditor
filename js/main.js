@@ -126,8 +126,6 @@ async function showCreditsPopup() {
   } catch (error) {
     console.error("Could not load credits.html:", error);
     Swal.fire({
-      icon: "error",
-      iconColor: "var(--swal-color-error)",
       title: "Error",
       text: "Could not load the credits information.",
     });
@@ -162,8 +160,6 @@ function initializeMap() {
     typeof tracestrackApiKey === "undefined"
   ) {
     Swal.fire({
-      icon: "error",
-      iconColor: "var(--swal-color-error)",
       title: "Configuration Error",
       html: `The <strong>secrets.js</strong> file is missing or misconfigured.<br><br>Please ensure the file exists in the 'js/' folder and contains all required API keys.`,
       allowOutsideClick: false,
@@ -258,8 +254,6 @@ function initializeMap() {
         L.DomEvent.stop(e);
         Swal.fire({
           title: "Routing Help",
-          icon: "info",
-          iconColor: "var(--swal-color-info)",
           html: `
 <p style="text-align: left; margin: 0 0 18px 0">
   <strong>Managing Waypoints:</strong> The <strong>Start</strong>, <strong>Via</strong>, and
@@ -1140,7 +1134,6 @@ function initializeMap() {
       Swal.fire({
         toast: true,
         icon: "success",
-        iconColor: "var(--swal-color-success)",
         title: "Marker Saved!",
         showConfirmButton: false,
         timer: 2000,
@@ -1288,8 +1281,6 @@ function initializeMap() {
 
               if (filteredFeatures.length === 0) {
                 return Swal.fire({
-                  icon: "info",
-                  iconColor: "var(--swal-color-info)",
                   title: "No Supported Geometries",
                   text: "The GeoJSON file contains no Point, LineString, or Polygon features.",
                 });
@@ -1308,8 +1299,6 @@ function initializeMap() {
             } catch (error) {
               console.error("Error parsing GeoJSON file:", error);
               Swal.fire({
-                icon: "error",
-                iconColor: "var(--swal-color-error)",
                 title: "GeoJSON Parse Error",
                 text: `Could not parse the file: ${error.message}`,
               });
@@ -1357,8 +1346,6 @@ function initializeMap() {
             } catch (error) {
               console.error("Error parsing file:", error);
               Swal.fire({
-                icon: "error",
-                iconColor: "var(--swal-color-error)",
                 title: "File Parse Error",
                 text: `Could not parse the file: ${error.message}`,
               });
@@ -1518,7 +1505,6 @@ function initializeMap() {
       Swal.fire({
         toast: true,
         icon: "info",
-        iconColor: "var(--swal-color-info)",
         title: `Path & Area Simplification ${enablePathSimplification ? "Enabled" : "Disabled"}`,
         showConfirmButton: false,
         timer: 1500,
@@ -1526,8 +1512,6 @@ function initializeMap() {
     });
     L.DomEvent.on(infoIcon, "click", () => {
       Swal.fire({
-        icon: "info",
-        iconColor: "var(--swal-color-info)",
         title: "Path & Area Simplification",
         html: `
 <p style="text-align: left; margin: 0 0 18px 0">
@@ -1603,7 +1587,6 @@ function initializeMap() {
       Swal.fire({
         toast: true,
         icon: "info",
-        iconColor: "var(--swal-color-info)",
         title: `Units set to ${useImperialUnits ? "Imperial" : "Metric"}`,
         showConfirmButton: false,
         timer: 1500,
@@ -1656,7 +1639,6 @@ function initializeMap() {
       Swal.fire({
         toast: true,
         icon: "info",
-        iconColor: "var(--swal-color-info)",
         title: `Routing provider set to ${e.target.options[e.target.selectedIndex].text}`,
         showConfirmButton: false,
         timer: 1500,
@@ -1683,7 +1665,6 @@ function initializeMap() {
       Swal.fire({
         toast: true,
         icon: "info",
-        iconColor: "var(--swal-color-info)",
         title: `Elevation provider set to ${e.target.options[e.target.selectedIndex].text}`,
         showConfirmButton: false,
         timer: 1500,
@@ -1714,7 +1695,6 @@ function initializeMap() {
       Swal.fire({
         toast: true,
         icon: "info",
-        iconColor: "var(--swal-color-info)",
         title: shouldPrefer ? "Will prefer file elevation data" : "Will prefer API elevation data",
         showConfirmButton: false,
         timer: 1500,

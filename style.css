@@ -912,11 +912,6 @@ a#info-panel-strava-link:hover {
 /* This block styles all SweetAlert2 popups to respect the selected
    light or dark theme by using the application's CSS variables. */
 
-/* Hide icons for regular dialogs, but keep them visible for toasts */
-.swal2-popup:not(.swal2-toast) .swal2-icon {
-  display: none !important;
-}
-
 /* Main popup container */
 .swal2-popup {
   background-color: var(--background-color) !important;
