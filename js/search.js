@@ -18,6 +18,9 @@ async function showSearchModal(title, placeholder, currentValue, callback) {
   await Swal.fire({
     html: `
       <div>
+        <p style="font-size: 11px; color: var(--text-color); margin: 0 0 8px 0; text-align: center;">
+          Basel or 47.55972, 7.58861 or N 47° 33' 35" E 7° 35' 19"
+        </p>
         <input
           type="text"
           id="search-modal-input"
