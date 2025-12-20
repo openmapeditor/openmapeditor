@@ -122,7 +122,6 @@ async function showCreditsPopup() {
     Swal.fire({
       html: swalContent,
       confirmButtonText: "Close",
-      width: "500px",
     });
   } catch (error) {
     console.error("Could not load credits.html:", error);
@@ -522,7 +521,7 @@ function initializeMap() {
       <button
         id="wms-import-btn"
         class="wms-import-button"
-        style="width: 100%; padding: 8px 12px; cursor: pointer; background-color: var(--text-color); color: var(--background-color); border: none; border-radius: 4px; font-size: 14px; font-weight: bold; white-space: nowrap;"
+        style="width: 100%; padding: 8px 12px; cursor: pointer; background-color: var(--text-color); color: var(--background-color); border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: bold; white-space: nowrap;"
       >
         Import WMS Layers
       </button>
@@ -1079,7 +1078,6 @@ function initializeMap() {
   new FullscreenToggleControl().addTo(map);
 
   const searchInput = document.getElementById("search-input");
-  const searchSuggestions = document.getElementById("search-suggestions");
 
   const onSearchResult = (locationLatLng, label) => {
     if (temporarySearchMarker) {
@@ -1099,7 +1097,7 @@ function initializeMap() {
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save to Map";
     saveButton.style.cssText =
-      "padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background-color: #f0f0f0;";
+      "padding: 5px 10px; border: 1px solid #ccc; border-radius: var(--border-radius); cursor: pointer; background-color: #f0f0f0;";
     popupContent.appendChild(saveButton);
 
     L.DomEvent.on(saveButton, "click", () => {
@@ -1165,7 +1163,8 @@ function initializeMap() {
     map.flyTo(locationLatLng, map.getZoom() < 16 ? 16 : map.getZoom());
   };
 
-  setupAutocomplete(searchInput, searchSuggestions, onSearchResult);
+  // Use search modal instead of inline autocomplete
+  attachSearchModalToInput(searchInput, "Search Location", onSearchResult);
 
   window.elevationProfile.createElevationChart("elevation-div", useImperialUnits);
 
@@ -1914,25 +1913,52 @@ document.addEventListener("DOMContentLoaded", initializeMap);
 // Offline indicator
 (function () {
   const s = document.getElementById("search-input");
+  const routeStart = document.getElementById("route-start");
+  const routeEnd = document.getElementById("route-end");
+  const routeVia = document.getElementById("route-via");
+
+  const setOffline = (input) => {
+    input.disabled = true;
+    input.className = "offline";
+    if (input === s) {
+      input.placeholder = "OFFLINE";
+      input.style.cssText =
+        "background: red !important; color: white !important; border-color: red !important;";
+    }
+  };
+
+  const setOnline = (input) => {
+    input.disabled = false;
+    input.className = "";
+    if (input === s) {
+      input.placeholder = "Search";
+      input.style.cssText = "";
+    }
+  };
+
   window.addEventListener("offline", () => {
-    s.disabled = true;
-    s.placeholder = "OFFLINE";
-    s.className = "offline";
-    s.style.cssText =
-      "background: red !important; color: white !important; border-color: red !important;";
+    setOffline(s);
+    setOffline(routeStart);
+    setOffline(routeEnd);
+    setOffline(routeVia);
+    // Close any open search modal
+    if (typeof Swal !== "undefined" && Swal.isVisible()) {
+      Swal.close();
+    }
   });
+
   window.addEventListener("online", () => {
-    s.disabled = false;
-    s.placeholder = "Search";
-    s.className = "";
-    s.style.cssText = "";
+    setOnline(s);
+    setOnline(routeStart);
+    setOnline(routeEnd);
+    setOnline(routeVia);
   });
+
   if (!navigator.onLine) {
-    s.disabled = true;
-    s.placeholder = "OFFLINE";
-    s.className = "offline";
-    s.style.cssText =
-      "background: red !important; color: white !important; border-color: red !important;";
+    setOffline(s);
+    setOffline(routeStart);
+    setOffline(routeEnd);
+    setOffline(routeVia);
   }
 })();
 
