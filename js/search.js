@@ -16,15 +16,13 @@
  */
 async function showSearchModal(title, placeholder, currentValue, callback) {
   await Swal.fire({
-    title: title,
     html: `
       <div>
-        <p style="margin-bottom: 8px;">Search for a place or enter coordinates.<br>47.55972, 7.58861 or N 47° 33\' 35" E 7° 35\' 19"</p>
         <input
           type="text"
           id="search-modal-input"
           class="swal2-input swal-input-field"
-          placeholder="${placeholder}"
+          placeholder="${title}"
           value="${currentValue || ""}"
           autocomplete="off"
         />
@@ -34,6 +32,7 @@ async function showSearchModal(title, placeholder, currentValue, callback) {
     showCancelButton: true,
     showConfirmButton: false, // We'll handle selection via autocomplete
     cancelButtonText: "Cancel",
+    position: "top",
     customClass: {
       popup: "search-modal",
       htmlContainer: "search-modal-container",
