@@ -1,5 +1,5 @@
 /*!
-* sweetalert2 v11.23.0
+* sweetalert2 v11.26.10
 * Released under the MIT License.
 */
 function _assertClassBrand(e, t, n) {
@@ -141,25 +141,25 @@ const warnAboutDeprecation = (deprecatedParam, useInstead = null) => {
  * If `arg` is a function, call it (with no arguments or context) and return the result.
  * Otherwise, just pass the value through
  *
- * @param {Function | any} arg
- * @returns {any}
+ * @param {(() => *) | *} arg
+ * @returns {*}
  */
 const callIfFunction = arg => typeof arg === 'function' ? arg() : arg;
 
 /**
- * @param {any} arg
+ * @param {*} arg
  * @returns {boolean}
  */
 const hasToPromiseFn = arg => arg && typeof arg.toPromise === 'function';
 
 /**
- * @param {any} arg
- * @returns {Promise<any>}
+ * @param {*} arg
+ * @returns {Promise<*>}
  */
 const asPromise = arg => hasToPromiseFn(arg) ? arg.toPromise() : Promise.resolve(arg);
 
 /**
- * @param {any} arg
+ * @param {*} arg
  * @returns {boolean}
  */
 const isPromise = arg => arg && Promise.resolve(arg) === arg;
@@ -537,13 +537,13 @@ const getDirectChildByClass = (elem, className) => {
 /**
  * @param {HTMLElement} elem
  * @param {string} property
- * @param {*} value
+ * @param {string | number | null | undefined} value
  */
 const applyNumericalStyle = (elem, property, value) => {
-  if (value === `${parseInt(value)}`) {
+  if (value === `${parseInt(`${value}`)}`) {
     value = parseInt(value);
   }
-  if (value || parseInt(value) === 0) {
+  if (value || parseInt(`${value}`) === 0) {
     elem.style.setProperty(property, typeof value === 'number' ? `${value}px` : value);
   } else {
     elem.style.removeProperty(property);
@@ -603,7 +603,7 @@ const setStyle = (parent, selector, property, value) => {
 
 /**
  * @param {HTMLElement} elem
- * @param {any} condition
+ * @param {boolean | string | null | undefined} condition
  * @param {string} display
  */
 const toggle = (elem, condition, display = 'flex') => {
@@ -803,6 +803,7 @@ const setupAccessibility = params => {
 const setupRTL = targetElement => {
   if (window.getComputedStyle(targetElement).direction === 'rtl') {
     addClass(getContainer(), swalClasses.rtl);
+    globalState.isRTL = true;
   }
 };
 
@@ -858,7 +859,7 @@ const parseHtmlToContainer = (param, target) => {
 };
 
 /**
- * @param {any} param
+ * @param {object} param
  * @param {HTMLElement} target
  */
 const handleObject = (param, target) => {
@@ -875,7 +876,7 @@ const handleObject = (param, target) => {
 
 /**
  * @param {HTMLElement} target
- * @param {any} elem
+ * @param {object} elem
  */
 const handleJqueryElem = (target, elem) => {
   target.textContent = '';
@@ -1426,7 +1427,7 @@ const renderFooter = (instance, params) => {
     return;
   }
   showWhenInnerHtmlPresent(footer);
-  toggle(footer, params.footer, 'block');
+  toggle(footer, Boolean(params.footer), 'block');
   if (params.footer) {
     parseHtmlToContainer(params.footer, footer);
   }
@@ -1667,7 +1668,9 @@ const move = event => {
       clientX,
       clientY
     } = getClientXY(event);
-    popup.style.insetInlineStart = `${initialX + (clientX - mousedownX)}px`;
+    const deltaX = clientX - mousedownX;
+    // In RTL mode, negate the horizontal delta since insetInlineStart refers to the right edge
+    popup.style.insetInlineStart = `${initialX + (globalState.isRTL ? -deltaX : deltaX)}px`;
     popup.style.insetBlockStart = `${initialY + (clientY - mousedownY)}px`;
   }
 };
@@ -1843,7 +1846,7 @@ const renderTitle = (instance, params) => {
     return;
   }
   showWhenInnerHtmlPresent(title);
-  toggle(title, params.title || params.titleText, 'block');
+  toggle(title, Boolean(params.title || params.titleText), 'block');
   if (params.title) {
     parseHtmlToContainer(params.title, title);
   }
@@ -1908,8 +1911,6 @@ const clickCancel = () => {
   return (_dom$getCancelButton = getCancelButton()) === null || _dom$getCancelButton === void 0 ? void 0 : _dom$getCancelButton.click();
 };
 
-/** @typedef {'cancel' | 'backdrop' | 'close' | 'esc' | 'timer'} DismissReason */
-
 /** @type {Record<DismissReason, DismissReason>} */
 const DismissReason = Object.freeze({
   cancel: 'cancel',
@@ -1934,7 +1935,7 @@ const removeKeydownHandler = globalState => {
 /**
  * @param {GlobalState} globalState
  * @param {SweetAlertOptions} innerParams
- * @param {*} dismissWith
+ * @param {(dismiss: DismissReason) => void} dismissWith
  */
 const addKeydownHandler = (globalState, innerParams, dismissWith) => {
   removeKeydownHandler(globalState);
@@ -1985,7 +1986,7 @@ const arrowKeysPreviousButton = ['ArrowLeft', 'ArrowUp'];
 /**
  * @param {SweetAlertOptions} innerParams
  * @param {KeyboardEvent} event
- * @param {Function} dismissWith
+ * @param {(dismiss: DismissReason) => void} dismissWith
  */
 const keydownHandler = (innerParams, event, dismissWith) => {
   if (!innerParams) {
@@ -2108,7 +2109,7 @@ const handleArrows = key => {
 /**
  * @param {KeyboardEvent} event
  * @param {SweetAlertOptions} innerParams
- * @param {Function} dismissWith
+ * @param {(dismiss: DismissReason) => void} dismissWith
  */
 const handleEsc = (event, innerParams, dismissWith) => {
   event.preventDefault();
@@ -2239,7 +2240,7 @@ const shouldPreventTouchMove = event => {
 /**
  * https://github.com/sweetalert2/sweetalert2/issues/1786
  *
- * @param {*} event
+ * @param {object} event
  * @returns {boolean}
  */
 const isStylus = event => {
@@ -2312,7 +2313,7 @@ const undoReplaceScrollbarWithPadding = () => {
  * @param {SweetAlert} instance
  * @param {HTMLElement} container
  * @param {boolean} returnFocus
- * @param {Function} didClose
+ * @param {() => void} didClose
  */
 function removePopupAndResetState(instance, container, returnFocus, didClose) {
   if (isToast()) {
@@ -2349,7 +2350,7 @@ function removeBodyClasses() {
 /**
  * Instance method to close sweetAlert
  *
- * @param {any} resolveValue
+ * @param {SweetAlertResult | undefined} resolveValue
  */
 function close(resolveValue) {
   resolveValue = prepareResolveValue(resolveValue);
@@ -2385,7 +2386,7 @@ const triggerClosePopup = instance => {
 };
 
 /**
- * @param {any} error
+ * @param {Error | string} error
  */
 function rejectPromise(error) {
   const rejectPromise = privateMethods.swalPromiseReject.get(this);
@@ -2410,7 +2411,7 @@ const handleAwaitingPromise = instance => {
 };
 
 /**
- * @param {any} resolveValue
+ * @param {SweetAlertResult | undefined} resolveValue
  * @returns {SweetAlertResult}
  */
 const prepareResolveValue = resolveValue => {
@@ -2456,7 +2457,7 @@ const handlePopupAnimation = (instance, popup, innerParams) => {
  * @param {HTMLElement} popup
  * @param {HTMLElement} container
  * @param {boolean} returnFocus
- * @param {Function} didClose
+ * @param {() => void} didClose
  */
 const animatePopup = (instance, popup, container, returnFocus, didClose) => {
   globalState.swalCloseEventFinishedCallback = removePopupAndResetState.bind(null, instance, container, returnFocus, didClose);
@@ -2478,7 +2479,7 @@ const animatePopup = (instance, popup, container, returnFocus, didClose) => {
 
 /**
  * @param {SweetAlert} instance
- * @param {Function} didClose
+ * @param {() => void} didClose
  */
 const triggerDidCloseAndDispose = (instance, didClose) => {
   setTimeout(() => {
@@ -2606,7 +2607,7 @@ const handleInputOptions = (instance, params) => {
     return;
   }
   /**
-   * @param {Record<string, any>} inputOptions
+   * @param {*} inputOptions
    */
   const processInputOptions = inputOptions => {
     if (params.input === 'select') {
@@ -2733,7 +2734,7 @@ function populateRadioOptions(popup, inputOptions, params) {
 /**
  * Converts `inputOptions` into an array of `[value, label]`s
  *
- * @param {Record<string, any>} inputOptions
+ * @param {*} inputOptions
  * @typedef {string[]} InputOptionFlattened
  * @returns {InputOptionFlattened[]}
  */
@@ -2799,7 +2800,7 @@ const handleDenyButtonClick = instance => {
 
 /**
  * @param {SweetAlert} instance
- * @param {Function} dismissWith
+ * @param {(dismiss: DismissReason) => void} dismissWith
  */
 const handleCancelButtonClick = (instance, dismissWith) => {
   instance.disableButtons();
@@ -2854,7 +2855,7 @@ const handleInputValidator = (instance, inputValue, type) => {
 
 /**
  * @param {SweetAlert} instance
- * @param {any} value
+ * @param {*} value
  */
 const deny = (instance, value) => {
   const innerParams = privateProps.innerParams.get(instance || undefined);
@@ -2869,14 +2870,14 @@ const deny = (instance, value) => {
         instance.hideLoading();
         handleAwaitingPromise(instance);
       } else {
-        instance.close({
+        instance.close(/** @type SweetAlertResult */{
           isDenied: true,
           value: typeof preDenyValue === 'undefined' ? value : preDenyValue
         });
       }
     }).catch(error => rejectWith(instance || undefined, error));
   } else {
-    instance.close({
+    instance.close(/** @type SweetAlertResult */{
       isDenied: true,
       value
     });
@@ -2885,10 +2886,10 @@ const deny = (instance, value) => {
 
 /**
  * @param {SweetAlert} instance
- * @param {any} value
+ * @param {*} value
  */
 const succeedWith = (instance, value) => {
-  instance.close({
+  instance.close(/** @type SweetAlertResult */{
     isConfirmed: true,
     value
   });
@@ -2906,7 +2907,7 @@ const rejectWith = (instance, error) => {
 /**
  *
  * @param {SweetAlert} instance
- * @param {any} value
+ * @param {*} value
  */
 const confirm = (instance, value) => {
   const innerParams = privateProps.innerParams.get(instance || undefined);
@@ -3253,7 +3254,7 @@ const showWarningsForParams = params => {
   if (params.backdrop === false && params.allowOutsideClick) {
     warn('"allowOutsideClick" parameter requires `backdrop` parameter to be set to `true`');
   }
-  if (params.theme && !['light', 'dark', 'auto', 'minimal', 'borderless', 'embed-iframe', 'bulma', 'bulma-light', 'bulma-dark'].includes(params.theme)) {
+  if (params.theme && !['light', 'dark', 'auto', 'minimal', 'borderless', 'bootstrap-4', 'bootstrap-4-light', 'bootstrap-4-dark', 'bootstrap-5', 'bootstrap-5-light', 'bootstrap-5-dark', 'material-ui', 'material-ui-light', 'material-ui-dark', 'embed-iframe', 'bulma', 'bulma-light', 'bulma-dark'].includes(params.theme)) {
     warn(`Invalid theme "${params.theme}"`);
   }
   for (const param in params) {
@@ -3412,7 +3413,7 @@ var instanceMethods = /*#__PURE__*/Object.freeze({
 /**
  * @param {SweetAlertOptions} innerParams
  * @param {DomCache} domCache
- * @param {Function} dismissWith
+ * @param {(dismiss: DismissReason) => void} dismissWith
  */
 const handlePopupClick = (innerParams, domCache, dismissWith) => {
   if (innerParams.toast) {
@@ -3431,7 +3432,7 @@ const handlePopupClick = (innerParams, domCache, dismissWith) => {
 /**
  * @param {SweetAlertOptions} innerParams
  * @param {DomCache} domCache
- * @param {Function} dismissWith
+ * @param {(dismiss: DismissReason) => void} dismissWith
  */
 const handleToastClick = (innerParams, domCache, dismissWith) => {
   // Closing toast by internal click
@@ -3490,7 +3491,7 @@ const handleContainerMousedown = domCache => {
 /**
  * @param {SweetAlertOptions} innerParams
  * @param {DomCache} domCache
- * @param {Function} dismissWith
+ * @param {(dismiss: DismissReason) => void} dismissWith
  */
 const handleModalClick = (innerParams, domCache, dismissWith) => {
   domCache.container.onclick = e => {
@@ -3839,7 +3840,7 @@ var staticMethods = /*#__PURE__*/Object.freeze({
 
 class Timer {
   /**
-   * @param {Function} callback
+   * @param {() => void} callback
    * @param {number} delay
    */
   constructor(callback, delay) {
@@ -3928,10 +3929,10 @@ const getTemplateParams = params => {
 
 /**
  * @param {DocumentFragment} templateContent
- * @returns {Record<string, any>}
+ * @returns {Record<string, string | boolean | number>}
  */
 const getSwalParams = templateContent => {
-  /** @type {Record<string, any>} */
+  /** @type {Record<string, string | boolean | number>} */
   const result = {};
   /** @type {HTMLElement[]} */
   const swalParams = Array.from(templateContent.querySelectorAll('swal-param'));
@@ -3955,10 +3956,10 @@ const getSwalParams = templateContent => {
 
 /**
  * @param {DocumentFragment} templateContent
- * @returns {Record<string, any>}
+ * @returns {Record<string, () => void>}
  */
 const getSwalFunctionParams = templateContent => {
-  /** @type {Record<string, any>} */
+  /** @type {Record<string, () => void>} */
   const result = {};
   /** @type {HTMLElement[]} */
   const swalFunctions = Array.from(templateContent.querySelectorAll('swal-function-param'));
@@ -3975,10 +3976,10 @@ const getSwalFunctionParams = templateContent => {
 
 /**
  * @param {DocumentFragment} templateContent
- * @returns {Record<string, any>}
+ * @returns {Record<string, string | boolean>}
  */
 const getSwalButtons = templateContent => {
-  /** @type {Record<string, any>} */
+  /** @type {Record<string, string | boolean>} */
   const result = {};
   /** @type {HTMLElement[]} */
   const swalButtons = Array.from(templateContent.querySelectorAll('swal-button'));
@@ -4028,7 +4029,7 @@ const getSwalImage = templateContent => {
 
 /**
  * @param {DocumentFragment} templateContent
- * @returns {Record<string, any>}
+ * @returns {object}
  */
 const getSwalIcon = templateContent => {
   const result = {};
@@ -4049,10 +4050,10 @@ const getSwalIcon = templateContent => {
 
 /**
  * @param {DocumentFragment} templateContent
- * @returns {Record<string, any>}
+ * @returns {object}
  */
 const getSwalInput = templateContent => {
-  /** @type {Record<string, any>} */
+  /** @type {object} */
   const result = {};
   /** @type {HTMLElement | null} */
   const input = templateContent.querySelector('swal-input');
@@ -4089,10 +4090,10 @@ const getSwalInput = templateContent => {
 /**
  * @param {DocumentFragment} templateContent
  * @param {string[]} paramNames
- * @returns {Record<string, any>}
+ * @returns {Record<string, string>}
  */
 const getSwalStringParams = (templateContent, paramNames) => {
-  /** @type {Record<string, any>} */
+  /** @type {Record<string, string>} */
   const result = {};
   for (const i in paramNames) {
     const paramName = paramNames[i];
@@ -4164,7 +4165,6 @@ const openPopup = params => {
     setTimeout(() => params.didOpen(popup));
   }
   globalState.eventEmitter.emit('didOpen', popup);
-  removeClass(container, swalClasses['no-transition']);
 };
 
 /**
@@ -4179,6 +4179,9 @@ const swalOpenAnimationFinished = event => {
   popup.removeEventListener('animationend', swalOpenAnimationFinished);
   popup.removeEventListener('transitionend', swalOpenAnimationFinished);
   container.style.overflowY = 'auto';
+
+  // no-transition is added in init() in case one swal is opened right after another
+  removeClass(container, swalClasses['no-transition']);
 };
 
 /**
@@ -4311,7 +4314,7 @@ let currentInstance;
 var _promise = /*#__PURE__*/new WeakMap();
 class SweetAlert {
   /**
-   * @param {...any} args
+   * @param {...(SweetAlertOptions | string)} args
    * @this {SweetAlert}
    */
   constructor(...args) {
@@ -4395,7 +4398,9 @@ const swalPromise = (instance, domCache, innerParams) => {
     const dismissWith = dismiss => {
       instance.close({
         isDismissed: true,
-        dismiss
+        dismiss,
+        isConfirmed: false,
+        isDenied: false
       });
     };
     privateMethods.swalPromiseResolve.set(instance, resolve);
@@ -4469,7 +4474,7 @@ const populateDomCache = instance => {
 /**
  * @param {GlobalState} globalState
  * @param {SweetAlertOptions} innerParams
- * @param {Function} dismissWith
+ * @param {(dismiss: DismissReason) => void} dismissWith
  */
 const setupTimer = (globalState, innerParams, dismissWith) => {
   const timerProgressBar = getTimerProgressBar();
@@ -4589,8 +4594,8 @@ Object.assign(SweetAlert, staticMethods);
 // Proxy to instance methods to constructor, for now, for backwards compatibility
 Object.keys(instanceMethods).forEach(key => {
   /**
-   * @param {...any} args
-   * @returns {any | undefined}
+   * @param {...(SweetAlertOptions | string | undefined)} args
+   * @returns {SweetAlertResult | Promise<SweetAlertResult> | undefined}
    */
   SweetAlert[key] = function (...args) {
     if (currentInstance && currentInstance[key]) {
@@ -4600,7 +4605,7 @@ Object.keys(instanceMethods).forEach(key => {
   };
 });
 SweetAlert.DismissReason = DismissReason;
-SweetAlert.version = '11.23.0';
+SweetAlert.version = '11.26.10';
 
 const Swal = SweetAlert;
 // @ts-ignore
