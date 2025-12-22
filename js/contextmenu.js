@@ -33,7 +33,7 @@ function initializeContextMenu(map) {
     popupContent.appendChild(coordsDiv);
 
     const divider = document.createElement("hr");
-    divider.style.margin = "5px 0";
+    divider.style.margin = "4px 0";
     divider.style.border = "none";
     divider.style.borderTop = "1px solid var(--divider-color)";
     popupContent.appendChild(divider);
@@ -42,7 +42,7 @@ function initializeContextMenu(map) {
       const div = document.createElement("div");
       div.textContent = text;
       div.style.cursor = "pointer";
-      div.style.padding = "5px 0";
+      div.style.padding = "4px 0";
       div.addEventListener("click", onClick);
       return div;
     };
