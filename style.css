@@ -183,7 +183,7 @@ select:focus {
   margin-left: 6px;
   flex-shrink: 0; /* Prevents the icon from shrinking if space is tight */
   position: absolute;
-  transform: translateY(-6px);
+  transform: translateY(-5px);
 }
 
 #auth-callback-domain-copy-icon {
@@ -193,7 +193,6 @@ select:focus {
   margin-left: 6px;
   flex-shrink: 0;
   position: absolute;
-  transform: translateY(-1px);
 }
 
 #info-panel-edit-hint {
