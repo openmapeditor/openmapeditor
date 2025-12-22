@@ -183,10 +183,10 @@ function renderUserKeysPanel() {
       <span>Provide Strava API Keys to see your activities on the map.</span>
       <span id="strava-info-icon" class="material-symbols" title="Why is this needed?" style="font-size: var(--icon-size-16); line-height: 1;">info</span>
       </div>
-      <div class="routing-input-group">
+      <div class="panel-input-group">
         <input type="password" id="user-strava-client-id" placeholder="Your Strava Client ID" autocomplete="off" value="${tempUserClientId}" />
       </div>
-      <div class="routing-input-group">
+      <div class="panel-input-group">
         <input type="password" id="user-strava-client-secret" placeholder="Your Strava Client Secret" autocomplete="off" value="${tempUserClientSecret}" />
       </div>
       <button id="strava-connect-btn-user" class="strava-button-primary" style="width: 100%; margin-top: 10px; margin-bottom: 0;">Connect with Strava</button>

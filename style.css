@@ -440,29 +440,29 @@ a#info-panel-strava-link:hover {
   padding-bottom: 0;
 }
 
-.routing-input-group {
+.panel-input-group {
   margin-bottom: 8px;
   display: flex;
   align-items: center;
   position: relative; /* Needed for suggestion list positioning */
 }
 
-.routing-input-group input {
+.panel-input-group input {
   flex-grow: 1;
   background-color: var(--background-color) !important;
   color: var(--text-color) !important;
 }
 
 /* Prevent cursor/caret from appearing in readonly routing inputs */
-.routing-input-group input[readonly] {
+.panel-input-group input[readonly] {
   caret-color: transparent;
 }
-.routing-input-group input::placeholder {
+.panel-input-group input::placeholder {
   color: var(--text-color) !important;
 }
 
-.routing-input-group input,
-.routing-input-group select {
+.panel-input-group input,
+.panel-input-group select {
   padding: 6px;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
@@ -472,7 +472,7 @@ a#info-panel-strava-link:hover {
   color: var(--text-color);
 }
 
-.routing-input-group button {
+.panel-input-group button {
   margin-left: 5px;
   padding: 5px;
   font-size: var(--icon-size-16);
@@ -484,7 +484,7 @@ a#info-panel-strava-link:hover {
   background-color: var(--background-color);
   font-size: var(--font-size-14);
 }
-.routing-input-group button.active {
+.panel-input-group button.active {
   background-color: var(--text-color);
   color: var(--color-white);
   border-color: var(--border-color);
@@ -543,7 +543,7 @@ a#info-panel-strava-link:hover {
   color: var(--background-color);
 }
 
-#routing-panel-content > .routing-input-group:last-child {
+#routing-panel-content > .panel-input-group:last-child {
   display: flex;
   justify-content: center; /* Center items horizontally */
   align-items: center;
