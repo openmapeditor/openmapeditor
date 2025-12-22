@@ -139,8 +139,8 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: <https://github.com/Leaflet/Leaflet/releases/download/v1.9.4/leaflet.zip>
 - **leaflet-draw-1.0.4**
   - Download URL: <https://registry.npmjs.org/leaflet-draw/-/leaflet-draw-1.0.4.tgz>
-- **leaflet-geosearch-4.2.1**
-  - Download URL: <https://registry.npmjs.org/leaflet-geosearch/-/leaflet-geosearch-4.2.1.tgz>
+- **leaflet-geosearch-4.2.2**
+  - Download URL: <https://registry.npmjs.org/leaflet-geosearch/-/leaflet-geosearch-4.2.2.tgz>
 - **leaflet-locatecontrol-0.85.1**
   - Download URL: <https://registry.npmjs.org/leaflet.locatecontrol/-/leaflet.locatecontrol-0.85.1.tgz>
 - **leaflet-routing-machine-3.2.12**
