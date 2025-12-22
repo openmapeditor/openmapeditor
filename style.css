@@ -22,6 +22,21 @@
 
   --border-radius: 8px;
 
+  --font-size-10: 10px;
+  --font-size-12: 12px;
+  --font-size-14: 14px;
+  --font-size-16: 16px;
+  --font-size-18: 18px;
+  --font-size-20: 20px;
+  --font-size-24: 24px;
+  --font-size-30: 30px;
+
+  --icon-size-16: 16px;
+  --icon-size-20: 20px;
+  --icon-size-24: 24px;
+  --icon-size-30: 30px;
+  --icon-size-50: 50px;
+
   /* Light Theme Variables */
   --icon-color: var(--color-black);
   --border-color: #757575;
@@ -125,7 +140,7 @@ select:focus {
 
 #info-panel-name {
   position: relative;
-  font-size: 14px;
+  font-size: var(--font-size-14);
   font-weight: bold;
   text-align: center;
   width: 250px;
@@ -150,7 +165,7 @@ select:focus {
 }
 
 #info-panel-details {
-  font-size: 12px;
+  font-size: var(--font-size-12);
   color: var(--text-color) !important;
   margin: 0;
   overflow: hidden;
@@ -182,7 +197,7 @@ select:focus {
 }
 
 #info-panel-edit-hint {
-  font-size: 12px;
+  font-size: var(--font-size-12);
   color: var(--text-color);
   margin-top: 5px;
   max-width: 100%;
@@ -217,7 +232,7 @@ select:focus {
 }
 
 #info-panel-layer-name {
-  font-size: 12px;
+  font-size: var(--font-size-12);
   color: var(--text-color);
   white-space: nowrap;
   overflow: hidden;
@@ -228,7 +243,7 @@ select:focus {
 a#info-panel-strava-link {
   color: var(--strava-color) !important;
   text-decoration: none !important;
-  font-size: 12px;
+  font-size: var(--font-size-12);
 }
 
 a#info-panel-strava-link:hover {
@@ -299,7 +314,7 @@ a#info-panel-strava-link:hover {
   padding: 8px 12px;
   cursor: pointer;
   border-bottom: 1px solid var(--divider-color);
-  font-size: 14px;
+  font-size: var(--font-size-14);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -347,7 +362,7 @@ a#info-panel-strava-link:hover {
 }
 
 .material-symbols.layer-icon {
-  font-size: 16px !important;
+  font-size: var(--icon-size-16) !important;
 }
 
 #custom-layers-panel {
@@ -461,14 +476,14 @@ a#info-panel-strava-link:hover {
 .routing-input-group button {
   margin-left: 5px;
   padding: 5px;
-  font-size: 16px;
+  font-size: var(--icon-size-16);
   line-height: 1;
   cursor: pointer;
   background: none;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   background-color: var(--background-color);
-  font-size: 14px;
+  font-size: var(--font-size-14);
 }
 .routing-input-group button.active {
   background-color: var(--text-color);
@@ -542,7 +557,7 @@ a#info-panel-strava-link:hover {
   height: 30px;
   margin: 0;
   padding: 6px !important;
-  font-size: 14px !important;
+  font-size: var(--font-size-14) !important;
   white-space: nowrap;
   box-sizing: border-box;
 }
@@ -554,13 +569,13 @@ a#info-panel-strava-link:hover {
   height: 30px;
   margin: 0;
   padding: 6px !important;
-  font-size: 14px !important;
+  font-size: var(--font-size-14) !important;
   white-space: nowrap;
   box-sizing: border-box;
 }
 
 #clear-route-btn {
-  font-size: 14px;
+  font-size: var(--font-size-14);
   background-color: var(--background-color);
   color: var(--text-color);
   border: 1px solid var(--border-color);
@@ -581,7 +596,7 @@ a#info-panel-strava-link:hover {
 
 #save-route-btn {
   padding: 8px;
-  font-size: 14px;
+  font-size: var(--font-size-14);
   background-color: var(--background-color);
   color: var(--text-color);
   border: 1px solid var(--border-color);
@@ -623,7 +638,7 @@ a#info-panel-strava-link:hover {
 }
 
 #strava-panel-content p {
-  font-size: 14px;
+  font-size: var(--font-size-14);
   text-align: center;
 }
 
@@ -652,7 +667,7 @@ a#info-panel-strava-link:hover {
   justify-content: center;
   text-decoration: none;
   color: var(--strava-color);
-  font-size: 13px;
+  font-size: var(--font-size-12);
   font-weight: bold;
   margin-top: 5px;
   padding: 4px 8px;
@@ -764,7 +779,7 @@ a#info-panel-strava-link:hover {
   background-color: var(--background-color);
   cursor: pointer;
   user-select: none;
-  font-size: 12px;
+  font-size: var(--font-size-12);
   border-bottom: 1px solid var(--border-color);
   box-sizing: border-box;
 }
@@ -806,7 +821,7 @@ a#info-panel-strava-link:hover {
   min-height: 30px;
   display: flex;
   align-items: center;
-  font-size: 12px;
+  font-size: var(--font-size-12);
   border-bottom: 1px solid var(--divider-color);
   box-sizing: border-box;
 }
@@ -829,7 +844,7 @@ a#info-panel-strava-link:hover {
 .tab-button {
   flex: 1;
   padding: 8px 5px; /* Reduced padding slightly to help with spacing */
-  font-size: 14px;
+  font-size: var(--font-size-14);
   font-weight: bold;
   cursor: pointer;
   border: 1px solid var(--border-color);
@@ -1101,6 +1116,10 @@ a#info-panel-strava-link:hover {
 }
 
 /* Leaflet control overrides */
+.leaflet-popup-content {
+  font-size: var(--font-size-12) !important;
+}
+
 .leaflet-touch .leaflet-control-layers-toggle {
   background-position: center center;
   background-size: 22px 22px;
@@ -1147,7 +1166,7 @@ a#info-panel-strava-link:hover {
 
 .axis text {
   fill: var(--text-color);
-  font-size: 10px;
+  font-size: var(--font-size-10);
 }
 
 .elevation-hover-tooltip-path {
@@ -1159,7 +1178,7 @@ a#info-panel-strava-link:hover {
 .elevation-hover-tooltip-text {
   fill: var(--text-color);
   font-family: "Roboto", sans-serif !important; /* Override D3 defaults */
-  font-size: 10px;
+  font-size: var(--font-size-10);
   /* Prevent text from being selected on drag */
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -1195,7 +1214,7 @@ a#info-panel-strava-link:hover {
   border: none;
   cursor: pointer;
   display: block;
-  font-size: 12px;
+  font-size: var(--font-size-12);
   padding: 5px 10px;
   text-align: left;
   width: 100%;
@@ -1252,7 +1271,7 @@ a#info-panel-strava-link:hover {
   box-sizing: border-box;
   background-color: var(--background-color);
   color: var(--text-color);
-  font-size: 14px;
+  font-size: var(--font-size-14);
   /* Prevent cursor/caret from appearing since this is readonly */
   caret-color: transparent;
 }
@@ -1353,7 +1372,7 @@ a#info-panel-strava-link:hover {
 }
 
 .material-symbols.attribution-heart-icon {
-  font-size: 16px !important;
+  font-size: var(--icon-size-16) !important;
   color: var(--color-red) !important;
   vertical-align: middle !important;
 }
@@ -1414,7 +1433,7 @@ a#info-panel-strava-link:hover {
   width: 100%;
   box-sizing: border-box;
   border-radius: var(--border-radius);
-  font-size: 14px;
+  font-size: var(--font-size-14);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1454,7 +1473,7 @@ a#info-panel-strava-link:hover {
 
 /* Styles for the info icon in the settings panel */
 .settings-info-icon {
-  font-size: 14px;
+  font-size: var(--icon-size-16);
   font-weight: bold;
   color: var(--text-color);
   line-height: 1;
@@ -1656,7 +1675,7 @@ body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-attribut
   border-radius: var(--border-radius);
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  font-size: 14px;
+  font-size: var(--font-size-14);
   height: 30px;
   box-sizing: border-box;
   display: flex;
@@ -1694,7 +1713,7 @@ button.strava-button-secondary:not(:disabled) {
 /* Styles for Overview Panel Group Headers */
 .overview-list-header {
   font-weight: bold;
-  font-size: 12px;
+  font-size: var(--font-size-12);
   padding: 8px 12px 4px 12px;
   background-color: var(--background2-color);
   color: var(--text-color);
@@ -1728,7 +1747,7 @@ button.strava-button-secondary:not(:disabled) {
 
 /* Style for credits link in settings panel */
 .credits-link {
-  font-size: 14px;
+  font-size: var(--font-size-14);
   color: var(--highlight-color) !important;
   text-decoration: none;
 }
@@ -1759,7 +1778,7 @@ button.strava-button-secondary:not(:disabled) {
   font-family: "Material Symbols Outlined" !important;
   font-weight: normal;
   font-style: normal;
-  font-size: 20px !important;
+  font-size: var(--icon-size-20) !important;
   display: inline-block;
   line-height: 1;
   text-transform: none;
@@ -1777,7 +1796,7 @@ button.strava-button-secondary:not(:disabled) {
 }
 
 .material-symbols-map-marker {
-  font-size: 50px !important;
+  font-size: var(--icon-size-50) !important;
   font-variation-settings: "FILL" 1, "wght" 200, "GRAD" 0, "opsz" 24 !important;
 }
 
@@ -1999,7 +2018,7 @@ body.using-touch {
 
     /* These styles are for the new arrow icons in the sheet handle */
     #sheet-handle .material-symbols {
-      font-size: 24px !important;
+      font-size: var(--icon-size-24) !important;
     }
 
     #main-right-container .sheet-arrow-up {
@@ -2107,7 +2126,7 @@ body.using-touch {
 
     .leaflet-control-toggle-panels a::before {
       font-family: "Material Symbols Outlined" !important;
-      font-size: 24px !important;
+      font-size: var(--icon-size-24) !important;
       line-height: 1;
       color: var(--icon-color);
       font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24 !important;
@@ -2122,7 +2141,7 @@ body.using-touch {
       display: flex;
       flex: 0 0 40px;
       padding: 8px;
-      font-size: 14px;
+      font-size: var(--font-size-14);
       font-weight: bold;
       cursor: pointer;
       border: 1px solid var(--border-color);

@@ -1,7 +1,7 @@
 <!-- Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details. -->
 <style>
   .credits-container {
-    font-size: 14px;
+    font-size: var(--font-size-14);
     line-height: 1.6;
     text-align: left;
     color: var(--text-color);
@@ -11,7 +11,7 @@
     margin-bottom: 0px;
   }
   .credits-header h3 {
-    font-size: 30px;
+    font-size: var(--font-size-30);
     font-weight: 600;
     margin-bottom: 8px;
     text-align: center;
@@ -24,7 +24,7 @@
   .credits-header a {
     color: var(--highlight-color);
     text-decoration: none;
-    font-size: 14px;
+    font-size: var(--font-size-14);
   }
   .credits-header a:hover {
     text-decoration: underline;
@@ -37,12 +37,12 @@
   .support-section p {
     margin-top: 0;
     margin-bottom: 15px;
-    font-size: 14px;
+    font-size: var(--font-size-14);
   }
   a.support-button {
     display: inline-block;
     padding: 6px 12px;
-    font-size: 14px;
+    font-size: var(--font-size-14);
     font-weight: bold;
     color: var(--color-white) !important;
     background-color: var(--highlight-color);
@@ -58,19 +58,19 @@
   .credits-section h4 {
     margin-top: 0;
     margin-bottom: 15px;
-    font-size: 18px;
+    font-size: var(--font-size-18);
     font-weight: 500;
   }
   .credits-section li {
     margin-bottom: 5px;
-    font-size: 14px;
+    font-size: var(--font-size-14);
   }
   /* Style for the sub-header to make it clear */
   .attribution-subheader {
     font-weight: 500;
     margin-top: 0;
     margin-bottom: 10px;
-    font-size: 14px;
+    font-size: var(--font-size-14);
     padding-top: 10px;
   }
   .credits-section a {
@@ -102,7 +102,7 @@
           class="material-symbols material-symbols-fill"
           style="
             color: var(--color-white) !important;
-            font-size: 30px !important;
+            font-size: var(--icon-size-30) !important;
             vertical-align: middle;
           "
           >heart_smile</span
@@ -110,7 +110,11 @@
         Support the Project
         <span
           class="material-symbols material-symbols-fill"
-          style="color: var(--color-white); font-size: 30px !important; vertical-align: middle"
+          style="
+            color: var(--color-white);
+            font-size: var(--icon-size-30) !important;
+            vertical-align: middle;
+          "
           >heart_smile</span
         >
       </a>
@@ -126,7 +130,7 @@
   <div class="credits-section">
     <h4>Privacy First</h4>
     <div style="display: inline-block; max-width: 450px">
-      <p style="font-size: 14px; margin-top: 0; margin-bottom: 10px">
+      <p style="font-size: var(--font-size-14); margin-top: 0; margin-bottom: 10px">
         Your files are processed entirely on your local machine and are never uploaded to a server.
         The application sends minimal data to external services:
       </p>

@@ -242,19 +242,19 @@ const WmsImport = (function () {
                 ${layer.title}
                 ${
                   alreadyImported
-                    ? ' <span style="color: var(--color-red); font-size: 12px; font-weight: 400;">(Already imported)</span>'
+                    ? ' <span style="color: var(--color-red); font-size: var(--font-size-12); font-weight: 400;">(Already imported)</span>'
                     : ""
                 }
               </span>
               ${
                 layer.abstract
-                  ? `<span class="material-symbols wms-layer-info-icon" data-layer-index="${index}" style="font-size: 18px; cursor: pointer; user-select: none;">info</span>`
+                  ? `<span class="material-symbols wms-layer-info-icon" data-layer-index="${index}" style="font-size: var(--icon-size-20); cursor: pointer; user-select: none;">info</span>`
                   : ""
               }
             </div>
             ${
               layer.abstract
-                ? `<div class="wms-layer-description" id="wms-description-${index}" style="display: none; font-size: 12px; color: var(--text-color); margin-top: 4px; line-height: 1.4;">${layer.abstract}</div>`
+                ? `<div class="wms-layer-description" id="wms-description-${index}" style="display: none; font-size: var(--font-size-12); color: var(--text-color); margin-top: 4px; line-height: 1.4;">${layer.abstract}</div>`
                 : ""
             }
           </div>

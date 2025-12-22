@@ -515,7 +515,7 @@ function initializeMap() {
       <button
         id="wms-import-btn"
         class="wms-import-button"
-        style="width: 100%; padding: 8px 12px; cursor: pointer; background-color: var(--text-color); color: var(--background-color); border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: bold; white-space: nowrap;"
+        style="width: 100%; padding: 8px 12px; cursor: pointer; background-color: var(--text-color); color: var(--background-color); border: none; border-radius: var(--border-radius); font-size: var(--font-size-14); font-weight: bold; white-space: nowrap;"
       >
         Import WMS Layers
       </button>
@@ -1714,7 +1714,7 @@ function initializeMap() {
     privacyPolicyLink.href = "/privacy.html";
     privacyPolicyLink.target = "_blank";
     privacyPolicyLink.innerText = "View Privacy Policy";
-    privacyPolicyLink.style.fontSize = "14px";
+    privacyPolicyLink.style.fontSize = "var(--font-size-14)";
     privacyPolicyLink.style.color = "var(--highlight-color)";
 
     const aboutContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);

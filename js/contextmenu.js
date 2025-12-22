@@ -29,7 +29,7 @@ function initializeContextMenu(map) {
     };
 
     const coordsDiv = document.createElement("div");
-    coordsDiv.innerHTML = `<span style="font-size: 13px;">${displayedCoordString}</span>`;
+    coordsDiv.innerHTML = `<span>${displayedCoordString}</span>`;
     popupContent.appendChild(coordsDiv);
 
     const divider = document.createElement("hr");

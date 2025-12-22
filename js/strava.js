@@ -155,7 +155,7 @@ function showConnectUI() {
       <button id="strava-connect-btn" class="strava-button-link" style="border: none; background: transparent; padding: 0; cursor: pointer;">
         <img src="/img/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
       </button>
-      <p style="font-size: 12px; color: var(--text-color); margin-top: 5px;">
+      <p style="font-size: var(--font-size-12); color: var(--text-color); margin-top: 5px;">
         By connecting, you agree to the ${APP_NAME}<br>
         <a href="/privacy.html" target="_blank" style="color: var(--highlight-color);">Privacy Policy</a>
       </p>
@@ -179,9 +179,9 @@ function renderUserKeysPanel() {
 
   const apiKeysHtml = `
     <div style="padding: 0; text-align: center;">
-      <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 5px; font-size: 14px;">
+      <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 5px; font-size: var(--font-size-14);">
       <span>Provide Strava API Keys to see your activities on the map.</span>
-      <span id="strava-info-icon" class="material-symbols" title="Why is this needed?" style="font-size: 14px; line-height: 1;">info</span>
+      <span id="strava-info-icon" class="material-symbols" title="Why is this needed?" style="font-size: var(--icon-size-16); line-height: 1;">info</span>
       </div>
       <div class="routing-input-group">
         <input type="password" id="user-strava-client-id" placeholder="Your Strava Client ID" autocomplete="off" value="${tempUserClientId}" />

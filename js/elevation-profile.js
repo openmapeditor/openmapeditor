@@ -283,7 +283,7 @@ function createElevationChart(targetDivId, isImperial) {
     .append("xhtml:div")
     .attr("id", "d3-summary-html")
     .style("color", "var(--text-color)")
-    .style("font-size", "12px")
+    .style("font-size", "var(--font-size-12)")
     .style("line-height", "1.4")
     .style("text-align", "center")
     .style("width", "100%")
