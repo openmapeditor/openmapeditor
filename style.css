@@ -1283,8 +1283,8 @@ a#info-panel-strava-link:hover {
 }
 
 /* Individual button widths */
-#search-btn {
-  width: 80px;
+#search-btn,
+#poi-finder-btn {
   padding: 0 12px;
 }
 

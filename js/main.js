@@ -1036,6 +1036,25 @@ function initializeMap() {
     }
   });
 
+  // Initialize POI finder
+  initPoiFinder();
+
+  // POI finder button
+  const poiFinderBtn = document.getElementById("poi-finder-btn");
+  if (poiFinderBtn) {
+    poiFinderBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const hasResults = poiSearchResults && poiSearchResults.getLayers().length > 0;
+      if (hasResults) {
+        // Clear existing results
+        clearPOIResults();
+      } else {
+        // Show POI finder modal
+        showPoiFinder();
+      }
+    });
+  }
+
   // Search button
   const searchBtn = document.getElementById("search-btn");
 
