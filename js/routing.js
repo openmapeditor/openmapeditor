@@ -177,180 +177,207 @@ function initializeRouting() {
   };
 
   /**
-   * Sets up the routing control with the specified provider and attaches event handlers.
+   * Sets up the routing engine with the specified provider without creating any UI controls.
+   * Uses the router directly instead of L.Routing.control to avoid DOM element creation.
    */
   function setupRoutingControl(provider) {
     if (routingControl) {
-      map.removeControl(routingControl);
       routingControl = null;
     }
     const router = PROVIDER_CONFIG[provider]?.router || PROVIDER_CONFIG["mapbox"].router;
 
-    routingControl = L.Routing.control({
-      waypoints: [],
-      router: router,
-      lineOptions: { styles: [{ opacity: 0, weight: 0 }] },
-      routeWhileDragging: false,
-      show: false,
-      addWaypoints: false,
-      createMarker: () => null,
-    }).addTo(map);
+    // Create a simple routing wrapper that uses the router directly
+    routingControl = {
+      _router: router,
+      _waypoints: [],
 
-    routingControl.on("routesfound", (e) => {
-      const routes = e.routes;
-      if (routes.length > 0) {
-        const route = routes[0];
-        let processedCoordinates = route.coordinates;
+      getRouter: function () {
+        return this._router;
+      },
 
-        const startInput = document.getElementById("route-start");
-        const endInput = document.getElementById("route-end");
-        const startName = startInput.value.trim() || "Start";
-        const endName = endInput.value.trim() || "End";
-        const newRouteName = `Route: ${startName} to ${endName}`;
-
-        const summaryContainer = document.getElementById("routing-summary-container");
-        if (route.summary && summaryContainer) {
-          const distanceDisplay = formatDistance(route.summary.totalDistance);
-
-          function formatDuration(seconds) {
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            let parts = [];
-            if (h > 0) parts.push(h + " h");
-            if (m > 0 || h === 0) parts.push(m + " m");
-            return parts.join(" ");
+      setWaypoints: function (waypoints) {
+        // Store waypoints as L.Routing.Waypoint objects
+        this._waypoints = waypoints.map((wp) => {
+          if (wp instanceof L.Routing.Waypoint) {
+            return wp;
           }
-          const formattedTime = formatDuration(route.summary.totalTime);
+          return L.Routing.waypoint(wp);
+        });
 
-          summaryContainer.innerHTML = `<b>Distance:</b> ${distanceDisplay} &nbsp;&nbsp; <b>Time:</b> ${formattedTime}`;
-          summaryContainer.style.display = "block";
+        // Don't route if waypoints array is empty or has less than 2 points
+        if (this._waypoints.length < 2) {
+          return;
         }
 
-        const directionsPanel = document.getElementById("directions-panel");
-        const directionsList = document.getElementById("directions-list");
-        directionsList.innerHTML = "";
-        directionsPanel.style.display = "block";
+        // Call the router directly
+        this._router.route(this._waypoints, (err, routes) => {
+          if (err) {
+            this._handleRoutingError(err);
+          } else {
+            this._handleRoutesFound(routes);
+          }
+        });
+      },
 
-        if (route.instructions && route.instructions.length > 0) {
-          route.instructions.forEach((instr) => {
-            const item = document.createElement("div");
-            item.className = "direction-item";
-            const distanceM = instr.distance;
-            let distanceStr = "";
-            if (distanceM > 0) {
-              distanceStr = `(${formatDistance(distanceM)})`;
+      getWaypoints: function () {
+        return this._waypoints;
+      },
+
+      _handleRoutesFound: function (routes) {
+        if (routes.length > 0) {
+          const route = routes[0];
+          let processedCoordinates = route.coordinates;
+
+          const startInput = document.getElementById("route-start");
+          const endInput = document.getElementById("route-end");
+          const startName = startInput.value.trim() || "Start";
+          const endName = endInput.value.trim() || "End";
+          const newRouteName = `Route: ${startName} to ${endName}`;
+
+          const summaryContainer = document.getElementById("routing-summary-container");
+          if (route.summary && summaryContainer) {
+            const distanceDisplay = formatDistance(route.summary.totalDistance);
+
+            function formatDuration(seconds) {
+              const h = Math.floor(seconds / 3600);
+              const m = Math.floor((seconds % 3600) / 60);
+              let parts = [];
+              if (h > 0) parts.push(h + " h");
+              if (m > 0 || h === 0) parts.push(m + " m");
+              return parts.join(" ");
             }
-            item.textContent = `${instr.text} ${distanceStr}`;
-            directionsList.appendChild(item);
-          });
-        } else {
-          directionsList.innerHTML =
-            '<div class="direction-item">No turn-by-turn directions available.</div>';
-        }
+            const formattedTime = formatDuration(route.summary.totalTime);
 
-        if (shouldFitBounds) {
-          map.fitBounds(L.latLngBounds(processedCoordinates), { padding: [50, 50] });
-        }
+            summaryContainer.innerHTML = `<b>Distance:</b> ${distanceDisplay} &nbsp;&nbsp; <b>Time:</b> ${formattedTime}`;
+            summaryContainer.style.display = "block";
+          }
 
-        if (currentRoutePath) {
-          currentRoutePath.setLatLngs(processedCoordinates);
-          currentRoutePath.feature.properties.name = newRouteName;
-          currentRoutePath.feature.properties.totalDistance = route.summary.totalDistance;
-        } else {
-          const routeColorName = "Yellow";
-          const routeColor = ORGANIC_MAPS_COLORS.find((c) => c.name === routeColorName).css;
-          const newRoutePath = L.polyline(processedCoordinates, {
-            ...STYLE_CONFIG.path.default,
-            color: routeColor,
-          });
+          const directionsPanel = document.getElementById("directions-panel");
+          const directionsList = document.getElementById("directions-list");
+          directionsList.innerHTML = "";
+          directionsPanel.style.display = "block";
 
-          newRoutePath.feature = {
-            properties: {
-              name: newRouteName,
-              omColorName: routeColorName,
-              totalDistance: route.summary.totalDistance,
-            },
-          };
-          newRoutePath.pathType = "route";
+          if (route.instructions && route.instructions.length > 0) {
+            route.instructions.forEach((instr) => {
+              const item = document.createElement("div");
+              item.className = "direction-item";
+              const distanceM = instr.distance;
+              let distanceStr = "";
+              if (distanceM > 0) {
+                distanceStr = `(${formatDistance(distanceM)})`;
+              }
+              item.textContent = `${instr.text} ${distanceStr}`;
+              directionsList.appendChild(item);
+            });
+          } else {
+            directionsList.innerHTML =
+              '<div class="direction-item">No turn-by-turn directions available.</div>';
+          }
 
-          let pressTimer = null;
-          let wasLongPress = false;
+          if (shouldFitBounds) {
+            map.fitBounds(L.latLngBounds(processedCoordinates), { padding: [50, 50] });
+          }
 
-          newRoutePath.on("mousedown", (e) => {
-            if (e.originalEvent.button === 2) {
-              return;
-            }
-            wasLongPress = false;
-            pressTimer = setTimeout(() => {
+          if (currentRoutePath) {
+            currentRoutePath.setLatLngs(processedCoordinates);
+            currentRoutePath.feature.properties.name = newRouteName;
+            currentRoutePath.feature.properties.totalDistance = route.summary.totalDistance;
+          } else {
+            const routeColorName = "Yellow";
+            const routeColor = ORGANIC_MAPS_COLORS.find((c) => c.name === routeColorName).css;
+            const newRoutePath = L.polyline(processedCoordinates, {
+              ...STYLE_CONFIG.path.default,
+              color: routeColor,
+            });
+
+            newRoutePath.feature = {
+              properties: {
+                name: newRouteName,
+                omColorName: routeColorName,
+                totalDistance: route.summary.totalDistance,
+              },
+            };
+            newRoutePath.pathType = "route";
+
+            let pressTimer = null;
+            let wasLongPress = false;
+
+            newRoutePath.on("mousedown", (e) => {
+              if (e.originalEvent.button === 2) {
+                return;
+              }
+              wasLongPress = false;
+              pressTimer = setTimeout(() => {
+                wasLongPress = true;
+                addIntermediateViaPoint(e.latlng);
+              }, 800);
+            });
+
+            newRoutePath.on("mouseup", () => {
+              clearTimeout(pressTimer);
+            });
+
+            newRoutePath.on("click", (e) => {
+              L.DomEvent.stop(e);
+              if (!wasLongPress) {
+                selectItem(newRoutePath);
+              }
+              wasLongPress = false;
+            });
+
+            newRoutePath.on("contextmenu", (e) => {
+              L.DomEvent.stop(e);
               wasLongPress = true;
               addIntermediateViaPoint(e.latlng);
-            }, 800);
-          });
-
-          newRoutePath.on("mouseup", () => {
-            clearTimeout(pressTimer);
-          });
-
-          newRoutePath.on("click", (e) => {
-            L.DomEvent.stop(e);
-            if (!wasLongPress) {
-              selectItem(newRoutePath);
-            }
-            wasLongPress = false;
-          });
-
-          newRoutePath.on("contextmenu", (e) => {
-            L.DomEvent.stop(e);
-            wasLongPress = true;
-            addIntermediateViaPoint(e.latlng);
-          });
-
-          drawnItems.addLayer(newRoutePath);
-          newRoutePath.addTo(map);
-          currentRoutePath = newRoutePath;
-        }
-
-        updateOverviewList();
-        updateDrawControlStates();
-
-        if (wasRouteSelectedOnUnitRefresh || !isUnitRefreshInProgress) {
-          selectItem(currentRoutePath);
-        }
-        isUnitRefreshInProgress = false;
-        wasRouteSelectedOnUnitRefresh = false;
-
-        saveRouteBtn.disabled = false;
-      }
-    });
-
-    routingControl.on("routingerror", (e) => {
-      console.error("Routing error:", e.error);
-      if (e.error && e.error.target && e.error.target.responseText) {
-        try {
-          const apiResponse = JSON.parse(e.error.target.responseText);
-          if (apiResponse && apiResponse.message) {
-            Swal.fire({
-              title: "Routing Service Error",
-              text: apiResponse.message,
             });
-            return;
+
+            drawnItems.addLayer(newRoutePath);
+            newRoutePath.addTo(map);
+            currentRoutePath = newRoutePath;
           }
-        } catch (err) {
-          console.warn("Could not parse API error response:", err);
+
+          updateOverviewList();
+          updateDrawControlStates();
+
+          if (wasRouteSelectedOnUnitRefresh || !isUnitRefreshInProgress) {
+            selectItem(currentRoutePath);
+          }
+          isUnitRefreshInProgress = false;
+          wasRouteSelectedOnUnitRefresh = false;
+
+          saveRouteBtn.disabled = false;
         }
-      }
-      if (e.error && e.error.status === "NoRoute") {
-        Swal.fire({
-          title: "No Route Found",
-          text: "A route could not be found between the specified locations. Please check if the locations are accessible by the selected mode of transport.",
-        });
-      } else {
-        Swal.fire({
-          title: "Routing Unavailable",
-          text: "The routing service could not be reached or returned an unknown error. Please try again later.",
-        });
-      }
-    });
+      },
+
+      _handleRoutingError: function (error) {
+        console.error("Routing error:", error);
+        if (error && error.target && error.target.responseText) {
+          try {
+            const apiResponse = JSON.parse(error.target.responseText);
+            if (apiResponse && apiResponse.message) {
+              Swal.fire({
+                title: "Routing Service Error",
+                text: apiResponse.message,
+              });
+              return;
+            }
+          } catch (err) {
+            console.warn("Could not parse API error response:", err);
+          }
+        }
+        if (error && error.status === "NoRoute") {
+          Swal.fire({
+            title: "No Route Found",
+            text: "A route could not be found between the specified locations. Please check if the locations are accessible by the selected mode of transport.",
+          });
+        } else {
+          Swal.fire({
+            title: "Routing Unavailable",
+            text: "The routing service could not be reached or returned an unknown error. Please try again later.",
+          });
+        }
+      },
+    };
   }
 
   const savedProvider = localStorage.getItem("routingProvider") || "mapbox";
