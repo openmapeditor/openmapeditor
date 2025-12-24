@@ -19,7 +19,7 @@ function initializeContextMenu(map) {
 
     const showRoutingPanel = () => {
       document.getElementById("main-right-container").classList.remove("hidden");
-      const toggleButton = document.querySelector(".leaflet-control-toggle-panels");
+      const toggleButton = document.getElementById("sidebar-toggle-btn");
       if (toggleButton) {
         toggleButton.classList.add("panels-visible");
         toggleButton.classList.remove("panels-hidden");
@@ -141,7 +141,7 @@ function initializeContextMenu(map) {
   map.on("contextmenu", (e) => {
     // A list of UI container selectors where the context menu should NOT appear.
     const uiSelectors = [
-      "#search-container",
+      "#top-right-container",
       "#main-right-container",
       "#custom-layers-panel",
       "#elevation-div",

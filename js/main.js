@@ -986,79 +986,32 @@ function initializeMap() {
 
   L.control.zoom({ position: "topleft" }).addTo(map);
 
-  const PanelsToggleControl = L.Control.extend({
-    options: { position: "topright" },
-    onAdd: function (map) {
-      const container = L.DomUtil.create(
-        "div",
-        "leaflet-control leaflet-control-custom leaflet-control-toggle-panels"
-      );
-      container.title = "Toggle Sidebar";
-      container.classList.add("panels-visible");
-      container.innerHTML =
-        '<a href="#" role="button">' +
-        '<span class="icon-chevron-right-span material-symbols">keyboard_arrow_right</span>' +
-        '<span class="icon-chevron-left-span material-symbols">keyboard_arrow_left</span>' +
-        "</a>";
-
-      L.DomEvent.on(container, "click", (ev) => {
-        L.DomEvent.stop(ev);
-        const panelContainer = document.getElementById("main-right-container");
-        panelContainer.classList.toggle("hidden");
-        container.classList.toggle("panels-visible");
-        container.classList.toggle("panels-hidden");
-
-        if (!panelContainer.classList.contains("hidden") && globallySelectedItem) {
-          adjustInfoPanelNameHeight(infoPanelName);
-        }
-      });
-      L.DomEvent.on(container, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
-      return container;
-    },
-  });
-
-  new PanelsToggleControl().addTo(map);
-
-  const FullscreenToggleControl = L.Control.extend({
-    options: { position: "topright" },
-    onAdd: function (map) {
-      const container = L.DomUtil.create(
-        "div",
-        "leaflet-control leaflet-control-custom leaflet-control-fullscreen-toggle"
-      );
-      container.title = "Toggle Fullscreen (f)";
-      container.innerHTML =
-        '<a href="#" role="button">' +
-        '<span class="icon-fullscreen-enter-span material-symbols">fullscreen</span>' +
-        '<span class="icon-fullscreen-exit-span material-symbols">fullscreen_exit</span>' +
-        "</a>";
-
-      L.DomEvent.on(container, "click", (ev) => {
-        L.DomEvent.stop(ev);
-        toggleFullscreen();
-      });
-      L.DomEvent.on(container, "dblclick mousedown wheel", L.DomEvent.stopPropagation);
-      return container;
-    },
-  });
+  // Top-right button container
+  // Fullscreen button
+  const fullscreenBtn = document.getElementById("fullscreen-btn");
 
   function toggleFullscreen() {
-    const container = document.querySelector(".leaflet-control-fullscreen-toggle");
+    const btn = document.getElementById("fullscreen-btn");
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
-      container.classList.add("fullscreen-active");
+      btn.classList.add("fullscreen-active");
     } else {
       document.exitFullscreen();
-      container.classList.remove("fullscreen-active");
+      btn.classList.remove("fullscreen-active");
     }
   }
 
+  fullscreenBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    toggleFullscreen();
+  });
+
   document.addEventListener("fullscreenchange", () => {
-    const container = document.querySelector(".leaflet-control-fullscreen-toggle");
+    const btn = document.getElementById("fullscreen-btn");
     if (document.fullscreenElement) {
-      container.classList.add("fullscreen-active");
+      btn.classList.add("fullscreen-active");
     } else {
-      container.classList.remove("fullscreen-active");
+      btn.classList.remove("fullscreen-active");
     }
   });
 
@@ -1069,9 +1022,22 @@ function initializeMap() {
     }
   });
 
-  new FullscreenToggleControl().addTo(map);
+  // Sidebar toggle button
+  const sidebarToggleBtn = document.getElementById("sidebar-toggle-btn");
+  sidebarToggleBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    const panelContainer = document.getElementById("main-right-container");
+    panelContainer.classList.toggle("hidden");
+    sidebarToggleBtn.classList.toggle("panels-visible");
+    sidebarToggleBtn.classList.toggle("panels-hidden");
 
-  const searchInput = document.getElementById("search-input");
+    if (!panelContainer.classList.contains("hidden") && globallySelectedItem) {
+      adjustInfoPanelNameHeight(infoPanelName);
+    }
+  });
+
+  // Search button
+  const searchBtn = document.getElementById("search-btn");
 
   const onSearchResult = (locationLatLng, label) => {
     if (temporarySearchMarker) {
@@ -1124,7 +1090,6 @@ function initializeMap() {
         temporarySearchMarker = null;
       }
       map.closePopup();
-      searchInput.value = ""; // Clear search input on save
 
       // Update UI
       updateDrawControlStates();
@@ -1149,14 +1114,13 @@ function initializeMap() {
         map.removeLayer(temporarySearchMarker);
         temporarySearchMarker = null;
       }
-      searchInput.value = "";
     });
 
     map.flyTo(locationLatLng, map.getZoom() < 16 ? 16 : map.getZoom());
   };
 
-  // Use search modal instead of inline autocomplete
-  attachSearchModalToInput(searchInput, "Search Location", onSearchResult);
+  // Attach search modal to search button
+  attachSearchModalToInput(searchBtn, "Search Location", onSearchResult);
 
   window.elevationProfile.createElevationChart("elevation-div", useImperialUnits);
 
@@ -1799,7 +1763,7 @@ function initializeMap() {
   const sheetHandle = document.getElementById("sheet-handle");
   if (sheetHandle) {
     const panelContainer = document.getElementById("main-right-container");
-    const toggleButton = document.querySelector(".leaflet-control-toggle-panels");
+    const toggleButton = document.getElementById("sidebar-toggle-btn");
 
     const openSheet = () => {
       panelContainer.classList.remove("hidden");
@@ -1851,7 +1815,7 @@ function initializeMap() {
   }
   const uiContainers = [
     document.getElementById("main-right-container"),
-    document.getElementById("search-container"),
+    document.getElementById("top-right-container"),
     document.getElementById("custom-layers-panel"),
     document.getElementById("elevation-div"),
     // Also include the container for all of Leaflet's default controls
@@ -1886,32 +1850,33 @@ document.addEventListener("DOMContentLoaded", initializeMap);
 
 // Offline indicator
 (function () {
-  const s = document.getElementById("search-input");
+  const searchBtn = document.getElementById("search-btn");
   const routeStart = document.getElementById("route-start");
   const routeEnd = document.getElementById("route-end");
   const routeVia = document.getElementById("route-via");
 
-  const setOffline = (input) => {
-    input.disabled = true;
-    input.className = "offline";
-    if (input === s) {
-      input.placeholder = "OFFLINE";
-      input.style.cssText =
-        "background: red !important; color: white !important; border-color: red !important;";
+  const setOffline = (element) => {
+    element.disabled = true;
+    if (element.id === "search-btn") {
+      element.classList.add("offline");
+      element.textContent = "OFFLINE";
+    } else {
+      element.className = "offline";
     }
   };
 
-  const setOnline = (input) => {
-    input.disabled = false;
-    input.className = "";
-    if (input === s) {
-      input.placeholder = "Search";
-      input.style.cssText = "";
+  const setOnline = (element) => {
+    element.disabled = false;
+    if (element.id === "search-btn") {
+      element.classList.remove("offline");
+      element.textContent = "Search";
+    } else {
+      element.className = "";
     }
   };
 
   window.addEventListener("offline", () => {
-    setOffline(s);
+    setOffline(searchBtn);
     setOffline(routeStart);
     setOffline(routeEnd);
     setOffline(routeVia);
@@ -1922,14 +1887,14 @@ document.addEventListener("DOMContentLoaded", initializeMap);
   });
 
   window.addEventListener("online", () => {
-    setOnline(s);
+    setOnline(searchBtn);
     setOnline(routeStart);
     setOnline(routeEnd);
     setOnline(routeVia);
   });
 
   if (!navigator.onLine) {
-    setOffline(s);
+    setOffline(searchBtn);
     setOffline(routeStart);
     setOffline(routeEnd);
     setOffline(routeVia);

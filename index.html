@@ -52,9 +52,18 @@
   </head>
   <body data-nosnippet>
     <div id="map">
-      <div id="search-container">
-        <input type="text" id="search-input" placeholder="Search" autocomplete="off" />
+      <div id="top-right-container">
+        <button id="fullscreen-btn" class="top-right-btn" title="Toggle Fullscreen (f)">
+          <span class="icon-fullscreen-enter material-symbols">fullscreen</span>
+          <span class="icon-fullscreen-exit material-symbols">fullscreen_exit</span>
+        </button>
+        <button id="sidebar-toggle-btn" class="top-right-btn panels-visible" title="Toggle Sidebar">
+          <span class="icon-chevron-right material-symbols">keyboard_arrow_right</span>
+          <span class="icon-chevron-left material-symbols">keyboard_arrow_left</span>
+        </button>
+        <button id="search-btn" class="top-right-btn" title="Search">Search</button>
       </div>
+
       <div id="main-right-container">
         <div id="sheet-handle">
           <span class="sheet-arrow-up material-symbols">keyboard_arrow_up</span>

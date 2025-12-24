@@ -1254,37 +1254,84 @@ a#info-panel-strava-link:hover {
   margin-top: 10px !important;
 }
 
-/* Search Bar */
-#search-container {
+/* Top-right button container */
+#top-right-container {
   position: absolute;
   top: 10px;
-  right: 90px;
-  width: 240px;
+  right: 10px;
   z-index: 1001;
-  max-width: calc(100vw - 141px);
+  display: flex;
+  flex-direction: row-reverse; /* Right to left: fullscreen, toggle, search */
+  gap: 10px; /* Easily adjustable */
 }
 
-/* The search input field itself */
-#search-input {
-  width: 100%;
-  padding: 6px 10px;
+/* Base button styles */
+.top-right-btn {
+  height: 32px;
+  background: var(--background-color);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  height: 32px;
-  box-sizing: border-box;
-  background-color: var(--background-color);
-  color: var(--text-color);
+  cursor: pointer;
   font-size: var(--font-size-14);
-  /* Prevent cursor/caret from appearing since this is readonly */
-  caret-color: transparent;
-}
-
-#search-input::placeholder {
   color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-#search-input.offline::placeholder {
+/* Individual button widths */
+#search-btn {
+  width: 80px;
+  padding: 0 12px;
+}
+
+#sidebar-toggle-btn {
+  width: 32px;
+}
+
+#fullscreen-btn {
+  width: 32px;
+}
+
+/* Sidebar toggle icon states */
+#sidebar-toggle-btn .icon-chevron-left {
+  display: none;
+}
+
+#sidebar-toggle-btn.panels-hidden .icon-chevron-left {
+  display: inline-block;
+}
+
+#sidebar-toggle-btn.panels-hidden .icon-chevron-right {
+  display: none;
+}
+
+/* Fullscreen toggle icon states */
+#fullscreen-btn .icon-fullscreen-exit {
+  display: none;
+}
+
+#fullscreen-btn.fullscreen-active .icon-fullscreen-exit {
+  display: inline-block;
+}
+
+#fullscreen-btn.fullscreen-active .icon-fullscreen-enter {
+  display: none;
+}
+
+/* Search button offline state */
+#search-btn.offline {
+  background: red !important;
   color: white !important;
+  border-color: red !important;
+  cursor: not-allowed;
+}
+
+#search-btn:disabled {
+  cursor: not-allowed;
 }
 
 /* Search result popup */
@@ -1533,36 +1580,9 @@ body.route-point-select-mode * {
   cursor: auto;
 }
 
-/* Panels Toggle Button */
-.leaflet-control-toggle-panels {
-  position: absolute !important;
-  top: 0px !important;
-  right: 40px !important;
-  border-radius: var(--border-radius) !important;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1002;
-  margin-top: 0 !important;
-}
-
-.leaflet-control-toggle-panels a {
-  background-color: var(--background-color);
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: var(--border-radius) !important;
-  -webkit-tap-highlight-color: transparent;
-}
-
 .icon-chevron-left,
 .icon-chevron-right {
   width: 24px;
-  height: 24px;
   fill: var(--icon-color);
 }
 
@@ -1606,67 +1626,10 @@ body.route-point-select-mode * {
   border-radius: 50%;
 }
 
-/* Fullscreen Toggle Control */
-.leaflet-control-fullscreen-toggle {
-  position: absolute !important;
-  top: 0px !important;
-  right: 0px !important;
-  border-radius: var(--border-radius) !important;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1003;
-  margin-top: 0 !important;
-}
-
-.leaflet-control-fullscreen-toggle a {
-  background-color: var(--background-color);
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: var(--border-radius) !important;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.leaflet-control-fullscreen-toggle .icon-fullscreen-enter,
-.leaflet-control-fullscreen-toggle .icon-fullscreen-exit {
-  width: 20px;
-  height: 20px;
-  fill: var(--icon-color);
-}
-
 /* Hide the scale control and attribution when the elevation chart is visible */
 body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-scale,
 body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-attribution {
   display: none !important;
-}
-
-/* Panels Toggle: Hide left icon by default */
-.leaflet-control-toggle-panels .icon-chevron-left {
-  display: none;
-}
-/* Panels Toggle: When hidden, show left and hide right */
-.leaflet-control-toggle-panels.panels-hidden .icon-chevron-left {
-  display: block;
-}
-.leaflet-control-toggle-panels.panels-hidden .icon-chevron-right {
-  display: none;
-}
-
-/* Fullscreen Toggle: Hide exit icon by default */
-.leaflet-control-fullscreen-toggle .icon-fullscreen-exit {
-  display: none;
-}
-/* Fullscreen Toggle: When active, show exit and hide enter */
-.leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-exit {
-  display: block;
-}
-.leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-enter {
-  display: none;
 }
 
 /* Strava Panel Button Styles */
@@ -1827,34 +1790,6 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   align-items: center;
 }
 
-.leaflet-control-toggle-panels a,
-.leaflet-control-fullscreen-toggle a {
-  text-decoration: none;
-}
-
-/* Panels Toggle: Hide left icon by default */
-.leaflet-control-toggle-panels .icon-chevron-left-span {
-  display: none;
-}
-/* Panels Toggle: When hidden, show left and hide right */
-.leaflet-control-toggle-panels.panels-hidden .icon-chevron-left-span {
-  display: block;
-}
-.leaflet-control-toggle-panels.panels-hidden .icon-chevron-right-span {
-  display: none;
-}
-
-/* Fullscreen Toggle: Hide exit icon by default */
-.leaflet-control-fullscreen-toggle .icon-fullscreen-exit-span {
-  display: none;
-}
-/* Fullscreen Toggle: When active, show exit and hide enter */
-.leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-exit-span {
-  display: block;
-}
-.leaflet-control-fullscreen-toggle.fullscreen-active .icon-fullscreen-enter-span {
-  display: none;
-}
 /* Material Symbols Styles End */
 
 #sheet-handle {
@@ -1962,21 +1897,6 @@ body.using-touch {
     /* Hide the Via input group on mobile */
     #routing-via-group {
       display: none;
-    }
-
-    /* Dynamic Mobile Search Bar */
-    #search-container {
-      left: 50px;
-      right: 90px;
-      width: auto; /* Allow left/right to determine width */
-      max-width: none;
-    }
-
-    #search-input {
-      /* Start with a smaller width, aligned to the right */
-      width: 100px;
-      float: right;
-      transition: width 0.3s ease-in-out; /* Smooth expansion animation */
     }
 
     /* Mobile Bottom Sheet Styles Start */
@@ -2121,13 +2041,13 @@ body.using-touch {
       border-radius: 0 !important;
     }
 
-    /* These styles are for the new arrows in the top-right toggle button */
-    .leaflet-control-toggle-panels .icon-chevron-right-span,
-    .leaflet-control-toggle-panels .icon-chevron-left-span {
+    /* Mobile sidebar toggle: use up/down arrows instead of left/right */
+    #sidebar-toggle-btn .icon-chevron-right,
+    #sidebar-toggle-btn .icon-chevron-left {
       display: none !important;
     }
 
-    .leaflet-control-toggle-panels a::before {
+    #sidebar-toggle-btn::before {
       font-family: "Material Symbols Outlined" !important;
       font-size: var(--icon-size-24) !important;
       line-height: 1;
@@ -2136,7 +2056,7 @@ body.using-touch {
       content: "keyboard_arrow_down";
     }
 
-    .leaflet-control-toggle-panels.panels-hidden a::before {
+    #sidebar-toggle-btn.panels-hidden::before {
       content: "keyboard_arrow_up";
     }
 

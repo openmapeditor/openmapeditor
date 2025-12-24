@@ -499,10 +499,6 @@ async function setupAutocomplete(inputEl, suggestionsEl, callback) {
   inputEl.addEventListener("blur", () => {
     setTimeout(() => {
       suggestionsEl.style.display = "none";
-
-      if (inputEl.id === "search-input" && !temporarySearchMarker) {
-        inputEl.value = "";
-      }
     }, 150);
   });
 }

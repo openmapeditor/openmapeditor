@@ -116,9 +116,14 @@ function attachSearchModalToInput(inputEl, modalTitle, callback) {
     // Immediately blur the input to prevent keyboard from staying open on mobile
     inputEl.blur();
 
-    showSearchModal(modalTitle, originalPlaceholder, inputEl.value, (latLng, label) => {
-      // Update input display
-      inputEl.value = label;
+    // For buttons, always start with empty value. For inputs, use current value.
+    const currentValue = inputEl.tagName === "BUTTON" ? "" : inputEl.value;
+
+    showSearchModal(modalTitle, originalPlaceholder, currentValue, (latLng, label) => {
+      // Update input display (only works for input elements, not buttons)
+      if (inputEl.tagName !== "BUTTON") {
+        inputEl.value = label;
+      }
       // Trigger the original callback
       callback(latLng, label);
     }).finally(() => {
