@@ -1,3 +1,5 @@
+// Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
+
 /**
  * Search Modal
  *
