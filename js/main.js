@@ -1836,15 +1836,18 @@ document.addEventListener("DOMContentLoaded", initializeMap);
 // Offline indicator
 (function () {
   const searchBtn = document.getElementById("search-btn");
+  const poiFinderBtn = document.getElementById("poi-finder-btn");
   const routeStart = document.getElementById("route-start");
   const routeEnd = document.getElementById("route-end");
   const routeVia = document.getElementById("route-via");
 
   const setOffline = (element) => {
     element.disabled = true;
-    if (element.id === "search-btn") {
+    if (element.id === "poi-finder-btn") {
       element.classList.add("offline");
       element.textContent = "OFFLINE";
+    } else if (element.id === "search-btn") {
+      element.classList.add("offline");
     } else {
       element.className = "offline";
     }
@@ -1852,9 +1855,11 @@ document.addEventListener("DOMContentLoaded", initializeMap);
 
   const setOnline = (element) => {
     element.disabled = false;
-    if (element.id === "search-btn") {
+    if (element.id === "poi-finder-btn") {
       element.classList.remove("offline");
-      element.textContent = "Search";
+      element.textContent = "Find Places";
+    } else if (element.id === "search-btn") {
+      element.classList.remove("offline");
     } else {
       element.className = "";
     }
@@ -1862,6 +1867,7 @@ document.addEventListener("DOMContentLoaded", initializeMap);
 
   window.addEventListener("offline", () => {
     setOffline(searchBtn);
+    setOffline(poiFinderBtn);
     setOffline(routeStart);
     setOffline(routeEnd);
     setOffline(routeVia);
@@ -1873,6 +1879,7 @@ document.addEventListener("DOMContentLoaded", initializeMap);
 
   window.addEventListener("online", () => {
     setOnline(searchBtn);
+    setOnline(poiFinderBtn);
     setOnline(routeStart);
     setOnline(routeEnd);
     setOnline(routeVia);
@@ -1880,6 +1887,7 @@ document.addEventListener("DOMContentLoaded", initializeMap);
 
   if (!navigator.onLine) {
     setOffline(searchBtn);
+    setOffline(poiFinderBtn);
     setOffline(routeStart);
     setOffline(routeEnd);
     setOffline(routeVia);
