@@ -347,7 +347,7 @@ function displayPOIResults(results, category) {
     const tags = element.tags || {};
 
     let popupContent = `
-      <div style="overflow-wrap: break-word;">
+      <div style="overflow-wrap: break-word; text-align: center;">
         <strong><span class="material-symbols" style="font-size: 16px; vertical-align: middle;">${category.icon}</span> ${name}</strong><br>
     `;
 
