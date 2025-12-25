@@ -173,9 +173,7 @@ async function showPoiFinder() {
         ${categoryButtons}
       </div>
     `,
-    showCancelButton: true,
-    showConfirmButton: false,
-    cancelButtonText: "Close",
+    confirmButtonText: "Close",
     customClass: {
       popup: "poi-finder-modal",
     },

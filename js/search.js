@@ -34,9 +34,7 @@ async function showSearchModal(title, placeholder, currentValue, callback) {
         <div id="search-modal-suggestions" class="search-modal-suggestions"></div>
       </div>
     `,
-    showCancelButton: true,
-    showConfirmButton: false, // We'll handle selection via autocomplete
-    cancelButtonText: "Cancel",
+    confirmButtonText: "Close",
     customClass: {
       popup: "search-modal",
       htmlContainer: "search-modal-container",
