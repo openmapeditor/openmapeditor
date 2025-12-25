@@ -164,11 +164,10 @@ async function showPoiFinder() {
   ).join("");
 
   await Swal.fire({
-    title: "Find on Map",
     html: `
       <div style="text-align: left;">
         <p style="font-size: var(--font-size-12); color: var(--text-color); margin: 0 0 12px 0; text-align: center;">
-          Search in current map view
+          Find places in current view
         </p>
         ${categoryButtons}
       </div>
