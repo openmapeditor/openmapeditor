@@ -11,6 +11,12 @@
 const POI_CATEGORIES = [
   // Outdoor Activities (Priority)
   {
+    id: "park",
+    name: "Park",
+    icon: "park",
+    overpassQuery: ["leisure=park", "leisure=nature_reserve"],
+  },
+  {
     id: "viewpoint",
     name: "Viewpoint",
     icon: "landscape",
