@@ -367,9 +367,28 @@ function displayPOIResults(results, category) {
           </a>
         </small>
       </div>
+      <div style="text-align: center; margin-top: 8px;">
+        <button id="save-poi-marker-${element.id}" style="padding: 5px 10px; border: 1px solid #ccc; border-radius: var(--border-radius); cursor: pointer; background-color: #f0f0f0;">
+          Save to Map
+        </button>
+      </div>
     `;
 
-    marker.bindPopup(popupContent, { maxWidth: 150 });
+    const popup = L.popup({ maxWidth: 150 });
+    popup.setContent(popupContent);
+    marker.bindPopup(popup);
+
+    // Add event listener for "Save as Marker" button when popup opens
+    marker.on("popupopen", () => {
+      const saveButton = document.getElementById(`save-poi-marker-${element.id}`);
+      if (saveButton) {
+        saveButton.addEventListener("click", () => {
+          createAndSaveMarker(lat, lon, name);
+          marker.closePopup();
+        });
+      }
+    });
+
     marker.addTo(poiSearchResults);
   });
 

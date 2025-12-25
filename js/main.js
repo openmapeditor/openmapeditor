@@ -1080,28 +1080,7 @@ function initializeMap() {
     popupContent.appendChild(saveButton);
 
     L.DomEvent.on(saveButton, "click", () => {
-      const defaultDrawColorName = "Red";
-      const defaultDrawColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === defaultDrawColorName);
-
-      const newMarker = L.marker(locationLatLng, {
-        icon: createMarkerIcon(defaultDrawColorData.css, STYLE_CONFIG.marker.default.opacity),
-      });
-
-      newMarker.pathType = "drawn";
-      newMarker.feature = {
-        properties: {
-          name: label,
-          omColorName: defaultDrawColorName,
-        },
-      };
-
-      drawnItems.addLayer(newMarker);
-      editableLayers.addLayer(newMarker);
-
-      newMarker.on("click", (ev) => {
-        L.DomEvent.stopPropagation(ev);
-        selectItem(newMarker);
-      });
+      createAndSaveMarker(locationLatLng, label);
 
       // Clean up the temporary marker and input
       if (temporarySearchMarker) {
@@ -1109,19 +1088,6 @@ function initializeMap() {
         temporarySearchMarker = null;
       }
       map.closePopup();
-
-      // Update UI
-      updateDrawControlStates();
-      updateOverviewList();
-      selectItem(newMarker); // Select the newly saved marker
-
-      Swal.fire({
-        toast: true,
-        icon: "success",
-        title: "Marker Saved!",
-        showConfirmButton: false,
-        timer: 2000,
-      });
     });
 
     temporarySearchMarker
