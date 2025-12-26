@@ -129,6 +129,7 @@ function initPoiFinder() {
     spiderfyOnMaxZoom: true,
     showCoverageOnHover: false,
     zoomToBoundsOnClick: true,
+    disableClusteringAtZoom: 18,
   }).addTo(map);
 
   // Add to layer control
