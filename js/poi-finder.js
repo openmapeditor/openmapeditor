@@ -155,7 +155,6 @@ async function showPoiFinder() {
     <button
       class="poi-category-btn"
       data-category="${cat.id}"
-      style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px; margin: 4px 0; border: 1px solid var(--border-color); border-radius: 4px; background: var(--panel-bg-color); color: var(--text-color); cursor: pointer; font-size: var(--font-size-14);"
     >
       <span class="material-symbols" style="font-size: 20px;">${cat.icon}</span>
       <span>${cat.name}</span>
@@ -169,7 +168,9 @@ async function showPoiFinder() {
         <p style="font-size: var(--font-size-12); color: var(--text-color); margin: 0 0 12px 0; text-align: center;">
           Find places in current view
         </p>
-        ${categoryButtons}
+        <div class="poi-category-grid">
+          ${categoryButtons}
+        </div>
       </div>
     `,
     confirmButtonText: "Close",
