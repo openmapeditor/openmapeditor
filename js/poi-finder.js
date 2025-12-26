@@ -123,8 +123,13 @@ let currentAbortController = null;
  * Initialize POI finder
  */
 function initPoiFinder() {
-  // Create POI layer group
-  poiSearchResults = L.featureGroup().addTo(map);
+  // Create POI marker cluster group
+  poiSearchResults = L.markerClusterGroup({
+    maxClusterRadius: 50,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: true,
+  }).addTo(map);
 
   // Add to layer control
   if (window.layerControl) {
@@ -226,10 +231,12 @@ async function searchPOICategory(category) {
 
   try {
     const bounds = map.getBounds();
+    const RESULT_LIMIT = 1000;
     const results = await queryOverpass(
       category.overpassQuery,
       bounds,
-      currentAbortController.signal
+      currentAbortController.signal,
+      RESULT_LIMIT
     );
 
     Swal.close();
@@ -253,12 +260,17 @@ async function searchPOICategory(category) {
     // Update button to show "Clear"
     updateFinderButton();
 
-    // Show success message
+    // Show success message with limit warning if needed
+    const hitLimit = results.length >= RESULT_LIMIT;
     Swal.fire({
       title: "Found!",
-      text: `${results.length} ${category.name}${results.length !== 1 ? "s" : ""} found`,
-      timer: 2000,
-      showConfirmButton: false,
+      html: hitLimit
+        ? `Showing first ${results.length} ${category.name}${
+            results.length !== 1 ? "s" : ""
+          }<br><small style="color: var(--text-color-secondary);"><strong>Search again after zooming in for complete area coverage.</strong></small>`
+        : `${results.length} ${category.name}${results.length !== 1 ? "s" : ""} found`,
+      timer: hitLimit ? 3000 : 2000,
+      showConfirmButton: hitLimit,
     });
   } catch (error) {
     if (error.name === "AbortError") {
@@ -283,7 +295,7 @@ async function searchPOICategory(category) {
 /**
  * Query Overpass API
  */
-async function queryOverpass(osmQuery, bounds, signal) {
+async function queryOverpass(osmQuery, bounds, signal, limit = 1000) {
   // Handle both single query strings and arrays of queries
   const queries = Array.isArray(osmQuery) ? osmQuery : [osmQuery];
 
@@ -301,7 +313,7 @@ async function queryOverpass(osmQuery, bounds, signal) {
     (
       ${queryParts}
     );
-    out center;
+    out center ${limit};
   `;
 
   const response = await fetch("https://overpass-api.de/api/interpreter", {

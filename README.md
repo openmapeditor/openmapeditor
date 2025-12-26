@@ -144,6 +144,8 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: <https://registry.npmjs.org/leaflet-geosearch/-/leaflet-geosearch-4.2.2.tgz>
 - **leaflet-locatecontrol-0.85.1**
   - Download URL: <https://registry.npmjs.org/leaflet.locatecontrol/-/leaflet.locatecontrol-0.85.1.tgz>
+- **leaflet-markercluster-1.5.3**
+  - Download URL: <https://registry.npmjs.org/leaflet.markercluster/-/leaflet.markercluster-1.5.3.tgz>
 - **leaflet-routing-machine-3.2.12**
   - Download URL: <https://registry.npmjs.org/leaflet-routing-machine/-/leaflet-routing-machine-3.2.12.tgz>
 - **polyline-encoded-0.0.9**
