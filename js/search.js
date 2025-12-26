@@ -96,7 +96,7 @@ function attachSearchModalToInput(inputEl, modalTitle, callback) {
 
   // Make input look clickable
   inputEl.style.cursor = "pointer";
-  inputEl.setAttribute("title", "Click to search");
+  inputEl.setAttribute("title", "Search");
 
   // Make input readonly to prevent keyboard from appearing and cursor from blinking
   inputEl.setAttribute("readonly", "true");

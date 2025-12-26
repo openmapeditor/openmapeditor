@@ -141,7 +141,7 @@ function initPoiFinder() {
 }
 
 /**
- * Update the Find/Clear button text
+ * Update the Find/Clear button text and tooltip
  */
 function updateFinderButton() {
   const button = document.getElementById("poi-finder-btn");
@@ -149,6 +149,7 @@ function updateFinderButton() {
 
   const hasResults = poiSearchResults && poiSearchResults.getLayers().length > 0;
   button.textContent = hasResults ? "Clear Places" : "Find Places";
+  button.setAttribute("title", hasResults ? "Clear Places" : "Find Places");
 }
 
 /**
