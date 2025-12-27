@@ -7,6 +7,16 @@
  * Displays results as read-only markers on the map.
  */
 
+// POI Marker Styling - centralized configuration
+const POI_STYLE = {
+  color: "#ea4335", // Red color from CSS variables (--color-red)
+  outlineColor: "#FFFFFF", // White outline for contrast
+  outlineWeight: 3,
+  markerRadius: 8,
+  clusterMinSize: 30,
+  clusterMaxSize: 50,
+};
+
 // POI Categories with OSM tags and material symbols
 const POI_CATEGORIES = [
   // Outdoor Activities (Priority)
@@ -129,7 +139,35 @@ function initPoiFinder() {
     spiderfyOnMaxZoom: true,
     showCoverageOnHover: false,
     zoomToBoundsOnClick: true,
-    disableClusteringAtZoom: 18,
+    disableClusteringAtZoom: 17,
+    iconCreateFunction: function (cluster) {
+      const count = cluster.getChildCount();
+      const size = Math.min(
+        POI_STYLE.clusterMaxSize,
+        Math.max(POI_STYLE.clusterMinSize, POI_STYLE.clusterMinSize + Math.log(count) * 5)
+      );
+
+      return L.divIcon({
+        html: `<div style="
+          width: ${size}px;
+          height: ${size}px;
+          border-radius: 50%;
+          background-color: ${POI_STYLE.color};
+          box-shadow: 0 0 0 ${POI_STYLE.outlineWeight}px ${
+          POI_STYLE.outlineColor
+        }, 0 2px 4px rgba(0,0,0,0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          color: white;
+          text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+          font-size: ${Math.min(16, size / 2.5)}px;
+        ">${count}</div>`,
+        className: "poi-cluster-icon",
+        iconSize: L.point(size, size),
+      });
+    },
   }).addTo(map);
 
   // Layer will be added to layer control in main.js
@@ -353,14 +391,14 @@ function displayPOIResults(results, category) {
       return; // Skip if no coordinates
     }
 
-    // Create circle marker - bigger, red, transparent center
+    // Create circle marker with white outline for visibility on all base maps
     const marker = L.circleMarker([lat, lon], {
-      radius: 10,
-      fillColor: "#E53935",
-      color: "#E53935",
-      weight: 2,
+      radius: POI_STYLE.markerRadius,
+      fillColor: POI_STYLE.color,
+      color: POI_STYLE.outlineColor,
+      weight: POI_STYLE.outlineWeight,
       opacity: 1,
-      fillOpacity: 0.2,
+      fillOpacity: 1,
     });
 
     // Create popup content
