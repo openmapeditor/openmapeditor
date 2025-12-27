@@ -32,6 +32,10 @@
     <link rel="stylesheet" href="/leaflet-locatecontrol-0.85.1/L.Control.Locate.min.css" />
     <script src="/leaflet-locatecontrol-0.85.1/L.Control.Locate.min.js"></script>
 
+    <link rel="stylesheet" href="/leaflet-markercluster-1.5.3/MarkerCluster.css" />
+    <link rel="stylesheet" href="/leaflet-markercluster-1.5.3/MarkerCluster.Default.css" />
+    <script src="/leaflet-markercluster-1.5.3/leaflet.markercluster.js"></script>
+
     <link rel="stylesheet" href="/leaflet-routing-machine-3.2.12/leaflet-routing-machine.css" />
     <script src="/leaflet-routing-machine-3.2.12/leaflet-routing-machine.min.js"></script>
 
@@ -61,7 +65,11 @@
           <span class="icon-chevron-right material-symbols">keyboard_arrow_right</span>
           <span class="icon-chevron-left material-symbols">keyboard_arrow_left</span>
         </button>
-        <button id="search-btn" class="top-right-btn" title="Search">Search</button>
+        <button id="poi-finder-btn" class="top-right-btn" title="Find Places">Find Places</button>
+        <button id="search-btn" class="top-right-btn" title="Search for addresses and coordinates">
+          <span class="icon-search-online material-symbols">search</span>
+          <span class="icon-search-offline material-symbols">sentiment_dissatisfied</span>
+        </button>
       </div>
 
       <div id="main-right-container">
@@ -263,6 +271,7 @@
     <script src="/js/leaflet-wms-gutter.js"></script>
     <script src="/js/wms-import.js"></script>
     <script src="/js/search.js"></script>
+    <script src="/js/poi-finder.js"></script>
     <script src="/js/main.js"></script>
     <!-- END-BUNDLE -->
   </body>

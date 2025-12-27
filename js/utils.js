@@ -545,3 +545,58 @@ function formatDistance(meters, includeSecondary = false) {
 
   return includeSecondary ? `${primaryDisplay} (${secondaryDisplay})` : primaryDisplay;
 }
+
+/**
+ * Creates and saves a new marker to the map at the specified location.
+ * This is a shared utility used by search results, POI finder, and context menu.
+ * @param {number|L.LatLng} lat - Latitude or LatLng object
+ * @param {number} [lon] - Longitude (optional if lat is a LatLng object)
+ * @param {string} [name] - Optional name for the marker
+ * @returns {L.Marker} The created marker
+ */
+function createAndSaveMarker(lat, lon, name) {
+  // Handle both (lat, lon, name) and (latLng, name) calling conventions
+  let latLng;
+  let markerName;
+
+  if (lat instanceof L.LatLng) {
+    latLng = lat;
+    markerName = lon; // Second parameter is name in this case
+  } else {
+    latLng = L.latLng(lat, lon);
+    markerName = name;
+  }
+
+  const defaultDrawColorName = "Red";
+  const defaultDrawColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === defaultDrawColorName);
+
+  const newMarker = L.marker(latLng, {
+    icon: createMarkerIcon(defaultDrawColorData.css, STYLE_CONFIG.marker.default.opacity),
+  });
+
+  newMarker.pathType = "drawn";
+  newMarker.feature = {
+    properties: {
+      omColorName: defaultDrawColorName,
+    },
+  };
+
+  // Add name if provided
+  if (markerName) {
+    newMarker.feature.properties.name = markerName;
+  }
+
+  drawnItems.addLayer(newMarker);
+  editableLayers.addLayer(newMarker);
+
+  newMarker.on("click", (ev) => {
+    L.DomEvent.stopPropagation(ev);
+    selectItem(newMarker);
+  });
+
+  selectItem(newMarker);
+  updateDrawControlStates();
+  updateOverviewList();
+
+  return newMarker;
+}

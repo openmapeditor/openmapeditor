@@ -20,6 +20,7 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 - **Elevation Profiles:** Instantly visualize the elevation profile for any path.
 - **Custom WMS Layers:** Import map layers from any WMS-compatible service. Browse available layers, add them to your map as overlays, and reorder them with drag-and-drop. Your WMS layers are saved locally and persist between sessions.
 - **Strava Integration:** Connect your Strava account to view your activities on the map, download their original high-resolution GPX tracks, or duplicate them for editing.
+- **POI Finder:** Search for points of interest (parks, restaurants, viewpoints, etc.) in the current map view using OpenStreetMap data, and save them directly to your map.
 
 ---
 
@@ -143,6 +144,8 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: <https://registry.npmjs.org/leaflet-geosearch/-/leaflet-geosearch-4.2.2.tgz>
 - **leaflet-locatecontrol-0.85.1**
   - Download URL: <https://registry.npmjs.org/leaflet.locatecontrol/-/leaflet.locatecontrol-0.85.1.tgz>
+- **leaflet-markercluster-1.5.3**
+  - Download URL: <https://registry.npmjs.org/leaflet.markercluster/-/leaflet.markercluster-1.5.3.tgz>
 - **leaflet-routing-machine-3.2.12**
   - Download URL: <https://registry.npmjs.org/leaflet-routing-machine/-/leaflet-routing-machine-3.2.12.tgz>
 - **polyline-encoded-0.0.9**

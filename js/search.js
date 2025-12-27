@@ -20,7 +20,7 @@ async function showSearchModal(title, placeholder, currentValue, callback) {
   await Swal.fire({
     html: `
       <div>
-        <p style="font-size: var(--font-size-10); color: var(--text-color); margin: 0 0 8px 0; text-align: center;">
+        <p style="font-size: var(--font-size-12); color: var(--text-color); margin: 0 0 8px 0; text-align: center;">
           Basel or 47.55972, 7.58861 or N 47° 33' 35" E 7° 35' 19"
         </p>
         <input
@@ -34,9 +34,7 @@ async function showSearchModal(title, placeholder, currentValue, callback) {
         <div id="search-modal-suggestions" class="search-modal-suggestions"></div>
       </div>
     `,
-    showCancelButton: true,
-    showConfirmButton: false, // We'll handle selection via autocomplete
-    cancelButtonText: "Cancel",
+    confirmButtonText: "Close",
     customClass: {
       popup: "search-modal",
       htmlContainer: "search-modal-container",
@@ -98,7 +96,7 @@ function attachSearchModalToInput(inputEl, modalTitle, callback) {
 
   // Make input look clickable
   inputEl.style.cursor = "pointer";
-  inputEl.setAttribute("title", "Click to search");
+  inputEl.setAttribute("title", "Search");
 
   // Make input readonly to prevent keyboard from appearing and cursor from blinking
   inputEl.setAttribute("readonly", "true");

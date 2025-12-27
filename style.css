@@ -1283,9 +1283,16 @@ a#info-panel-strava-link:hover {
 }
 
 /* Individual button widths */
-#search-btn {
-  width: 80px;
+#poi-finder-btn {
   padding: 0 12px;
+}
+
+#search-btn {
+  width: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #sidebar-toggle-btn {
@@ -1322,16 +1329,28 @@ a#info-panel-strava-link:hover {
   display: none;
 }
 
-/* Search button offline state */
-#search-btn.offline {
+/* Offline state styling */
+#poi-finder-btn.offline {
   background: red !important;
   color: white !important;
   border-color: red !important;
-  cursor: not-allowed;
+  cursor: not-allowed !important;
 }
 
-#search-btn:disabled {
-  cursor: not-allowed;
+#search-btn.offline {
+  cursor: not-allowed !important;
+}
+
+#search-btn .icon-search-offline {
+  display: none;
+}
+
+#search-btn.offline .icon-search-online {
+  display: none;
+}
+
+#search-btn.offline .icon-search-offline {
+  display: inline-block;
 }
 
 /* Search result popup */
@@ -1815,6 +1834,26 @@ body.using-touch {
   .leaflet-draw-tooltip {
     display: none !important;
   }
+}
+
+/* POI Finder Modal Styles */
+.poi-category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.poi-category-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: var(--font-size-14);
 }
 
 /* Mobile Specific Styles Start */

@@ -286,6 +286,7 @@ function initializeMap() {
     ImportedFiles: '<span class="material-symbols layer-icon">folder_open</span> Imported Files',
     StravaActivities:
       '<span class="material-symbols layer-icon">directions_run</span> Strava Activities',
+    FoundPlaces: '<span class="material-symbols layer-icon">location_on</span> Found Places',
   };
 
   const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -408,11 +409,15 @@ function initializeMap() {
   editableLayers = new L.FeatureGroup();
   stravaActivitiesLayer = L.featureGroup().addTo(map);
 
+  // Initialize POI finder first so we can add it to layer control
+  initPoiFinder();
+
   const allOverlayMaps = {
     ...staticOverlayMaps,
     DrawnItems: drawnItems,
     ImportedFiles: importedItems,
     StravaActivities: stravaActivitiesLayer,
+    FoundPlaces: poiSearchResults,
   };
 
   const swissBounds = L.latLngBounds([
@@ -473,7 +478,7 @@ function initializeMap() {
   formContent += '<div class="leaflet-control-layers-separator"></div>';
 
   const wmsOverlayNames = ["SwissHikingTrails"]; // Static WMS overlays
-  const userContentNames = ["DrawnItems", "ImportedFiles", "StravaActivities"]; // Always on top
+  const userContentNames = ["DrawnItems", "ImportedFiles", "StravaActivities", "FoundPlaces"]; // Always on top
 
   // User content layers (not sortable, always on top)
   formContent += '<div class="leaflet-control-layers-user-content">';
@@ -634,7 +639,7 @@ function initializeMap() {
     });
 
     // Then, always bring user content layers to the very top
-    const userContentLayers = ["DrawnItems", "ImportedFiles", "StravaActivities"];
+    const userContentLayers = ["DrawnItems", "ImportedFiles", "StravaActivities", "FoundPlaces"];
     userContentLayers.forEach((name) => {
       if (allOverlayMaps[name] && map.hasLayer(allOverlayMaps[name])) {
         const layer = allOverlayMaps[name];
@@ -644,6 +649,24 @@ function initializeMap() {
       }
     });
   }
+
+  // Function to ensure POI layer is visible in layer control
+  window.ensurePoiLayerVisible = function () {
+    const foundPlacesLayer = allOverlayMaps["FoundPlaces"];
+    if (foundPlacesLayer && !map.hasLayer(foundPlacesLayer)) {
+      map.addLayer(foundPlacesLayer);
+
+      // Update the checkbox in the layer control
+      const layerId = L.Util.stamp(foundPlacesLayer);
+      const checkbox = customPanel.querySelector(`input[data-layer-id="${layerId}"]`);
+      if (checkbox) {
+        checkbox.checked = true;
+      }
+
+      // Reapply z-index to ensure proper layering
+      reapplyOverlayZIndex();
+    }
+  };
 
   // Function to save overlay order to localStorage
   function saveOverlayOrder() {
@@ -1036,6 +1059,22 @@ function initializeMap() {
     }
   });
 
+  // POI finder button
+  const poiFinderBtn = document.getElementById("poi-finder-btn");
+  if (poiFinderBtn) {
+    poiFinderBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const hasResults = poiSearchResults && poiSearchResults.getLayers().length > 0;
+      if (hasResults) {
+        // Clear existing results
+        clearPOIResults();
+      } else {
+        // Show POI finder modal
+        showPoiFinder();
+      }
+    });
+  }
+
   // Search button
   const searchBtn = document.getElementById("search-btn");
 
@@ -1061,28 +1100,7 @@ function initializeMap() {
     popupContent.appendChild(saveButton);
 
     L.DomEvent.on(saveButton, "click", () => {
-      const defaultDrawColorName = "Red";
-      const defaultDrawColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === defaultDrawColorName);
-
-      const newMarker = L.marker(locationLatLng, {
-        icon: createMarkerIcon(defaultDrawColorData.css, STYLE_CONFIG.marker.default.opacity),
-      });
-
-      newMarker.pathType = "drawn";
-      newMarker.feature = {
-        properties: {
-          name: label,
-          omColorName: defaultDrawColorName,
-        },
-      };
-
-      drawnItems.addLayer(newMarker);
-      editableLayers.addLayer(newMarker);
-
-      newMarker.on("click", (ev) => {
-        L.DomEvent.stopPropagation(ev);
-        selectItem(newMarker);
-      });
+      createAndSaveMarker(locationLatLng, label);
 
       // Clean up the temporary marker and input
       if (temporarySearchMarker) {
@@ -1090,19 +1108,6 @@ function initializeMap() {
         temporarySearchMarker = null;
       }
       map.closePopup();
-
-      // Update UI
-      updateDrawControlStates();
-      updateOverviewList();
-      selectItem(newMarker); // Select the newly saved marker
-
-      Swal.fire({
-        toast: true,
-        icon: "success",
-        title: "Marker Saved!",
-        showConfirmButton: false,
-        timer: 2000,
-      });
     });
 
     temporarySearchMarker
@@ -1851,32 +1856,33 @@ document.addEventListener("DOMContentLoaded", initializeMap);
 // Offline indicator
 (function () {
   const searchBtn = document.getElementById("search-btn");
+  const poiFinderBtn = document.getElementById("poi-finder-btn");
   const routeStart = document.getElementById("route-start");
   const routeEnd = document.getElementById("route-end");
   const routeVia = document.getElementById("route-via");
 
   const setOffline = (element) => {
     element.disabled = true;
-    if (element.id === "search-btn") {
-      element.classList.add("offline");
+    element.classList.add("offline");
+    if (element.id === "poi-finder-btn") {
       element.textContent = "OFFLINE";
-    } else {
-      element.className = "offline";
     }
   };
 
   const setOnline = (element) => {
     element.disabled = false;
-    if (element.id === "search-btn") {
-      element.classList.remove("offline");
-      element.textContent = "Search";
-    } else {
-      element.className = "";
+    element.classList.remove("offline");
+    if (element.id === "poi-finder-btn") {
+      // Update button text based on current state instead of always setting to "Find Places"
+      if (window.updatePOIFinderButton) {
+        window.updatePOIFinderButton();
+      }
     }
   };
 
   window.addEventListener("offline", () => {
     setOffline(searchBtn);
+    setOffline(poiFinderBtn);
     setOffline(routeStart);
     setOffline(routeEnd);
     setOffline(routeVia);
@@ -1888,6 +1894,7 @@ document.addEventListener("DOMContentLoaded", initializeMap);
 
   window.addEventListener("online", () => {
     setOnline(searchBtn);
+    setOnline(poiFinderBtn);
     setOnline(routeStart);
     setOnline(routeEnd);
     setOnline(routeVia);
@@ -1895,6 +1902,7 @@ document.addEventListener("DOMContentLoaded", initializeMap);
 
   if (!navigator.onLine) {
     setOffline(searchBtn);
+    setOffline(poiFinderBtn);
     setOffline(routeStart);
     setOffline(routeEnd);
     setOffline(routeVia);
