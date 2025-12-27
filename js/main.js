@@ -286,6 +286,7 @@ function initializeMap() {
     ImportedFiles: '<span class="material-symbols layer-icon">folder_open</span> Imported Files',
     StravaActivities:
       '<span class="material-symbols layer-icon">directions_run</span> Strava Activities',
+    FoundPlaces: '<span class="material-symbols layer-icon">location_on</span> Found Places',
   };
 
   const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -408,11 +409,15 @@ function initializeMap() {
   editableLayers = new L.FeatureGroup();
   stravaActivitiesLayer = L.featureGroup().addTo(map);
 
+  // Initialize POI finder first so we can add it to layer control
+  initPoiFinder();
+
   const allOverlayMaps = {
     ...staticOverlayMaps,
     DrawnItems: drawnItems,
     ImportedFiles: importedItems,
     StravaActivities: stravaActivitiesLayer,
+    FoundPlaces: poiSearchResults,
   };
 
   const swissBounds = L.latLngBounds([
@@ -473,7 +478,7 @@ function initializeMap() {
   formContent += '<div class="leaflet-control-layers-separator"></div>';
 
   const wmsOverlayNames = ["SwissHikingTrails"]; // Static WMS overlays
-  const userContentNames = ["DrawnItems", "ImportedFiles", "StravaActivities"]; // Always on top
+  const userContentNames = ["DrawnItems", "ImportedFiles", "StravaActivities", "FoundPlaces"]; // Always on top
 
   // User content layers (not sortable, always on top)
   formContent += '<div class="leaflet-control-layers-user-content">';
@@ -634,7 +639,7 @@ function initializeMap() {
     });
 
     // Then, always bring user content layers to the very top
-    const userContentLayers = ["DrawnItems", "ImportedFiles", "StravaActivities"];
+    const userContentLayers = ["DrawnItems", "ImportedFiles", "StravaActivities", "FoundPlaces"];
     userContentLayers.forEach((name) => {
       if (allOverlayMaps[name] && map.hasLayer(allOverlayMaps[name])) {
         const layer = allOverlayMaps[name];
@@ -644,6 +649,24 @@ function initializeMap() {
       }
     });
   }
+
+  // Function to ensure POI layer is visible in layer control
+  window.ensurePoiLayerVisible = function () {
+    const foundPlacesLayer = allOverlayMaps["FoundPlaces"];
+    if (foundPlacesLayer && !map.hasLayer(foundPlacesLayer)) {
+      map.addLayer(foundPlacesLayer);
+
+      // Update the checkbox in the layer control
+      const layerId = L.Util.stamp(foundPlacesLayer);
+      const checkbox = customPanel.querySelector(`input[data-layer-id="${layerId}"]`);
+      if (checkbox) {
+        checkbox.checked = true;
+      }
+
+      // Reapply z-index to ensure proper layering
+      reapplyOverlayZIndex();
+    }
+  };
 
   // Function to save overlay order to localStorage
   function saveOverlayOrder() {
@@ -1035,9 +1058,6 @@ function initializeMap() {
       adjustInfoPanelNameHeight(infoPanelName);
     }
   });
-
-  // Initialize POI finder
-  initPoiFinder();
 
   // POI finder button
   const poiFinderBtn = document.getElementById("poi-finder-btn");
@@ -1857,7 +1877,10 @@ document.addEventListener("DOMContentLoaded", initializeMap);
     element.disabled = false;
     if (element.id === "poi-finder-btn") {
       element.classList.remove("offline");
-      element.textContent = "Find Places";
+      // Update button text based on current state instead of always setting to "Find Places"
+      if (window.updatePOIFinderButton) {
+        window.updatePOIFinderButton();
+      }
     } else if (element.id === "search-btn") {
       element.classList.remove("offline");
     } else {

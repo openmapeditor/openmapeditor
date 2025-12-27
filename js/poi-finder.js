@@ -123,7 +123,7 @@ let currentAbortController = null;
  * Initialize POI finder
  */
 function initPoiFinder() {
-  // Create POI marker cluster group
+  // Create POI marker cluster group and add to map (will be shown in layer control)
   poiSearchResults = L.markerClusterGroup({
     maxClusterRadius: 50,
     spiderfyOnMaxZoom: true,
@@ -132,25 +132,23 @@ function initPoiFinder() {
     disableClusteringAtZoom: 18,
   }).addTo(map);
 
-  // Add to layer control
-  if (window.layerControl) {
-    window.layerControl.addOverlay(poiSearchResults, "Search Results");
-  }
+  // Layer will be added to layer control in main.js
 
   // Update button text based on whether there are results
-  updateFinderButton();
+  updatePOIFinderButton();
 }
 
 /**
  * Update the Find/Clear button text and tooltip
  */
-function updateFinderButton() {
+function updatePOIFinderButton() {
   const button = document.getElementById("poi-finder-btn");
   if (!button) return;
 
   const hasResults = poiSearchResults && poiSearchResults.getLayers().length > 0;
-  button.textContent = hasResults ? "Clear Places" : "Find Places";
-  button.setAttribute("title", hasResults ? "Clear Places" : "Find Places");
+  const newText = hasResults ? "Clear Places" : "Find Places";
+  button.textContent = newText;
+  button.setAttribute("title", newText);
 }
 
 /**
@@ -259,8 +257,13 @@ async function searchPOICategory(category) {
     // Display results on map
     displayPOIResults(results, category);
 
+    // Ensure the POI layer is visible in layer control
+    if (window.ensurePoiLayerVisible) {
+      window.ensurePoiLayerVisible();
+    }
+
     // Update button to show "Clear"
-    updateFinderButton();
+    updatePOIFinderButton();
 
     // Show success message with limit warning if needed
     const hitLimit = results.length >= RESULT_LIMIT;
@@ -421,14 +424,26 @@ function displayPOIResults(results, category) {
  */
 function clearPOIResults() {
   if (poiSearchResults) {
+    // MarkerClusterGroup.clearLayers() only works when layer is on the map
+    // Temporarily add it if needed, clear, then restore previous state
+    const wasOnMap = map.hasLayer(poiSearchResults);
+    if (!wasOnMap) {
+      map.addLayer(poiSearchResults);
+    }
+
     poiSearchResults.clearLayers();
+
+    // Remove from map again if it wasn't on the map before
+    if (!wasOnMap) {
+      map.removeLayer(poiSearchResults);
+    }
   }
   // Update button to show "Find"
-  updateFinderButton();
+  updatePOIFinderButton();
 }
 
 // Make functions globally available
 window.initPoiFinder = initPoiFinder;
 window.showPoiFinder = showPoiFinder;
 window.clearPOIResults = clearPOIResults;
-window.updateFinderButton = updateFinderButton;
+window.updatePOIFinderButton = updatePOIFinderButton;
