@@ -1384,7 +1384,7 @@ function initializeMap() {
     distanceLabels.forEach((label) => map.removeLayer(label));
     distanceLabels = [];
 
-    if (e.layerType === "polyline") {
+    if (e.layerType === "polyline" || e.layerType === "polygon") {
       map.on("draw:drawvertex", function (evt) {
         const points = evt.layers.getLayers().map((l) => l.getLatLng());
         if (points.length < 2) return;

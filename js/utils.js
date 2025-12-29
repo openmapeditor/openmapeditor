@@ -266,6 +266,16 @@ function calculatePathDistance(path) {
       cumulativeDistance += p1.distanceTo(p2);
     }
   }
+
+  // For polygons, add the closing segment from last point back to first
+  if (path instanceof L.Polygon && latlngs.length > 0) {
+    const lastPoint = latlngs[latlngs.length - 1];
+    const firstPoint = latlngs[0];
+    if (lastPoint && typeof lastPoint.distanceTo === "function" && firstPoint) {
+      cumulativeDistance += lastPoint.distanceTo(firstPoint);
+    }
+  }
+
   return cumulativeDistance;
 }
 
