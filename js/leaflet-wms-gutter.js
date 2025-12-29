@@ -106,7 +106,7 @@ L.TileLayer.WMS.Gutter = L.TileLayer.WMS.extend({
         0, // dest x: start at canvas origin
         0, // dest y: start at canvas origin
         tileSize.x, // dest width: fill canvas
-        tileSize.y // dest height: fill canvas
+        tileSize.y, // dest height: fill canvas
       );
 
       // Call done callback

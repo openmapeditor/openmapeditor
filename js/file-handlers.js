@@ -109,7 +109,7 @@ function createKmlDocument(name, placemarks) {
       `        <href>https://omaps.app/placemarks/placemark-${color.name.toLowerCase()}.png</href>\n` +
       `      </Icon>\n` +
       `    </IconStyle>\n` +
-      `  </Style>`
+      `  </Style>`,
   ).join("\n");
 
   return (
@@ -196,7 +196,7 @@ function generateFullKmzZip(docName) {
   if (importedPlacemarks.length > 0) {
     filesFolder.file(
       "Imported_Features.kml",
-      createKmlDocument("Imported Features", importedPlacemarks)
+      createKmlDocument("Imported Features", importedPlacemarks),
     );
     networkLinks.push({ name: "Imported Features", href: "files/Imported_Features.kml" });
   }
@@ -204,7 +204,7 @@ function generateFullKmzZip(docName) {
   if (stravaPlacemarks.length > 0) {
     filesFolder.file(
       "Strava_Activities.kml",
-      createKmlDocument("Strava Activities", stravaPlacemarks)
+      createKmlDocument("Strava Activities", stravaPlacemarks),
     );
     networkLinks.push({ name: "Strava Activities", href: "files/Strava_Activities.kml" });
   }
@@ -225,9 +225,9 @@ function generateFullKmzZip(docName) {
       `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n  <name>${docName}</name>\n${networkLinks
         .map(
           (link) =>
-            `  <NetworkLink>\n    <name>${link.name}</name>\n    <Link>\n      <href>${link.href}</href>\n    </Link>\n  </NetworkLink>`
+            `  <NetworkLink>\n    <name>${link.name}</name>\n    <Link>\n      <href>${link.href}</href>\n    </Link>\n  </NetworkLink>`,
         )
-        .join("\n")}\n</Document>\n</kml>`
+        .join("\n")}\n</Document>\n</kml>`,
     );
   }
   return zip;
@@ -502,7 +502,7 @@ function getColorNameFromKmlStyle(properties) {
   if (properties.styleUrl) {
     const styleId = properties.styleUrl.substring(1).toLowerCase(); // -> "placemark-red"
     const colorMatch = ORGANIC_MAPS_COLORS.find(
-      (c) => `placemark-${c.name.toLowerCase()}` === styleId
+      (c) => `placemark-${c.name.toLowerCase()}` === styleId,
     );
     if (colorMatch) return colorMatch.name;
   }
@@ -595,7 +595,7 @@ async function handleKmzFile(file) {
   try {
     const loadedZip = await zip.loadAsync(file);
     const kmlFiles = loadedZip.filter(
-      (relativePath, file) => !file.dir && relativePath.toLowerCase().endsWith(".kml")
+      (relativePath, file) => !file.dir && relativePath.toLowerCase().endsWith(".kml"),
     );
 
     if (kmlFiles.length === 0) {
@@ -620,7 +620,7 @@ async function handleKmzFile(file) {
         } else if (kmlFile.name.toLowerCase() !== "doc.kml") {
           preservedKmzFiles.push({ path: kmlFile.name, content: content });
         }
-      })
+      }),
     );
 
     if (justImportedLayers.getLayers().length > 0) {

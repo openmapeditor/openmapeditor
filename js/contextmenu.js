@@ -72,14 +72,14 @@ function initializeContextMenu(map) {
               timer: 2000,
             });
           });
-      })
+      }),
     );
 
     popupContent.appendChild(
       createMenuItem("Place Marker", () => {
         createAndSaveMarker(latlng);
         map.closePopup();
-      })
+      }),
     );
 
     popupContent.appendChild(
@@ -88,7 +88,7 @@ function initializeContextMenu(map) {
           window.app.updateRoutingPoint(latlng, "start");
         }
         showRoutingPanel();
-      })
+      }),
     );
 
     popupContent.appendChild(
@@ -97,7 +97,7 @@ function initializeContextMenu(map) {
           window.app.updateRoutingPoint(latlng, "end");
         }
         showRoutingPanel();
-      })
+      }),
     );
 
     popupContent.appendChild(
@@ -106,7 +106,7 @@ function initializeContextMenu(map) {
         const url = `https://www.openstreetmap.org/edit?editor=id#map=${zoom}/${latlng.lat}/${latlng.lng}`;
         window.open(url, "_blank");
         map.closePopup();
-      })
+      }),
     );
 
     L.popup({ closeButton: false }).setLatLng(latlng).setContent(popupContent).openOn(map);

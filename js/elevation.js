@@ -10,7 +10,7 @@ const LV95 = "EPSG:2056"; // Swiss Grid
 if (typeof proj4 !== "undefined") {
   proj4.defs(
     LV95,
-    "+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs +type=crs"
+    "+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs +type=crs",
   );
 } else {
   console.error("proj4js is not loaded. Coordinate conversion will fail.");
@@ -114,19 +114,19 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
   if (actualPoints > MAX_POINTS_TO_REQUEST) {
     // CASE 1: Path is TOO complex - downsample to absolute cap
     console.log(
-      `[Elevation] Path is too complex (${actualPoints} points). Downsampling to ${MAX_POINTS_TO_REQUEST} points.`
+      `[Elevation] Path is too complex (${actualPoints} points). Downsampling to ${MAX_POINTS_TO_REQUEST} points.`,
     );
     pointsToSend = resamplePath(latlngs, MAX_POINTS_TO_REQUEST);
   } else if (actualPoints > SIMPLE_PATH_THRESHOLD) {
     // CASE 2: Path is "complex" - use exact points
     console.log(
-      `[Elevation] Path is "complex" (${actualPoints} points). Sending all original points.`
+      `[Elevation] Path is "complex" (${actualPoints} points). Sending all original points.`,
     );
     pointsToSend = latlngs;
   } else {
     // CASE 3: Path is "simple" - upsample to 200 points
     console.log(
-      `[Elevation] Path is "simple" (${actualPoints} points). Upsampling to ${SIMPLE_PATH_THRESHOLD} points.`
+      `[Elevation] Path is "simple" (${actualPoints} points). Upsampling to ${SIMPLE_PATH_THRESHOLD} points.`,
     );
     pointsToSend = resamplePath(latlngs, SIMPLE_PATH_THRESHOLD);
   }
@@ -136,7 +136,7 @@ async function fetchElevationForPathGoogle(latlngs, realDistance) {
       const response = await elevator.getElevationForLocations({ locations: batch });
       if (response && response.results) {
         const batchResults = response.results.map((result) =>
-          L.latLng(result.location.lat(), result.location.lng(), result.elevation)
+          L.latLng(result.location.lat(), result.location.lng(), result.elevation),
         );
         allResults = allResults.concat(batchResults);
       } else {
@@ -183,7 +183,7 @@ function areAllCoordinatesOutsideSwitzerlandBounds(lv95Coords) {
       easting < LV95_BOUNDS.minEasting ||
       easting > LV95_BOUNDS.maxEasting ||
       northing < LV95_BOUNDS.minNorthing ||
-      northing > LV95_BOUNDS.maxNorthing
+      northing > LV95_BOUNDS.maxNorthing,
   );
 }
 
@@ -205,7 +205,7 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
     // Step 1.5: Check if all coordinates are outside Switzerland bounds
     if (areAllCoordinatesOutsideSwitzerlandBounds(lv95Coordinates)) {
       throw new Error(
-        "Path is completely outside Switzerland. The GeoAdmin elevation service only covers Switzerland."
+        "Path is completely outside Switzerland. The GeoAdmin elevation service only covers Switzerland.",
       );
     }
 
@@ -215,7 +215,7 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
       coordinateChunks.push(lv95Coordinates);
     } else {
       console.log(
-        `Path has ${lv95Coordinates.length} points. Splitting into chunks of ${MAX_GEOADMIN_REQUEST_POINT_LENGTH} points.`
+        `Path has ${lv95Coordinates.length} points. Splitting into chunks of ${MAX_GEOADMIN_REQUEST_POINT_LENGTH} points.`,
       );
       for (let i = 0; i < lv95Coordinates.length; i += MAX_GEOADMIN_REQUEST_POINT_LENGTH) {
         coordinateChunks.push(lv95Coordinates.slice(i, i + MAX_GEOADMIN_REQUEST_POINT_LENGTH));
@@ -252,7 +252,7 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
     for (const profileResponse of allResponses) {
       if (!profileResponse.ok) {
         throw new Error(
-          `Profile API failed (${profileResponse.status}): ${await profileResponse.text()}`
+          `Profile API failed (${profileResponse.status}): ${await profileResponse.text()}`,
         );
       }
 
@@ -277,13 +277,13 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
 
     // Filter out any points without valid, finite numeric coordinates
     const validSwissPoints = swissProfilePoints.filter(
-      (p) => isFinite(p.easting) && isFinite(p.northing)
+      (p) => isFinite(p.easting) && isFinite(p.northing),
     );
 
     if (validSwissPoints.length === 0) {
       // This can happen if the *entire* line is outside Switzerland
       throw new Error(
-        "Profile API returned data, but no valid coordinates (line may be outside data area)."
+        "Profile API returned data, but no valid coordinates (line may be outside data area).",
       );
     }
 
@@ -334,7 +334,7 @@ async function fetchElevationForPathGeoAdminAPI(latlngs) {
 
       console.log(
         "%cTo copy data as CSV, type copyGeoAdminCSV() in the console and press Enter.",
-        "font-size: var(--font-size-14);"
+        "font-size: var(--font-size-14);",
       );
     }
 

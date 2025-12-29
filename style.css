@@ -1772,21 +1772,37 @@ button.strava-button-secondary:not(:disabled) {
   white-space: nowrap;
   direction: ltr;
   color: var(--icon-color);
-  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24 !important;
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24 !important;
 }
 
 .material-symbols-fill {
   /* The FILL setting to 1 makes the icons solid. */
-  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24 !important;
+  font-variation-settings:
+    "FILL" 1,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24 !important;
 }
 
 .material-symbols-map-marker {
   font-size: var(--icon-size-50) !important;
-  font-variation-settings: "FILL" 1, "wght" 200, "GRAD" 0, "opsz" 24 !important;
+  font-variation-settings:
+    "FILL" 1,
+    "wght" 200,
+    "GRAD" 0,
+    "opsz" 24 !important;
 }
 
 .material-symbols-map-marker-outline {
-  font-variation-settings: "FILL" 0, "wght" 200, "GRAD" 0, "opsz" 24 !important;
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 200,
+    "GRAD" 0,
+    "opsz" 24 !important;
 }
 
 /* Forcefully sets the cursor to a crosshair for the marker icon
@@ -2091,7 +2107,11 @@ body.using-touch {
       font-size: var(--icon-size-24) !important;
       line-height: 1;
       color: var(--icon-color);
-      font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24 !important;
+      font-variation-settings:
+        "FILL" 0,
+        "wght" 400,
+        "GRAD" 0,
+        "opsz" 24 !important;
       content: "keyboard_arrow_down";
     }
 

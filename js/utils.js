@@ -76,14 +76,14 @@ function parseCoordinateString(inputString) {
 
   const dmsRegex1 = new RegExp(
     `^(?<ns>[NS])\\s*(${dmsSubPattern("ns")})\\W+(?<ew>[EW])\\s*(${dmsSubPattern("ew")})$`,
-    "i"
+    "i",
   );
   match = query.match(dmsRegex1);
 
   if (!match) {
     const dmsRegex2 = new RegExp(
       `^(${dmsSubPattern("ns")})\\s*(?<ns>[NS])\\W+(${dmsSubPattern("ew")})\\s*(?<ew>[EW])$`,
-      "i"
+      "i",
     );
     match = query.match(dmsRegex2);
   }
@@ -134,7 +134,7 @@ function simplifyPath(coordinates, type, config) {
 
     if (simplifiedPoints.length < pathCoords.length) {
       console.log(
-        `Path segment simplified: ${pathCoords.length} -> ${simplifiedPoints.length} points`
+        `Path segment simplified: ${pathCoords.length} -> ${simplifiedPoints.length} points`,
       );
 
       // If original had altitude, restore it using the index

@@ -144,7 +144,7 @@ function initPoiFinder() {
       const count = cluster.getChildCount();
       const size = Math.min(
         POI_STYLE.clusterMaxSize,
-        Math.max(POI_STYLE.clusterMinSize, POI_STYLE.clusterMinSize + Math.log(count) * 5)
+        Math.max(POI_STYLE.clusterMinSize, POI_STYLE.clusterMinSize + Math.log(count) * 5),
       );
 
       return L.divIcon({
@@ -154,8 +154,8 @@ function initPoiFinder() {
           border-radius: 50%;
           background-color: ${POI_STYLE.color};
           box-shadow: 0 0 0 ${POI_STYLE.outlineWeight}px ${
-          POI_STYLE.outlineColor
-        }, 0 2px 4px rgba(0,0,0,0.3);
+            POI_STYLE.outlineColor
+          }, 0 2px 4px rgba(0,0,0,0.3);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -202,7 +202,7 @@ async function showPoiFinder() {
       <span class="material-symbols" style="font-size: 20px;">${cat.icon}</span>
       <span>${cat.name}</span>
     </button>
-  `
+  `,
   ).join("");
 
   await Swal.fire({
@@ -274,7 +274,7 @@ async function searchPOICategory(category) {
       category.overpassQuery,
       bounds,
       currentAbortController.signal,
-      RESULT_LIMIT
+      RESULT_LIMIT,
     );
 
     Swal.close();

@@ -227,7 +227,7 @@ function initializeMap() {
       if (targetPanelId === "overview-panel" && globallySelectedItem) {
         const layerId = L.Util.stamp(globallySelectedItem);
         const listItem = document.querySelector(
-          `#overview-panel-list .overview-list-item[data-layer-id='${layerId}']`
+          `#overview-panel-list .overview-list-item[data-layer-id='${layerId}']`,
         );
         if (listItem) {
           listItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -297,18 +297,18 @@ function initializeMap() {
     OpenStreetMap: osmLayer,
     EsriWorldImagery: L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      { maxZoom: 19 }
+      { maxZoom: 19 },
     ),
     CyclOSM: L.tileLayer("https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png", {
       maxZoom: 19,
     }),
     TracestrackTopo: L.tileLayer(
       `https://tile.tracestrack.com/topo__/{z}/{x}/{y}.webp?key=${tracestrackApiKey}`,
-      { maxZoom: 19 }
+      { maxZoom: 19 },
     ),
     TopPlusOpen: L.tileLayer(
       "http://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web/default/WEBMERCATOR/{z}/{y}/{x}.png",
-      { maxZoom: 18 }
+      { maxZoom: 18 },
     ),
     Swisstopo: L.tileLayer.wms("https://wms.geo.admin.ch/", {
       layers: "ch.swisstopo.pixelkarte-farbe",
@@ -399,7 +399,7 @@ function initializeMap() {
 
   map.attributionControl.setPosition("bottomleft");
   map.attributionControl.setPrefix(
-    `<a href="#" id="credits-link-bottom-left" class="js-show-credits" title="Credits">${APP_NAME} <span class="material-symbols material-symbols-fill attribution-heart-icon">favorite</span></a><a href="#" id="install-pwa-link" title="Install App" style="display: none;">Install</a>`
+    `<a href="#" id="credits-link-bottom-left" class="js-show-credits" title="Credits">${APP_NAME} <span class="material-symbols material-symbols-fill attribution-heart-icon">favorite</span></a><a href="#" id="install-pwa-link" title="Install App" style="display: none;">Install</a>`,
   );
 
   osmLayer.addTo(map);
@@ -439,7 +439,7 @@ function initializeMap() {
     onAdd: function (map) {
       const container = L.DomUtil.create(
         "div",
-        "leaflet-bar leaflet-control leaflet-control-custom"
+        "leaflet-bar leaflet-control leaflet-control-custom",
       );
       container.title = "Layers";
       const link = L.DomUtil.create("a", "", container);
@@ -772,7 +772,7 @@ function initializeMap() {
       const layersButton = document.querySelector('.leaflet-control-custom[title="Layers"]');
       const downloadMenu = document.querySelector(".download-submenu");
       const downloadButton = document.querySelector(
-        '.leaflet-control-custom[title="Download file"]'
+        '.leaflet-control-custom[title="Download file"]',
       );
 
       if (
@@ -795,7 +795,7 @@ function initializeMap() {
         downloadMenu.style.display = "none";
       }
     },
-    true
+    true,
   );
 
   const ElevationToggleControl = L.Control.extend({
@@ -803,7 +803,7 @@ function initializeMap() {
     onAdd: function (map) {
       const container = L.DomUtil.create(
         "div",
-        "leaflet-bar leaflet-control leaflet-control-custom"
+        "leaflet-bar leaflet-control leaflet-control-custom",
       );
       container.title = "No path selected";
       container.innerHTML = '<a href="#" role="button"></a>';
@@ -833,7 +833,7 @@ function initializeMap() {
     onAdd: function (map) {
       const container = L.DomUtil.create(
         "div",
-        "leaflet-bar leaflet-control leaflet-control-custom"
+        "leaflet-bar leaflet-control leaflet-control-custom",
       );
       container.title = "No items to download";
       container.id = "main-download-button";
@@ -1175,7 +1175,7 @@ function initializeMap() {
     onAdd: function (map) {
       const container = L.DomUtil.create(
         "div",
-        "leaflet-bar leaflet-control leaflet-control-custom"
+        "leaflet-bar leaflet-control leaflet-control-custom",
       );
       container.title = "Import GPX/KML/KMZ/GeoJSON file";
       const link = L.DomUtil.create("a", "", container);
@@ -1238,7 +1238,7 @@ function initializeMap() {
                     feature.properties.stroke || feature.properties["marker-color"]
                   ).toLowerCase();
                   const colorMatch = ORGANIC_MAPS_COLORS.find(
-                    (c) => c.css.toLowerCase() === colorHex
+                    (c) => c.css.toLowerCase() === colorHex,
                   );
                   if (colorMatch) {
                     feature.properties.omColorName = colorMatch.name;
@@ -1285,7 +1285,7 @@ function initializeMap() {
               if (fileType === "gpx") {
                 const tracksInDom = dom.querySelectorAll("trk");
                 const pathFeatures = geojsonData.features.filter(
-                  (f) => f.geometry.type === "LineString" || f.geometry.type === "MultiLineString"
+                  (f) => f.geometry.type === "LineString" || f.geometry.type === "MultiLineString",
                 );
 
                 if (pathFeatures.length === tracksInDom.length) {
@@ -1297,7 +1297,7 @@ function initializeMap() {
                       // Normalize to a CSS hex string
                       const hexColor = `#${colorNode.textContent.trim().toLowerCase()}`;
                       const colorMatch = ORGANIC_MAPS_COLORS.find(
-                        (c) => c.css.toLowerCase() === hexColor
+                        (c) => c.css.toLowerCase() === hexColor,
                       );
                       if (colorMatch) {
                         feature.properties = feature.properties || {};
@@ -1567,7 +1567,7 @@ function initializeMap() {
     const forceDesktopLayoutContainer = L.DomUtil.create(
       "div",
       "settings-control-item",
-      settingsPanel
+      settingsPanel,
     );
     const forceDesktopLayoutLabel = L.DomUtil.create("label", "", forceDesktopLayoutContainer);
     forceDesktopLayoutLabel.htmlFor = "force-desktop-toggle";
@@ -1591,7 +1591,7 @@ function initializeMap() {
     const routingProviderContainer = L.DomUtil.create(
       "div",
       "settings-control-item",
-      settingsPanel
+      settingsPanel,
     );
     const routingProviderLabel = L.DomUtil.create("label", "", routingProviderContainer);
     routingProviderLabel.htmlFor = "routing-provider-select";
@@ -1618,7 +1618,7 @@ function initializeMap() {
     const elevationProviderContainer = L.DomUtil.create(
       "div",
       "settings-control-item",
-      settingsPanel
+      settingsPanel,
     );
     const elevationProviderLabel = L.DomUtil.create("label", "", elevationProviderContainer);
     elevationProviderLabel.htmlFor = "elevation-provider-select";
@@ -1642,13 +1642,13 @@ function initializeMap() {
     L.DomEvent.on(
       elevationProviderContainer,
       "dblclick mousedown wheel",
-      L.DomEvent.stopPropagation
+      L.DomEvent.stopPropagation,
     );
 
     const preferFileElevationContainer = L.DomUtil.create(
       "div",
       "settings-control-item",
-      settingsPanel
+      settingsPanel,
     );
     const preferFileElevationLabel = L.DomUtil.create("label", "", preferFileElevationContainer);
     preferFileElevationLabel.htmlFor = "prefer-file-elevation-checkbox";
@@ -1672,7 +1672,7 @@ function initializeMap() {
     L.DomEvent.on(
       preferFileElevationContainer,
       "dblclick mousedown wheel",
-      L.DomEvent.stopPropagation
+      L.DomEvent.stopPropagation,
     );
 
     const privacyPolicyContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
@@ -1802,7 +1802,7 @@ function initializeMap() {
       (e) => {
         touchStartY = e.changedTouches[0].clientY;
       },
-      { passive: true }
+      { passive: true },
     );
 
     sheetHandle.addEventListener("touchend", (e) => {
@@ -1847,7 +1847,7 @@ function initializeMap() {
       const stravaButton = new Image();
       stravaButton.src = "/img/btn_strava_connect_with_orange.svg";
     },
-    { once: true }
+    { once: true },
   );
 }
 

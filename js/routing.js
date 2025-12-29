@@ -765,8 +765,8 @@ function initializeRouting() {
       routePointSelectionMode === "start"
         ? customCursorStart
         : routePointSelectionMode === "via"
-        ? customCursorVia
-        : customCursorEnd;
+          ? customCursorVia
+          : customCursorEnd;
     const x = e.clientX - mapRect.left;
     const y = e.clientY - mapRect.top;
     cursorEl.style.left = `${x}px`;
@@ -838,8 +838,8 @@ function initializeRouting() {
         routePointSelectionMode === "start"
           ? startInput
           : routePointSelectionMode === "via"
-          ? viaInput
-          : endInput;
+            ? viaInput
+            : endInput;
       input.value = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
 
       if (routePointSelectionMode === "start") {
@@ -908,7 +908,7 @@ function initializeRouting() {
       const simplifiedResult = simplifyPath(
         originalCoords,
         "LineString",
-        routeSimplificationConfig
+        routeSimplificationConfig,
       );
 
       if (simplifiedResult.simplified) {

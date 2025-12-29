@@ -405,7 +405,7 @@ function drawElevationProfile(pointsWithElev, realDistance, source) {
         `<span style="${itemStyle}">Highest point: ${elevationFormatter(maxElev)}</span>` +
         `<span style="${itemStyle}">Lowest point: ${elevationFormatter(minElev)}</span>` +
         `<span style="${itemStyle}">Hiking time: ${hikingTimeFormatted}</span>` +
-        (source ? `<span style="${itemStyle}">Source: ${source}</span>` : "")
+        (source ? `<span style="${itemStyle}">Source: ${source}</span>` : ""),
     );
   }
 
@@ -444,7 +444,7 @@ function updateElevationChartUnits(isImperial) {
   if (currentRawData.length > 0) {
     drawElevationProfile(
       currentRawData.map((d) => d.latlng),
-      currentRealDistance
+      currentRealDistance,
     );
   } else {
     updateChartLayout();

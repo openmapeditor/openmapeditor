@@ -93,7 +93,7 @@ function createOverviewListItem(layer) {
           .map((latlng) =>
             latlng.alt !== undefined
               ? [latlng.lng, latlng.lat, latlng.alt]
-              : [latlng.lng, latlng.lat]
+              : [latlng.lng, latlng.lat],
           );
 
         let coordsToUse = originalCoords;
@@ -104,7 +104,7 @@ function createOverviewListItem(layer) {
           const simplifiedResult = simplifyPath(
             originalCoords,
             "Polygon",
-            pathSimplificationConfig
+            pathSimplificationConfig,
           );
 
           // Check if the polygon was actually simplified
@@ -129,7 +129,7 @@ function createOverviewListItem(layer) {
 
         newLayer = L.polygon(
           coordsToUse.map((c) => (c.length === 3 ? [c[1], c[0], c[2]] : [c[1], c[0]])),
-          { ...STYLE_CONFIG.path.default, color: color }
+          { ...STYLE_CONFIG.path.default, color: color },
         );
       } else if (layerToDuplicate instanceof L.Polyline) {
         const originalCoords = layerToDuplicate
@@ -137,7 +137,7 @@ function createOverviewListItem(layer) {
           .map((latlng) =>
             latlng.alt !== undefined
               ? [latlng.lng, latlng.lat, latlng.alt]
-              : [latlng.lng, latlng.lat]
+              : [latlng.lng, latlng.lat],
           );
 
         let coordsToUse = originalCoords;
@@ -147,7 +147,7 @@ function createOverviewListItem(layer) {
           const simplifiedResult = simplifyPath(
             originalCoords,
             "LineString",
-            pathSimplificationConfig
+            pathSimplificationConfig,
           );
 
           // Check if the path was actually simplified
@@ -172,7 +172,7 @@ function createOverviewListItem(layer) {
 
         newLayer = L.polyline(
           coordsToUse.map((c) => (c.length === 3 ? [c[1], c[0], c[2]] : [c[1], c[0]])),
-          { ...STYLE_CONFIG.path.default, color: color }
+          { ...STYLE_CONFIG.path.default, color: color },
         );
         newFeature.properties.totalDistance = calculatePathDistance(newLayer);
       }
@@ -362,7 +362,7 @@ function showInfoPanel(layer) {
     name = name || "Marker";
     const latlng = layer.getLatLng();
     details = `<span>Lat: ${latlng.lat.toFixed(5)}, Lon: ${latlng.lng.toFixed(
-      5
+      5,
     )}<span class="copy-icon material-symbols">content_copy</span>`;
     infoPanelDetails.innerHTML = details;
 
@@ -512,8 +512,8 @@ function updateLayerName() {
         globallySelectedItem instanceof L.Marker
           ? "Marker"
           : globallySelectedItem instanceof L.Polygon
-          ? "Area"
-          : "Path";
+            ? "Area"
+            : "Path";
       infoPanelName.value = newName;
     }
     globallySelectedItem.feature.properties.name = newName;
@@ -553,7 +553,7 @@ function populateColorPicker() {
           });
         } else if (globallySelectedItem instanceof L.Marker) {
           globallySelectedItem.setIcon(
-            createMarkerIcon(newColorData.css, STYLE_CONFIG.marker.highlight.opacity)
+            createMarkerIcon(newColorData.css, STYLE_CONFIG.marker.highlight.opacity),
           );
         }
 
@@ -635,7 +635,7 @@ function replaceDefaultIconsWithMaterialSymbols() {
   }
 
   const importButton = document.querySelector(
-    '.leaflet-control-custom[title="Import GPX/KML/KMZ/GeoJSON file"]'
+    '.leaflet-control-custom[title="Import GPX/KML/KMZ/GeoJSON file"]',
   );
   if (importButton) {
     importButton.querySelector("a").innerHTML = '<span class="material-symbols">folder_open</span>';
@@ -647,7 +647,7 @@ function replaceDefaultIconsWithMaterialSymbols() {
   }
 
   const elevationButton = document.querySelector(
-    '.leaflet-control-custom[title="No path selected"]'
+    '.leaflet-control-custom[title="No path selected"]',
   );
   if (elevationButton) {
     elevationButton.querySelector("a").innerHTML =

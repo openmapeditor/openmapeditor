@@ -50,7 +50,7 @@ function createMarkerIcon(
   opacity,
   size = STYLE_CONFIG.marker.baseSize,
   anchorOffsetY = 0,
-  isOutline = false
+  isOutline = false,
 ) {
   const fillClass = isOutline ? "material-symbols-map-marker-outline" : "material-symbols-fill";
 
@@ -105,7 +105,7 @@ function deselectCurrentItem() {
 
   const layerId = L.Util.stamp(globallySelectedItem);
   const listItem = document.querySelector(
-    `#overview-panel-list .overview-list-item[data-layer-id='${layerId}']`
+    `#overview-panel-list .overview-list-item[data-layer-id='${layerId}']`,
   );
   if (listItem) {
     listItem.classList.remove("selected");
@@ -166,7 +166,7 @@ function selectItem(layer) {
 
   const layerId = L.Util.stamp(layer);
   const newListItem = document.querySelector(
-    `#overview-panel-list .overview-list-item[data-layer-id='${layerId}']`
+    `#overview-panel-list .overview-list-item[data-layer-id='${layerId}']`,
   );
   if (newListItem) {
     newListItem.classList.add("selected");
@@ -327,7 +327,7 @@ function updateDrawControlStates() {
   }
 
   const layerSelectors = document.querySelectorAll(
-    "#custom-layers-panel .leaflet-control-layers-selector"
+    "#custom-layers-panel .leaflet-control-layers-selector",
   );
   if (isEditMode || isDeleteMode) {
     layerSelectors.forEach((selector) => {

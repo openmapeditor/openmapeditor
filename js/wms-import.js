@@ -207,7 +207,7 @@ const WmsImport = (function () {
    */
   function isLayerAlreadyImported(wmsUrl, layerName) {
     return Object.values(customWmsLayers).some(
-      (layerData) => layerData.wmsUrl === wmsUrl && layerData.wmsLayerName === layerName
+      (layerData) => layerData.wmsUrl === wmsUrl && layerData.wmsLayerName === layerName,
     );
   }
 
@@ -304,7 +304,7 @@ const WmsImport = (function () {
         const updateButtonState = () => {
           // Get all checkboxes in the container
           const allCheckboxes = document.querySelectorAll(
-            '#wms-layers-container input[type="checkbox"]'
+            '#wms-layers-container input[type="checkbox"]',
           );
           // Filter to only enabled checkboxes and check if any are checked
           const hasSelection = Array.from(allCheckboxes).some((cb) => !cb.disabled && cb.checked);
@@ -313,7 +313,7 @@ const WmsImport = (function () {
 
         // Add change listeners to all checkboxes (including disabled ones, but they won't fire)
         const allCheckboxes = document.querySelectorAll(
-          '#wms-layers-container input[type="checkbox"]'
+          '#wms-layers-container input[type="checkbox"]',
         );
         allCheckboxes.forEach((checkbox) => {
           if (!checkbox.disabled) {
