@@ -371,7 +371,8 @@ async function queryOverpass(osmQuery, bounds, signal, limit = 1000) {
     out center ${limit};
   `;
 
-  const response = await fetch("https://overpass-api.de/api/interpreter", {
+  // Using kumi.systems - works better than overpass-api.de (tested 2025-12-29)
+  const response = await fetch("https://overpass.kumi.systems/api/interpreter", {
     method: "POST",
     body: query,
     signal: signal,
