@@ -1811,6 +1811,19 @@ body.leaflet-is-drawing .leaflet-marker-icon {
   cursor: crosshair !important;
 }
 
+/* Distance labels shown while drawing polylines */
+.distance-label {
+  pointer-events: none;
+  font-size: var(--font-size-12);
+  font-weight: bold;
+  color: white;
+  text-shadow:
+    -1px -1px 0 black,
+    1px -1px 0 black,
+    -1px 1px 0 black,
+    1px 1px 0 black;
+}
+
 .locate-active .material-symbols {
   color: var(--color-white) !important;
 }

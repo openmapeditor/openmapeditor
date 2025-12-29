@@ -1373,13 +1373,46 @@ function initializeMap() {
     });
   });
 
+  // Distance labels for drawing
+  let distanceLabels = [];
+  let totalDistance = 0;
+
   map.on(L.Draw.Event.DRAWSTART, function (e) {
     deselectCurrentItem();
     L.DomUtil.addClass(document.body, "leaflet-is-drawing");
+    totalDistance = 0;
+    distanceLabels.forEach((label) => map.removeLayer(label));
+    distanceLabels = [];
+
+    if (e.layerType === "polyline") {
+      map.on("draw:drawvertex", function (evt) {
+        const points = evt.layers.getLayers().map((l) => l.getLatLng());
+        if (points.length < 2) return;
+
+        const prevPoint = points[points.length - 2];
+        const newPoint = points[points.length - 1];
+        totalDistance += prevPoint.distanceTo(newPoint);
+
+        const label = L.marker(newPoint, {
+          icon: L.divIcon({
+            className: "distance-label",
+            html: formatDistance(totalDistance),
+            iconSize: [60, 20],
+            iconAnchor: [30, -10],
+          }),
+          interactive: false,
+        }).addTo(map);
+
+        distanceLabels.push(label);
+      });
+    }
   });
 
   map.on(L.Draw.Event.DRAWSTOP, function () {
     L.DomUtil.removeClass(document.body, "leaflet-is-drawing");
+    distanceLabels.forEach((label) => map.removeLayer(label));
+    distanceLabels = [];
+    map.off("draw:drawvertex");
   });
 
   map.on("click", (e) => {
