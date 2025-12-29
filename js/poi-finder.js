@@ -193,6 +193,18 @@ function updatePOIFinderButton() {
  * Show POI finder modal
  */
 async function showPoiFinder() {
+  // Check minimum zoom level to prevent overly large area searches
+  const MIN_ZOOM_LEVEL = 12;
+  if (map.getZoom() < MIN_ZOOM_LEVEL) {
+    Swal.fire({
+      icon: "warning",
+      title: "Zoom In Required",
+      text: "Please zoom in closer to search for places. This helps ensure faster and more complete results.",
+      confirmButtonText: "OK",
+    });
+    return;
+  }
+
   const categoryButtons = POI_CATEGORIES.map(
     (cat) => `
     <button
@@ -366,7 +378,16 @@ async function queryOverpass(osmQuery, bounds, signal, limit = 1000) {
   });
 
   if (!response.ok) {
-    throw new Error(`Overpass API request failed: ${response.status} ${response.statusText}`);
+    // Provide specific error messages for different failure types
+    if (response.status === 504) {
+      throw new Error("504 Gateway Timeout. Try zooming in closer or selecting another area.");
+    } else if (response.status === 429) {
+      throw new Error("429 Too Many Requests. Please wait a moment and try again.");
+    } else if (response.status === 400) {
+      throw new Error("400 Bad Request. Invalid query syntax. Please report this bug.");
+    } else {
+      throw new Error(`Overpass API request failed: ${response.status} ${response.statusText}`);
+    }
   }
 
   const data = await response.json();
@@ -450,11 +471,6 @@ function displayPOIResults(results, category) {
 
     marker.addTo(poiSearchResults);
   });
-
-  // Fit map to show all results
-  if (poiSearchResults.getLayers().length > 0) {
-    map.fitBounds(poiSearchResults.getBounds(), { padding: [50, 50] });
-  }
 }
 
 /**
