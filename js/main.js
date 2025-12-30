@@ -948,19 +948,12 @@ function initializeMap() {
         } else {
           await copyToClipboard(shareUrl);
 
-          // Warn users about URL length limits: 2000 chars (old browsers), 8000+ chars (some apps/browsers may fail)
-          if (shareUrl.length > 8000) {
+          // Warn users about URL length limits
+          if (shareUrl.length > 2000) {
             Swal.fire({
               icon: "warning",
-              title: "Very Large Share Link",
-              html: `Link copied to clipboard!<br><br>This link is <strong>${shareUrl.length.toLocaleString()}</strong> characters and may not work reliably in some browsers or messaging apps.<br><br>Consider sharing fewer items or using file export instead.`,
-              confirmButtonText: "OK",
-            });
-          } else if (shareUrl.length > 2000) {
-            Swal.fire({
-              icon: "warning",
-              title: "Large Share Link",
-              html: `Link copied to clipboard!<br><br>This link is <strong>${shareUrl.length.toLocaleString()}</strong> characters and may not work in older browsers (like Internet Explorer).`,
+              title: "Large Share Link Copied!",
+              html: `This link is <strong>${shareUrl.length}</strong> characters and may not work in all browsers or messaging apps.`,
               confirmButtonText: "OK",
             });
           } else {
