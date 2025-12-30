@@ -685,7 +685,7 @@ function exportMapStateToUrl() {
         const ll = layer.getLatLng();
         if (ll) {
           feature.t = "m";
-          feature.c = [Math.round(ll.lng * 100000) / 100000, Math.round(ll.lat * 100000) / 100000];
+          feature.c = [+ll.lng.toFixed(5), +ll.lat.toFixed(5)];
         }
       } else if (layer instanceof L.Polygon) {
         const latlngs = layer.getLatLngs()[0];
