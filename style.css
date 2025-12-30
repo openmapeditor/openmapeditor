@@ -1248,6 +1248,10 @@ a#info-panel-strava-link:hover {
   left: 10px;
   margin-top: 10px;
 }
+/* Prevent bottom-left controls from overlapping toolbar */
+.leaflet-bottom.leaflet-left {
+  z-index: 500;
+}
 .leaflet-right .leaflet-control {
   border: 1px solid var(--border-color) !important;
   margin-right: 10px !important;
