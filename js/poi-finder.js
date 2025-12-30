@@ -196,12 +196,23 @@ async function showPoiFinder() {
   // Check minimum zoom level to prevent overly large area searches
   const MIN_ZOOM_LEVEL = 12;
   if (map.getZoom() < MIN_ZOOM_LEVEL) {
-    Swal.fire({
+    const result = await Swal.fire({
       icon: "warning",
       title: "Zoom In Required",
       text: "Please zoom in closer to search for places. This helps ensure faster and more complete results.",
-      confirmButtonText: "OK",
+      showCancelButton: true,
+      confirmButtonText: "Zoom In",
+      cancelButtonText: "Cancel",
     });
+
+    // Auto-zoom to minimum level when user clicks "Zoom In"
+    if (result.isConfirmed) {
+      map.setView(map.getCenter(), MIN_ZOOM_LEVEL);
+      // Wait for zoom animation to complete before showing categories
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      // Recursively call to show category selection after zoom
+      return showPoiFinder();
+    }
     return;
   }
 
