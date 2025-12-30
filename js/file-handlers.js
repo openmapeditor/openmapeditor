@@ -660,7 +660,11 @@ async function handleKmzFile(file) {
  * @returns {string|null} Compressed map state, or null if no data to share
  */
 function exportMapStateToUrl() {
-  const allLayers = [...editableLayers.getLayers(), ...importedItems.getLayers()];
+  const allLayers = [
+    ...editableLayers.getLayers(),
+    ...importedItems.getLayers(),
+    ...stravaActivitiesLayer.getLayers(),
+  ];
 
   if (allLayers.length === 0) {
     return null;
