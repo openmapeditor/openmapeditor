@@ -133,17 +133,20 @@ async function showCreditsPopup() {
 }
 
 /**
- * Parses a URL hash string to extract map view parameters.
+ * Parses a URL hash string to extract map view parameters and optional data parameter.
  * @param {string} hashString - The hash string from window.location.hash
- * @returns {{zoom: number, lat: number, lon: number}|null} Map parameters or null if invalid
+ * @returns {{zoom: number, lat: number, lon: number, data: string|null}|null} Map parameters or null if invalid
  */
 function parseMapHash(hashString) {
-  const match = hashString.match(/^#map=(\d{1,2})\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)$/);
+  // Try to match the map parameters with optional data parameter
+  // Format: #map=zoom/lat/lon or #map=zoom/lat/lon&data=compressedString
+  const match = hashString.match(/^#map=(\d{1,2})\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)(?:&data=([^&]+))?/);
   if (match) {
     return {
       zoom: parseInt(match[1], 10),
       lat: parseFloat(match[2]),
       lon: parseFloat(match[3]),
+      data: match[4] || null,
     };
   }
   return null;
@@ -346,6 +349,25 @@ function initializeMap() {
     isUpdatingUrl = true;
     map.setView([initialView.lat, initialView.lon], initialView.zoom);
     isUpdatingUrl = false;
+
+    // If there's shared data in the URL, import it after a short delay to ensure map is ready
+    if (initialView.data) {
+      setTimeout(() => {
+        const success = importMapStateFromUrl(initialView.data);
+        if (success) {
+          console.log("Successfully loaded shared map data from URL");
+          // Clear data from URL after successful import (keep map view only)
+          const newHash = `#map=${initialView.zoom}/${initialView.lat}/${initialView.lon}`;
+          window.history.replaceState(null, "", newHash);
+        } else {
+          Swal.fire({
+            title: "Import Error",
+            text: "Could not load the shared map data from the URL.",
+            icon: "error",
+          });
+        }
+      }, 500);
+    }
   } else {
     fetch(`https://www.googleapis.com/geolocation/v1/geolocate?key=${googleApiKey}`, {
       method: "POST",
@@ -383,6 +405,12 @@ function initializeMap() {
   const handleHashChange = () => {
     const newView = parseMapHash(window.location.hash);
     if (newView) {
+      // If URL contains shared data, reload the page to start fresh
+      if (newView.data) {
+        window.location.reload();
+        return;
+      }
+
       const currentCenter = map.getCenter();
       const currentZoom = map.getZoom();
       if (
@@ -390,7 +418,9 @@ function initializeMap() {
         currentCenter.lat.toFixed(5) !== newView.lat.toFixed(5) ||
         currentCenter.lng.toFixed(5) !== newView.lon.toFixed(5)
       ) {
+        isUpdatingUrl = true;
         map.setView([newView.lat, newView.lon], newView.zoom);
+        isUpdatingUrl = false;
       }
     }
   };
@@ -771,9 +801,7 @@ function initializeMap() {
       const layersPanel = document.getElementById("custom-layers-panel");
       const layersButton = document.querySelector('.leaflet-control-custom[title="Layers"]');
       const downloadMenu = document.querySelector(".download-submenu");
-      const downloadButton = document.querySelector(
-        '.leaflet-control-custom[title="Download file"]',
-      );
+      const downloadButton = document.getElementById("main-download-button");
 
       if (
         layersPanel &&
@@ -835,17 +863,18 @@ function initializeMap() {
         "div",
         "leaflet-bar leaflet-control leaflet-control-custom",
       );
-      container.title = "No items to download";
+      container.title = "Download or share";
       container.id = "main-download-button";
       container.style.position = "relative";
       container.innerHTML =
         '<a href="#" role="button"></a>' +
         '<div class="download-submenu">' +
-        '<button id="download-gpx" disabled>GPX (Selected Item)</button>' +
-        '<button id="download-kml" disabled>KML (Selected Item)</button>' +
-        '<button id="download-strava-original-gpx" style="display: none;">GPX (Original from Strava)</button>' +
-        '<button id="download-kmz">KMZ (Everything)</button>' +
-        '<button id="download-geojson">GeoJSON (Everything)</button>' +
+        '<button id="download-gpx" disabled title="Download selected item as GPX">GPX (Selected Item)</button>' +
+        '<button id="download-kml" disabled title="Download selected item as KML">KML (Selected Item)</button>' +
+        '<button id="download-strava-original-gpx" style="display: none;" title="Download original GPX from Strava">GPX (Original from Strava)</button>' +
+        '<button id="download-kmz" title="Download everything as KMZ">KMZ (Everything)</button>' +
+        '<button id="download-geojson" title="Download everything as GeoJSON">GeoJSON (Everything)</button>' +
+        '<button id="share-link" title="Copy share link for everything">Copy Share Link (Everything)</button>' +
         "</div>";
       const subMenu = container.querySelector(".download-submenu");
 
@@ -901,6 +930,31 @@ function initializeMap() {
       L.DomEvent.on(container.querySelector("#download-geojson"), "click", (e) => {
         L.DomEvent.stop(e);
         exportGeoJson();
+        subMenu.style.display = "none";
+      });
+      L.DomEvent.on(container.querySelector("#share-link"), "click", async (e) => {
+        L.DomEvent.stop(e);
+        const shareUrl = generateShareableUrl();
+        if (!shareUrl) {
+          Swal.fire({
+            toast: true,
+            icon: "info",
+            title: "Nothing to share",
+            position: "top",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+        } else {
+          await copyToClipboard(shareUrl);
+          Swal.fire({
+            toast: true,
+            icon: "success",
+            title: "Share link copied to clipboard",
+            position: "top",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+        }
         subMenu.style.display = "none";
       });
       return container;

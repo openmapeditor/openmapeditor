@@ -649,3 +649,164 @@ async function handleKmzFile(file) {
     });
   }
 }
+
+/**
+ * Exports the current map state to a compressed, URL-safe string.
+ * Compression strategy:
+ * 1. Polyline encoding for coordinate sequences (70-90% reduction)
+ * 2. Short property names (t, n, col, c)
+ * 3. Omit default values (only include color if not "Red")
+ * 4. LZ-String compression with URI encoding (additional 40-60% reduction)
+ * @returns {string|null} Compressed map state, or null if no data to share
+ */
+function exportMapStateToUrl() {
+  const allLayers = [...editableLayers.getLayers(), ...importedItems.getLayers()];
+
+  if (allLayers.length === 0) {
+    return null;
+  }
+
+  const features = [];
+
+  allLayers.forEach((layer) => {
+    try {
+      const feature = {
+        t: "", // type: m=marker, p=polyline, g=polygon
+        c: null, // coordinates (encoded for paths, array for markers)
+      };
+
+      // Add name and color only if present
+      const name = layer.feature?.properties?.name;
+      const color = layer.feature?.properties?.omColorName;
+      if (name) feature.n = name;
+      if (color && color !== "Red") feature.col = color;
+
+      if (layer instanceof L.Marker) {
+        const ll = layer.getLatLng();
+        feature.t = "m";
+        feature.c = [Math.round(ll.lng * 100000) / 100000, Math.round(ll.lat * 100000) / 100000];
+      } else if (layer instanceof L.Polygon) {
+        const latlngs = layer.getLatLngs()[0];
+        feature.t = "g";
+        feature.c = L.PolylineUtil.encode(latlngs, 5);
+      } else if (layer instanceof L.Polyline) {
+        let latlngs = layer.getLatLngs();
+        while (Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
+          latlngs = latlngs[0];
+        }
+        feature.t = "p";
+        feature.c = L.PolylineUtil.encode(latlngs, 5);
+      }
+
+      features.push(feature);
+    } catch (error) {
+      console.error("Error converting layer for URL sharing:", error, layer);
+    }
+  });
+
+  if (features.length === 0) {
+    return null;
+  }
+
+  const compact = { v: 1, f: features };
+  const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(compact));
+
+  return compressed;
+}
+
+/**
+ * Imports and decompresses map state from a shareable URL parameter.
+ * Decompresses the LZ-String encoded data, decodes Polyline-encoded coordinates,
+ * converts to GeoJSON format, and adds all features to the map.
+ *
+ * Process:
+ * 1. Decompresses the LZ-String encoded URI component
+ * 2. Parses the JSON structure (v=version, f=features array)
+ * 3. For each feature, decodes based on type:
+ *    - "m" (marker): Uses coordinates as-is [lng, lat]
+ *    - "p" (polyline): Decodes Polyline-encoded path using precision 5
+ *    - "g" (polygon): Decodes Polyline-encoded path using precision 5
+ * 4. Reconstructs full GeoJSON Feature objects with properties
+ * 5. Adds the FeatureCollection to the map
+ *
+ * @param {string} compressed - LZ-String compressed and URI-encoded map state
+ * @returns {boolean} True if import was successful, false if decompression/parsing failed
+ */
+function importMapStateFromUrl(compressed) {
+  try {
+    const jsonString = LZString.decompressFromEncodedURIComponent(compressed);
+    if (!jsonString) throw new Error("Failed to decompress data");
+
+    const data = JSON.parse(jsonString);
+    if (!data.v || !data.f || !Array.isArray(data.f)) {
+      throw new Error("Invalid data format");
+    }
+
+    const features = [];
+
+    data.f.forEach((item) => {
+      try {
+        const feature = {
+          type: "Feature",
+          properties: {
+            name: item.n || "",
+            omColorName: item.col || "Red",
+          },
+          geometry: null,
+        };
+
+        if (item.t === "m") {
+          feature.geometry = { type: "Point", coordinates: item.c };
+        } else if (item.t === "p") {
+          const decoded = L.PolylineUtil.decode(item.c, 5);
+          feature.geometry = {
+            type: "LineString",
+            coordinates: decoded.map(([lat, lng]) => [lng, lat]),
+          };
+        } else if (item.t === "g") {
+          const decoded = L.PolylineUtil.decode(item.c, 5);
+          feature.geometry = {
+            type: "Polygon",
+            coordinates: [decoded.map(([lat, lng]) => [lng, lat])],
+          };
+        }
+
+        if (feature.geometry) features.push(feature);
+      } catch (e) {
+        console.warn("Could not decode feature:", e);
+      }
+    });
+
+    if (features.length === 0) throw new Error("No valid features");
+
+    addGeoJsonToMap({ type: "FeatureCollection", features }, "geojson");
+    return true;
+  } catch (error) {
+    console.error("Error importing map state from URL:", error);
+    return false;
+  }
+}
+
+/**
+ * Generates a shareable URL containing the current map view and all features.
+ * Combines the map position (#map=zoom/lat/lng) with compressed feature data (&data=...).
+ * The data parameter contains all markers, polylines, and polygons compressed using
+ * Polyline encoding and LZ-String compression.
+ *
+ * @returns {string|null} Full shareable URL with hash parameters, or null if no features exist
+ */
+function generateShareableUrl() {
+  const mapState = exportMapStateToUrl();
+  if (!mapState) {
+    return null;
+  }
+
+  const center = map.getCenter();
+  const zoom = map.getZoom();
+
+  // Build URL with map view and data
+  const baseUrl = window.location.origin + window.location.pathname;
+  const hashParams = `#map=${zoom}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}&data=${mapState}`;
+
+  return baseUrl + hashParams;
+}
