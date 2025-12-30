@@ -2,7 +2,7 @@
 
 const APP_NAME = "OpenMapEditor";
 // prettier-ignore
-const APP_TITLE = "OpenMapEditor: Free GPS, GPX, KML, GeoJSON & Strava Editor"; // Used in the HTML <title> tag
+const APP_TITLE = "OpenMapEditor: GPS, GPX, KML, GeoJSON & Strava Editor"; // Used in the HTML <title> tag
 // prettier-ignore
 const APP_DESCRIPTION = "Free online GPX, KML, KMZ & GeoJSON viewer and editor. Draw, view & edit GPS tracks with routing, elevation profiles & Strava integration.";
 // prettier-ignore
