@@ -343,12 +343,13 @@ function initializeMap() {
   map.getPane("wmsPane").style.zIndex = 250;
 
   const initialView = parseMapHash(window.location.hash);
-  let isUpdatingUrl = false;
+  // Prevents circular updates when syncing map view from URL hash
+  let isSyncingFromUrl = false;
 
   if (initialView) {
-    isUpdatingUrl = true;
+    isSyncingFromUrl = true;
     map.setView([initialView.lat, initialView.lon], initialView.zoom);
-    isUpdatingUrl = false;
+    isSyncingFromUrl = false;
 
     // If there's shared data in the URL, import it after a short delay to ensure map is ready
     if (initialView.data) {
@@ -391,7 +392,7 @@ function initializeMap() {
   }
 
   const updateUrlHash = () => {
-    if (isUpdatingUrl) return;
+    if (isSyncingFromUrl) return;
     const center = map.getCenter();
     const zoom = map.getZoom();
     const lat = center.lat.toFixed(5);
@@ -418,9 +419,9 @@ function initializeMap() {
         currentCenter.lat.toFixed(5) !== newView.lat.toFixed(5) ||
         currentCenter.lng.toFixed(5) !== newView.lon.toFixed(5)
       ) {
-        isUpdatingUrl = true;
+        isSyncingFromUrl = true;
         map.setView([newView.lat, newView.lon], newView.zoom);
-        isUpdatingUrl = false;
+        isSyncingFromUrl = false;
       }
     }
   };
