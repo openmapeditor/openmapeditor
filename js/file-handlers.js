@@ -683,22 +683,31 @@ function exportMapStateToUrl() {
 
       if (layer instanceof L.Marker) {
         const ll = layer.getLatLng();
-        feature.t = "m";
-        feature.c = [Math.round(ll.lng * 100000) / 100000, Math.round(ll.lat * 100000) / 100000];
+        if (ll) {
+          feature.t = "m";
+          feature.c = [Math.round(ll.lng * 100000) / 100000, Math.round(ll.lat * 100000) / 100000];
+        }
       } else if (layer instanceof L.Polygon) {
         const latlngs = layer.getLatLngs()[0];
-        feature.t = "g";
-        feature.c = L.PolylineUtil.encode(latlngs, 5);
+        if (latlngs && latlngs.length > 0) {
+          feature.t = "g";
+          feature.c = L.PolylineUtil.encode(latlngs, 5);
+        }
       } else if (layer instanceof L.Polyline) {
         let latlngs = layer.getLatLngs();
         while (Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
           latlngs = latlngs[0];
         }
-        feature.t = "p";
-        feature.c = L.PolylineUtil.encode(latlngs, 5);
+        if (latlngs && latlngs.length > 0) {
+          feature.t = "p";
+          feature.c = L.PolylineUtil.encode(latlngs, 5);
+        }
       }
 
-      features.push(feature);
+      // Only include features with valid type and coordinates
+      if (feature.t && feature.c) {
+        features.push(feature);
+      }
     } catch (error) {
       console.error("Error converting layer for URL sharing:", error, layer);
     }
