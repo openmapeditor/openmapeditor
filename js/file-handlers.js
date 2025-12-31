@@ -324,10 +324,16 @@ function exportGeoJson() {
       // Extract full precision coordinates directly from layer
       if (layer instanceof L.Marker) {
         const ll = layer.getLatLng();
-        geojson.geometry.coordinates = [ll.lng, ll.lat];
+        const coords = [ll.lng, ll.lat];
+        if (typeof ll.alt === "number") coords.push(ll.alt);
+        geojson.geometry.coordinates = coords;
       } else if (layer instanceof L.Polygon) {
         const latlngs = layer.getLatLngs()[0];
-        const coords = latlngs.map((ll) => [ll.lng, ll.lat]);
+        const coords = latlngs.map((ll) => {
+          const coord = [ll.lng, ll.lat];
+          if (typeof ll.alt === "number") coord.push(ll.alt);
+          return coord;
+        });
         coords.push(coords[0]); // Close the polygon
         geojson.geometry.coordinates = [coords];
       } else if (layer instanceof L.Polyline) {
@@ -335,7 +341,11 @@ function exportGeoJson() {
         while (Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
           latlngs = latlngs[0];
         }
-        geojson.geometry.coordinates = latlngs.map((ll) => [ll.lng, ll.lat]);
+        geojson.geometry.coordinates = latlngs.map((ll) => {
+          const coord = [ll.lng, ll.lat];
+          if (typeof ll.alt === "number") coord.push(ll.alt);
+          return coord;
+        });
       }
 
       // Get color information
