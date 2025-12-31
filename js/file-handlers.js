@@ -782,7 +782,9 @@ function importMapStateFromUrl(compressed) {
     if (!jsonString) throw new Error("Failed to decompress data");
 
     const data = JSON.parse(jsonString);
-    if (!data.v || !data.f || !Array.isArray(data.f)) {
+    if (!data.v) throw new Error("Invalid data format: missing version");
+    if (data.v !== 1) throw new Error(`Unsupported data version: ${data.v}`);
+    if (!data.f || !Array.isArray(data.f)) {
       throw new Error("Invalid data format");
     }
 
