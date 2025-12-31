@@ -351,23 +351,15 @@ function initializeMap() {
     map.setView([initialView.lat, initialView.lon], initialView.zoom);
     isSyncingFromUrl = false;
 
-    // If there's shared data in the URL, import it after a short delay to ensure map is ready
+    // If there's shared data in the URL, import it once layer groups are initialized
     if (initialView.data) {
-      setTimeout(() => {
-        const success = importMapStateFromUrl(initialView.data);
-        if (success) {
-          console.log("Successfully loaded shared map data from URL");
-          // Clear data from URL after successful import (keep map view only)
-          const newHash = `#map=${initialView.zoom}/${initialView.lat}/${initialView.lon}`;
-          window.history.replaceState(null, "", newHash);
-        } else {
-          Swal.fire({
-            title: "Import Error",
-            text: "Could not load the shared map data from the URL.",
-            icon: "error",
-          });
-        }
-      }, 500);
+      // Store the data to import after layer groups are created
+      window._pendingShareData = {
+        data: initialView.data,
+        zoom: initialView.zoom,
+        lat: initialView.lat,
+        lon: initialView.lon,
+      };
     }
   } else {
     fetch(`https://www.googleapis.com/geolocation/v1/geolocate?key=${googleApiKey}`, {
@@ -442,6 +434,27 @@ function initializeMap() {
 
   // Initialize POI finder first so we can add it to layer control
   initPoiFinder();
+
+  // Import shared data from URL if present (now that layer groups are ready)
+  if (window._pendingShareData) {
+    const { data, zoom, lat, lon } = window._pendingShareData;
+    const success = importMapStateFromUrl(data);
+
+    // Always clear data from URL after import attempt (keep map view only)
+    const newHash = `#map=${zoom}/${lat}/${lon}`;
+    window.history.replaceState(null, "", newHash);
+
+    if (success) {
+      console.log("Successfully loaded shared map data from URL");
+    } else {
+      Swal.fire({
+        title: "Import Error",
+        text: "Could not load the shared map data from the URL.",
+        icon: "error",
+      });
+    }
+    delete window._pendingShareData;
+  }
 
   const allOverlayMaps = {
     ...staticOverlayMaps,
