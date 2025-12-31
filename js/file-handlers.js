@@ -664,12 +664,14 @@ async function handleKmzFile(file) {
  * Exports the current map state to a compressed, URL-safe string.
  * Compression strategy:
  * 1. Polyline encoding for coordinate sequences (efficient lat/lng compression)
- * 2. Short property names (t, n, col, c)
- * 3. Omit default values (color if "Red", name if empty)
- * 4. LZ-String compression with URI encoding (compresses the JSON structure)
+ * 2. Short property names (t, n, col, c, e)
+ * 3. Omit default values (color if "Red", name if empty, elevation if not present)
+ * 4. Elevation stored as rounded integers only when all points have elevation data
+ * 5. Skip elevation if all values are 0 (placeholder data with no variation)
+ * 6. LZ-String compression with URI encoding (compresses the JSON structure)
  *
  * The combination of polyline encoding + LZ-String significantly reduces URL length
- * compared to raw coordinates alone.
+ * compared to raw coordinates alone. Elevation is only included when present and meaningful.
  *
  * @returns {string|null} Compressed map state, or null if no data to share
  */
@@ -704,12 +706,21 @@ function exportMapStateToUrl() {
         if (ll) {
           feature.t = "m";
           feature.c = [+ll.lng.toFixed(5), +ll.lat.toFixed(5)];
+          if (typeof ll.alt === "number" && ll.alt !== 0) {
+            feature.e = Math.round(ll.alt);
+          }
         }
       } else if (layer instanceof L.Polygon) {
         const latlngs = layer.getLatLngs()[0];
         if (latlngs && latlngs.length > 0) {
           feature.t = "g";
           feature.c = L.PolylineUtil.encode(latlngs, 5);
+          // Add elevation if all points have it and there's variation (not all zeros)
+          const elevations = latlngs.map((ll) => ll.alt).filter((e) => typeof e === "number");
+          const hasVariation = elevations.some((e) => e !== 0);
+          if (elevations.length === latlngs.length && hasVariation) {
+            feature.e = elevations.map((e) => Math.round(e));
+          }
         }
       } else if (layer instanceof L.Polyline) {
         let latlngs = layer.getLatLngs();
@@ -719,6 +730,12 @@ function exportMapStateToUrl() {
         if (latlngs && latlngs.length > 0) {
           feature.t = "p";
           feature.c = L.PolylineUtil.encode(latlngs, 5);
+          // Add elevation if all points have it and there's variation (not all zeros)
+          const elevations = latlngs.map((ll) => ll.alt).filter((e) => typeof e === "number");
+          const hasVariation = elevations.some((e) => e !== 0);
+          if (elevations.length === latlngs.length && hasVariation) {
+            feature.e = elevations.map((e) => Math.round(e));
+          }
         }
       }
 
@@ -750,10 +767,10 @@ function exportMapStateToUrl() {
  * 1. Decompresses the LZ-String encoded URI component
  * 2. Parses the JSON structure (v=version, f=features array)
  * 3. For each feature, decodes based on type:
- *    - "m" (marker): Uses coordinates as-is [lng, lat]
- *    - "p" (polyline): Decodes Polyline-encoded path using precision 5
- *    - "g" (polygon): Decodes Polyline-encoded path using precision 5
- * 4. Reconstructs full GeoJSON Feature objects with properties
+ *    - "m" (marker): Uses coordinates as-is [lng, lat] or [lng, lat, elevation]
+ *    - "p" (polyline): Decodes Polyline-encoded path using precision 5, adds elevation if present
+ *    - "g" (polygon): Decodes Polyline-encoded path using precision 5, adds elevation if present
+ * 4. Reconstructs full GeoJSON Feature objects with properties and elevation
  * 5. Adds the FeatureCollection to the map
  *
  * @param {string} compressed - LZ-String compressed and URI-encoded map state
@@ -783,18 +800,30 @@ function importMapStateFromUrl(compressed) {
         };
 
         if (item.t === "m") {
-          feature.geometry = { type: "Point", coordinates: item.c };
+          const coords = [...item.c];
+          if (typeof item.e === "number") coords.push(item.e);
+          feature.geometry = { type: "Point", coordinates: coords };
         } else if (item.t === "p") {
           const decoded = L.PolylineUtil.decode(item.c, 5);
           feature.geometry = {
             type: "LineString",
-            coordinates: decoded.map(([lat, lng]) => [lng, lat]),
+            coordinates: decoded.map(([lat, lng], idx) => {
+              const coord = [lng, lat];
+              if (item.e && typeof item.e[idx] === "number") coord.push(item.e[idx]);
+              return coord;
+            }),
           };
         } else if (item.t === "g") {
           const decoded = L.PolylineUtil.decode(item.c, 5);
           feature.geometry = {
             type: "Polygon",
-            coordinates: [decoded.map(([lat, lng]) => [lng, lat])],
+            coordinates: [
+              decoded.map(([lat, lng], idx) => {
+                const coord = [lng, lat];
+                if (item.e && typeof item.e[idx] === "number") coord.push(item.e[idx]);
+                return coord;
+              }),
+            ],
           };
         }
 
