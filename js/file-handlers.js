@@ -653,10 +653,14 @@ async function handleKmzFile(file) {
 /**
  * Exports the current map state to a compressed, URL-safe string.
  * Compression strategy:
- * 1. Polyline encoding for coordinate sequences (70-90% reduction)
+ * 1. Polyline encoding for coordinate sequences (efficient lat/lng compression)
  * 2. Short property names (t, n, col, c)
- * 3. Omit default values (only include color if not "Red")
- * 4. LZ-String compression with URI encoding (additional 40-60% reduction)
+ * 3. Omit default values (color if "Red", name if empty)
+ * 4. LZ-String compression with URI encoding (compresses the JSON structure)
+ *
+ * The combination of polyline encoding + LZ-String significantly reduces URL length
+ * compared to raw coordinates alone.
+ *
  * @returns {string|null} Compressed map state, or null if no data to share
  */
 function exportMapStateToUrl() {
