@@ -178,7 +178,13 @@ function createOverviewListItem(layer) {
       }
 
       if (newLayer) {
-        newLayer.feature = newFeature;
+        // Keep only essential properties (name, color) - discard all source-specific metadata
+        // This removes stravaId, imported file metadata, etc., making duplicates independent drawn paths
+        const cleanProperties = {
+          name: newFeature.properties.name,
+          omColorName: newFeature.properties.omColorName,
+        };
+        newLayer.feature = { properties: cleanProperties };
         newLayer.pathType = "drawn";
         newLayer.on("click", (ev) => {
           L.DomEvent.stopPropagation(ev);
@@ -445,20 +451,20 @@ function showInfoPanel(layer) {
       const activityType = layer.feature.properties.type || "";
       layerTypeName = `Strava Activity ${activityType ? `(${activityType})` : ""}`.trim();
 
-      // Show the "View on Strava" link
-      if (layer.feature.properties.stravaId) {
-        const activityUrl = `https://www.strava.com/activities/${layer.feature.properties.stravaId}`;
-        stravaLink.href = activityUrl;
-        stravaLink.textContent = "View on Strava";
-        stravaLink.style.display = "flex";
-      }
-
       // Show the editing hint
       editHint.innerHTML = "To edit, duplicate activity in <b>Contents</b> tab.";
       editHint.style.display = "block";
       break;
   }
   infoPanelLayerName.textContent = layerTypeName;
+
+  // Show "View on Strava" link if item has a stravaId (regardless of pathType)
+  if (layer.feature.properties.stravaId) {
+    const activityUrl = `https://www.strava.com/activities/${layer.feature.properties.stravaId}`;
+    stravaLink.href = activityUrl;
+    stravaLink.textContent = "View on Strava";
+    stravaLink.style.display = "flex";
+  }
 
   // Set the color swatch and update picker state
   const colorName = layer.feature?.properties?.omColorName || "Red";
