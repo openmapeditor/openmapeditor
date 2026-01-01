@@ -554,7 +554,12 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
         feature.properties.omColorName ||
         (isKmlBased ? getColorNameFromKmlStyle(feature.properties) : "Red");
 
-      layer.pathType = fileType; // Use the specific fileType ('kmz', 'kml', 'gpx')
+      // Detect if this was originally a Strava activity and restore pathType
+      if (feature.properties.stravaId && fileType === "geojson") {
+        layer.pathType = "strava";
+      } else {
+        layer.pathType = fileType; // Use the specific fileType ('kmz', 'kml', 'gpx')
+      }
       if (fileType === "kmz" && originalPath) {
         layer.originalKmzPath = originalPath; // Store the source file path
       }
