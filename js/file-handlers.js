@@ -696,11 +696,13 @@ function exportMapStateToUrl() {
         c: null, // coordinates (encoded for paths, array for markers)
       };
 
-      // Add name and color only if present
+      // Add name, color, and stravaId only if present
       const name = layer.feature?.properties?.name;
       const color = layer.feature?.properties?.omColorName;
+      const stravaId = layer.feature?.properties?.stravaId;
       if (name) feature.n = name;
       if (color && color !== "Red") feature.col = color;
+      if (stravaId) feature.sid = stravaId;
 
       if (layer instanceof L.Marker) {
         const ll = layer.getLatLng();
@@ -801,6 +803,11 @@ function importMapStateFromUrl(compressed) {
           },
           geometry: null,
         };
+
+        // Add stravaId if present
+        if (item.sid) {
+          feature.properties.stravaId = item.sid;
+        }
 
         if (item.t === "m") {
           const coords = [...item.c];
