@@ -674,6 +674,11 @@ async function handleKmzFile(file) {
  * The combination of polyline encoding + LZ-String significantly reduces URL length
  * compared to raw coordinates alone. Elevation is only included when present and meaningful.
  *
+ * URL Length: "In general, the web platform does not have limits on the length of URLs
+ * (although 2^31 is a common limit). Chrome limits URLs to a maximum length of 2MB for
+ * practical reasons and to avoid causing denial-of-service problems in inter-process communication."
+ * See: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/security/url_display_guidelines/url_display_guidelines.md#URL-Length
+ *
  * @returns {string|null} Compressed map state, or null if no data to share
  */
 function exportMapStateToUrl() {
