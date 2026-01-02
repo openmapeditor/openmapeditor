@@ -440,17 +440,27 @@ function initializeMap() {
     const { data, zoom, lat, lon } = window._pendingShareData;
     const success = importMapStateFromUrl(data);
 
-    // Always clear data from URL after import attempt (keep map view only)
-    const newHash = `#map=${zoom}/${lat}/${lon}`;
-    window.history.replaceState(null, "", newHash);
-
     if (success) {
       console.log("Successfully loaded shared map data from URL");
+      // Clear data from URL on successful import (keep map view only)
+      const newHash = `#map=${zoom}/${lat}/${lon}`;
+      window.history.replaceState(null, "", newHash);
     } else {
+      // Show error with option to clear the broken URL or keep it for debugging
       Swal.fire({
         title: "Import Error",
         text: "Could not load the shared map data from the URL.",
         icon: "error",
+        showCancelButton: true,
+        confirmButtonText: "Clear URL and Continue",
+        cancelButtonText: "Keep URL for Debugging",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // User wants to clear the broken URL
+          const newHash = `#map=${zoom}/${lat}/${lon}`;
+          window.history.replaceState(null, "", newHash);
+        }
+        // If cancelled, keep the URL intact for debugging
       });
     }
     delete window._pendingShareData;
