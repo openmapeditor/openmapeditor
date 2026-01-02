@@ -438,7 +438,12 @@ function showInfoPanel(layer) {
     case "kml":
     case "geojson":
     case "kmz":
-      layerTypeName = "Imported Item";
+      // Check if this is a Strava activity that was imported
+      if (layer.feature?.properties?.stravaId) {
+        layerTypeName = "Imported Item (Strava Activity)";
+      } else {
+        layerTypeName = "Imported Item";
+      }
       editHint.innerHTML = "To edit, duplicate item in <b>Contents</b> tab.";
       editHint.style.display = "block";
       break;
