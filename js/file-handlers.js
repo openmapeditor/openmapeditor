@@ -564,8 +564,6 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
         L.DomEvent.stopPropagation(e);
         selectItem(layer);
       });
-      if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
-      }
     },
     pointToLayer: (feature, latlng) => {
       const isKmlBased = fileType === "kml" || fileType === "kmz";
