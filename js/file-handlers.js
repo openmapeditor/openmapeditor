@@ -663,9 +663,19 @@ async function handleKmzFile(file) {
 
 /**
  * Exports the current map state to a compressed, URL-safe string.
+ *
+ * Uncompressed structure: { v: 1, f: [...features] }
+ * Each feature: { t, c, n?, col?, e?, sid? }
+ * t: "m"=marker, "p"=polyline, "g"=polygon
+ * c: [lng,lat] for markers (5 decimals), polyline-encoded string for paths (precision 5)
+ * n: name (omitted if empty)
+ * col: color name (omitted if "Red")
+ * e: elevation - integer for markers, array for paths (omitted if absent or all zeros)
+ * sid: Strava activity ID (omitted if not a Strava import)
+ *
  * Compression strategy:
  * 1. Polyline encoding for coordinate sequences (efficient lat/lng compression)
- * 2. Short property names (t, n, col, c, e)
+ * 2. Short property names (t, c, n, col, e, sid)
  * 3. Omit default values (color if "Red", name if empty, elevation if not present)
  * 4. Elevation stored as rounded integers only when all points have elevation data
  * 5. Skip elevation if all values are 0 (placeholder data with no variation)
