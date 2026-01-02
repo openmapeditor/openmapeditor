@@ -529,7 +529,7 @@ function getColorNameFromKmlStyle(properties) {
 /**
  * Adds GeoJSON data to the map, applying appropriate styles.
  * @param {object} geoJsonData - The GeoJSON data to add
- * @param {string} fileType - The file type ('gpx', 'kml', 'kmz')
+ * @param {string} fileType - The file type ('gpx', 'kml', 'kmz', 'geojson')
  * @param {string|null} originalPath - The original path for KMZ files
  * @returns {L.GeoJSON} The created layer group
  */
