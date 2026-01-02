@@ -672,7 +672,7 @@ async function handleKmzFile(file) {
  * sid: Strava activity ID (omitted if not a Strava import)
  *
  * Compression strategy:
- * 1. Polyline encoding for coordinate sequences (efficient lat/lng compression)
+ * 1. Polyline encoding for coordinate sequences (precision 5 = ~1.1m accuracy, sufficient for GPS tracks)
  * 2. Short property names (t, c, n, col, e, sid)
  * 3. Omit default values (color if "Red", name if empty, elevation if not present)
  * 4. Elevation stored as rounded integers only when all points have elevation data
@@ -783,9 +783,9 @@ function exportMapStateToUrl() {
  * 1. Decompresses the LZ-String encoded URI component
  * 2. Parses the JSON structure (v=version, f=features array)
  * 3. For each feature, decodes based on type:
- *    - "m" (marker): Uses coordinates as-is [lng, lat] or [lng, lat, elevation]
- *    - "p" (polyline): Decodes Polyline-encoded path using precision 5, adds elevation if present
- *    - "g" (polygon): Decodes Polyline-encoded path using precision 5, adds elevation if present
+ * - "m" (marker): Uses coordinates as-is [lng, lat] or [lng, lat, elevation]
+ * - "p" (polyline): Decodes Polyline-encoded path using precision 5, adds elevation if present
+ * - "g" (polygon): Decodes Polyline-encoded path using precision 5, adds elevation if present
  * 4. Reconstructs full GeoJSON Feature objects with properties and elevation
  * 5. Adds the FeatureCollection to the map
  *
