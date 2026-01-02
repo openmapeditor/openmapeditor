@@ -1005,6 +1005,14 @@ a#info-panel-strava-link:hover {
   color: var(--text-color) !important;
 }
 
+/* Remove focus ring from buttons for cleaner appearance */
+.swal2-confirm:focus,
+.swal2-cancel:focus,
+.swal2-deny:focus {
+  outline: none;
+  box-shadow: none !important;
+}
+
 /* Close button (the 'X' in the corner) */
 .swal2-close {
   color: var(--text-color) !important;
