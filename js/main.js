@@ -983,7 +983,7 @@ function initializeMap() {
             Swal.fire({
               toast: true,
               icon: "success",
-              title: "Share link copied to clipboard",
+              title: `Share Link Copied!<br>(${shareUrl.length} characters)`,
               position: "top",
               showConfirmButton: false,
               timer: 2000,
