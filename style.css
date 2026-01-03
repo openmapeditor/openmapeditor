@@ -1429,30 +1429,32 @@ a#info-panel-strava-link:hover {
   color: var(--text-color);
 }
 
-/* Attribution */
-.leaflet-control-attribution {
-  background: var(--background-color) !important;
+/* Bottom Left Credits Container */
+#bottom-left-credits {
+  position: fixed;
   bottom: 0;
-  position: relative;
-  z-index: 3000;
-  border: 1px solid var(--border-color) !important;
-  border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+  left: 10px;
+  z-index: 500; /* Below toolbar */
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  border-bottom: none;
   overflow: hidden;
+  padding: 0px 10px;
+  display: flex;
+  align-items: center;
+  gap: 0;
 }
-.leaflet-container .leaflet-control-attribution {
-  border-bottom: none !important;
-  color: var(--text-color);
+#bottom-left-credits a {
+  color: var(--highlight-color);
+  text-decoration: none;
 }
-.leaflet-container .leaflet-control-attribution a {
-  color: var(--highlight-color) !important;
-  text-decoration: none !important;
-}
-.leaflet-container .leaflet-control-attribution a:hover {
-  color: var(--highlight-color) !important;
-  text-decoration: underline !important;
+#bottom-left-credits a:hover {
+  color: var(--highlight-color);
+  text-decoration: underline;
 }
 
-.material-symbols.attribution-heart-icon {
+.material-symbols.credits-heart-icon {
   font-size: var(--icon-size-16) !important;
   color: var(--color-red) !important;
   vertical-align: middle !important;
@@ -1462,15 +1464,13 @@ a#info-panel-strava-link:hover {
 #install-pwa-link {
   background-color: var(--color-blue);
   color: var(--color-white) !important;
-  padding: 20px 10px;
-  text-decoration: none;
+  padding: 0px 10px;
+  text-decoration: none !important;
   margin-left: 5px;
 }
 
-/* Selects the attribution container only when it has the install button inside,
-  and that button does NOT have an inline style containing "display: none".
-*/
-.leaflet-control-attribution:has(#install-pwa-link:not([style*="display: none"])) {
+/* Adjust container padding when install button is visible */
+#bottom-left-credits:has(#install-pwa-link:not([style*="display: none"])) {
   padding-right: 0;
 }
 
@@ -1623,6 +1623,7 @@ body.route-point-select-mode * {
 
 .leaflet-control-scale {
   margin-left: 0 !important;
+  margin-bottom: 25px !important; /* Space above credits container */
 }
 
 /* Minimal version of the scale control */
@@ -1657,9 +1658,9 @@ body.route-point-select-mode * {
   border-radius: 50%;
 }
 
-/* Hide the scale control and attribution when the elevation chart is visible */
+/* Hide the scale control and bottom credits when the elevation chart is visible */
 body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-scale,
-body:has(#elevation-div[style*="visibility: visible"]) .leaflet-control-attribution {
+body:has(#elevation-div[style*="visibility: visible"]) #bottom-left-credits {
   display: none !important;
 }
 
@@ -1939,32 +1940,32 @@ body.using-touch {
 
   /* Ignore following styles if desktop layout is forced */
   body:not(.force-desktop-layout) {
-    /* Move the attribution and scale up on mobile */
-    .leaflet-container .leaflet-control-attribution {
-      bottom: var(--mobile-scale-bottom);
-      transition: bottom 0.3s ease-in-out;
-      border-radius: var(--border-radius) !important;
-      border: none !important;
-      /* Move to the right */
-      position: fixed !important;
-      right: 10px;
-    }
+    /* Move the scale up on mobile */
     .leaflet-bottom .leaflet-control-scale {
       position: absolute;
       bottom: var(--mobile-scale-bottom);
       transition: bottom 0.3s ease-in-out;
-      margin-bottom: 0px;
+      margin-bottom: 0px !important;
     }
 
-    /* Hide credits link only show install button */
-    #credits-link-bottom-left {
+    /* Move credits to bottom right and hide credits link, only show install button */
+    #bottom-left-credits {
+      bottom: var(--mobile-scale-bottom);
+      transition: bottom 0.3s ease-in-out;
+      border-radius: var(--border-radius);
+      border: none;
+      left: auto;
+      right: 10px;
+      z-index: 1000; /* Same as main-right-container for proper stacking */
+    }
+    #credits-link {
       display: none;
     }
     #install-pwa-link {
       margin-left: 0;
       line-height: 2;
     }
-    .leaflet-control-attribution:has(#install-pwa-link:not([style*="display: none"])) {
+    #bottom-left-credits:has(#install-pwa-link:not([style*="display: none"])) {
       padding-left: 0;
     }
 

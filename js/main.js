@@ -334,6 +334,7 @@ function initializeMap() {
     center: [0, 0],
     zoom: 2,
     zoomControl: false,
+    attributionControl: false,
     doubleClickZoom: false,
     worldCopyJump: true,
   });
@@ -419,11 +420,6 @@ function initializeMap() {
   };
 
   window.addEventListener("hashchange", handleHashChange, false);
-
-  map.attributionControl.setPosition("bottomleft");
-  map.attributionControl.setPrefix(
-    `<a href="#" id="credits-link-bottom-left" class="js-show-credits" title="Credits">${APP_NAME} <span class="material-symbols material-symbols-fill attribution-heart-icon">favorite</span></a><a href="#" id="install-pwa-link" title="Install App" style="display: none;">Install</a>`,
-  );
 
   osmLayer.addTo(map);
 
@@ -1863,7 +1859,7 @@ function initializeMap() {
     e.preventDefault();
     deferredPrompt = e;
 
-    const installLink = document.querySelector("#install-pwa-link");
+    const installLink = document.getElementById("install-pwa-link");
     if (installLink) {
       installLink.style.display = "inline";
 
@@ -1885,7 +1881,7 @@ function initializeMap() {
   });
 
   window.addEventListener("appinstalled", () => {
-    const installLink = document.querySelector("#install-pwa-link");
+    const installLink = document.getElementById("install-pwa-link");
     if (installLink) {
       installLink.style.display = "none";
     }
