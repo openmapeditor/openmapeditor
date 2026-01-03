@@ -1721,11 +1721,25 @@ button.strava-button-secondary:not(:disabled) {
   letter-spacing: 0.5px;
   position: sticky; /* Make headers stick to the top when scrolling */
   top: 0;
-  z-index: 1; /* Ensure header is above list items */
+  z-index: 10; /* Ensure header is above list items and other headers */
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.overview-list-header .material-symbols {
+  font-size: var(--icon-size-20);
+  margin-right: 5px;
 }
 
 #overview-panel-list .overview-list-header:first-child {
   border-top: none; /* The very first header doesn't need a top border */
+}
+
+/* Prevent double border on last collapsed header (.last-header set via JS). */
+#overview-panel-list .overview-list-header.collapsed.last-header {
+  border-bottom: none;
 }
 
 /* Fix for Privacy Policy Link Style */

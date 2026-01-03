@@ -4,6 +4,9 @@
 // This module handles the user interface elements for the overview list, info panel,
 // color picker, and various UI updates throughout the application.
 
+// Persistent state for collapsed categories in the overview list
+const collapsedCategories = new Set();
+
 /**
  * Helper function to create a single list item for the overview panel.
  * This encapsulates the logic for creating the item's text, buttons, and event listeners.
@@ -303,6 +306,18 @@ function updateOverviewList() {
     }
   };
 
+  // Export for use in other modules (e.g., selectItem)
+  window.getGroupTitle = getGroupTitle;
+
+  // Helper to expand a category if it's collapsed, ensuring a layer is visible in the list
+  window.expandCategoryForItem = (layer) => {
+    const title = getGroupTitle(layer.pathType);
+    if (collapsedCategories.has(title)) {
+      collapsedCategories.delete(title);
+      updateOverviewList();
+    }
+  };
+
   allItems.forEach((layer) => {
     const title = getGroupTitle(layer.pathType);
     if (!groupedItems[title]) {
@@ -315,22 +330,53 @@ function updateOverviewList() {
   const fragment = document.createDocumentFragment();
   const groupOrder = ["Route", "Drawn Items", "Imported Files", "Strava Activities", "Other"];
 
+  // Track which headers we're actually rendering
+  const renderedHeaders = [];
+
   groupOrder.forEach((title) => {
     const itemsInGroup = groupedItems[title];
     if (itemsInGroup && itemsInGroup.length > 0) {
+      const isCollapsed = collapsedCategories.has(title);
+
       // Create and append a header for the group
       const header = document.createElement("div");
       header.className = "overview-list-header";
-      header.textContent = title;
-      fragment.appendChild(header);
+      if (isCollapsed) header.classList.add("collapsed");
 
-      // Create and append the list items for this group
-      itemsInGroup.forEach((layer) => {
-        const listItem = createOverviewListItem(layer); // Use the helper function
-        fragment.appendChild(listItem);
+      const arrow = document.createElement("span");
+      arrow.className = "material-symbols";
+      arrow.textContent = isCollapsed ? "keyboard_arrow_down" : "keyboard_arrow_up";
+
+      header.appendChild(arrow);
+      header.appendChild(document.createTextNode(title));
+
+      header.addEventListener("click", () => {
+        if (isCollapsed) {
+          collapsedCategories.delete(title);
+        } else {
+          collapsedCategories.add(title);
+        }
+        updateOverviewList();
       });
+
+      fragment.appendChild(header);
+      renderedHeaders.push(header);
+
+      // Create and append the list items for this group if not collapsed
+      if (!isCollapsed) {
+        itemsInGroup.forEach((layer) => {
+          const listItem = createOverviewListItem(layer); // Use the helper function
+          fragment.appendChild(listItem);
+        });
+      }
     }
   });
+
+  // Mark the last header with a special class
+  if (renderedHeaders.length > 0) {
+    const lastHeader = renderedHeaders[renderedHeaders.length - 1];
+    lastHeader.classList.add("last-header");
+  }
 
   listContainer.appendChild(fragment);
 }

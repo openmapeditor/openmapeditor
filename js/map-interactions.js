@@ -168,6 +168,10 @@ function selectItem(layer) {
   globallySelectedItem = layer;
 
   const layerId = L.Util.stamp(layer);
+  if (window.expandCategoryForItem) {
+    window.expandCategoryForItem(layer);
+  }
+
   const newListItem = document.querySelector(
     `#overview-panel-list .overview-list-item[data-layer-id='${layerId}']`,
   );

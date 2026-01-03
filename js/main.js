@@ -231,6 +231,9 @@ function initializeMap() {
       }
 
       if (targetPanelId === "overview-panel" && globallySelectedItem) {
+        if (window.expandCategoryForItem) {
+          window.expandCategoryForItem(globallySelectedItem);
+        }
         const layerId = L.Util.stamp(globallySelectedItem);
         const listItem = document.querySelector(
           `#overview-panel-list .overview-list-item[data-layer-id='${layerId}']`,
