@@ -1228,6 +1228,11 @@ function initializeMap() {
     L.Toolbar.prototype._detectIOS = () => false;
   }
 
+  // Patch Leaflet.draw use of deprecated _flat method to use isFlat instead
+  if (L.Polyline && L.LineUtil && L.LineUtil.isFlat) {
+    L.Polyline._flat = L.LineUtil.isFlat;
+  }
+
   L.drawLocal.draw.toolbar.buttons.polyline = "Draw path";
   L.drawLocal.draw.toolbar.buttons.marker = "Place marker";
   L.drawLocal.draw.toolbar.buttons.polygon = "Draw area";
