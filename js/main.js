@@ -175,6 +175,9 @@ function initializeMap() {
     metaDescription.setAttribute("content", APP_DESCRIPTION);
   }
 
+  const creditsLink = document.getElementById("credits-link");
+  if (creditsLink) creditsLink.prepend(APP_NAME + " ");
+
   useImperialUnits = localStorage.getItem("useImperialUnits") === "true";
 
   // Prevent polyline drawing tool from finishing on second tap on touch devices
