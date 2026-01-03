@@ -231,6 +231,7 @@ function selectItem(layer) {
           weight: STYLE_CONFIG.path.highlight.weight + outline.weightOffset,
           opacity: STYLE_CONFIG.path.highlight.opacity,
           interactive: false,
+          fill: false,
         });
       } else {
         selectedPathOutline = L.polyline(layer.getLatLngs(), {

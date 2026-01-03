@@ -61,10 +61,12 @@ const STYLE_CONFIG = {
     default: {
       weight: 10,
       opacity: 0.75,
+      fill: false,
     },
     highlight: {
       weight: 10,
       opacity: 1,
+      fill: false,
       outline: {
         enabled: true,
         color: "black",
