@@ -348,7 +348,7 @@ function updateOverviewList() {
       arrow.textContent = isCollapsed ? "keyboard_arrow_down" : "keyboard_arrow_up";
 
       header.appendChild(arrow);
-      header.appendChild(document.createTextNode(title));
+      header.appendChild(document.createTextNode(`${title} (${itemsInGroup.length})`));
 
       header.addEventListener("click", () => {
         if (isCollapsed) {
