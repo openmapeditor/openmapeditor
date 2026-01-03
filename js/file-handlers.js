@@ -663,17 +663,17 @@ async function handleKmzFile(file) {
  * Exports the current map state to a compressed, URL-safe string.
  *
  * Uncompressed structure: { v: 1, f: [...features] }
- * Each feature: { t, c, n?, col?, e?, sid? }
- * t: "m"=marker, "p"=polyline, "g"=polygon
+ * Each feature: { t, c, n?, s?, e?, sid? }
+ * t: "m"=marker, "p"=polyline, "a"=polygon (area)
  * c: [lng,lat] for markers (5 decimals), polyline-encoded string for paths (precision 5)
  * n: name (omitted if empty)
- * col: color name (omitted if "Red")
+ * s: style/color name (omitted if "Red")
  * e: elevation - integer for markers, array for paths (omitted if absent or all zeros)
  * sid: Strava activity ID (omitted if not a Strava import)
  *
  * Compression strategy:
  * 1. Polyline encoding for coordinate sequences (precision 5 = ~1.1m accuracy, sufficient for GPS tracks)
- * 2. Short property names (t, c, n, col, e, sid)
+ * 2. Short property names (t, c, n, s, e, sid)
  * 3. Omit default values (color if "Red", name if empty, elevation if not present)
  * 4. Elevation stored as rounded integers only when all points have elevation data
  * 5. Skip elevation if all values are 0 (placeholder data with no variation)
@@ -705,7 +705,7 @@ function exportMapStateToUrl() {
   allLayers.forEach((layer) => {
     try {
       const feature = {
-        t: "", // type: m=marker, p=polyline, g=polygon
+        t: "", // type: m=marker, p=polyline, a=polygon (area)
         c: null, // coordinates (encoded for paths, array for markers)
       };
 
@@ -714,7 +714,7 @@ function exportMapStateToUrl() {
       const color = layer.feature?.properties?.omColorName;
       const stravaId = layer.feature?.properties?.stravaId;
       if (name) feature.n = name;
-      if (color && color !== "Red") feature.col = color;
+      if (color && color !== "Red") feature.s = color;
       if (stravaId) feature.sid = stravaId;
 
       if (layer instanceof L.Marker) {
@@ -729,7 +729,7 @@ function exportMapStateToUrl() {
       } else if (layer instanceof L.Polygon) {
         const latlngs = layer.getLatLngs()[0];
         if (latlngs && latlngs.length > 0) {
-          feature.t = "g";
+          feature.t = "a";
           feature.c = L.PolylineUtil.encode(latlngs, 5);
           // Add elevation if all points have it and there's variation (not all zeros)
           const elevations = latlngs.map((ll) => ll.alt).filter((e) => typeof e === "number");
@@ -785,7 +785,7 @@ function exportMapStateToUrl() {
  * 3. For each feature, decodes based on type:
  * - "m" (marker): Uses coordinates as-is [lng, lat] or [lng, lat, elevation]
  * - "p" (polyline): Decodes Polyline-encoded path using precision 5, adds elevation if present
- * - "g" (polygon): Decodes Polyline-encoded path using precision 5, adds elevation if present
+ * - "a" (polygon/area): Decodes Polyline-encoded path using precision 5, adds elevation if present
  * 4. Reconstructs full GeoJSON Feature objects with properties and elevation
  * 5. Adds the FeatureCollection to the map
  *
@@ -812,7 +812,7 @@ function importMapStateFromUrl(compressed) {
           type: "Feature",
           properties: {
             name: item.n || "",
-            omColorName: item.col || "Red",
+            omColorName: item.s || "Red",
           },
           geometry: null,
         };
@@ -836,7 +836,7 @@ function importMapStateFromUrl(compressed) {
               return coord;
             }),
           };
-        } else if (item.t === "g") {
+        } else if (item.t === "a") {
           const decoded = L.PolylineUtil.decode(item.c, 5);
           feature.geometry = {
             type: "Polygon",
