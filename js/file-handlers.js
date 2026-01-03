@@ -324,10 +324,16 @@ function exportGeoJson() {
       // Extract full precision coordinates directly from layer
       if (layer instanceof L.Marker) {
         const ll = layer.getLatLng();
-        geojson.geometry.coordinates = [ll.lng, ll.lat];
+        const coords = [ll.lng, ll.lat];
+        if (typeof ll.alt === "number") coords.push(ll.alt);
+        geojson.geometry.coordinates = coords;
       } else if (layer instanceof L.Polygon) {
         const latlngs = layer.getLatLngs()[0];
-        const coords = latlngs.map((ll) => [ll.lng, ll.lat]);
+        const coords = latlngs.map((ll) => {
+          const coord = [ll.lng, ll.lat];
+          if (typeof ll.alt === "number") coord.push(ll.alt);
+          return coord;
+        });
         coords.push(coords[0]); // Close the polygon
         geojson.geometry.coordinates = [coords];
       } else if (layer instanceof L.Polyline) {
@@ -335,7 +341,11 @@ function exportGeoJson() {
         while (Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
           latlngs = latlngs[0];
         }
-        geojson.geometry.coordinates = latlngs.map((ll) => [ll.lng, ll.lat]);
+        geojson.geometry.coordinates = latlngs.map((ll) => {
+          const coord = [ll.lng, ll.lat];
+          if (typeof ll.alt === "number") coord.push(ll.alt);
+          return coord;
+        });
       }
 
       // Get color information
@@ -519,7 +529,7 @@ function getColorNameFromKmlStyle(properties) {
 /**
  * Adds GeoJSON data to the map, applying appropriate styles.
  * @param {object} geoJsonData - The GeoJSON data to add
- * @param {string} fileType - The file type ('gpx', 'kml', 'kmz')
+ * @param {string} fileType - The file type ('gpx', 'kml', 'kmz', 'geojson')
  * @param {string|null} originalPath - The original path for KMZ files
  * @returns {L.GeoJSON} The created layer group
  */
@@ -544,7 +554,8 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
         feature.properties.omColorName ||
         (isKmlBased ? getColorNameFromKmlStyle(feature.properties) : "Red");
 
-      layer.pathType = fileType; // Use the specific fileType ('kmz', 'kml', 'gpx')
+      // All imported items use fileType as pathType
+      layer.pathType = fileType;
       if (fileType === "kmz" && originalPath) {
         layer.originalKmzPath = originalPath; // Store the source file path
       }
@@ -553,8 +564,6 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
         L.DomEvent.stopPropagation(e);
         selectItem(layer);
       });
-      if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
-      }
     },
     pointToLayer: (feature, latlng) => {
       const isKmlBased = fileType === "kml" || fileType === "kmz";
@@ -648,4 +657,235 @@ async function handleKmzFile(file) {
       text: `Could not read the file: ${error.message}`,
     });
   }
+}
+
+/**
+ * Exports the current map state to a compressed, URL-safe string.
+ *
+ * Uncompressed structure: { v: 1, f: [...features] }
+ * Each feature: { t, c, n?, s?, e?, sid? }
+ * t: "m"=marker, "p"=polyline, "a"=polygon (area)
+ * c: [lng,lat] for markers (5 decimals), polyline-encoded string for paths (precision 5)
+ * n: name (omitted if empty)
+ * s: style/color name (omitted if "Red")
+ * e: elevation - integer for markers, array for paths (omitted if absent or all zeros)
+ * sid: Strava activity ID (omitted if not a Strava import)
+ *
+ * Compression strategy:
+ * 1. Polyline encoding for coordinate sequences (precision 5 = ~1.1m accuracy, sufficient for GPS tracks)
+ * 2. Short property names (t, c, n, s, e, sid)
+ * 3. Omit default values (color if "Red", name if empty, elevation if not present)
+ * 4. Elevation stored as rounded integers only when all points have elevation data
+ * 5. Skip elevation if all values are 0 (placeholder data with no variation)
+ * 6. LZ-String compression with URI encoding (compresses the JSON structure)
+ *
+ * The combination of polyline encoding + LZ-String significantly reduces URL length
+ * compared to raw coordinates alone. Elevation is only included when present and meaningful.
+ *
+ * URL Length: "In general, the web platform does not have limits on the length of URLs
+ * (although 2^31 is a common limit). Chrome limits URLs to a maximum length of 2MB for
+ * practical reasons and to avoid causing denial-of-service problems in inter-process communication."
+ * See: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/security/url_display_guidelines/url_display_guidelines.md#URL-Length
+ *
+ * @returns {string|null} Compressed map state, or null if no data to share
+ */
+function exportMapStateToUrl() {
+  const allLayers = [
+    ...editableLayers.getLayers(),
+    ...importedItems.getLayers(),
+    ...stravaActivitiesLayer.getLayers(),
+  ];
+
+  if (allLayers.length === 0) {
+    return null;
+  }
+
+  const features = [];
+
+  allLayers.forEach((layer) => {
+    try {
+      const feature = {
+        t: "", // type: m=marker, p=polyline, a=polygon (area)
+        c: null, // coordinates (encoded for paths, array for markers)
+      };
+
+      // Add name, color, and stravaId only if present
+      const name = layer.feature?.properties?.name;
+      const color = layer.feature?.properties?.omColorName;
+      const stravaId = layer.feature?.properties?.stravaId;
+      if (name) feature.n = name;
+      if (color && color !== "Red") feature.s = color;
+      if (stravaId) feature.sid = stravaId;
+
+      if (layer instanceof L.Marker) {
+        const ll = layer.getLatLng();
+        if (ll) {
+          feature.t = "m";
+          feature.c = [+ll.lng.toFixed(5), +ll.lat.toFixed(5)];
+          if (typeof ll.alt === "number" && ll.alt !== 0) {
+            feature.e = Math.round(ll.alt);
+          }
+        }
+      } else if (layer instanceof L.Polygon) {
+        const latlngs = layer.getLatLngs()[0];
+        if (latlngs && latlngs.length > 0) {
+          feature.t = "a";
+          feature.c = L.PolylineUtil.encode(latlngs, 5);
+          // Add elevation if all points have it and there's variation (not all zeros)
+          const elevations = latlngs.map((ll) => ll.alt).filter((e) => typeof e === "number");
+          const hasVariation = elevations.some((e) => e !== 0);
+          if (elevations.length === latlngs.length && hasVariation) {
+            feature.e = elevations.map((e) => Math.round(e));
+          }
+        }
+      } else if (layer instanceof L.Polyline) {
+        let latlngs = layer.getLatLngs();
+        while (Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
+          latlngs = latlngs[0];
+        }
+        if (latlngs && latlngs.length > 0) {
+          feature.t = "p";
+          feature.c = L.PolylineUtil.encode(latlngs, 5);
+          // Add elevation if all points have it and there's variation (not all zeros)
+          const elevations = latlngs.map((ll) => ll.alt).filter((e) => typeof e === "number");
+          const hasVariation = elevations.some((e) => e !== 0);
+          if (elevations.length === latlngs.length && hasVariation) {
+            feature.e = elevations.map((e) => Math.round(e));
+          }
+        }
+      }
+
+      // Only include features with valid type and coordinates
+      if (feature.t && feature.c) {
+        features.push(feature);
+      }
+    } catch (error) {
+      console.error("Error converting layer for URL sharing:", error, layer);
+    }
+  });
+
+  if (features.length === 0) {
+    return null;
+  }
+
+  const compact = { v: 1, f: features };
+  const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(compact));
+
+  return compressed;
+}
+
+/**
+ * Imports and decompresses map state from a shareable URL parameter.
+ * Decompresses the LZ-String encoded data, decodes Polyline-encoded coordinates,
+ * converts to GeoJSON format, and adds all features to the map.
+ *
+ * Process:
+ * 1. Decompresses the LZ-String encoded URI component
+ * 2. Parses the JSON structure (v=version, f=features array)
+ * 3. For each feature, decodes based on type:
+ * - "m" (marker): Uses coordinates as-is [lng, lat] or [lng, lat, elevation]
+ * - "p" (polyline): Decodes Polyline-encoded path using precision 5, adds elevation if present
+ * - "a" (polygon/area): Decodes Polyline-encoded path using precision 5, adds elevation if present
+ * 4. Reconstructs full GeoJSON Feature objects with properties and elevation
+ * 5. Adds the FeatureCollection to the map
+ *
+ * @param {string} compressed - LZ-String compressed and URI-encoded map state
+ * @returns {boolean} True if import was successful, false if decompression/parsing failed
+ */
+function importMapStateFromUrl(compressed) {
+  try {
+    const jsonString = LZString.decompressFromEncodedURIComponent(compressed);
+    if (!jsonString) throw new Error("Failed to decompress data");
+
+    const data = JSON.parse(jsonString);
+    if (!data.v) throw new Error("Invalid data format: missing version");
+    if (data.v !== 1) throw new Error(`Unsupported data version: ${data.v}`);
+    if (!data.f || !Array.isArray(data.f)) {
+      throw new Error("Invalid data format");
+    }
+
+    const features = [];
+
+    data.f.forEach((item) => {
+      try {
+        const feature = {
+          type: "Feature",
+          properties: {
+            name: item.n || "",
+            omColorName: item.s || "Red",
+          },
+          geometry: null,
+        };
+
+        // Add stravaId if present
+        if (item.sid) {
+          feature.properties.stravaId = item.sid;
+        }
+
+        if (item.t === "m") {
+          const coords = [...item.c];
+          if (typeof item.e === "number") coords.push(item.e);
+          feature.geometry = { type: "Point", coordinates: coords };
+        } else if (item.t === "p") {
+          const decoded = L.PolylineUtil.decode(item.c, 5);
+          feature.geometry = {
+            type: "LineString",
+            coordinates: decoded.map(([lat, lng], idx) => {
+              const coord = [lng, lat];
+              if (item.e && typeof item.e[idx] === "number") coord.push(item.e[idx]);
+              return coord;
+            }),
+          };
+        } else if (item.t === "a") {
+          const decoded = L.PolylineUtil.decode(item.c, 5);
+          feature.geometry = {
+            type: "Polygon",
+            coordinates: [
+              decoded.map(([lat, lng], idx) => {
+                const coord = [lng, lat];
+                if (item.e && typeof item.e[idx] === "number") coord.push(item.e[idx]);
+                return coord;
+              }),
+            ],
+          };
+        }
+
+        if (feature.geometry) features.push(feature);
+      } catch (e) {
+        console.warn("Could not decode feature:", e);
+      }
+    });
+
+    if (features.length === 0) throw new Error("No valid features");
+
+    addGeoJsonToMap({ type: "FeatureCollection", features }, "geojson");
+    return true;
+  } catch (error) {
+    console.error("Error importing map state from URL:", error);
+    return false;
+  }
+}
+
+/**
+ * Generates a shareable URL containing the current map view and all features.
+ * Combines the map position (#map=zoom/lat/lng) with compressed feature data (&data=...).
+ * The data parameter contains all markers, polylines, and polygons compressed using
+ * Polyline encoding and LZ-String compression.
+ *
+ * @returns {string|null} Full shareable URL with hash parameters, or null if no features exist
+ */
+function generateShareableUrl() {
+  const mapState = exportMapStateToUrl();
+  if (!mapState) {
+    return null;
+  }
+
+  const center = map.getCenter();
+  const zoom = map.getZoom();
+
+  // Build URL with map view and data
+  const baseUrl = window.location.origin + window.location.pathname;
+  const hashParams = `#map=${zoom}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}&data=${mapState}`;
+
+  return baseUrl + hashParams;
 }

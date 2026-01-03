@@ -15,6 +15,7 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 - **Organic Maps Compatibility:** Smoothly import and export KMZ backups while preserving all 16 of the Organic Maps colors for your paths and markers.
 - **Draw & Edit:** Easily draw new paths, areas, and markers directly on the map, or edit existing items.
 - **File Support:** Full support for importing and exporting GPX, KML, KMZ, and GeoJSON files.
+- **Shareable Links:** Generate shareable URLs containing your map view and all features, making it easy to share your maps with others.
 - **Performance Optimized:** Optional path and area simplification (on by default) for smoother performance. When enabled, simplified copies are made when duplicating tracks/activities/areas (originals preserved), and generated routes are simplified when saved. Configurable in settings.
 - **Routing:** Generate routes for driving, biking, or walking. You can then save the generated route as an editable path.
 - **Elevation Profiles:** Instantly visualize the elevation profile for any path.
@@ -148,6 +149,8 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: <https://registry.npmjs.org/leaflet.markercluster/-/leaflet.markercluster-1.5.3.tgz>
 - **leaflet-routing-machine-3.2.12**
   - Download URL: <https://registry.npmjs.org/leaflet-routing-machine/-/leaflet-routing-machine-3.2.12.tgz>
+- **lz-string-1.5.0**
+  - Download URL: <https://registry.npmjs.org/lz-string/-/lz-string-1.5.0.tgz>
 - **polyline-encoded-0.0.9**
   - Download URL: <https://registry.npmjs.org/polyline-encoded/-/polyline-encoded-0.0.9.tgz>
 - **proj4-2.20.2**

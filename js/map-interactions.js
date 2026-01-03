@@ -149,6 +149,9 @@ function deselectCurrentItem() {
   gpxButton.textContent = "GPX (Selected Item)";
   kmlButton.textContent = "KML (Selected Item)";
 
+  gpxButton.title = "Select an item to download as GPX";
+  kmlButton.title = "Select an item to download as KML";
+
   resetInfoPanel();
 }
 
@@ -203,6 +206,8 @@ function selectItem(layer) {
         layer instanceof L.Marker ? "Marker" : layer instanceof L.Polygon ? "Area" : "Path";
       gpxButton.textContent = `GPX (Selected ${itemType})`;
       kmlButton.textContent = `KML (Selected ${itemType})`;
+      gpxButton.title = `Download selected ${itemType.toLowerCase()} as GPX`;
+      kmlButton.title = `Download selected ${itemType.toLowerCase()} as KML`;
     }
   }
 
@@ -307,10 +312,10 @@ function updateDrawControlStates() {
   if (downloadButtonContainer) {
     if (hasLayers) {
       L.DomUtil.removeClass(downloadButtonContainer, "disabled");
-      downloadButtonContainer.title = "Download file";
+      downloadButtonContainer.title = "Download or share";
     } else {
       L.DomUtil.addClass(downloadButtonContainer, "disabled");
-      downloadButtonContainer.title = "No items to download";
+      downloadButtonContainer.title = "No items to download or share";
     }
   }
 

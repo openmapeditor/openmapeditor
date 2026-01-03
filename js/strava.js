@@ -224,10 +224,10 @@ function _getFetchControlsHTML(activityCount = 0) {
           <option value="100">Latest 100</option>
           <option value="all" selected>All Activities</option>
         </select>
-        <button id="fetch-strava-btn" class="strava-button-primary" style="flex: 1; min-width: 80px;">Fetch</button>        
+        <button id="fetch-strava-btn" class="strava-button-primary" style="flex: 1; min-width: 80px;">Fetch</button>
         <div class="strava-export-buttons">
-          <button id="export-strava-kml-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export KML</button>
-          <button id="export-strava-json-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export JSON</button>
+          <button id="export-strava-geojson-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export GeoJSON</button>
+          <button id="export-strava-json-btn" class="strava-button-secondary" style="flex: 1; min-width: 80px;">Export Raw JSON</button>
         </div>
       </div>
       <p id="strava-progress" style="display: none;"></p>
@@ -241,9 +241,9 @@ function _getFetchControlsHTML(activityCount = 0) {
  */
 function _addFetchControlsListeners(fetchFunction, activityCount = 0) {
   document.getElementById("fetch-strava-btn").addEventListener("click", fetchFunction);
-  const exportKmlBtn = document.getElementById("export-strava-kml-btn");
-  exportKmlBtn.addEventListener("click", exportStravaActivitiesAsKml);
-  exportKmlBtn.disabled = activityCount === 0;
+  const exportGeoJsonBtn = document.getElementById("export-strava-geojson-btn");
+  exportGeoJsonBtn.addEventListener("click", exportStravaActivitiesAsGeoJson);
+  exportGeoJsonBtn.disabled = activityCount === 0;
   const exportJsonBtn = document.getElementById("export-strava-json-btn");
   exportJsonBtn.addEventListener("click", exportStravaActivitiesAsJson);
   exportJsonBtn.disabled = activityCount === 0;
@@ -441,29 +441,120 @@ function displayActivitiesOnMap(activities) {
 }
 
 /**
- * Creates and triggers a download for a KML file of all loaded Strava activities.
+ * Creates and triggers a download for a GeoJSON file of all loaded Strava activities.
+ * Uses the same export logic as the main GeoJSON export to ensure consistency.
  */
-async function exportStravaActivitiesAsKml() {
+async function exportStravaActivitiesAsGeoJson() {
   if (stravaActivitiesLayer.getLayers().length === 0) {
     return Swal.fire({
       title: "No Activities Loaded",
       text: "Please fetch your activities before exporting.",
     });
   }
-  const stravaPlacemarks = [];
+
+  const features = [];
+
+  // Convert each Strava activity layer to GeoJSON (same logic as main export)
   stravaActivitiesLayer.eachLayer((layer) => {
-    const defaultName = layer.feature?.properties?.name || "Strava Activity";
-    const kmlSnippet = generateKmlForLayer(layer, defaultName);
-    if (kmlSnippet) stravaPlacemarks.push(kmlSnippet);
+    try {
+      const geojson = layer.toGeoJSON();
+
+      // Skip if toGeoJSON didn't produce valid geometry
+      if (!geojson || !geojson.geometry || !geojson.geometry.type) {
+        console.warn("Skipping layer with invalid geometry:", layer);
+        return;
+      }
+
+      // Extract full precision coordinates directly from layer
+      if (layer instanceof L.Marker) {
+        const ll = layer.getLatLng();
+        const coords = [ll.lng, ll.lat];
+        if (typeof ll.alt === "number") coords.push(ll.alt);
+        geojson.geometry.coordinates = coords;
+      } else if (layer instanceof L.Polygon) {
+        const latlngs = layer.getLatLngs()[0];
+        const coords = latlngs.map((ll) => {
+          const coord = [ll.lng, ll.lat];
+          if (typeof ll.alt === "number") coord.push(ll.alt);
+          return coord;
+        });
+        coords.push(coords[0]); // Close the polygon
+        geojson.geometry.coordinates = [coords];
+      } else if (layer instanceof L.Polyline) {
+        let latlngs = layer.getLatLngs();
+        while (Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
+          latlngs = latlngs[0];
+        }
+        geojson.geometry.coordinates = latlngs.map((ll) => {
+          const coord = [ll.lng, ll.lat];
+          if (typeof ll.alt === "number") coord.push(ll.alt);
+          return coord;
+        });
+      }
+
+      // Get color information
+      const colorName = layer.feature?.properties?.omColorName || "Red";
+      const colorData =
+        ORGANIC_MAPS_COLORS.find((c) => c.name === colorName) || ORGANIC_MAPS_COLORS[0];
+
+      // Filter out excluded properties (totalDistance is internal only)
+      const excludedProperties = ["totalDistance"];
+      const filteredProperties = Object.keys(geojson.properties || {}).reduce((acc, key) => {
+        if (!excludedProperties.includes(key)) {
+          acc[key] = geojson.properties[key];
+        }
+        return acc;
+      }, {});
+
+      // Enhance properties with color data
+      geojson.properties = {
+        ...filteredProperties,
+        omColorName: colorName, // For round-trip with our app
+      };
+
+      // Add standard GeoJSON styling for other tools
+      if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
+        geojson.properties.stroke = colorData.css;
+        geojson.properties["stroke-width"] = 3;
+        geojson.properties["stroke-opacity"] = 1;
+      }
+      if (layer instanceof L.Polygon) {
+        geojson.properties.fill = colorData.css;
+        geojson.properties["fill-opacity"] = 0.2;
+      }
+
+      if (layer instanceof L.Marker) {
+        geojson.properties["marker-color"] = colorData.css;
+      }
+
+      // Ensure type: "Feature" is present
+      geojson.type = "Feature";
+
+      features.push(geojson);
+    } catch (error) {
+      console.error("Error converting layer to GeoJSON:", error, layer);
+      // Skip this layer and continue with others
+    }
   });
-  if (stravaPlacemarks.length === 0) {
+
+  if (features.length === 0) {
     return Swal.fire({
       title: "No Exportable Data",
-      text: "Could not generate KML for loaded activities.",
+      text: "Could not generate GeoJSON for loaded activities.",
     });
   }
-  const kmlContent = createKmlDocument("Strava Activities", stravaPlacemarks);
-  downloadFile(generateTimestampedFilename("Strava_Export", "kml"), kmlContent);
+
+  // Create FeatureCollection
+  const geojsonDoc = {
+    type: "FeatureCollection",
+    features: features,
+  };
+
+  // Download file
+  downloadFile(
+    generateTimestampedFilename("Strava_Export", "geojson"),
+    JSON.stringify(geojsonDoc, null, 2),
+  );
 }
 
 /**

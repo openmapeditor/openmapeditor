@@ -133,17 +133,20 @@ async function showCreditsPopup() {
 }
 
 /**
- * Parses a URL hash string to extract map view parameters.
+ * Parses a URL hash string to extract map view parameters and optional data parameter.
  * @param {string} hashString - The hash string from window.location.hash
- * @returns {{zoom: number, lat: number, lon: number}|null} Map parameters or null if invalid
+ * @returns {{zoom: number, lat: number, lon: number, data: string|null}|null} Map parameters or null if invalid
  */
 function parseMapHash(hashString) {
-  const match = hashString.match(/^#map=(\d{1,2})\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)$/);
+  // Try to match the map parameters with optional data parameter
+  // Format: #map=zoom/lat/lon or #map=zoom/lat/lon&data=compressedString
+  const match = hashString.match(/^#map=(\d{1,2})\/(-?\d+\.?\d*)\/(-?\d+\.?\d*)(?:&data=([^&]+))?/);
   if (match) {
     return {
       zoom: parseInt(match[1], 10),
       lat: parseFloat(match[2]),
       lon: parseFloat(match[3]),
+      data: match[4] || null,
     };
   }
   return null;
@@ -340,12 +343,24 @@ function initializeMap() {
   map.getPane("wmsPane").style.zIndex = 250;
 
   const initialView = parseMapHash(window.location.hash);
-  let isUpdatingUrl = false;
+  // Prevents circular updates when syncing map view from URL hash
+  let isSyncingFromUrl = false;
 
   if (initialView) {
-    isUpdatingUrl = true;
+    isSyncingFromUrl = true;
     map.setView([initialView.lat, initialView.lon], initialView.zoom);
-    isUpdatingUrl = false;
+    isSyncingFromUrl = false;
+
+    // If there's shared data in the URL, import it once layer groups are initialized
+    if (initialView.data) {
+      // Store the data to import after layer groups are created
+      window._pendingShareData = {
+        data: initialView.data,
+        zoom: initialView.zoom,
+        lat: initialView.lat,
+        lon: initialView.lon,
+      };
+    }
   } else {
     fetch(`https://www.googleapis.com/geolocation/v1/geolocate?key=${googleApiKey}`, {
       method: "POST",
@@ -369,7 +384,7 @@ function initializeMap() {
   }
 
   const updateUrlHash = () => {
-    if (isUpdatingUrl) return;
+    if (isSyncingFromUrl) return;
     const center = map.getCenter();
     const zoom = map.getZoom();
     const lat = center.lat.toFixed(5);
@@ -383,6 +398,12 @@ function initializeMap() {
   const handleHashChange = () => {
     const newView = parseMapHash(window.location.hash);
     if (newView) {
+      // If URL contains shared data, reload the page to start fresh
+      if (newView.data) {
+        window.location.reload();
+        return;
+      }
+
       const currentCenter = map.getCenter();
       const currentZoom = map.getZoom();
       if (
@@ -390,7 +411,9 @@ function initializeMap() {
         currentCenter.lat.toFixed(5) !== newView.lat.toFixed(5) ||
         currentCenter.lng.toFixed(5) !== newView.lon.toFixed(5)
       ) {
+        isSyncingFromUrl = true;
         map.setView([newView.lat, newView.lon], newView.zoom);
+        isSyncingFromUrl = false;
       }
     }
   };
@@ -411,6 +434,37 @@ function initializeMap() {
 
   // Initialize POI finder first so we can add it to layer control
   initPoiFinder();
+
+  // Import shared data from URL if present (now that layer groups are ready)
+  if (window._pendingShareData) {
+    const { data, zoom, lat, lon } = window._pendingShareData;
+    const success = importMapStateFromUrl(data);
+
+    if (success) {
+      console.log("Successfully loaded shared map data from URL");
+      // Clear data from URL on successful import (keep map view only)
+      const newHash = `#map=${zoom}/${lat}/${lon}`;
+      window.history.replaceState(null, "", newHash);
+    } else {
+      // Show error with option to clear the broken URL or keep it for debugging
+      Swal.fire({
+        title: "Import Error",
+        text: "Could not load the shared map data from the URL.",
+        icon: "error",
+        showCancelButton: true,
+        confirmButtonText: "Clear URL and Continue",
+        cancelButtonText: "Keep URL for Debugging",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // User wants to clear the broken URL
+          const newHash = `#map=${zoom}/${lat}/${lon}`;
+          window.history.replaceState(null, "", newHash);
+        }
+        // If cancelled, keep the URL intact for debugging
+      });
+    }
+    delete window._pendingShareData;
+  }
 
   const allOverlayMaps = {
     ...staticOverlayMaps,
@@ -771,9 +825,7 @@ function initializeMap() {
       const layersPanel = document.getElementById("custom-layers-panel");
       const layersButton = document.querySelector('.leaflet-control-custom[title="Layers"]');
       const downloadMenu = document.querySelector(".download-submenu");
-      const downloadButton = document.querySelector(
-        '.leaflet-control-custom[title="Download file"]',
-      );
+      const downloadButton = document.getElementById("main-download-button");
 
       if (
         layersPanel &&
@@ -835,17 +887,18 @@ function initializeMap() {
         "div",
         "leaflet-bar leaflet-control leaflet-control-custom",
       );
-      container.title = "No items to download";
+      container.title = "Download or share";
       container.id = "main-download-button";
       container.style.position = "relative";
       container.innerHTML =
         '<a href="#" role="button"></a>' +
         '<div class="download-submenu">' +
-        '<button id="download-gpx" disabled>GPX (Selected Item)</button>' +
-        '<button id="download-kml" disabled>KML (Selected Item)</button>' +
-        '<button id="download-strava-original-gpx" style="display: none;">GPX (Original from Strava)</button>' +
-        '<button id="download-kmz">KMZ (Everything)</button>' +
-        '<button id="download-geojson">GeoJSON (Everything)</button>' +
+        '<button id="download-gpx" disabled title="Download selected item as GPX">GPX (Selected Item)</button>' +
+        '<button id="download-kml" disabled title="Download selected item as KML">KML (Selected Item)</button>' +
+        '<button id="download-strava-original-gpx" style="display: none;" title="Download original GPX from Strava">GPX (Original from Strava)</button>' +
+        '<button id="download-kmz" title="Download everything as KMZ">KMZ (Everything)</button>' +
+        '<button id="download-geojson" title="Download everything as GeoJSON">GeoJSON (Everything)</button>' +
+        '<button id="share-link" title="Copy share link for everything">Copy Share Link (Everything)</button>' +
         "</div>";
       const subMenu = container.querySelector(".download-submenu");
 
@@ -901,6 +954,42 @@ function initializeMap() {
       L.DomEvent.on(container.querySelector("#download-geojson"), "click", (e) => {
         L.DomEvent.stop(e);
         exportGeoJson();
+        subMenu.style.display = "none";
+      });
+      L.DomEvent.on(container.querySelector("#share-link"), "click", async (e) => {
+        L.DomEvent.stop(e);
+        const shareUrl = generateShareableUrl();
+        if (!shareUrl) {
+          Swal.fire({
+            toast: true,
+            icon: "info",
+            title: "Nothing to share",
+            position: "top",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+        } else {
+          await copyToClipboard(shareUrl);
+
+          // Warn users about URL length limits
+          if (shareUrl.length > 2000) {
+            Swal.fire({
+              icon: "warning",
+              title: "Large Share Link Copied!",
+              html: `This link is <strong>${shareUrl.length}</strong> characters and may not work in all browsers or messaging apps.`,
+              confirmButtonText: "OK",
+            });
+          } else {
+            Swal.fire({
+              toast: true,
+              icon: "success",
+              title: `Share Link Copied!<br>(${shareUrl.length} characters)`,
+              position: "top",
+              showConfirmButton: false,
+              timer: 2000,
+            });
+          }
+        }
         subMenu.style.display = "none";
       });
       return container;
