@@ -787,9 +787,9 @@ a#info-panel-strava-link:hover {
   border-bottom: none;
 }
 
-.directions-panel-header-arrow {
-  margin-right: 4px;
-  vertical-align: middle;
+.directions-panel-header-arrow.material-symbols {
+  font-size: var(--icon-size-20) !important;
+  margin-right: 5px;
 }
 
 /* Default state (collapsed): arrow points down */
