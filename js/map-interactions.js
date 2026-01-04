@@ -137,11 +137,6 @@ function deselectCurrentItem() {
   const downloadContainer = downloadControl.getContainer();
   const gpxButton = downloadContainer.querySelector("#download-gpx");
   const kmlButton = downloadContainer.querySelector("#download-kml");
-  const stravaGpxButton = downloadContainer.querySelector("#download-strava-original-gpx");
-
-  gpxButton.style.display = "block";
-  kmlButton.style.display = "block";
-  stravaGpxButton.style.display = "none";
 
   gpxButton.disabled = true;
   kmlButton.disabled = true;
@@ -191,28 +186,24 @@ function selectItem(layer) {
   if (downloadControl) {
     const gpxButton = downloadControl.getContainer().querySelector("#download-gpx");
     const kmlButton = downloadControl.getContainer().querySelector("#download-kml");
-    const stravaGpxButton = downloadControl
-      .getContainer()
-      .querySelector("#download-strava-original-gpx");
 
+    gpxButton.disabled = false;
+    kmlButton.disabled = false;
+
+    const itemType =
+      layer instanceof L.Marker ? "Marker" : layer instanceof L.Polygon ? "Area" : "Path";
+
+    // Only show 'Original' label for live Strava activities; imported items are labeled as regular paths/markers.
     if (layer.pathType === "strava") {
-      gpxButton.style.display = "none";
-      kmlButton.style.display = "none";
-      stravaGpxButton.style.display = "block";
+      gpxButton.textContent = `GPX (Original from Strava)`;
+      gpxButton.title = `Download original GPX from Strava`;
     } else {
-      gpxButton.style.display = "block";
-      kmlButton.style.display = "block";
-      stravaGpxButton.style.display = "none";
-
-      gpxButton.disabled = false;
-      kmlButton.disabled = false;
-      const itemType =
-        layer instanceof L.Marker ? "Marker" : layer instanceof L.Polygon ? "Area" : "Path";
       gpxButton.textContent = `GPX (Selected ${itemType})`;
-      kmlButton.textContent = `KML (Selected ${itemType})`;
       gpxButton.title = `Download selected ${itemType.toLowerCase()} as GPX`;
-      kmlButton.title = `Download selected ${itemType.toLowerCase()} as KML`;
     }
+
+    kmlButton.textContent = `KML (Selected ${itemType})`;
+    kmlButton.title = `Download selected ${itemType.toLowerCase()} as KML`;
   }
 
   if (layer instanceof L.Polyline || layer instanceof L.Polygon) {

@@ -897,7 +897,6 @@ function initializeMap() {
         '<div class="download-submenu">' +
         '<button id="download-gpx" disabled title="Download selected item as GPX">GPX (Selected Item)</button>' +
         '<button id="download-kml" disabled title="Download selected item as KML">KML (Selected Item)</button>' +
-        '<button id="download-strava-original-gpx" style="display: none;" title="Download original GPX from Strava">GPX (Original from Strava)</button>' +
         '<button id="download-kmz" title="Download everything as KMZ">KMZ (Everything)</button>' +
         '<button id="download-geojson" title="Download everything as GeoJSON">GeoJSON (Everything)</button>' +
         '<button id="share-link" title="Copy share link for everything">Copy Share Link (Everything)</button>' +
@@ -934,19 +933,18 @@ function initializeMap() {
 
       L.DomEvent.on(container.querySelector("#download-gpx"), "click", (e) => {
         L.DomEvent.stop(e);
-        downloadAction("gpx");
+        // Only download from Strava for live Strava activities; imported items with 'stravaId' use internal GPX export.
+        if (globallySelectedItem && globallySelectedItem.pathType === "strava") {
+          const { stravaId, name } = globallySelectedItem.feature.properties;
+          downloadOriginalStravaGpx(stravaId, name);
+          subMenu.style.display = "none";
+        } else {
+          downloadAction("gpx");
+        }
       });
       L.DomEvent.on(container.querySelector("#download-kml"), "click", (e) => {
         L.DomEvent.stop(e);
         downloadAction("kml");
-      });
-      L.DomEvent.on(container.querySelector("#download-strava-original-gpx"), "click", (e) => {
-        L.DomEvent.stop(e);
-        if (globallySelectedItem && globallySelectedItem.feature.properties.stravaId) {
-          const { stravaId, name } = globallySelectedItem.feature.properties;
-          downloadOriginalStravaGpx(stravaId, name);
-        }
-        subMenu.style.display = "none";
       });
       L.DomEvent.on(container.querySelector("#download-kmz"), "click", (e) => {
         L.DomEvent.stop(e);
