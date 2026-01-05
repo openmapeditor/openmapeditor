@@ -301,7 +301,8 @@ function updateDrawControlStates() {
   const hasLayers =
     editableLayers.getLayers().length > 0 ||
     stravaActivitiesLayer.getLayers().length > 0 ||
-    importedItems.getLayers().length > 0;
+    importedItems.getLayers().length > 0 ||
+    currentRoutePath !== null;
 
   const downloadButtonContainer = document.getElementById("main-download-button");
   if (downloadButtonContainer) {

@@ -1,6 +1,27 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
 /**
+ * Gets all layers that should be included in full exports (everything/all).
+ * Includes drawn items, imported items, current route, and Strava activities.
+ * @returns {Array} Array of all exportable layers
+ */
+function getAllExportableLayers() {
+  const allLayers = [...editableLayers.getLayers(), ...importedItems.getLayers()];
+
+  // Add current route if exists
+  if (currentRoutePath) {
+    allLayers.push(currentRoutePath);
+  }
+
+  // Add Strava activities
+  stravaActivitiesLayer.eachLayer((layer) => {
+    allLayers.push(layer);
+  });
+
+  return allLayers;
+}
+
+/**
  * Generates a KML placemark for a given Leaflet layer.
  * @param {L.Layer} layer - The layer to convert
  * @param {string} defaultName - A fallback name
@@ -140,7 +161,7 @@ function generateFullKmzZip(docName) {
   const importedPlacemarks = [];
   const stravaPlacemarks = [];
 
-  const allLayers = [...editableLayers.getLayers(), ...importedItems.getLayers()];
+  const allLayers = getAllExportableLayers();
 
   allLayers.forEach(function (layer) {
     const defaultName =
@@ -150,6 +171,7 @@ function generateFullKmzZip(docName) {
 
     switch (layer.pathType) {
       case "drawn":
+      case "route":
         drawnPlacemarks.push(kmlSnippet);
         break;
       case "gpx":
@@ -168,14 +190,9 @@ function generateFullKmzZip(docName) {
           importedPlacemarks.push(kmlSnippet);
         }
         break;
-    }
-  });
-
-  stravaActivitiesLayer.eachLayer(function (layer) {
-    const defaultName = `Strava_Activity_${++featureCounter}`;
-    const kmlSnippet = generateKmlForLayer(layer, defaultName);
-    if (kmlSnippet) {
-      stravaPlacemarks.push(kmlSnippet);
+      case "strava":
+        stravaPlacemarks.push(kmlSnippet);
+        break;
     }
   });
 
@@ -326,17 +343,7 @@ function exportGeoJson(options = {}) {
     }
   } else {
     // mode === "all"
-    allLayers = [...editableLayers.getLayers(), ...importedItems.getLayers()];
-
-    // Add current route if exists
-    if (currentRoutePath) {
-      allLayers.push(currentRoutePath);
-    }
-
-    // Add Strava activities
-    stravaActivitiesLayer.eachLayer((l) => {
-      allLayers.push(l);
-    });
+    allLayers = getAllExportableLayers();
 
     if (allLayers.length === 0) {
       return Swal.fire({
@@ -756,11 +763,7 @@ async function handleKmzFile(file) {
  * @returns {string|null} Compressed map state, or null if no data to share
  */
 function exportMapStateToUrl() {
-  const allLayers = [
-    ...editableLayers.getLayers(),
-    ...importedItems.getLayers(),
-    ...stravaActivitiesLayer.getLayers(),
-  ];
+  const allLayers = getAllExportableLayers();
 
   if (allLayers.length === 0) {
     return null;
