@@ -135,11 +135,16 @@ function deselectCurrentItem() {
   L.DomUtil.addClass(elevationToggleControl.getContainer(), "disabled");
 
   const downloadContainer = downloadControl.getContainer();
-  const gpxButton = downloadContainer.querySelector("#download-gpx");
+  const gpxButton = downloadContainer.querySelector("#download-gpx-single");
+  const geojsonButton = downloadContainer.querySelector("#download-geojson-single");
 
   gpxButton.disabled = true;
   gpxButton.textContent = "GPX (Selected Item)";
   gpxButton.title = "Select an item to download as GPX";
+
+  geojsonButton.disabled = true;
+  geojsonButton.textContent = "GeoJSON (Selected Item)";
+  geojsonButton.title = "Select an item to download as GeoJSON";
 
   resetInfoPanel();
 }
@@ -178,8 +183,10 @@ function selectItem(layer) {
   showInfoPanel(layer);
 
   if (downloadControl) {
-    const gpxButton = downloadControl.getContainer().querySelector("#download-gpx");
+    const gpxButton = downloadControl.getContainer().querySelector("#download-gpx-single");
+    const geojsonButton = downloadControl.getContainer().querySelector("#download-geojson-single");
     gpxButton.disabled = false;
+    geojsonButton.disabled = false;
 
     const itemType =
       layer instanceof L.Marker ? "Marker" : layer instanceof L.Polygon ? "Area" : "Path";
@@ -192,6 +199,10 @@ function selectItem(layer) {
       gpxButton.textContent = `GPX (Selected ${itemType})`;
       gpxButton.title = `Download selected ${itemType.toLowerCase()} as GPX`;
     }
+
+    // GeoJSON button label
+    geojsonButton.textContent = `GeoJSON (Selected ${itemType})`;
+    geojsonButton.title = `Download selected ${itemType.toLowerCase()} as GeoJSON`;
   }
 
   if (layer instanceof L.Polyline || layer instanceof L.Polygon) {

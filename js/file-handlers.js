@@ -285,29 +285,65 @@ const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
 ];
 
 /**
- * Exports all map items to a GeoJSON file with color preservation.
+ * Exports map items to a GeoJSON file with color preservation.
+ * @param {Object} options - Export options
+ * @param {string} options.mode - Export mode: "all" (default), "single", or "strava"
+ * @param {L.Layer} options.layer - Single layer to export (required when mode is "single")
+ * @param {string} options.filePrefix - Prefix for the filename (defaults based on mode)
+ * @param {string} options.successTitle - Success dialog title (defaults based on mode)
+ * @param {string} options.successText - Success dialog text (defaults based on mode)
  */
-function exportGeoJson() {
+function exportGeoJson(options = {}) {
+  const {
+    mode = "all",
+    layer = null,
+    filePrefix = null,
+    successTitle = "Export Successful!",
+    successText = null,
+  } = options;
+
   const features = [];
+  let allLayers = [];
 
-  // Collect all layers
-  const allLayers = [...editableLayers.getLayers(), ...importedItems.getLayers()];
-
-  // Add current route if exists
-  if (currentRoutePath) {
-    allLayers.push(currentRoutePath);
-  }
-
-  // Add Strava activities
-  stravaActivitiesLayer.eachLayer((layer) => {
-    allLayers.push(layer);
-  });
-
-  if (allLayers.length === 0) {
-    return Swal.fire({
-      title: "No Data to Export",
-      text: "There are no items on the map to export.",
+  // Collect layers based on mode
+  if (mode === "single") {
+    if (!layer) {
+      return Swal.fire({
+        title: "No Item Selected",
+        text: "Please select an item to export.",
+      });
+    }
+    allLayers = [layer];
+  } else if (mode === "strava") {
+    stravaActivitiesLayer.eachLayer((l) => {
+      allLayers.push(l);
     });
+    if (allLayers.length === 0) {
+      return Swal.fire({
+        title: "No Activities Loaded",
+        text: "Please fetch your activities before exporting.",
+      });
+    }
+  } else {
+    // mode === "all"
+    allLayers = [...editableLayers.getLayers(), ...importedItems.getLayers()];
+
+    // Add current route if exists
+    if (currentRoutePath) {
+      allLayers.push(currentRoutePath);
+    }
+
+    // Add Strava activities
+    stravaActivitiesLayer.eachLayer((l) => {
+      allLayers.push(l);
+    });
+
+    if (allLayers.length === 0) {
+      return Swal.fire({
+        title: "No Data to Export",
+        text: "There are no items on the map to export.",
+      });
+    }
   }
 
   // Convert each layer to GeoJSON
@@ -392,23 +428,53 @@ function exportGeoJson() {
     }
   });
 
+  // For strava mode, check if we got any exportable features
+  if (mode === "strava" && features.length === 0) {
+    return Swal.fire({
+      title: "No Exportable Data",
+      text: "Could not generate GeoJSON for loaded activities.",
+    });
+  }
+
   // Create FeatureCollection
   const geojsonDoc = {
     type: "FeatureCollection",
     features: features,
   };
 
-  // Generate filename with timestamp
-  const fileName = generateTimestampedFilename("Map_Export", "geojson");
+  // Determine filename prefix
+  let finalFilePrefix = filePrefix;
+  if (!finalFilePrefix) {
+    if (mode === "single") {
+      finalFilePrefix = layer.feature?.properties?.name || "Map_Export";
+    } else if (mode === "strava") {
+      finalFilePrefix = "Strava_Export";
+    } else {
+      finalFilePrefix = "Map_Export";
+    }
+  }
+
+  // Generate filename with timestamp (except for single items with custom names)
+  const fileName =
+    mode === "single" && layer.feature?.properties?.name
+      ? `${finalFilePrefix}.geojson`
+      : generateTimestampedFilename(finalFilePrefix, "geojson");
 
   // Download file
   downloadFile(fileName, JSON.stringify(geojsonDoc, null, 2));
-  Swal.fire({
-    title: "Export Successful!",
-    text: "All items have been exported to GeoJSON.",
-    timer: 2000,
-    showConfirmButton: false,
-  });
+
+  // Show success message (only for strava mode, single mode is silent, all mode shows message)
+  if (mode === "all") {
+    Swal.fire({
+      title: successTitle,
+      text: successText || "All items have been exported to GeoJSON.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  } else if (mode === "strava") {
+    // Strava mode was silent in the original, so we keep it silent
+  }
+  // Single mode is silent (follows GPX pattern)
 }
 
 /**

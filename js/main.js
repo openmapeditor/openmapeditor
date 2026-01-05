@@ -895,9 +895,10 @@ function initializeMap() {
       container.innerHTML =
         '<a href="#" role="button"></a>' +
         '<div class="download-submenu">' +
-        '<button id="download-gpx" disabled title="Download selected item as GPX">GPX (Selected Item)</button>' +
-        '<button id="download-kmz" title="Download everything as KMZ">KMZ (Everything)</button>' +
+        '<button id="download-gpx-single" disabled title="Download selected item as GPX">GPX (Selected Item)</button>' +
+        '<button id="download-geojson-single" disabled title="Download selected item as GeoJSON">GeoJSON (Selected Item)</button>' +
         '<button id="download-geojson" title="Download everything as GeoJSON">GeoJSON (Everything)</button>' +
+        '<button id="download-kmz" title="Download everything as KMZ">KMZ (Everything)</button>' +
         '<button id="share-link" title="Copy share link for everything">Copy Share Link (Everything)</button>' +
         "</div>";
       const subMenu = container.querySelector(".download-submenu");
@@ -912,7 +913,7 @@ function initializeMap() {
         subMenu.style.display = isVisible ? "none" : "block";
       });
 
-      L.DomEvent.on(container.querySelector("#download-gpx"), "click", (e) => {
+      L.DomEvent.on(container.querySelector("#download-gpx-single"), "click", (e) => {
         L.DomEvent.stop(e);
         // Only download from Strava for live Strava activities; imported items with 'stravaId' use internal GPX export.
         if (globallySelectedItem && globallySelectedItem.pathType === "strava") {
@@ -928,6 +929,12 @@ function initializeMap() {
           }
           subMenu.style.display = "none";
         }
+      });
+      L.DomEvent.on(container.querySelector("#download-geojson-single"), "click", (e) => {
+        L.DomEvent.stop(e);
+        if (!globallySelectedItem) return;
+        exportGeoJson({ mode: "single", layer: globallySelectedItem });
+        subMenu.style.display = "none";
       });
       L.DomEvent.on(container.querySelector("#download-kmz"), "click", (e) => {
         L.DomEvent.stop(e);
