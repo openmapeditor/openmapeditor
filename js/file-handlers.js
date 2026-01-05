@@ -1,5 +1,8 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
+// 1. GENERAL UTILITIES
+// --------------------------------------------------------------------
+
 /**
  * Gets all layers that should be included in full exports (everything/all).
  * Includes drawn items, imported items, current route, and Strava activities.
@@ -20,6 +23,19 @@ function getAllExportableLayers() {
 
   return allLayers;
 }
+
+/**
+ * Properties to exclude from GeoJSON export.
+ * Add any property names here that you don't want included in exported files.
+ */
+const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
+  "totalDistance", // Internal calculated distance - not needed in export
+];
+
+// 2. EXPORT (FILE-BASED)
+// --------------------------------------------------------------------
+
+// KMZ / KML
 
 /**
  * Converts a Leaflet layer to a KML placemark string.
@@ -293,13 +309,7 @@ function exportKmz() {
     });
 }
 
-/**
- * Properties to exclude from GeoJSON export.
- * Add any property names here that you don't want included in exported files.
- */
-const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
-  "totalDistance", // Internal calculated distance - not needed in export
-];
+// GeoJSON
 
 /**
  * Exports map items to a GeoJSON file with color preservation.
@@ -484,6 +494,8 @@ function exportGeoJson(options = {}) {
   // Single mode is silent (follows GPX pattern)
 }
 
+// GPX
+
 /**
  * Converts a Leaflet layer to a GPX string, supporting markers and paths with Organic Maps colors.
  * @param {L.Layer} layer - The layer to convert
@@ -574,6 +586,9 @@ function convertLayerToGpx(layer) {
   const footer = "\n</gpx>";
   return header + content + footer;
 }
+
+// 3. IMPORT (FILE-BASED)
+// --------------------------------------------------------------------
 
 /**
  * Parses a color name from a KML style property.
@@ -732,6 +747,9 @@ async function importKmzFile(file) {
   }
 }
 
+// 4. SHARING (URL-BASED)
+// --------------------------------------------------------------------
+
 /**
  * Encodes the current map state to a compressed, URL-safe string.
  *
@@ -844,6 +862,30 @@ function encodeMapStateToUrl() {
 }
 
 /**
+ * Builds a shareable URL containing the current map view and all features.
+ * Combines the map position (#map=zoom/lat/lng) with compressed feature data (&data=...).
+ * The data parameter contains all markers, polylines, and polygons compressed using
+ * Polyline encoding and LZ-String compression.
+ *
+ * @returns {string|null} Full shareable URL with hash parameters, or null if no features exist
+ */
+function buildShareableUrl() {
+  const mapState = encodeMapStateToUrl();
+  if (!mapState) {
+    return null;
+  }
+
+  const center = map.getCenter();
+  const zoom = map.getZoom();
+
+  // Build URL with map view and data
+  const baseUrl = window.location.origin + window.location.pathname;
+  const hashParams = `#map=${zoom}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}&data=${mapState}`;
+
+  return baseUrl + hashParams;
+}
+
+/**
  * Imports and decompresses map state from a shareable URL parameter.
  * Decompresses the LZ-String encoded data, decodes Polyline-encoded coordinates,
  * converts to GeoJSON format, and adds all features to the map.
@@ -933,28 +975,4 @@ function importMapStateFromUrl(compressed) {
     console.error("Error importing map state from URL:", error);
     return false;
   }
-}
-
-/**
- * Builds a shareable URL containing the current map view and all features.
- * Combines the map position (#map=zoom/lat/lng) with compressed feature data (&data=...).
- * The data parameter contains all markers, polylines, and polygons compressed using
- * Polyline encoding and LZ-String compression.
- *
- * @returns {string|null} Full shareable URL with hash parameters, or null if no features exist
- */
-function buildShareableUrl() {
-  const mapState = encodeMapStateToUrl();
-  if (!mapState) {
-    return null;
-  }
-
-  const center = map.getCenter();
-  const zoom = map.getZoom();
-
-  // Build URL with map view and data
-  const baseUrl = window.location.origin + window.location.pathname;
-  const hashParams = `#map=${zoom}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}&data=${mapState}`;
-
-  return baseUrl + hashParams;
 }
