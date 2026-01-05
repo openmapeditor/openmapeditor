@@ -923,7 +923,7 @@ function initializeMap() {
         } else {
           if (!globallySelectedItem) return;
           const name = globallySelectedItem.feature?.properties?.name || `Map_Export_${Date.now()}`;
-          const data = toGpx(globallySelectedItem);
+          const data = convertLayerToGpx(globallySelectedItem);
           if (data) {
             downloadFile(`${name}.gpx`, data);
           }
@@ -948,7 +948,7 @@ function initializeMap() {
       });
       L.DomEvent.on(container.querySelector("#share-link"), "click", async (e) => {
         L.DomEvent.stop(e);
-        const shareUrl = generateShareableUrl();
+        const shareUrl = buildShareableUrl();
         if (!shareUrl) {
           Swal.fire({
             toast: true,
@@ -1281,7 +1281,7 @@ function initializeMap() {
         if (!file) return;
         const fileNameLower = file.name.toLowerCase();
         if (fileNameLower.endsWith(".kmz")) {
-          handleKmzFile(file);
+          importKmzFile(file);
         } else if (fileNameLower.endsWith(".geojson") || fileNameLower.endsWith(".json")) {
           const reader = new FileReader();
           reader.onload = (readEvent) => {
@@ -1345,7 +1345,7 @@ function initializeMap() {
                 features: filteredFeatures,
               };
 
-              const newLayer = addGeoJsonToMap(filteredGeoJson, "geojson");
+              const newLayer = importGeoJsonToMap(filteredGeoJson, "geojson");
               if (newLayer && newLayer.getBounds().isValid()) {
                 map.fitBounds(newLayer.getBounds());
               }
@@ -1392,7 +1392,7 @@ function initializeMap() {
                 }
               }
 
-              const newLayer = addGeoJsonToMap(geojsonData, fileType);
+              const newLayer = importGeoJsonToMap(geojsonData, fileType);
               if (newLayer && newLayer.getBounds().isValid()) {
                 map.fitBounds(newLayer.getBounds());
               }

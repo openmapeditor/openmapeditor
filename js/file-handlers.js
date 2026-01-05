@@ -22,13 +22,13 @@ function getAllExportableLayers() {
 }
 
 /**
- * Generates a KML placemark for a given Leaflet layer.
+ * Converts a Leaflet layer to a KML placemark string.
  * @param {L.Layer} layer - The layer to convert
  * @param {string} defaultName - A fallback name
  * @param {string} defaultDescription - A fallback description
  * @returns {string|null} The KML placemark string or null
  */
-function generateKmlForLayer(layer, defaultName, defaultDescription = "") {
+function convertLayerToKmlPlacemark(layer, defaultName, defaultDescription = "") {
   let name = defaultName;
   let description = defaultDescription;
   if (layer.feature && layer.feature.properties) {
@@ -116,12 +116,12 @@ function generateKmlForLayer(layer, defaultName, defaultDescription = "") {
 }
 
 /**
- * Creates a complete, pretty-printed KML document string from a name and an array of placemarks.
+ * Builds a complete, pretty-printed KML document string from a name and an array of placemarks.
  * @param {string} name - The name for the <Document>
  * @param {Array<string>} placemarks - An array of pre-formatted KML <Placemark> strings
  * @returns {string} The full KML document as a string
  */
-function createKmlDocument(name, placemarks) {
+function buildKmlDocument(name, placemarks) {
   const kmlMarkerStyles = ORGANIC_MAPS_COLORS.map(
     (color) =>
       `  <Style id="placemark-${color.name.toLowerCase()}">\n` +
@@ -146,11 +146,11 @@ function createKmlDocument(name, placemarks) {
 }
 
 /**
- * Creates a JSZip instance containing all map data for a KMZ export.
+ * Builds a JSZip archive containing all map data for a KMZ export.
  * @param {string} docName - The name for the main KML document
  * @returns {JSZip} The zip object ready for generation
  */
-function generateFullKmzZip(docName) {
+function buildKmzArchive(docName) {
   const zip = new JSZip();
   const filesFolder = zip.folder("files");
   const networkLinks = [];
@@ -166,7 +166,7 @@ function generateFullKmzZip(docName) {
   allLayers.forEach(function (layer) {
     const defaultName =
       layer instanceof L.Marker ? `Marker_${++featureCounter}` : `Path_${++featureCounter}`;
-    const kmlSnippet = generateKmlForLayer(layer, defaultName);
+    const kmlSnippet = convertLayerToKmlPlacemark(layer, defaultName);
     if (!kmlSnippet) return;
 
     switch (layer.pathType) {
@@ -200,20 +200,20 @@ function generateFullKmzZip(docName) {
     if (kmlGroups[path].length > 0) {
       const fileName = path.substring(path.lastIndexOf("/") + 1);
       const docName = fileName.replace(/\.kml$/i, "");
-      filesFolder.file(fileName, createKmlDocument(docName, kmlGroups[path]));
+      filesFolder.file(fileName, buildKmlDocument(docName, kmlGroups[path]));
       networkLinks.push({ name: docName, href: `files/${fileName}` });
     }
   });
 
   if (drawnPlacemarks.length > 0) {
-    filesFolder.file("Drawn_Features.kml", createKmlDocument("Drawn Features", drawnPlacemarks));
+    filesFolder.file("Drawn_Features.kml", buildKmlDocument("Drawn Features", drawnPlacemarks));
     networkLinks.push({ name: "Drawn Features", href: "files/Drawn_Features.kml" });
   }
 
   if (importedPlacemarks.length > 0) {
     filesFolder.file(
       "Imported_Features.kml",
-      createKmlDocument("Imported Features", importedPlacemarks),
+      buildKmlDocument("Imported Features", importedPlacemarks),
     );
     networkLinks.push({ name: "Imported Features", href: "files/Imported_Features.kml" });
   }
@@ -221,7 +221,7 @@ function generateFullKmzZip(docName) {
   if (stravaPlacemarks.length > 0) {
     filesFolder.file(
       "Strava_Activities.kml",
-      createKmlDocument("Strava Activities", stravaPlacemarks),
+      buildKmlDocument("Strava Activities", stravaPlacemarks),
     );
     networkLinks.push({ name: "Strava Activities", href: "files/Strava_Activities.kml" });
   }
@@ -258,7 +258,7 @@ function exportKmz() {
   const fileName = `Map_Export_${timestamp}.kmz`;
   const docName = `Map Export ${timestamp}`;
 
-  const zip = generateFullKmzZip(docName);
+  const zip = buildKmzArchive(docName);
 
   if (!zip.files["doc.kml"]) {
     return Swal.fire({
@@ -489,7 +489,7 @@ function exportGeoJson(options = {}) {
  * @param {L.Layer} layer - The layer to convert
  * @returns {string} The GPX file content as a string
  */
-function toGpx(layer) {
+function convertLayerToGpx(layer) {
   const name = layer.feature?.properties?.name || "Exported Feature";
   const description = layer.feature?.properties?.description || "";
   const colorName = layer.feature?.properties?.omColorName || "Red";
@@ -576,11 +576,11 @@ function toGpx(layer) {
 }
 
 /**
- * Finds a color name from a KML style property.
+ * Parses a color name from a KML style property.
  * @param {object} properties - The feature properties
  * @returns {string} The color name or "Red" as default
  */
-function getColorNameFromKmlStyle(properties) {
+function parseColorFromKmlStyle(properties) {
   // Case 1: styleUrl (e.g., #placemark-red) for markers
   if (properties.styleUrl) {
     const styleId = properties.styleUrl.substring(1).toLowerCase(); // -> "placemark-red"
@@ -600,13 +600,13 @@ function getColorNameFromKmlStyle(properties) {
 }
 
 /**
- * Adds GeoJSON data to the map, applying appropriate styles.
+ * Imports GeoJSON data to the map, applying appropriate styles.
  * @param {object} geoJsonData - The GeoJSON data to add
  * @param {string} fileType - The file type ('gpx', 'kml', 'kmz', 'geojson')
  * @param {string|null} originalPath - The original path for KMZ files
  * @returns {L.GeoJSON} The created layer group
  */
-function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
+function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
   const targetGroup = importedItems; // All imported files go to the same group
 
   const layerGroup = L.geoJSON(geoJsonData, {
@@ -615,7 +615,7 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
       // For GPX, color is pre-enriched. For KML/KMZ, it's parsed here.
       const colorName =
         feature.properties.omColorName ||
-        (isKmlBased ? getColorNameFromKmlStyle(feature.properties) : "Red");
+        (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
 
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
       const color = colorData ? colorData.css : colorScheme.imported.primary;
@@ -625,7 +625,7 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
       const isKmlBased = fileType === "kml" || fileType === "kmz";
       layer.feature.properties.omColorName =
         feature.properties.omColorName ||
-        (isKmlBased ? getColorNameFromKmlStyle(feature.properties) : "Red");
+        (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
 
       // All imported items use fileType as pathType
       layer.pathType = fileType;
@@ -642,7 +642,7 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
       const isKmlBased = fileType === "kml" || fileType === "kmz";
       const colorName =
         feature.properties.omColorName ||
-        (isKmlBased ? getColorNameFromKmlStyle(feature.properties) : "Red");
+        (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
 
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
       const color = colorData ? colorData.css : colorScheme.imported.primary;
@@ -665,10 +665,10 @@ function addGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
 }
 
 /**
- * Handles the loading and processing of a KMZ file.
+ * Imports and processes a KMZ file.
  * @param {File} file - The KMZ file to process
  */
-async function handleKmzFile(file) {
+async function importKmzFile(file) {
   if (!file) return;
 
   const zip = new JSZip();
@@ -695,7 +695,7 @@ async function handleKmzFile(file) {
         const geojsonData = toGeoJSON.kml(kmlDom, { styles: true });
 
         if (geojsonData?.features?.length > 0) {
-          const newLayer = addGeoJsonToMap(geojsonData, "kmz", kmlFile.name);
+          const newLayer = importGeoJsonToMap(geojsonData, "kmz", kmlFile.name);
           if (newLayer) {
             justImportedLayers.addLayer(newLayer);
           }
@@ -733,7 +733,7 @@ async function handleKmzFile(file) {
 }
 
 /**
- * Exports the current map state to a compressed, URL-safe string.
+ * Encodes the current map state to a compressed, URL-safe string.
  *
  * Uncompressed structure: { v: 1, f: [...features] }
  * Each feature: { t, c, n?, s?, e?, sid? }
@@ -762,7 +762,7 @@ async function handleKmzFile(file) {
  *
  * @returns {string|null} Compressed map state, or null if no data to share
  */
-function exportMapStateToUrl() {
+function encodeMapStateToUrl() {
   const allLayers = getAllExportableLayers();
 
   if (allLayers.length === 0) {
@@ -927,7 +927,7 @@ function importMapStateFromUrl(compressed) {
 
     if (features.length === 0) throw new Error("No valid features");
 
-    addGeoJsonToMap({ type: "FeatureCollection", features }, "geojson");
+    importGeoJsonToMap({ type: "FeatureCollection", features }, "geojson");
     return true;
   } catch (error) {
     console.error("Error importing map state from URL:", error);
@@ -936,15 +936,15 @@ function importMapStateFromUrl(compressed) {
 }
 
 /**
- * Generates a shareable URL containing the current map view and all features.
+ * Builds a shareable URL containing the current map view and all features.
  * Combines the map position (#map=zoom/lat/lng) with compressed feature data (&data=...).
  * The data parameter contains all markers, polylines, and polygons compressed using
  * Polyline encoding and LZ-String compression.
  *
  * @returns {string|null} Full shareable URL with hash parameters, or null if no features exist
  */
-function generateShareableUrl() {
-  const mapState = exportMapStateToUrl();
+function buildShareableUrl() {
+  const mapState = encodeMapStateToUrl();
   if (!mapState) {
     return null;
   }
