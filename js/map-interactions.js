@@ -136,16 +136,10 @@ function deselectCurrentItem() {
 
   const downloadContainer = downloadControl.getContainer();
   const gpxButton = downloadContainer.querySelector("#download-gpx");
-  const kmlButton = downloadContainer.querySelector("#download-kml");
 
   gpxButton.disabled = true;
-  kmlButton.disabled = true;
-
   gpxButton.textContent = "GPX (Selected Item)";
-  kmlButton.textContent = "KML (Selected Item)";
-
   gpxButton.title = "Select an item to download as GPX";
-  kmlButton.title = "Select an item to download as KML";
 
   resetInfoPanel();
 }
@@ -185,10 +179,7 @@ function selectItem(layer) {
 
   if (downloadControl) {
     const gpxButton = downloadControl.getContainer().querySelector("#download-gpx");
-    const kmlButton = downloadControl.getContainer().querySelector("#download-kml");
-
     gpxButton.disabled = false;
-    kmlButton.disabled = false;
 
     const itemType =
       layer instanceof L.Marker ? "Marker" : layer instanceof L.Polygon ? "Area" : "Path";
@@ -201,9 +192,6 @@ function selectItem(layer) {
       gpxButton.textContent = `GPX (Selected ${itemType})`;
       gpxButton.title = `Download selected ${itemType.toLowerCase()} as GPX`;
     }
-
-    kmlButton.textContent = `KML (Selected ${itemType})`;
-    kmlButton.title = `Download selected ${itemType.toLowerCase()} as KML`;
   }
 
   if (layer instanceof L.Polyline || layer instanceof L.Polygon) {

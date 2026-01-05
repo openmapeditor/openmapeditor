@@ -896,7 +896,6 @@ function initializeMap() {
         '<a href="#" role="button"></a>' +
         '<div class="download-submenu">' +
         '<button id="download-gpx" disabled title="Download selected item as GPX">GPX (Selected Item)</button>' +
-        '<button id="download-kml" disabled title="Download selected item as KML">KML (Selected Item)</button>' +
         '<button id="download-kmz" title="Download everything as KMZ">KMZ (Everything)</button>' +
         '<button id="download-geojson" title="Download everything as GeoJSON">GeoJSON (Everything)</button>' +
         '<button id="share-link" title="Copy share link for everything">Copy Share Link (Everything)</button>' +
@@ -913,24 +912,6 @@ function initializeMap() {
         subMenu.style.display = isVisible ? "none" : "block";
       });
 
-      const downloadAction = (format) => {
-        if (!globallySelectedItem) return;
-
-        const name = globallySelectedItem.feature?.properties?.name || `Map_Export_${Date.now()}`;
-        let data;
-        if (format === "gpx") {
-          data = toGpx(globallySelectedItem);
-        } else if (format === "kml") {
-          const kmlPlacemark = generateKmlForLayer(globallySelectedItem, name);
-          data = createKmlDocument(name, [kmlPlacemark]);
-        }
-
-        if (data) {
-          downloadFile(`${name}.${format}`, data);
-        }
-        subMenu.style.display = "none";
-      };
-
       L.DomEvent.on(container.querySelector("#download-gpx"), "click", (e) => {
         L.DomEvent.stop(e);
         // Only download from Strava for live Strava activities; imported items with 'stravaId' use internal GPX export.
@@ -939,12 +920,14 @@ function initializeMap() {
           downloadOriginalStravaGpx(stravaId, name);
           subMenu.style.display = "none";
         } else {
-          downloadAction("gpx");
+          if (!globallySelectedItem) return;
+          const name = globallySelectedItem.feature?.properties?.name || `Map_Export_${Date.now()}`;
+          const data = toGpx(globallySelectedItem);
+          if (data) {
+            downloadFile(`${name}.gpx`, data);
+          }
+          subMenu.style.display = "none";
         }
-      });
-      L.DomEvent.on(container.querySelector("#download-kml"), "click", (e) => {
-        L.DomEvent.stop(e);
-        downloadAction("kml");
       });
       L.DomEvent.on(container.querySelector("#download-kmz"), "click", (e) => {
         L.DomEvent.stop(e);
