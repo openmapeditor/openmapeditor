@@ -194,9 +194,9 @@ function buildKmzArchive(docName) {
   const networkLinks = [];
   let featureCounter = 0;
 
-  const drawnPlacemarks = [];
-  const importedPlacemarks = [];
-  const stravaPlacemarks = [];
+  const drawnFeatures = [];
+  const importedFeatures = [];
+  const stravaActivities = [];
 
   const allLayers = getAllExportableLayers();
 
@@ -209,18 +209,18 @@ function buildKmzArchive(docName) {
     switch (layer.pathType) {
       case "drawn":
       case "route":
-        drawnPlacemarks.push(kmlSnippet);
+        drawnFeatures.push(kmlSnippet);
         break;
       case "gpx":
       case "kml":
       case "geojson":
-        importedPlacemarks.push(kmlSnippet);
+        importedFeatures.push(kmlSnippet);
         break;
       case "kmz":
         // KMZ features are preserved in their original files, no need to rebuild them
         break;
       case "strava":
-        stravaPlacemarks.push(kmlSnippet);
+        stravaActivities.push(kmlSnippet);
         break;
     }
   });
@@ -235,24 +235,24 @@ function buildKmzArchive(docName) {
     }
   });
 
-  if (drawnPlacemarks.length > 0) {
+  if (drawnFeatures.length > 0) {
     const fileName = getUniqueFileName("Drawn_Features.kml", filesFolder);
     const docName = fileName.replace(/\.kml$/i, "");
-    filesFolder.file(fileName, buildKmlDocument("Drawn Features", drawnPlacemarks));
+    filesFolder.file(fileName, buildKmlDocument("Drawn Features", drawnFeatures));
     networkLinks.push({ name: docName, href: `files/${fileName}` });
   }
 
-  if (importedPlacemarks.length > 0) {
+  if (importedFeatures.length > 0) {
     const fileName = getUniqueFileName("Imported_Features.kml", filesFolder);
     const docName = fileName.replace(/\.kml$/i, "");
-    filesFolder.file(fileName, buildKmlDocument("Imported Features", importedPlacemarks));
+    filesFolder.file(fileName, buildKmlDocument("Imported Features", importedFeatures));
     networkLinks.push({ name: docName, href: `files/${fileName}` });
   }
 
-  if (stravaPlacemarks.length > 0) {
+  if (stravaActivities.length > 0) {
     const fileName = getUniqueFileName("Strava_Activities.kml", filesFolder);
     const docName = fileName.replace(/\.kml$/i, "");
-    filesFolder.file(fileName, buildKmlDocument("Strava Activities", stravaPlacemarks));
+    filesFolder.file(fileName, buildKmlDocument("Strava Activities", stravaActivities));
     networkLinks.push({ name: docName, href: `files/${fileName}` });
   }
 
