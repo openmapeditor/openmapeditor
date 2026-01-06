@@ -162,6 +162,28 @@ function buildKmlDocument(name, placemarks) {
 }
 
 /**
+ * Finds a unique filename by appending a number if the filename already exists.
+ * @param {string} baseFileName - The desired filename (e.g., "Drawn_Features.kml")
+ * @param {JSZip} filesFolder - The JSZip folder to check for existing files
+ * @returns {string} A unique filename (e.g., "Drawn_Features.kml" or "Drawn_Features1.kml")
+ */
+function getUniqueFileName(baseFileName, filesFolder) {
+  const match = baseFileName.match(/^(.+?)(\.[^.]+)$/);
+  const baseName = match ? match[1] : baseFileName;
+  const extension = match ? match[2] : "";
+
+  let fileName = baseFileName;
+  let counter = 1;
+
+  while (filesFolder.file(fileName)) {
+    fileName = `${baseName}${counter}${extension}`;
+    counter++;
+  }
+
+  return fileName;
+}
+
+/**
  * Builds a JSZip archive containing all map data for a KMZ export.
  * @param {string} docName - The name for the main KML document
  * @returns {JSZip} The zip object ready for generation
@@ -221,27 +243,6 @@ function buildKmzArchive(docName) {
     }
   });
 
-  if (drawnPlacemarks.length > 0) {
-    filesFolder.file("Drawn_Features.kml", buildKmlDocument("Drawn Features", drawnPlacemarks));
-    networkLinks.push({ name: "Drawn Features", href: "files/Drawn_Features.kml" });
-  }
-
-  if (importedPlacemarks.length > 0) {
-    filesFolder.file(
-      "Imported_Features.kml",
-      buildKmlDocument("Imported Features", importedPlacemarks),
-    );
-    networkLinks.push({ name: "Imported Features", href: "files/Imported_Features.kml" });
-  }
-
-  if (stravaPlacemarks.length > 0) {
-    filesFolder.file(
-      "Strava_Activities.kml",
-      buildKmlDocument("Strava Activities", stravaPlacemarks),
-    );
-    networkLinks.push({ name: "Strava Activities", href: "files/Strava_Activities.kml" });
-  }
-
   preservedKmzFiles.forEach((file) => {
     const fileName = file.path.substring(file.path.lastIndexOf("/") + 1);
     if (!filesFolder.file(fileName)) {
@@ -250,6 +251,27 @@ function buildKmzArchive(docName) {
       networkLinks.push({ name: docName, href: `files/${fileName}` });
     }
   });
+
+  if (drawnPlacemarks.length > 0) {
+    const fileName = getUniqueFileName("Drawn_Features.kml", filesFolder);
+    const docName = fileName.replace(/\.kml$/i, "");
+    filesFolder.file(fileName, buildKmlDocument("Drawn Features", drawnPlacemarks));
+    networkLinks.push({ name: docName, href: `files/${fileName}` });
+  }
+
+  if (importedPlacemarks.length > 0) {
+    const fileName = getUniqueFileName("Imported_Features.kml", filesFolder);
+    const docName = fileName.replace(/\.kml$/i, "");
+    filesFolder.file(fileName, buildKmlDocument("Imported Features", importedPlacemarks));
+    networkLinks.push({ name: docName, href: `files/${fileName}` });
+  }
+
+  if (stravaPlacemarks.length > 0) {
+    const fileName = getUniqueFileName("Strava_Activities.kml", filesFolder);
+    const docName = fileName.replace(/\.kml$/i, "");
+    filesFolder.file(fileName, buildKmlDocument("Strava Activities", stravaPlacemarks));
+    networkLinks.push({ name: docName, href: `files/${fileName}` });
+  }
 
   if (networkLinks.length > 0) {
     networkLinks.sort((a, b) => a.name.localeCompare(b.name));
