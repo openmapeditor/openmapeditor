@@ -194,7 +194,6 @@ function buildKmzArchive(docName) {
   const networkLinks = [];
   let featureCounter = 0;
 
-  const kmlGroups = {};
   const drawnPlacemarks = [];
   const importedPlacemarks = [];
   const stravaPlacemarks = [];
@@ -218,15 +217,7 @@ function buildKmzArchive(docName) {
         importedPlacemarks.push(kmlSnippet);
         break;
       case "kmz":
-        const originalPath = layer.originalKmzPath;
-        if (originalPath && originalPath.toLowerCase() !== "doc.kml") {
-          if (!kmlGroups[originalPath]) {
-            kmlGroups[originalPath] = [];
-          }
-          kmlGroups[originalPath].push(kmlSnippet);
-        } else {
-          importedPlacemarks.push(kmlSnippet);
-        }
+        // KMZ features are preserved in their original files, no need to rebuild them
         break;
       case "strava":
         stravaPlacemarks.push(kmlSnippet);
@@ -234,15 +225,7 @@ function buildKmzArchive(docName) {
     }
   });
 
-  Object.keys(kmlGroups).forEach((path) => {
-    if (kmlGroups[path].length > 0) {
-      const fileName = path.substring(path.lastIndexOf("/") + 1);
-      const docName = fileName.replace(/\.kml$/i, "");
-      filesFolder.file(fileName, buildKmlDocument(docName, kmlGroups[path]));
-      networkLinks.push({ name: docName, href: `files/${fileName}` });
-    }
-  });
-
+  // Add all preserved KML files from imported KMZ archives to maintain original structure
   preservedKmzFiles.forEach((file) => {
     const fileName = file.path.substring(file.path.lastIndexOf("/") + 1);
     if (!filesFolder.file(fileName)) {
@@ -731,13 +714,17 @@ async function importKmzFile(file) {
         const kmlDom = new DOMParser().parseFromString(content, "text/xml");
         const geojsonData = toGeoJSON.kml(kmlDom, { styles: true });
 
+        // Preserve ALL KML files except doc.kml (which is the index file)
+        if (kmlFile.name.toLowerCase() !== "doc.kml") {
+          preservedKmzFiles.push({ path: kmlFile.name, content: content });
+        }
+
+        // Import features if present
         if (geojsonData?.features?.length > 0) {
           const newLayer = importGeoJsonToMap(geojsonData, "kmz", kmlFile.name);
           if (newLayer) {
             justImportedLayers.addLayer(newLayer);
           }
-        } else if (kmlFile.name.toLowerCase() !== "doc.kml") {
-          preservedKmzFiles.push({ path: kmlFile.name, content: content });
         }
       }),
     );
