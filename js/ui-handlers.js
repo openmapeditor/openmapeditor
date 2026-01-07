@@ -490,12 +490,12 @@ function showInfoPanel(layer) {
       } else {
         layerTypeName = "Imported Item";
       }
-      editHint.innerHTML = "To edit, duplicate item in <b>Contents</b> tab.";
+      editHint.innerHTML = "To edit geometry, duplicate item in <b>Contents</b> tab.";
       editHint.style.display = "block";
       break;
     case "route":
       layerTypeName = "Route";
-      editHint.innerHTML = "To edit, save route in <b>Routing</b> tab.";
+      editHint.innerHTML = "To edit geometry, save route in <b>Routing</b> tab.";
       editHint.style.display = "block";
       break;
     case "strava":
@@ -503,7 +503,7 @@ function showInfoPanel(layer) {
       layerTypeName = `Strava Activity ${activityType ? `(${activityType})` : ""}`.trim();
 
       // Show the editing hint
-      editHint.innerHTML = "To edit, duplicate activity in <b>Contents</b> tab.";
+      editHint.innerHTML = "To edit geometry, duplicate activity in <b>Contents</b> tab.";
       editHint.style.display = "block";
       break;
   }
