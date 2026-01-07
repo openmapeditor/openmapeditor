@@ -178,7 +178,7 @@ function selectItem(layer) {
 
   const colorName = layer.feature?.properties?.colorName || "Red";
   const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-  const highlightColor = colorData ? colorData.css : colorScheme.drawn.highlight;
+  const highlightColor = colorData ? colorData.css : ORGANIC_MAPS_COLORS[0].css; // Fallback to Red
 
   showInfoPanel(layer);
 

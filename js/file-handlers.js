@@ -649,14 +649,18 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
         (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
 
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-      const color = colorData ? colorData.css : colorScheme.imported.primary;
+      const color = colorData ? colorData.css : ORGANIC_MAPS_COLORS[0].css; // Fallback to Red
       return { ...STYLE_CONFIG.path.default, color: color };
     },
     onEachFeature: (feature, layer) => {
       const isKmlBased = fileType === "kml" || fileType === "kmz";
-      layer.feature.properties.colorName =
+      const colorName =
         feature.properties.colorName ||
         (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
+
+      // Validate colorName - if not in palette, use Red
+      const isValidColor = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
+      layer.feature.properties.colorName = isValidColor ? colorName : "Red";
 
       // All imported items use fileType as pathType
       layer.pathType = fileType;
@@ -676,7 +680,7 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
         (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
 
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-      const color = colorData ? colorData.css : colorScheme.imported.primary;
+      const color = colorData ? colorData.css : ORGANIC_MAPS_COLORS[0].css; // Fallback to Red
       const marker = L.marker(latlng, {
         icon: createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity),
       });
