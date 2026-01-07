@@ -293,7 +293,7 @@ function initializeRouting() {
             newRoutePath.feature = {
               properties: {
                 name: newRouteName,
-                omColorName: routeColorName,
+                colorName: routeColorName,
                 totalDistance: route.summary.totalDistance,
               },
             };

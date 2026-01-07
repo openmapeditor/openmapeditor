@@ -1310,8 +1310,8 @@ function initializeMap() {
                   return false;
                 }
 
-                // Preserve omColorName if present (for round-trip)
-                if (feature.properties?.omColorName) {
+                // Preserve colorName if present (for round-trip)
+                if (feature.properties?.colorName) {
                   // Already has our color format - keep it
                   return true;
                 }
@@ -1325,7 +1325,7 @@ function initializeMap() {
                     (c) => c.css.toLowerCase() === colorHex,
                   );
                   if (colorMatch) {
-                    feature.properties.omColorName = colorMatch.name;
+                    feature.properties.colorName = colorMatch.name;
                   }
                 }
 
@@ -1385,7 +1385,7 @@ function initializeMap() {
                       );
                       if (colorMatch) {
                         feature.properties = feature.properties || {};
-                        feature.properties.omColorName = colorMatch.name;
+                        feature.properties.colorName = colorMatch.name;
                       }
                     }
                   });
@@ -1423,7 +1423,7 @@ function initializeMap() {
     const layer = e.layer;
     layer.pathType = "drawn";
     layer.feature = layer.feature || { properties: {} };
-    layer.feature.properties.omColorName = defaultDrawColorName;
+    layer.feature.properties.colorName = defaultDrawColorName;
     drawnItems.addLayer(layer);
     editableLayers.addLayer(layer);
     layer.on("click", (ev) => {

@@ -80,7 +80,7 @@ function createOverviewListItem(layer) {
       newFeature.properties.name =
         (newFeature.properties.name || (layerToDuplicate instanceof L.Marker ? "Marker" : "Path")) +
         " (Copy)";
-      const colorName = newFeature.properties.omColorName || "Red";
+      const colorName = newFeature.properties.colorName || "Red";
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
       const color = colorData ? colorData.css : "#e51b23";
 
@@ -185,7 +185,7 @@ function createOverviewListItem(layer) {
         // This removes stravaId, imported file metadata, etc., making duplicates independent drawn paths
         const cleanProperties = {
           name: newFeature.properties.name,
-          omColorName: newFeature.properties.omColorName,
+          colorName: newFeature.properties.colorName,
         };
         newLayer.feature = { properties: cleanProperties };
         newLayer.pathType = "drawn";
@@ -518,7 +518,7 @@ function showInfoPanel(layer) {
   }
 
   // Set the color swatch and update picker state
-  const colorName = layer.feature?.properties?.omColorName || "Red";
+  const colorName = layer.feature?.properties?.colorName || "Red";
   const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
   if (colorData) {
     infoPanelColorSwatch.style.backgroundColor = colorData.css;
@@ -597,7 +597,7 @@ function populateColorPicker() {
 
       if (newColorData) {
         // Store the color name on the feature
-        globallySelectedItem.feature.properties.omColorName = newColorName;
+        globallySelectedItem.feature.properties.colorName = newColorName;
 
         // Update the layer's visual style immediately
         if (

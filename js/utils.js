@@ -587,7 +587,7 @@ function createAndSaveMarker(lat, lon, name) {
   newMarker.pathType = "drawn";
   newMarker.feature = {
     properties: {
-      omColorName: defaultDrawColorName,
+      colorName: defaultDrawColorName,
     },
   };
 

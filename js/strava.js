@@ -397,7 +397,7 @@ function displayActivitiesOnMap(activities) {
           properties: {
             ...activity,
             totalDistance: activity.distance,
-            omColorName: "DeepOrange",
+            colorName: "DeepOrange",
             pathType: "strava",
             stravaId: activity.id,
           },

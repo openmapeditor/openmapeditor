@@ -112,8 +112,8 @@ function deselectCurrentItem() {
   }
 
   const item = globallySelectedItem;
-  if (item.feature?.properties?.omColorName) {
-    const colorName = item.feature.properties.omColorName;
+  if (item.feature?.properties?.colorName) {
+    const colorName = item.feature.properties.colorName;
     const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
     if (colorData) {
       if (item instanceof L.Polyline || item instanceof L.Polygon) {
@@ -176,7 +176,7 @@ function selectItem(layer) {
     }
   }
 
-  const colorName = layer.feature?.properties?.omColorName || "Red";
+  const colorName = layer.feature?.properties?.colorName || "Red";
   const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
   const highlightColor = colorData ? colorData.css : colorScheme.drawn.highlight;
 

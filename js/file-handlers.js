@@ -52,7 +52,7 @@ function convertLayerToKmlPlacemark(layer, defaultName, defaultDescription = "")
     description = layer.feature.properties.description || description;
   }
 
-  const colorName = layer.feature?.properties?.omColorName || "Red";
+  const colorName = layer.feature?.properties?.colorName || "Red";
   const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName) || ORGANIC_MAPS_COLORS[0];
 
   const escapeXml = (unsafe) => {
@@ -197,6 +197,7 @@ function buildKmzArchive(docName) {
   const drawnFeatures = [];
   const importedFeatures = [];
   const stravaActivities = [];
+  const kmzGroups = {}; // Group KMZ features by their original file path
 
   const allLayers = getAllExportableLayers();
 
@@ -217,7 +218,17 @@ function buildKmzArchive(docName) {
         importedFeatures.push(kmlSnippet);
         break;
       case "kmz":
-        // KMZ features are preserved in their original files, no need to rebuild them
+        // Group KMZ features by their original file path to preserve structure
+        const originalPath = layer.originalKmzPath;
+        if (originalPath && originalPath.toLowerCase() !== "doc.kml") {
+          if (!kmzGroups[originalPath]) {
+            kmzGroups[originalPath] = [];
+          }
+          kmzGroups[originalPath].push(kmlSnippet);
+        } else {
+          // If no originalKmzPath or it's doc.kml, treat as imported feature
+          importedFeatures.push(kmlSnippet);
+        }
         break;
       case "strava":
         stravaActivities.push(kmlSnippet);
@@ -225,12 +236,12 @@ function buildKmzArchive(docName) {
     }
   });
 
-  // Add all preserved KML files from imported KMZ archives to maintain original structure
-  preservedKmzFiles.forEach((file) => {
-    const fileName = file.path.substring(file.path.lastIndexOf("/") + 1);
-    if (!filesFolder.file(fileName)) {
-      filesFolder.file(fileName, file.content);
+  // Rebuild KML files for KMZ groups (respects edits, deletions)
+  Object.keys(kmzGroups).forEach((path) => {
+    if (kmzGroups[path].length > 0) {
+      const fileName = path.substring(path.lastIndexOf("/") + 1);
       const docName = fileName.replace(/\.kml$/i, "");
+      filesFolder.file(fileName, buildKmlDocument(docName, kmzGroups[path]));
       networkLinks.push({ name: docName, href: `files/${fileName}` });
     }
   });
@@ -407,7 +418,7 @@ function exportGeoJson(options = {}) {
       }
 
       // Get color information
-      const colorName = layer.feature?.properties?.omColorName || "Red";
+      const colorName = layer.feature?.properties?.colorName || "Red";
       const colorData =
         ORGANIC_MAPS_COLORS.find((c) => c.name === colorName) || ORGANIC_MAPS_COLORS[0];
 
@@ -422,7 +433,7 @@ function exportGeoJson(options = {}) {
       // Enhance properties with color data
       geojson.properties = {
         ...filteredProperties,
-        omColorName: colorName, // For round-trip with our app
+        colorName: colorName, // For round-trip with our app
       };
 
       // Add standard GeoJSON styling for other tools
@@ -509,7 +520,7 @@ function exportGeoJson(options = {}) {
 function convertLayerToGpx(layer) {
   const name = layer.feature?.properties?.name || "Exported Feature";
   const description = layer.feature?.properties?.description || "";
-  const colorName = layer.feature?.properties?.omColorName || "Red";
+  const colorName = layer.feature?.properties?.colorName || "Red";
   const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
   const gpxColorHex = colorData ? colorData.css.substring(1).toUpperCase() : "E51B23";
 
@@ -634,7 +645,7 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
       const isKmlBased = fileType === "kml" || fileType === "kmz";
       // For GPX, color is pre-enriched. For KML/KMZ, it's parsed here.
       const colorName =
-        feature.properties.omColorName ||
+        feature.properties.colorName ||
         (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
 
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
@@ -643,8 +654,8 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
     },
     onEachFeature: (feature, layer) => {
       const isKmlBased = fileType === "kml" || fileType === "kmz";
-      layer.feature.properties.omColorName =
-        feature.properties.omColorName ||
+      layer.feature.properties.colorName =
+        feature.properties.colorName ||
         (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
 
       // All imported items use fileType as pathType
@@ -661,7 +672,7 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
     pointToLayer: (feature, latlng) => {
       const isKmlBased = fileType === "kml" || fileType === "kmz";
       const colorName =
-        feature.properties.omColorName ||
+        feature.properties.colorName ||
         (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
 
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
@@ -807,7 +818,7 @@ function encodeMapStateToUrl() {
 
       // Add name, color, and stravaId only if present
       const name = layer.feature?.properties?.name;
-      const color = layer.feature?.properties?.omColorName;
+      const color = layer.feature?.properties?.colorName;
       const stravaId = layer.feature?.properties?.stravaId;
       if (name) feature.n = name;
       if (color && color !== "Red") feature.s = color;
@@ -932,7 +943,7 @@ function importMapStateFromUrl(compressed) {
           type: "Feature",
           properties: {
             name: item.n || "",
-            omColorName: item.s || "Red",
+            colorName: item.s || "Red",
           },
           geometry: null,
         };
