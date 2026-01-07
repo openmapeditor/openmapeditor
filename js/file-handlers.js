@@ -695,6 +695,9 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
 
   updateElevationToggleIconColor();
   updateDrawControlStates();
+  if (!map.hasLayer(targetGroup)) {
+    map.addLayer(targetGroup);
+  }
   updateOverviewList();
   return layerGroup;
 }

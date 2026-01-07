@@ -740,7 +740,7 @@ function initializeMap() {
   // Apply z-index on initial load to ensure layers from localStorage respect list order
   reapplyOverlayZIndex();
 
-  const onOverlayToggle = (e) => {
+  window.onOverlayToggle = (e) => {
     const isAdding = e.type === "overlayadd";
 
     let itemIsInGroup = false;
@@ -780,6 +780,8 @@ function initializeMap() {
     }
   };
 
+  const onOverlayToggle = window.onOverlayToggle;
+
   customPanel.addEventListener("click", function (e) {
     if (e.target && e.target.classList.contains("leaflet-control-layers-selector")) {
       if (L.DomUtil.hasClass(e.target, "leaflet-disabled-interaction")) {
@@ -817,6 +819,11 @@ function initializeMap() {
             break;
           }
         }
+      }
+
+      // Sync overview list eye icons when layers are toggled from Layer Control
+      if (typeof updateOverviewList === "function") {
+        updateOverviewList();
       }
     }
   });
@@ -1433,6 +1440,9 @@ function initializeMap() {
     if (e.layerType === "polyline" || e.layerType === "polygon") {
     }
     selectItem(layer);
+    if (!map.hasLayer(drawnItems)) {
+      map.addLayer(drawnItems);
+    }
     updateDrawControlStates();
     updateOverviewList();
   });

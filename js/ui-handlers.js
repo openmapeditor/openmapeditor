@@ -32,7 +32,7 @@ function createOverviewListItem(layer) {
       ? '<span class="material-symbols">visibility</span>'
       : '<span class="material-symbols">visibility_off</span>';
   };
-  const isInitiallyVisible = map.hasLayer(layer) && !layer.isManuallyHidden;
+  const isInitiallyVisible = !layer.isManuallyHidden;
   setIcon(isInitiallyVisible);
   visibilityBtn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -42,24 +42,54 @@ function createOverviewListItem(layer) {
       importedItems.getLayer(layerId) ||
       (currentRoutePath && L.Util.stamp(currentRoutePath) === layerId ? currentRoutePath : null);
     if (!layerToToggle) return;
-    const isCurrentlyVisible = map.hasLayer(layerToToggle);
-    if (isCurrentlyVisible) {
-      layerToToggle.isManuallyHidden = true;
+
+    // Toggle the manual hidden state
+    layerToToggle.isManuallyHidden = !layerToToggle.isManuallyHidden;
+
+    if (layerToToggle.isManuallyHidden) {
+      // Hide the layer and its potential outline
       map.removeLayer(layerToToggle);
       if (layerToToggle === globallySelectedItem) {
         if (selectedPathOutline) map.removeLayer(selectedPathOutline);
         if (selectedMarkerOutline) map.removeLayer(selectedMarkerOutline);
       }
-      setIcon(false);
     } else {
-      layerToToggle.isManuallyHidden = false;
-      map.addLayer(layerToToggle);
-      if (layerToToggle === globallySelectedItem) {
-        if (selectedPathOutline) selectedPathOutline.addTo(map).bringToBack();
-        if (selectedMarkerOutline) selectedMarkerOutline.addTo(map);
+      // Show the layer (if its parent group is on the map)
+      // Check if any of its parent groups are on the map
+      let isParentVisible = false;
+      [drawnItems, stravaActivitiesLayer, importedItems].forEach((group) => {
+        if (group.hasLayer(layerToToggle) && map.hasLayer(group)) {
+          isParentVisible = true;
+        } else {
+          // Also check inside GeoJSON groups for imported items
+          group.eachLayer((child) => {
+            if (
+              child instanceof L.GeoJSON &&
+              child.hasLayer(layerToToggle) &&
+              map.hasLayer(group)
+            ) {
+              isParentVisible = true;
+            }
+          });
+        }
+      });
+
+      // Special case for route (it's not in a group)
+      // But it's now visually part of "Drawn Items" (layerGroup DrawnItems)
+      if (layerToToggle === currentRoutePath) {
+        isParentVisible = map.hasLayer(drawnItems);
       }
-      setIcon(true);
+
+      if (isParentVisible) {
+        map.addLayer(layerToToggle);
+        if (layerToToggle === globallySelectedItem) {
+          if (selectedPathOutline) selectedPathOutline.addTo(map).bringToBack();
+          if (selectedMarkerOutline) selectedMarkerOutline.addTo(map);
+        }
+      }
     }
+    // Icon state reflects ONLY the manual override, not effective visibility
+    setIcon(!layerToToggle.isManuallyHidden);
   });
 
   // Duplicate button
@@ -206,7 +236,7 @@ function createOverviewListItem(layer) {
   const deleteBtn = document.createElement("span");
   deleteBtn.className = "overview-delete-btn";
   deleteBtn.innerHTML = '<span class="material-symbols material-symbols-fill">cancel</span>';
-  deleteBtn.title = "Delete";
+  deleteBtn.title = layer === currentRoutePath ? "Clear the current route" : "Delete";
   deleteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const layerToDelete =
@@ -225,9 +255,30 @@ function createOverviewListItem(layer) {
   textSpan.textContent = layerName;
   textSpan.title = layerName;
 
+  // Slot 1: Visibility
   listItem.appendChild(visibilityBtn);
-  listItem.appendChild(duplicateBtn);
+
+  // Slot 2: Delete
   listItem.appendChild(deleteBtn);
+
+  // Slot 3: Duplicate (Secondary Action) or Save (for Route)
+  if (layer === currentRoutePath) {
+    const saveBtn = document.createElement("span");
+    saveBtn.className = "overview-save-btn";
+    saveBtn.title = "Save route to map";
+    saveBtn.innerHTML = '<span class="material-symbols">save</span>';
+    saveBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (window.app && typeof window.app.saveRoute === "function") {
+        window.app.saveRoute();
+      }
+    });
+    listItem.appendChild(saveBtn);
+  } else {
+    listItem.appendChild(duplicateBtn);
+  }
+
+  // Slot 4: Name
   listItem.appendChild(textSpan);
 
   if (globallySelectedItem && L.Util.stamp(globallySelectedItem) === layerId) {
@@ -291,7 +342,6 @@ function updateOverviewList() {
   const getGroupTitle = (pathType) => {
     switch (pathType) {
       case "route":
-        return "Route";
       case "drawn":
         return "Drawn Items";
       case "gpx":
@@ -328,7 +378,7 @@ function updateOverviewList() {
 
   // 3. Render the groups in a specific order
   const fragment = document.createDocumentFragment();
-  const groupOrder = ["Route", "Drawn Items", "Imported Files", "Strava Activities", "Other"];
+  const groupOrder = ["Drawn Items", "Imported Files", "Strava Activities", "Other"];
 
   // Track which headers we're actually rendering
   const renderedHeaders = [];
@@ -338,17 +388,121 @@ function updateOverviewList() {
     if (itemsInGroup && itemsInGroup.length > 0) {
       const isCollapsed = collapsedCategories.has(title);
 
-      // Create and append a header for the group
+      // Create the header element
       const header = document.createElement("div");
       header.className = "overview-list-header";
       if (isCollapsed) header.classList.add("collapsed");
+
+      // Determine the corresponding layer group for this category
+      let layerGroup = null;
+      let layerNameInControl = null;
+      if (title === "Drawn Items") {
+        layerGroup = drawnItems;
+        layerNameInControl = "DrawnItems";
+      } else if (title === "Imported Files") {
+        layerGroup = importedItems;
+        layerNameInControl = "ImportedFiles";
+      } else if (title === "Strava Activities") {
+        layerGroup = stravaActivitiesLayer;
+        layerNameInControl = "StravaActivities";
+      }
 
       const arrow = document.createElement("span");
       arrow.className = "material-symbols";
       arrow.textContent = isCollapsed ? "keyboard_arrow_down" : "keyboard_arrow_up";
 
-      header.appendChild(arrow);
-      header.appendChild(document.createTextNode(`${title} (${itemsInGroup.length})`));
+      // 1. Visibility Button (Eye)
+      const eyeBtnSlot = document.createElement("div");
+      eyeBtnSlot.className = "overview-header-visibility-btn";
+      if (layerGroup) {
+        const eyeBtn = document.createElement("span");
+        const isVisible = map.hasLayer(layerGroup);
+        eyeBtn.innerHTML = isVisible
+          ? '<span class="material-symbols">visibility</span>'
+          : '<span class="material-symbols">visibility_off</span>';
+        eyeBtn.title = isVisible ? "Hide category" : "Show category";
+        eyeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const isRemoving = map.hasLayer(layerGroup);
+          if (isRemoving) {
+            map.removeLayer(layerGroup);
+            if (title === "Drawn Items" && currentRoutePath) {
+              map.removeLayer(currentRoutePath);
+            }
+          } else {
+            map.addLayer(layerGroup);
+            if (title === "Drawn Items" && currentRoutePath && !currentRoutePath.isManuallyHidden) {
+              map.addLayer(currentRoutePath);
+            }
+          }
+          if (typeof window.onOverlayToggle === "function") {
+            window.onOverlayToggle({
+              type: isRemoving ? "overlayremove" : "overlayadd",
+              layer: layerGroup,
+            });
+          }
+          updateOverviewList();
+        });
+        eyeBtnSlot.appendChild(eyeBtn);
+      } else {
+        eyeBtnSlot.className = "overview-icon-spacer";
+      }
+      header.appendChild(eyeBtnSlot);
+
+      // 2. Delete Button (Clear)
+      const delBtnSlot = document.createElement("div");
+      delBtnSlot.className = "overview-header-delete-btn";
+      if (layerGroup) {
+        const delBtn = document.createElement("span");
+        delBtn.innerHTML = '<span class="material-symbols material-symbols-fill">cancel</span>';
+        delBtn.title = `Clear all ${title}`;
+        delBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          Swal.fire({
+            title: `Clear all items in "${title}"?`,
+            text:
+              title === "Drawn Items" && currentRoutePath
+                ? "This will also clear the current route."
+                : "This action cannot be undone.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "var(--color-red)",
+            confirmButtonText: "Yes, clear all",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              if (title === "Drawn Items" && window.app?.clearRouting) window.app.clearRouting();
+              layerGroup.clearLayers();
+              itemsInGroup.forEach((item) => {
+                if (editableLayers.hasLayer(item)) editableLayers.removeLayer(item);
+              });
+              if (globallySelectedItem && itemsInGroup.includes(globallySelectedItem))
+                deselectCurrentItem();
+              updateDrawControlStates();
+              if (!map.hasLayer(layerGroup)) {
+                map.addLayer(layerGroup);
+              }
+
+              updateOverviewList();
+            }
+          });
+        });
+        delBtnSlot.appendChild(delBtn);
+      } else {
+        delBtnSlot.className = "overview-icon-spacer";
+      }
+      header.appendChild(delBtnSlot);
+
+      // 3. Arrow
+      const arrowContainer = document.createElement("div");
+      arrowContainer.className = "overview-header-arrow";
+      arrowContainer.appendChild(arrow);
+      header.appendChild(arrowContainer);
+
+      // 4. Title
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "overview-header-text";
+      titleSpan.textContent = `${title} (${itemsInGroup.length})`;
+      header.appendChild(titleSpan);
 
       header.addEventListener("click", () => {
         if (isCollapsed) {
@@ -379,6 +533,20 @@ function updateOverviewList() {
   }
 
   listContainer.appendChild(fragment);
+
+  // Sync checkboxes in the custom layers panel with the map's current state
+  const checkboxMapping = {
+    DrawnItems: drawnItems,
+    ImportedFiles: importedItems,
+    StravaActivities: stravaActivitiesLayer,
+  };
+
+  Object.entries(checkboxMapping).forEach(([name, group]) => {
+    const checkbox = document.querySelector(
+      `#custom-layers-panel input[data-layer-name="${name}"]`,
+    );
+    if (checkbox) checkbox.checked = map.hasLayer(group);
+  });
 }
 
 /**
