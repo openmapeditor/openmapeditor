@@ -97,25 +97,6 @@ const routingColorStart = rootStyles.getPropertyValue("--routing-color-start").t
 const routingColorEnd = rootStyles.getPropertyValue("--routing-color-end").trim();
 const routingColorVia = rootStyles.getPropertyValue("--routing-color-via").trim();
 
-const colorScheme = {
-  drawn: {
-    primary: rootStyles.getPropertyValue("--color-magenta").trim(),
-    highlight: rootStyles.getPropertyValue("--color-magenta").trim(),
-  },
-  imported: {
-    primary: rootStyles.getPropertyValue("--color-orange").trim(),
-    highlight: rootStyles.getPropertyValue("--color-orange").trim(),
-  },
-  kmz: {
-    primary: rootStyles.getPropertyValue("--color-blue").trim(),
-    highlight: rootStyles.getPropertyValue("--color-blue").trim(),
-  },
-  route: {
-    primary: rootStyles.getPropertyValue("--color-magenta").trim(),
-    highlight: rootStyles.getPropertyValue("--color-magenta").trim(),
-  },
-};
-
 /**
  * Simplification settings for imported paths (GPX, KML, KMZ).
  * Tolerance is in decimal degrees (~0.00005° ≈ 5.5m at equator).
