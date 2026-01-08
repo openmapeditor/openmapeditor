@@ -662,7 +662,7 @@ function showInfoPanel(layer) {
       editHint.style.display = "block";
       break;
     case "route":
-      layerTypeName = "Route";
+      layerTypeName = "Drawn Item (Route)";
       editHint.innerHTML = "To edit geometry, save route in <b>Routing</b> tab.";
       editHint.style.display = "block";
       break;
