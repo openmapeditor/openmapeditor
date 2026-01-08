@@ -336,6 +336,9 @@ function initializeRouting() {
             currentRoutePath = newRoutePath;
           }
 
+          if (!map.hasLayer(drawnItems)) {
+            map.addLayer(drawnItems);
+          }
           updateOverviewList();
           updateDrawControlStates();
 
@@ -895,7 +898,7 @@ function initializeRouting() {
     }
   });
 
-  saveRouteBtn.addEventListener("click", () => {
+  const saveRoute = () => {
     if (!currentRoutePath) {
       return;
     }
@@ -951,7 +954,9 @@ function initializeRouting() {
         showConfirmButton: false,
       });
     }
-  });
+  };
+
+  saveRouteBtn.addEventListener("click", saveRoute);
 
   /**
    * Recalculates and redisplays the current route when unit settings change.
@@ -973,6 +978,7 @@ function initializeRouting() {
   window.app = window.app || {};
   window.app.setupRoutingControl = setupRoutingControl;
   window.app.clearRouting = clearRouting;
+  window.app.saveRoute = saveRoute;
   window.app.redisplayCurrentRoute = redisplayCurrentRoute;
   window.app.updateRoutingPoint = updateRoutingPoint;
 }

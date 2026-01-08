@@ -419,6 +419,9 @@ function displayActivitiesOnMap(activities) {
     map.fitBounds(stravaActivitiesLayer.getBounds());
   }
 
+  if (!map.hasLayer(stravaActivitiesLayer)) {
+    map.addLayer(stravaActivitiesLayer);
+  }
   updateOverviewList();
   updateDrawControlStates();
 

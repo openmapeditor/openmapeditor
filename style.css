@@ -46,6 +46,7 @@
   --text-color: var(--color-black);
   --highlight-color: var(--color-blue);
   --locate-color: var(--color-blue);
+  --overview-header-height: 32px;
 }
 
 body.dark-mode {
@@ -310,7 +311,8 @@ a#info-panel-strava-link:hover {
 .overview-list-item {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
+  padding: 0 12px;
+  min-height: var(--overview-header-height);
   cursor: pointer;
   border-bottom: 1px solid var(--divider-color);
   font-size: var(--font-size-14);
@@ -319,38 +321,90 @@ a#info-panel-strava-link:hover {
   text-overflow: ellipsis;
   background-color: var(--background-color);
   color: var(--text-color) !important;
-  scroll-margin-top: 30px;
+  scroll-margin-top: var(--overview-header-height);
 }
 .overview-visibility-btn,
 .overview-duplicate-btn,
-.overview-delete-btn {
-  display: inline-block;
-  padding-right: 8px;
-  color: var(--color-black);
+.overview-delete-btn,
+.overview-save-btn,
+.overview-header-visibility-btn,
+.overview-header-delete-btn,
+.overview-header-arrow,
+.overview-icon-spacer {
+  width: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
   line-height: 1;
   user-select: none;
+  flex-shrink: 0;
+  color: var(--text-color);
 }
-.overview-visibility-btn .icon,
-.overview-duplicate-btn .icon,
-.overview-delete-btn .icon {
-  width: 18px;
-  height: 18px;
-  fill: var(--icon-color);
-  vertical-align: middle;
+
+.overview-icon-spacer {
+  cursor: default;
 }
+
+.overview-visibility-btn .material-symbols,
+.overview-duplicate-btn .material-symbols,
+.overview-delete-btn .material-symbols,
+.overview-save-btn .material-symbols,
+.overview-header-visibility-btn .material-symbols,
+.overview-header-delete-btn .material-symbols,
+.overview-header-arrow .material-symbols {
+  font-size: var(--icon-size-20) !important;
+}
+
 .overview-item-text {
   flex-grow: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-color);
+  padding-left: 4px;
 }
 .overview-list-item:last-child {
   border-bottom: none !important;
 }
 .overview-list-item.selected {
   background-color: var(--highlight-color);
+}
+
+/* Styles for Overview Panel Group Headers */
+.overview-list-header {
+  font-weight: bold;
+  font-size: var(--font-size-12);
+  padding: 0 12px;
+  min-height: var(--overview-header-height);
+  background-color: var(--background2-color);
+  color: var(--text-color);
+  border-bottom: 1px solid var(--divider-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+#overview-panel-list .overview-list-header:first-child {
+  border-top: none;
+}
+
+.overview-header-text {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-left: 4px;
+}
+
+#overview-panel-list .overview-list-header.collapsed.last-header {
+  border-bottom: none;
 }
 
 /* Custom Layers Panel Styles */
@@ -1706,40 +1760,6 @@ button.strava-button-secondary:not(:disabled) {
   background-color: var(--text-color);
   color: var(--background-color);
   border: none;
-}
-
-/* Styles for Overview Panel Group Headers */
-.overview-list-header {
-  font-weight: bold;
-  font-size: var(--font-size-12);
-  padding: 8px 12px 4px 12px;
-  background-color: var(--background2-color);
-  color: var(--text-color);
-  border-bottom: 1px solid var(--divider-color);
-  /* border-top: 1px solid var(--divider-color); */
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  position: sticky; /* Make headers stick to the top when scrolling */
-  top: 0;
-  z-index: 10; /* Ensure header is above list items and other headers */
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-}
-
-.overview-list-header .material-symbols {
-  font-size: var(--icon-size-20);
-  margin-right: 5px;
-}
-
-#overview-panel-list .overview-list-header:first-child {
-  border-top: none; /* The very first header doesn't need a top border */
-}
-
-/* Prevent double border on last collapsed header (.last-header set via JS). */
-#overview-panel-list .overview-list-header.collapsed.last-header {
-  border-bottom: none;
 }
 
 /* Fix for Privacy Policy Link Style */

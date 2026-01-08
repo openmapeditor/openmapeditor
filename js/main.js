@@ -740,7 +740,7 @@ function initializeMap() {
   // Apply z-index on initial load to ensure layers from localStorage respect list order
   reapplyOverlayZIndex();
 
-  const onOverlayToggle = (e) => {
+  window.onOverlayToggle = (e) => {
     const isAdding = e.type === "overlayadd";
 
     let itemIsInGroup = false;
@@ -780,6 +780,8 @@ function initializeMap() {
     }
   };
 
+  const onOverlayToggle = window.onOverlayToggle;
+
   customPanel.addEventListener("click", function (e) {
     if (e.target && e.target.classList.contains("leaflet-control-layers-selector")) {
       if (L.DomUtil.hasClass(e.target, "leaflet-disabled-interaction")) {
@@ -817,6 +819,11 @@ function initializeMap() {
             break;
           }
         }
+      }
+
+      // Sync overview list eye icons when layers are toggled from Layer Control
+      if (typeof updateOverviewList === "function") {
+        updateOverviewList();
       }
     }
   });
@@ -1368,10 +1375,15 @@ function initializeMap() {
               const geojsonData = toGeoJSON[fileType](dom);
               if (fileType === "gpx") {
                 const tracksInDom = dom.querySelectorAll("trk");
+                const waypointsInDom = dom.querySelectorAll("wpt");
                 const pathFeatures = geojsonData.features.filter(
                   (f) => f.geometry.type === "LineString" || f.geometry.type === "MultiLineString",
                 );
+                const pointFeatures = geojsonData.features.filter(
+                  (f) => f.geometry.type === "Point",
+                );
 
+                // Extract color and stravaId from tracks
                 if (pathFeatures.length === tracksInDom.length) {
                   pathFeatures.forEach((feature, index) => {
                     const trackNode = tracksInDom[index];
@@ -1387,6 +1399,40 @@ function initializeMap() {
                         feature.properties = feature.properties || {};
                         feature.properties.colorName = colorMatch.name;
                       }
+                    }
+                    // Extract stravaId from extensions
+                    const stravaIdNode = trackNode.querySelector("stravaId");
+                    if (stravaIdNode) {
+                      feature.properties = feature.properties || {};
+                      feature.properties.stravaId = stravaIdNode.textContent.trim();
+                    }
+                  });
+                }
+
+                // Extract stravaId from waypoints
+                if (pointFeatures.length === waypointsInDom.length) {
+                  pointFeatures.forEach((feature, index) => {
+                    const waypointNode = waypointsInDom[index];
+                    const stravaIdNode = waypointNode.querySelector("stravaId");
+                    if (stravaIdNode) {
+                      feature.properties = feature.properties || {};
+                      feature.properties.stravaId = stravaIdNode.textContent.trim();
+                    }
+                  });
+                }
+              } else if (fileType === "kml") {
+                // Extract stravaId from ExtendedData for all placemarks
+                const placemarks = dom.querySelectorAll("Placemark");
+                if (
+                  geojsonData?.features?.length > 0 &&
+                  placemarks.length === geojsonData.features.length
+                ) {
+                  geojsonData.features.forEach((feature, index) => {
+                    const placemark = placemarks[index];
+                    const stravaIdData = placemark.querySelector('Data[name="stravaId"] value');
+                    if (stravaIdData) {
+                      feature.properties = feature.properties || {};
+                      feature.properties.stravaId = stravaIdData.textContent.trim();
                     }
                   });
                 }
@@ -1433,6 +1479,9 @@ function initializeMap() {
     if (e.layerType === "polyline" || e.layerType === "polygon") {
     }
     selectItem(layer);
+    if (!map.hasLayer(drawnItems)) {
+      map.addLayer(drawnItems);
+    }
     updateDrawControlStates();
     updateOverviewList();
   });
