@@ -1709,6 +1709,23 @@ function initializeMap() {
       L.DomEvent.stop(e);
       showCreditsPopup();
     });
+
+    const devPanelContainer = L.DomUtil.create("div", "settings-control-item", settingsPanel);
+    const devPanelLabel = L.DomUtil.create("label", "", devPanelContainer);
+    devPanelLabel.innerText = "Developer";
+    devPanelLabel.style.color = "var(--text-color)";
+    const devPanelLink = L.DomUtil.create("a", "", devPanelContainer);
+    devPanelLink.href = "#";
+    devPanelLink.innerText = "Open Developer Panel";
+    devPanelLink.style.fontSize = "var(--font-size-14)";
+    devPanelLink.style.color = "var(--highlight-color)";
+
+    L.DomEvent.on(devPanelLink, "click", (e) => {
+      L.DomEvent.stop(e);
+      if (typeof window.toggleDevPanel === "function") {
+        window.toggleDevPanel();
+      }
+    });
   }
 
   map.getContainer().addEventListener("click", (e) => {
