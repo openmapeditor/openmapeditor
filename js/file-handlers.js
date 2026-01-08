@@ -35,7 +35,7 @@ const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
 // 2. EXPORT (FILE-BASED)
 // --------------------------------------------------------------------
 
-// KMZ / KML
+// KML / KMZ
 
 /**
  * Converts a Leaflet layer to a KML placemark string.
