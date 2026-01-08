@@ -612,30 +612,6 @@ function convertLayerToGpx(layer) {
 // --------------------------------------------------------------------
 
 /**
- * Parses a color name from a KML style property.
- * @param {object} properties - The feature properties
- * @returns {string} The color name or "Red" as default
- */
-function parseColorFromKmlStyle(properties) {
-  // Case 1: styleUrl (e.g., #placemark-red) for markers
-  if (properties.styleUrl) {
-    const styleId = properties.styleUrl.substring(1).toLowerCase(); // -> "placemark-red"
-    const colorMatch = ORGANIC_MAPS_COLORS.find(
-      (c) => `placemark-${c.name.toLowerCase()}` === styleId,
-    );
-    if (colorMatch) return colorMatch.name;
-  }
-
-  // Case 2: Inline style color from toGeoJSON (converted to #RRGGBBAA format)
-  if (properties.stroke) {
-    const cssColor = properties.stroke.substring(0, 7).toLowerCase(); // Get #RRGGBB
-    const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === cssColor);
-    if (colorMatch) return colorMatch.name;
-  }
-  return "Red";
-}
-
-/**
  * Imports GeoJSON data to the map, applying appropriate styles.
  * @param {object} geoJsonData - The GeoJSON data to add
  * @param {string} fileType - The file type ('gpx', 'kml', 'kmz', 'geojson')
@@ -705,6 +681,30 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
   }
   updateOverviewList();
   return layerGroup;
+}
+
+/**
+ * Parses a color name from a KML style property.
+ * @param {object} properties - The feature properties
+ * @returns {string} The color name or "Red" as default
+ */
+function parseColorFromKmlStyle(properties) {
+  // Case 1: styleUrl (e.g., #placemark-red) for markers
+  if (properties.styleUrl) {
+    const styleId = properties.styleUrl.substring(1).toLowerCase(); // -> "placemark-red"
+    const colorMatch = ORGANIC_MAPS_COLORS.find(
+      (c) => `placemark-${c.name.toLowerCase()}` === styleId,
+    );
+    if (colorMatch) return colorMatch.name;
+  }
+
+  // Case 2: Inline style color from toGeoJSON (converted to #RRGGBBAA format)
+  if (properties.stroke) {
+    const cssColor = properties.stroke.substring(0, 7).toLowerCase(); // Get #RRGGBB
+    const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === cssColor);
+    if (colorMatch) return colorMatch.name;
+  }
+  return "Red";
 }
 
 /**
