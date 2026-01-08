@@ -70,7 +70,6 @@ let map,
   currentRoutePath = null,
   saveRouteBtn,
   temporarySearchMarker = null,
-  preservedKmzFiles = [], // For preserving empty KMLs from KMZ imports
   useImperialUnits = false,
   scaleControl;
 

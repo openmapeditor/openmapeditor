@@ -304,11 +304,6 @@ async function importKmzFile(file) {
           });
         }
 
-        // Preserve ALL KML files except doc.kml (which is the index file)
-        if (kmlFile.name.toLowerCase() !== "doc.kml") {
-          preservedKmzFiles.push({ path: kmlFile.name, content: content });
-        }
-
         // Import features if present
         if (geojsonData?.features?.length > 0) {
           const newLayer = importGeoJsonToMap(geojsonData, "kmz", kmlFile.name);
@@ -324,17 +319,10 @@ async function importKmzFile(file) {
       if (bounds.isValid()) {
         map.fitBounds(bounds);
       }
-    } else if (preservedKmzFiles.length > 0) {
-      Swal.fire({
-        title: "KMZ Structure Loaded",
-        text: "Empty KML files were found and will be preserved on export.",
-        timer: 2500,
-        showConfirmButton: false,
-      });
     } else {
       Swal.fire({
         title: "KMZ Loaded (No Features)",
-        text: "No geographical features or preservable KML files found.",
+        text: "No geographical features found in the KMZ file.",
       });
     }
   } catch (error) {
