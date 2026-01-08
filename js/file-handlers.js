@@ -74,11 +74,15 @@ function convertLayerToKmlPlacemark(layer, defaultName, defaultDescription = "")
 
   const safeName = escapeXml(name);
   const safeDescription = description ? escapeXml(description) : "";
+  const stravaId = layer.feature?.properties?.stravaId;
 
   const placemarkStart =
     `  <Placemark>\n` +
     `    <name>${safeName}</name>\n` +
-    (safeDescription ? `    <description>${safeDescription}</description>\n` : "");
+    (safeDescription ? `    <description>${safeDescription}</description>\n` : "") +
+    (stravaId
+      ? `    <ExtendedData>\n      <Data name="stravaId">\n        <value>${stravaId}</value>\n      </Data>\n    </ExtendedData>\n`
+      : "");
 
   const placemarkEnd = `  </Placemark>`;
 
@@ -523,6 +527,7 @@ function convertLayerToGpx(layer) {
   const colorName = layer.feature?.properties?.colorName || "Red";
   const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
   const gpxColorHex = colorData ? colorData.css.substring(1).toUpperCase() : "E51B23";
+  const stravaId = layer.feature?.properties?.stravaId;
 
   const header = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1"
@@ -556,7 +561,7 @@ function convertLayerToGpx(layer) {
     <extensions>
       <gpx_style:line>
         <gpx_style:color>${gpxColorHex}</gpx_style:color>
-      </gpx_style:line>
+      </gpx_style:line>${stravaId ? `\n      <stravaId>${stravaId}</stravaId>` : ""}
     </extensions>
     <trkseg>
       ${pathPoints}
@@ -585,7 +590,7 @@ function convertLayerToGpx(layer) {
     <extensions>
       <gpx_style:line>
         <gpx_style:color>${gpxColorHex}</gpx_style:color>
-      </gpx_style:line>
+      </gpx_style:line>${stravaId ? `\n      <stravaId>${stravaId}</stravaId>` : ""}
     </extensions>
     <trkseg>
       ${pathPoints}
@@ -595,7 +600,7 @@ function convertLayerToGpx(layer) {
     const latlng = layer.getLatLng();
     content = `
   <wpt lat="${latlng.lat}" lon="${latlng.lng}">
-    <name>${name}</name>${description ? `\n    <desc>${description}</desc>` : ""}
+    <name>${name}</name>${description ? `\n    <desc>${description}</desc>` : ""}${stravaId ? `\n    <extensions>\n      <stravaId>${stravaId}</stravaId>\n    </extensions>` : ""}
   </wpt>`;
   }
 
@@ -731,6 +736,22 @@ async function importKmzFile(file) {
         const content = await kmlFile.async("text");
         const kmlDom = new DOMParser().parseFromString(content, "text/xml");
         const geojsonData = toGeoJSON.kml(kmlDom, { styles: true });
+
+        // Extract stravaId from ExtendedData for all placemarks
+        const placemarks = kmlDom.querySelectorAll("Placemark");
+        if (
+          geojsonData?.features?.length > 0 &&
+          placemarks.length === geojsonData.features.length
+        ) {
+          geojsonData.features.forEach((feature, index) => {
+            const placemark = placemarks[index];
+            const stravaIdData = placemark.querySelector('Data[name="stravaId"] value');
+            if (stravaIdData) {
+              feature.properties = feature.properties || {};
+              feature.properties.stravaId = stravaIdData.textContent.trim();
+            }
+          });
+        }
 
         // Preserve ALL KML files except doc.kml (which is the index file)
         if (kmlFile.name.toLowerCase() !== "doc.kml") {
