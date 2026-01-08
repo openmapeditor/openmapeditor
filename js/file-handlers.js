@@ -847,7 +847,7 @@ function buildKmzArchive(docName) {
       `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n  <name>${safeDocName}</name>\n${networkLinks
         .map(
           (link) =>
-            `  <NetworkLink>\n    <name>${escapeXml(link.name)}</name>\n    <Link>\n      <href>${link.href}</href>\n    </Link>\n  </NetworkLink>`,
+            `  <NetworkLink>\n    <name>${escapeXml(link.name)}</name>\n    <Link>\n      <href>${escapeXml(link.href)}</href>\n    </Link>\n  </NetworkLink>`,
         )
         .join("\n")}\n</Document>\n</kml>`,
     );
