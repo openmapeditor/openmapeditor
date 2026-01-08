@@ -35,6 +35,191 @@ const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
 // 2. EXPORT (FILE-BASED)
 // --------------------------------------------------------------------
 
+// GeoJSON
+
+/**
+ * Exports map items to a GeoJSON file with color preservation.
+ * @param {Object} options - Export options
+ * @param {string} options.mode - Export mode: "all" (default), "single", or "strava"
+ * @param {L.Layer} options.layer - Single layer to export (required when mode is "single")
+ * @param {string} options.filePrefix - Prefix for the filename (defaults based on mode)
+ * @param {string} options.successTitle - Success dialog title (defaults based on mode)
+ * @param {string} options.successText - Success dialog text (defaults based on mode)
+ */
+function exportGeoJson(options = {}) {
+  const {
+    mode = "all",
+    layer = null,
+    filePrefix = null,
+    successTitle = "Export Successful!",
+    successText = null,
+  } = options;
+
+  const features = [];
+  let allLayers = [];
+
+  // Collect layers based on mode
+  if (mode === "single") {
+    if (!layer) {
+      return Swal.fire({
+        title: "No Item Selected",
+        text: "Please select an item to export.",
+      });
+    }
+    allLayers = [layer];
+  } else if (mode === "strava") {
+    stravaActivitiesLayer.eachLayer((l) => {
+      allLayers.push(l);
+    });
+    if (allLayers.length === 0) {
+      return Swal.fire({
+        title: "No Activities Loaded",
+        text: "Please fetch your activities before exporting.",
+      });
+    }
+  } else {
+    // mode === "all"
+    allLayers = getAllExportableLayers();
+
+    if (allLayers.length === 0) {
+      return Swal.fire({
+        title: "No Data to Export",
+        text: "There are no items on the map to export.",
+      });
+    }
+  }
+
+  // Convert each layer to GeoJSON
+  allLayers.forEach((layer) => {
+    try {
+      const geojson = layer.toGeoJSON();
+
+      // Skip if toGeoJSON didn't produce valid geometry
+      if (!geojson || !geojson.geometry || !geojson.geometry.type) {
+        console.warn("Skipping layer with invalid geometry:", layer);
+        return;
+      }
+
+      // Extract full precision coordinates directly from layer
+      if (layer instanceof L.Marker) {
+        const ll = layer.getLatLng();
+        const coords = [ll.lng, ll.lat];
+        if (typeof ll.alt === "number") coords.push(ll.alt);
+        geojson.geometry.coordinates = coords;
+      } else if (layer instanceof L.Polygon) {
+        const latlngs = layer.getLatLngs()[0];
+        const coords = latlngs.map((ll) => {
+          const coord = [ll.lng, ll.lat];
+          if (typeof ll.alt === "number") coord.push(ll.alt);
+          return coord;
+        });
+        coords.push(coords[0]); // Close the polygon
+        geojson.geometry.coordinates = [coords];
+      } else if (layer instanceof L.Polyline) {
+        let latlngs = layer.getLatLngs();
+        while (Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
+          latlngs = latlngs[0];
+        }
+        geojson.geometry.coordinates = latlngs.map((ll) => {
+          const coord = [ll.lng, ll.lat];
+          if (typeof ll.alt === "number") coord.push(ll.alt);
+          return coord;
+        });
+      }
+
+      // Get color information
+      const colorName = layer.feature?.properties?.colorName || "Red";
+      const colorData =
+        ORGANIC_MAPS_COLORS.find((c) => c.name === colorName) || ORGANIC_MAPS_COLORS[0];
+
+      // Filter out excluded properties
+      const filteredProperties = Object.keys(geojson.properties || {}).reduce((acc, key) => {
+        if (!GEOJSON_EXPORT_EXCLUDED_PROPERTIES.includes(key)) {
+          acc[key] = geojson.properties[key];
+        }
+        return acc;
+      }, {});
+
+      // Enhance properties with color data
+      geojson.properties = {
+        ...filteredProperties,
+        colorName: colorName, // For round-trip with our app
+      };
+
+      // Add standard GeoJSON styling for other tools
+      if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
+        geojson.properties.stroke = colorData.css;
+        geojson.properties["stroke-width"] = 3;
+        geojson.properties["stroke-opacity"] = 1;
+      }
+      if (layer instanceof L.Polygon) {
+        geojson.properties.fill = colorData.css;
+        geojson.properties["fill-opacity"] = 0.2;
+      }
+
+      if (layer instanceof L.Marker) {
+        geojson.properties["marker-color"] = colorData.css;
+      }
+
+      // Ensure type: "Feature" is present
+      geojson.type = "Feature";
+
+      features.push(geojson);
+    } catch (error) {
+      console.error("Error converting layer to GeoJSON:", error, layer);
+      // Skip this layer and continue with others
+    }
+  });
+
+  // For strava mode, check if we got any exportable features
+  if (mode === "strava" && features.length === 0) {
+    return Swal.fire({
+      title: "No Exportable Data",
+      text: "Could not generate GeoJSON for loaded activities.",
+    });
+  }
+
+  // Create FeatureCollection
+  const geojsonDoc = {
+    type: "FeatureCollection",
+    features: features,
+  };
+
+  // Determine filename prefix
+  let finalFilePrefix = filePrefix;
+  if (!finalFilePrefix) {
+    if (mode === "single") {
+      finalFilePrefix = layer.feature?.properties?.name || "Map_Export";
+    } else if (mode === "strava") {
+      finalFilePrefix = "Strava_Export";
+    } else {
+      finalFilePrefix = "Map_Export";
+    }
+  }
+
+  // Generate filename with timestamp (except for single items with custom names)
+  const fileName =
+    mode === "single" && layer.feature?.properties?.name
+      ? `${finalFilePrefix}.geojson`
+      : generateTimestampedFilename(finalFilePrefix, "geojson");
+
+  // Download file
+  downloadFile(fileName, JSON.stringify(geojsonDoc, null, 2));
+
+  // Show success message (only for strava mode, single mode is silent, all mode shows message)
+  if (mode === "all") {
+    Swal.fire({
+      title: successTitle,
+      text: successText || "All items have been exported to GeoJSON.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  } else if (mode === "strava") {
+    // Strava mode was silent in the original, so we keep it silent
+  }
+  // Single mode is silent (follows GPX pattern)
+}
+
 // KML / KMZ
 
 /**
@@ -329,191 +514,6 @@ function exportKmz() {
     });
 }
 
-// GeoJSON
-
-/**
- * Exports map items to a GeoJSON file with color preservation.
- * @param {Object} options - Export options
- * @param {string} options.mode - Export mode: "all" (default), "single", or "strava"
- * @param {L.Layer} options.layer - Single layer to export (required when mode is "single")
- * @param {string} options.filePrefix - Prefix for the filename (defaults based on mode)
- * @param {string} options.successTitle - Success dialog title (defaults based on mode)
- * @param {string} options.successText - Success dialog text (defaults based on mode)
- */
-function exportGeoJson(options = {}) {
-  const {
-    mode = "all",
-    layer = null,
-    filePrefix = null,
-    successTitle = "Export Successful!",
-    successText = null,
-  } = options;
-
-  const features = [];
-  let allLayers = [];
-
-  // Collect layers based on mode
-  if (mode === "single") {
-    if (!layer) {
-      return Swal.fire({
-        title: "No Item Selected",
-        text: "Please select an item to export.",
-      });
-    }
-    allLayers = [layer];
-  } else if (mode === "strava") {
-    stravaActivitiesLayer.eachLayer((l) => {
-      allLayers.push(l);
-    });
-    if (allLayers.length === 0) {
-      return Swal.fire({
-        title: "No Activities Loaded",
-        text: "Please fetch your activities before exporting.",
-      });
-    }
-  } else {
-    // mode === "all"
-    allLayers = getAllExportableLayers();
-
-    if (allLayers.length === 0) {
-      return Swal.fire({
-        title: "No Data to Export",
-        text: "There are no items on the map to export.",
-      });
-    }
-  }
-
-  // Convert each layer to GeoJSON
-  allLayers.forEach((layer) => {
-    try {
-      const geojson = layer.toGeoJSON();
-
-      // Skip if toGeoJSON didn't produce valid geometry
-      if (!geojson || !geojson.geometry || !geojson.geometry.type) {
-        console.warn("Skipping layer with invalid geometry:", layer);
-        return;
-      }
-
-      // Extract full precision coordinates directly from layer
-      if (layer instanceof L.Marker) {
-        const ll = layer.getLatLng();
-        const coords = [ll.lng, ll.lat];
-        if (typeof ll.alt === "number") coords.push(ll.alt);
-        geojson.geometry.coordinates = coords;
-      } else if (layer instanceof L.Polygon) {
-        const latlngs = layer.getLatLngs()[0];
-        const coords = latlngs.map((ll) => {
-          const coord = [ll.lng, ll.lat];
-          if (typeof ll.alt === "number") coord.push(ll.alt);
-          return coord;
-        });
-        coords.push(coords[0]); // Close the polygon
-        geojson.geometry.coordinates = [coords];
-      } else if (layer instanceof L.Polyline) {
-        let latlngs = layer.getLatLngs();
-        while (Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
-          latlngs = latlngs[0];
-        }
-        geojson.geometry.coordinates = latlngs.map((ll) => {
-          const coord = [ll.lng, ll.lat];
-          if (typeof ll.alt === "number") coord.push(ll.alt);
-          return coord;
-        });
-      }
-
-      // Get color information
-      const colorName = layer.feature?.properties?.colorName || "Red";
-      const colorData =
-        ORGANIC_MAPS_COLORS.find((c) => c.name === colorName) || ORGANIC_MAPS_COLORS[0];
-
-      // Filter out excluded properties
-      const filteredProperties = Object.keys(geojson.properties || {}).reduce((acc, key) => {
-        if (!GEOJSON_EXPORT_EXCLUDED_PROPERTIES.includes(key)) {
-          acc[key] = geojson.properties[key];
-        }
-        return acc;
-      }, {});
-
-      // Enhance properties with color data
-      geojson.properties = {
-        ...filteredProperties,
-        colorName: colorName, // For round-trip with our app
-      };
-
-      // Add standard GeoJSON styling for other tools
-      if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
-        geojson.properties.stroke = colorData.css;
-        geojson.properties["stroke-width"] = 3;
-        geojson.properties["stroke-opacity"] = 1;
-      }
-      if (layer instanceof L.Polygon) {
-        geojson.properties.fill = colorData.css;
-        geojson.properties["fill-opacity"] = 0.2;
-      }
-
-      if (layer instanceof L.Marker) {
-        geojson.properties["marker-color"] = colorData.css;
-      }
-
-      // Ensure type: "Feature" is present
-      geojson.type = "Feature";
-
-      features.push(geojson);
-    } catch (error) {
-      console.error("Error converting layer to GeoJSON:", error, layer);
-      // Skip this layer and continue with others
-    }
-  });
-
-  // For strava mode, check if we got any exportable features
-  if (mode === "strava" && features.length === 0) {
-    return Swal.fire({
-      title: "No Exportable Data",
-      text: "Could not generate GeoJSON for loaded activities.",
-    });
-  }
-
-  // Create FeatureCollection
-  const geojsonDoc = {
-    type: "FeatureCollection",
-    features: features,
-  };
-
-  // Determine filename prefix
-  let finalFilePrefix = filePrefix;
-  if (!finalFilePrefix) {
-    if (mode === "single") {
-      finalFilePrefix = layer.feature?.properties?.name || "Map_Export";
-    } else if (mode === "strava") {
-      finalFilePrefix = "Strava_Export";
-    } else {
-      finalFilePrefix = "Map_Export";
-    }
-  }
-
-  // Generate filename with timestamp (except for single items with custom names)
-  const fileName =
-    mode === "single" && layer.feature?.properties?.name
-      ? `${finalFilePrefix}.geojson`
-      : generateTimestampedFilename(finalFilePrefix, "geojson");
-
-  // Download file
-  downloadFile(fileName, JSON.stringify(geojsonDoc, null, 2));
-
-  // Show success message (only for strava mode, single mode is silent, all mode shows message)
-  if (mode === "all") {
-    Swal.fire({
-      title: successTitle,
-      text: successText || "All items have been exported to GeoJSON.",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-  } else if (mode === "strava") {
-    // Strava mode was silent in the original, so we keep it silent
-  }
-  // Single mode is silent (follows GPX pattern)
-}
-
 // GPX
 
 /**
@@ -708,6 +708,88 @@ function parseColorFromKmlStyle(properties) {
 }
 
 /**
+ * Imports and processes a GeoJSON file.
+ * @param {File} file - The GeoJSON file to process
+ */
+function importGeoJsonFile(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (readEvent) => {
+    try {
+      const geojsonData = JSON.parse(readEvent.target.result);
+
+      // Validate GeoJSON structure
+      if (!geojsonData || !geojsonData.type) {
+        throw new Error("Invalid GeoJSON: missing 'type' property");
+      }
+
+      // Support both FeatureCollection and single Feature
+      let features = [];
+      if (geojsonData.type === "FeatureCollection") {
+        features = geojsonData.features || [];
+      } else if (geojsonData.type === "Feature") {
+        features = [geojsonData];
+      } else {
+        throw new Error("GeoJSON must be a FeatureCollection or Feature");
+      }
+
+      // Filter for supported geometry types and preserve color information
+      const supportedTypes = ["Point", "LineString", "Polygon"];
+      const filteredFeatures = features.filter((feature) => {
+        if (!feature.geometry || !supportedTypes.includes(feature.geometry.type)) {
+          return false;
+        }
+
+        // Preserve colorName if present (for round-trip)
+        if (feature.properties?.colorName) {
+          // Already has our color format - keep it
+          return true;
+        }
+
+        // Try to parse standard GeoJSON colors for compatibility
+        if (feature.properties?.stroke || feature.properties?.["marker-color"]) {
+          const colorHex = (
+            feature.properties.stroke || feature.properties["marker-color"]
+          ).toLowerCase();
+          const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === colorHex);
+          if (colorMatch) {
+            feature.properties.colorName = colorMatch.name;
+          }
+        }
+
+        return true;
+      });
+
+      if (filteredFeatures.length === 0) {
+        return Swal.fire({
+          title: "No Supported Geometries",
+          text: "The GeoJSON file contains no Point, LineString, or Polygon features.",
+        });
+      }
+
+      // Create a valid FeatureCollection with filtered features
+      const filteredGeoJson = {
+        type: "FeatureCollection",
+        features: filteredFeatures,
+      };
+
+      const newLayer = importGeoJsonToMap(filteredGeoJson, "geojson");
+      if (newLayer && newLayer.getBounds().isValid()) {
+        map.fitBounds(newLayer.getBounds());
+      }
+    } catch (error) {
+      console.error("Error parsing GeoJSON file:", error);
+      Swal.fire({
+        title: "GeoJSON Parse Error",
+        text: `Could not parse the file: ${error.message}`,
+      });
+    }
+  };
+  reader.readAsText(file);
+}
+
+/**
  * Imports and processes a KML file.
  * @param {File} file - The KML file to process
  */
@@ -834,88 +916,6 @@ async function importKmzFile(file) {
       text: `Could not read the file: ${error.message}`,
     });
   }
-}
-
-/**
- * Imports and processes a GeoJSON file.
- * @param {File} file - The GeoJSON file to process
- */
-function importGeoJsonFile(file) {
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (readEvent) => {
-    try {
-      const geojsonData = JSON.parse(readEvent.target.result);
-
-      // Validate GeoJSON structure
-      if (!geojsonData || !geojsonData.type) {
-        throw new Error("Invalid GeoJSON: missing 'type' property");
-      }
-
-      // Support both FeatureCollection and single Feature
-      let features = [];
-      if (geojsonData.type === "FeatureCollection") {
-        features = geojsonData.features || [];
-      } else if (geojsonData.type === "Feature") {
-        features = [geojsonData];
-      } else {
-        throw new Error("GeoJSON must be a FeatureCollection or Feature");
-      }
-
-      // Filter for supported geometry types and preserve color information
-      const supportedTypes = ["Point", "LineString", "Polygon"];
-      const filteredFeatures = features.filter((feature) => {
-        if (!feature.geometry || !supportedTypes.includes(feature.geometry.type)) {
-          return false;
-        }
-
-        // Preserve colorName if present (for round-trip)
-        if (feature.properties?.colorName) {
-          // Already has our color format - keep it
-          return true;
-        }
-
-        // Try to parse standard GeoJSON colors for compatibility
-        if (feature.properties?.stroke || feature.properties?.["marker-color"]) {
-          const colorHex = (
-            feature.properties.stroke || feature.properties["marker-color"]
-          ).toLowerCase();
-          const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === colorHex);
-          if (colorMatch) {
-            feature.properties.colorName = colorMatch.name;
-          }
-        }
-
-        return true;
-      });
-
-      if (filteredFeatures.length === 0) {
-        return Swal.fire({
-          title: "No Supported Geometries",
-          text: "The GeoJSON file contains no Point, LineString, or Polygon features.",
-        });
-      }
-
-      // Create a valid FeatureCollection with filtered features
-      const filteredGeoJson = {
-        type: "FeatureCollection",
-        features: filteredFeatures,
-      };
-
-      const newLayer = importGeoJsonToMap(filteredGeoJson, "geojson");
-      if (newLayer && newLayer.getBounds().isValid()) {
-        map.fitBounds(newLayer.getBounds());
-      }
-    } catch (error) {
-      console.error("Error parsing GeoJSON file:", error);
-      Swal.fire({
-        title: "GeoJSON Parse Error",
-        text: `Could not parse the file: ${error.message}`,
-      });
-    }
-  };
-  reader.readAsText(file);
 }
 
 /**

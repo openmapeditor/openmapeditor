@@ -1288,14 +1288,14 @@ function initializeMap() {
         if (!file) return;
         const fileNameLower = file.name.toLowerCase();
 
-        if (fileNameLower.endsWith(".kmz")) {
-          importKmzFile(file);
-        } else if (fileNameLower.endsWith(".geojson") || fileNameLower.endsWith(".json")) {
+        if (fileNameLower.endsWith(".geojson") || fileNameLower.endsWith(".json")) {
           importGeoJsonFile(file);
-        } else if (fileNameLower.endsWith(".gpx")) {
-          importGpxFile(file);
         } else if (fileNameLower.endsWith(".kml")) {
           importKmlFile(file);
+        } else if (fileNameLower.endsWith(".kmz")) {
+          importKmzFile(file);
+        } else if (fileNameLower.endsWith(".gpx")) {
+          importGpxFile(file);
         }
         e.target.value = "";
       });
