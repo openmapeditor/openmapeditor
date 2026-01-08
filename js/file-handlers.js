@@ -708,6 +708,47 @@ function parseColorFromKmlStyle(properties) {
 }
 
 /**
+ * Imports and processes a KML file.
+ * @param {File} file - The KML file to process
+ */
+function importKmlFile(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (readEvent) => {
+    try {
+      const dom = new DOMParser().parseFromString(readEvent.target.result, "text/xml");
+      const geojsonData = toGeoJSON.kml(dom);
+
+      // Extract stravaId from ExtendedData for all placemarks
+      const placemarks = dom.querySelectorAll("Placemark");
+      if (geojsonData?.features?.length > 0 && placemarks.length === geojsonData.features.length) {
+        geojsonData.features.forEach((feature, index) => {
+          const placemark = placemarks[index];
+          const stravaIdData = placemark.querySelector('Data[name="stravaId"] value');
+          if (stravaIdData) {
+            feature.properties = feature.properties || {};
+            feature.properties.stravaId = stravaIdData.textContent.trim();
+          }
+        });
+      }
+
+      const newLayer = importGeoJsonToMap(geojsonData, "kml");
+      if (newLayer && newLayer.getBounds().isValid()) {
+        map.fitBounds(newLayer.getBounds());
+      }
+    } catch (error) {
+      console.error("Error parsing KML file:", error);
+      Swal.fire({
+        title: "KML Parse Error",
+        text: `Could not parse the file: ${error.message}`,
+      });
+    }
+  };
+  reader.readAsText(file);
+}
+
+/**
  * Imports and processes a KMZ file.
  * @param {File} file - The KMZ file to process
  */
@@ -941,47 +982,6 @@ function importGpxFile(file) {
       console.error("Error parsing GPX file:", error);
       Swal.fire({
         title: "GPX Parse Error",
-        text: `Could not parse the file: ${error.message}`,
-      });
-    }
-  };
-  reader.readAsText(file);
-}
-
-/**
- * Imports and processes a KML file.
- * @param {File} file - The KML file to process
- */
-function importKmlFile(file) {
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (readEvent) => {
-    try {
-      const dom = new DOMParser().parseFromString(readEvent.target.result, "text/xml");
-      const geojsonData = toGeoJSON.kml(dom);
-
-      // Extract stravaId from ExtendedData for all placemarks
-      const placemarks = dom.querySelectorAll("Placemark");
-      if (geojsonData?.features?.length > 0 && placemarks.length === geojsonData.features.length) {
-        geojsonData.features.forEach((feature, index) => {
-          const placemark = placemarks[index];
-          const stravaIdData = placemark.querySelector('Data[name="stravaId"] value');
-          if (stravaIdData) {
-            feature.properties = feature.properties || {};
-            feature.properties.stravaId = stravaIdData.textContent.trim();
-          }
-        });
-      }
-
-      const newLayer = importGeoJsonToMap(geojsonData, "kml");
-      if (newLayer && newLayer.getBounds().isValid()) {
-        map.fitBounds(newLayer.getBounds());
-      }
-    } catch (error) {
-      console.error("Error parsing KML file:", error);
-      Swal.fire({
-        title: "KML Parse Error",
         text: `Could not parse the file: ${error.message}`,
       });
     }
