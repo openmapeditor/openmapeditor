@@ -32,7 +32,388 @@ const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
   "totalDistance", // Internal calculated distance - not needed in export
 ];
 
-// 2. EXPORT (FILE-BASED)
+// 2. IMPORT (FILE-BASED)
+// --------------------------------------------------------------------
+
+/**
+ * Imports GeoJSON data to the map, applying appropriate styles.
+ * @param {object} geoJsonData - The GeoJSON data to add
+ * @param {string} fileType - The file type ('gpx', 'kml', 'kmz', 'geojson')
+ * @param {string|null} originalPath - The original path for KMZ files
+ * @returns {L.GeoJSON} The created layer group
+ */
+function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
+  const targetGroup = importedItems; // All imported files go to the same group
+
+  const layerGroup = L.geoJSON(geoJsonData, {
+    style: (feature) => {
+      const isKmlBased = fileType === "kml" || fileType === "kmz";
+      // For GPX, color is pre-enriched. For KML/KMZ, it's parsed here.
+      const colorName =
+        feature.properties.colorName ||
+        (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
+
+      const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
+      const color = colorData ? colorData.css : ORGANIC_MAPS_COLORS[0].css; // Fallback to Red
+      return { ...STYLE_CONFIG.path.default, color: color };
+    },
+    onEachFeature: (feature, layer) => {
+      const isKmlBased = fileType === "kml" || fileType === "kmz";
+      const colorName =
+        feature.properties.colorName ||
+        (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
+
+      // Validate colorName - if not in palette, use Red
+      const isValidColor = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
+      layer.feature.properties.colorName = isValidColor ? colorName : "Red";
+
+      // All imported items use fileType as pathType
+      layer.pathType = fileType;
+      if (fileType === "kmz" && originalPath) {
+        layer.originalKmzPath = originalPath; // Store the source file path
+      }
+
+      layer.on("click", (e) => {
+        L.DomEvent.stopPropagation(e);
+        selectItem(layer);
+      });
+    },
+    pointToLayer: (feature, latlng) => {
+      const isKmlBased = fileType === "kml" || fileType === "kmz";
+      const colorName =
+        feature.properties.colorName ||
+        (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
+
+      const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
+      const color = colorData ? colorData.css : ORGANIC_MAPS_COLORS[0].css; // Fallback to Red
+      const marker = L.marker(latlng, {
+        icon: createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity),
+      });
+      marker.feature = feature;
+      return marker;
+    },
+  });
+
+  layerGroup.eachLayer((layer) => {
+    targetGroup.addLayer(layer);
+  });
+
+  updateElevationToggleIconColor();
+  updateDrawControlStates();
+  if (!map.hasLayer(targetGroup)) {
+    map.addLayer(targetGroup);
+  }
+  updateOverviewList();
+  return layerGroup;
+}
+
+/**
+ * Imports and processes a GeoJSON file.
+ * @param {File} file - The GeoJSON file to process
+ */
+function importGeoJsonFile(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (readEvent) => {
+    try {
+      const geojsonData = JSON.parse(readEvent.target.result);
+
+      // Validate GeoJSON structure
+      if (!geojsonData || !geojsonData.type) {
+        throw new Error("Invalid GeoJSON: missing 'type' property");
+      }
+
+      // Support both FeatureCollection and single Feature
+      let features = [];
+      if (geojsonData.type === "FeatureCollection") {
+        features = geojsonData.features || [];
+      } else if (geojsonData.type === "Feature") {
+        features = [geojsonData];
+      } else {
+        throw new Error("GeoJSON must be a FeatureCollection or Feature");
+      }
+
+      // Filter for supported geometry types and preserve color information
+      const supportedTypes = ["Point", "LineString", "Polygon"];
+      const filteredFeatures = features.filter((feature) => {
+        if (!feature.geometry || !supportedTypes.includes(feature.geometry.type)) {
+          return false;
+        }
+
+        // Preserve colorName if present (for round-trip)
+        if (feature.properties?.colorName) {
+          // Already has our color format - keep it
+          return true;
+        }
+
+        // Try to parse standard GeoJSON colors for compatibility
+        if (feature.properties?.stroke || feature.properties?.["marker-color"]) {
+          const colorHex = (
+            feature.properties.stroke || feature.properties["marker-color"]
+          ).toLowerCase();
+          const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === colorHex);
+          if (colorMatch) {
+            feature.properties.colorName = colorMatch.name;
+          }
+        }
+
+        return true;
+      });
+
+      if (filteredFeatures.length === 0) {
+        return Swal.fire({
+          title: "No Supported Geometries",
+          text: "The GeoJSON file contains no Point, LineString, or Polygon features.",
+        });
+      }
+
+      // Create a valid FeatureCollection with filtered features
+      const filteredGeoJson = {
+        type: "FeatureCollection",
+        features: filteredFeatures,
+      };
+
+      const newLayer = importGeoJsonToMap(filteredGeoJson, "geojson");
+      if (newLayer && newLayer.getBounds().isValid()) {
+        map.fitBounds(newLayer.getBounds());
+      }
+    } catch (error) {
+      console.error("Error parsing GeoJSON file:", error);
+      Swal.fire({
+        title: "GeoJSON Parse Error",
+        text: `Could not parse the file: ${error.message}`,
+      });
+    }
+  };
+  reader.readAsText(file);
+}
+
+/**
+ * Parses a color name from a KML style property.
+ * @param {object} properties - The feature properties
+ * @returns {string} The color name or "Red" as default
+ */
+function parseColorFromKmlStyle(properties) {
+  // Case 1: styleUrl (e.g., #placemark-red) for markers
+  if (properties.styleUrl) {
+    const styleId = properties.styleUrl.substring(1).toLowerCase(); // -> "placemark-red"
+    const colorMatch = ORGANIC_MAPS_COLORS.find(
+      (c) => `placemark-${c.name.toLowerCase()}` === styleId,
+    );
+    if (colorMatch) return colorMatch.name;
+  }
+
+  // Case 2: Inline style color from toGeoJSON (converted to #RRGGBBAA format)
+  if (properties.stroke) {
+    const cssColor = properties.stroke.substring(0, 7).toLowerCase(); // Get #RRGGBB
+    const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === cssColor);
+    if (colorMatch) return colorMatch.name;
+  }
+  return "Red";
+}
+
+/**
+ * Imports and processes a KML file.
+ * @param {File} file - The KML file to process
+ */
+function importKmlFile(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (readEvent) => {
+    try {
+      const dom = new DOMParser().parseFromString(readEvent.target.result, "text/xml");
+      const geojsonData = toGeoJSON.kml(dom);
+
+      // Extract stravaId from ExtendedData for all placemarks
+      const placemarks = dom.querySelectorAll("Placemark");
+      if (geojsonData?.features?.length > 0 && placemarks.length === geojsonData.features.length) {
+        geojsonData.features.forEach((feature, index) => {
+          const placemark = placemarks[index];
+          const stravaIdData = placemark.querySelector('Data[name="stravaId"] value');
+          if (stravaIdData) {
+            feature.properties = feature.properties || {};
+            feature.properties.stravaId = stravaIdData.textContent.trim();
+          }
+        });
+      }
+
+      const newLayer = importGeoJsonToMap(geojsonData, "kml");
+      if (newLayer && newLayer.getBounds().isValid()) {
+        map.fitBounds(newLayer.getBounds());
+      }
+    } catch (error) {
+      console.error("Error parsing KML file:", error);
+      Swal.fire({
+        title: "KML Parse Error",
+        text: `Could not parse the file: ${error.message}`,
+      });
+    }
+  };
+  reader.readAsText(file);
+}
+
+/**
+ * Imports and processes a KMZ file.
+ * @param {File} file - The KMZ file to process
+ */
+async function importKmzFile(file) {
+  if (!file) return;
+
+  const zip = new JSZip();
+  const justImportedLayers = L.featureGroup();
+
+  try {
+    const loadedZip = await zip.loadAsync(file);
+    const kmlFiles = loadedZip.filter(
+      (relativePath, file) => !file.dir && relativePath.toLowerCase().endsWith(".kml"),
+    );
+
+    if (kmlFiles.length === 0) {
+      return Swal.fire({
+        title: "No KML Data",
+        text: "No KML files could be found within the KMZ archive.",
+      });
+    }
+
+    // Process all KML files concurrently
+    await Promise.all(
+      kmlFiles.map(async (kmlFile) => {
+        const content = await kmlFile.async("text");
+        const kmlDom = new DOMParser().parseFromString(content, "text/xml");
+        const geojsonData = toGeoJSON.kml(kmlDom, { styles: true });
+
+        // Extract stravaId from ExtendedData for all placemarks
+        const placemarks = kmlDom.querySelectorAll("Placemark");
+        if (
+          geojsonData?.features?.length > 0 &&
+          placemarks.length === geojsonData.features.length
+        ) {
+          geojsonData.features.forEach((feature, index) => {
+            const placemark = placemarks[index];
+            const stravaIdData = placemark.querySelector('Data[name="stravaId"] value');
+            if (stravaIdData) {
+              feature.properties = feature.properties || {};
+              feature.properties.stravaId = stravaIdData.textContent.trim();
+            }
+          });
+        }
+
+        // Preserve ALL KML files except doc.kml (which is the index file)
+        if (kmlFile.name.toLowerCase() !== "doc.kml") {
+          preservedKmzFiles.push({ path: kmlFile.name, content: content });
+        }
+
+        // Import features if present
+        if (geojsonData?.features?.length > 0) {
+          const newLayer = importGeoJsonToMap(geojsonData, "kmz", kmlFile.name);
+          if (newLayer) {
+            justImportedLayers.addLayer(newLayer);
+          }
+        }
+      }),
+    );
+
+    if (justImportedLayers.getLayers().length > 0) {
+      const bounds = justImportedLayers.getBounds();
+      if (bounds.isValid()) {
+        map.fitBounds(bounds);
+      }
+    } else if (preservedKmzFiles.length > 0) {
+      Swal.fire({
+        title: "KMZ Structure Loaded",
+        text: "Empty KML files were found and will be preserved on export.",
+        timer: 2500,
+        showConfirmButton: false,
+      });
+    } else {
+      Swal.fire({
+        title: "KMZ Loaded (No Features)",
+        text: "No geographical features or preservable KML files found.",
+      });
+    }
+  } catch (error) {
+    console.error("Error loading or processing KMZ file:", error);
+    Swal.fire({
+      title: "KMZ Read Error",
+      text: `Could not read the file: ${error.message}`,
+    });
+  }
+}
+
+/**
+ * Imports and processes a GPX file.
+ * @param {File} file - The GPX file to process
+ */
+function importGpxFile(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (readEvent) => {
+    try {
+      const dom = new DOMParser().parseFromString(readEvent.target.result, "text/xml");
+      const geojsonData = toGeoJSON.gpx(dom);
+
+      const tracksInDom = dom.querySelectorAll("trk");
+      const waypointsInDom = dom.querySelectorAll("wpt");
+      const pathFeatures = geojsonData.features.filter(
+        (f) => f.geometry.type === "LineString" || f.geometry.type === "MultiLineString",
+      );
+      const pointFeatures = geojsonData.features.filter((f) => f.geometry.type === "Point");
+
+      // Extract color and stravaId from tracks
+      if (pathFeatures.length === tracksInDom.length) {
+        pathFeatures.forEach((feature, index) => {
+          const trackNode = tracksInDom[index];
+          // Query for gpx_style:color, allowing for namespace variations
+          const colorNode = trackNode.querySelector("gpx_style\\:color, color");
+          if (colorNode) {
+            // Normalize to a CSS hex string
+            const hexColor = `#${colorNode.textContent.trim().toLowerCase()}`;
+            const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hexColor);
+            if (colorMatch) {
+              feature.properties = feature.properties || {};
+              feature.properties.colorName = colorMatch.name;
+            }
+          }
+          // Extract stravaId from extensions
+          const stravaIdNode = trackNode.querySelector("stravaId");
+          if (stravaIdNode) {
+            feature.properties = feature.properties || {};
+            feature.properties.stravaId = stravaIdNode.textContent.trim();
+          }
+        });
+      }
+
+      // Extract stravaId from waypoints
+      if (pointFeatures.length === waypointsInDom.length) {
+        pointFeatures.forEach((feature, index) => {
+          const waypointNode = waypointsInDom[index];
+          const stravaIdNode = waypointNode.querySelector("stravaId");
+          if (stravaIdNode) {
+            feature.properties = feature.properties || {};
+            feature.properties.stravaId = stravaIdNode.textContent.trim();
+          }
+        });
+      }
+
+      const newLayer = importGeoJsonToMap(geojsonData, "gpx");
+      if (newLayer && newLayer.getBounds().isValid()) {
+        map.fitBounds(newLayer.getBounds());
+      }
+    } catch (error) {
+      console.error("Error parsing GPX file:", error);
+      Swal.fire({
+        title: "GPX Parse Error",
+        text: `Could not parse the file: ${error.message}`,
+      });
+    }
+  };
+  reader.readAsText(file);
+}
+
+// 3. EXPORT (FILE-BASED)
 // --------------------------------------------------------------------
 
 // GeoJSON
@@ -606,387 +987,6 @@ function convertLayerToGpx(layer) {
 
   const footer = "\n</gpx>";
   return header + content + footer;
-}
-
-// 3. IMPORT (FILE-BASED)
-// --------------------------------------------------------------------
-
-/**
- * Imports GeoJSON data to the map, applying appropriate styles.
- * @param {object} geoJsonData - The GeoJSON data to add
- * @param {string} fileType - The file type ('gpx', 'kml', 'kmz', 'geojson')
- * @param {string|null} originalPath - The original path for KMZ files
- * @returns {L.GeoJSON} The created layer group
- */
-function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
-  const targetGroup = importedItems; // All imported files go to the same group
-
-  const layerGroup = L.geoJSON(geoJsonData, {
-    style: (feature) => {
-      const isKmlBased = fileType === "kml" || fileType === "kmz";
-      // For GPX, color is pre-enriched. For KML/KMZ, it's parsed here.
-      const colorName =
-        feature.properties.colorName ||
-        (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
-
-      const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-      const color = colorData ? colorData.css : ORGANIC_MAPS_COLORS[0].css; // Fallback to Red
-      return { ...STYLE_CONFIG.path.default, color: color };
-    },
-    onEachFeature: (feature, layer) => {
-      const isKmlBased = fileType === "kml" || fileType === "kmz";
-      const colorName =
-        feature.properties.colorName ||
-        (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
-
-      // Validate colorName - if not in palette, use Red
-      const isValidColor = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-      layer.feature.properties.colorName = isValidColor ? colorName : "Red";
-
-      // All imported items use fileType as pathType
-      layer.pathType = fileType;
-      if (fileType === "kmz" && originalPath) {
-        layer.originalKmzPath = originalPath; // Store the source file path
-      }
-
-      layer.on("click", (e) => {
-        L.DomEvent.stopPropagation(e);
-        selectItem(layer);
-      });
-    },
-    pointToLayer: (feature, latlng) => {
-      const isKmlBased = fileType === "kml" || fileType === "kmz";
-      const colorName =
-        feature.properties.colorName ||
-        (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
-
-      const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-      const color = colorData ? colorData.css : ORGANIC_MAPS_COLORS[0].css; // Fallback to Red
-      const marker = L.marker(latlng, {
-        icon: createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity),
-      });
-      marker.feature = feature;
-      return marker;
-    },
-  });
-
-  layerGroup.eachLayer((layer) => {
-    targetGroup.addLayer(layer);
-  });
-
-  updateElevationToggleIconColor();
-  updateDrawControlStates();
-  if (!map.hasLayer(targetGroup)) {
-    map.addLayer(targetGroup);
-  }
-  updateOverviewList();
-  return layerGroup;
-}
-
-/**
- * Imports and processes a GeoJSON file.
- * @param {File} file - The GeoJSON file to process
- */
-function importGeoJsonFile(file) {
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (readEvent) => {
-    try {
-      const geojsonData = JSON.parse(readEvent.target.result);
-
-      // Validate GeoJSON structure
-      if (!geojsonData || !geojsonData.type) {
-        throw new Error("Invalid GeoJSON: missing 'type' property");
-      }
-
-      // Support both FeatureCollection and single Feature
-      let features = [];
-      if (geojsonData.type === "FeatureCollection") {
-        features = geojsonData.features || [];
-      } else if (geojsonData.type === "Feature") {
-        features = [geojsonData];
-      } else {
-        throw new Error("GeoJSON must be a FeatureCollection or Feature");
-      }
-
-      // Filter for supported geometry types and preserve color information
-      const supportedTypes = ["Point", "LineString", "Polygon"];
-      const filteredFeatures = features.filter((feature) => {
-        if (!feature.geometry || !supportedTypes.includes(feature.geometry.type)) {
-          return false;
-        }
-
-        // Preserve colorName if present (for round-trip)
-        if (feature.properties?.colorName) {
-          // Already has our color format - keep it
-          return true;
-        }
-
-        // Try to parse standard GeoJSON colors for compatibility
-        if (feature.properties?.stroke || feature.properties?.["marker-color"]) {
-          const colorHex = (
-            feature.properties.stroke || feature.properties["marker-color"]
-          ).toLowerCase();
-          const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === colorHex);
-          if (colorMatch) {
-            feature.properties.colorName = colorMatch.name;
-          }
-        }
-
-        return true;
-      });
-
-      if (filteredFeatures.length === 0) {
-        return Swal.fire({
-          title: "No Supported Geometries",
-          text: "The GeoJSON file contains no Point, LineString, or Polygon features.",
-        });
-      }
-
-      // Create a valid FeatureCollection with filtered features
-      const filteredGeoJson = {
-        type: "FeatureCollection",
-        features: filteredFeatures,
-      };
-
-      const newLayer = importGeoJsonToMap(filteredGeoJson, "geojson");
-      if (newLayer && newLayer.getBounds().isValid()) {
-        map.fitBounds(newLayer.getBounds());
-      }
-    } catch (error) {
-      console.error("Error parsing GeoJSON file:", error);
-      Swal.fire({
-        title: "GeoJSON Parse Error",
-        text: `Could not parse the file: ${error.message}`,
-      });
-    }
-  };
-  reader.readAsText(file);
-}
-
-/**
- * Parses a color name from a KML style property.
- * @param {object} properties - The feature properties
- * @returns {string} The color name or "Red" as default
- */
-function parseColorFromKmlStyle(properties) {
-  // Case 1: styleUrl (e.g., #placemark-red) for markers
-  if (properties.styleUrl) {
-    const styleId = properties.styleUrl.substring(1).toLowerCase(); // -> "placemark-red"
-    const colorMatch = ORGANIC_MAPS_COLORS.find(
-      (c) => `placemark-${c.name.toLowerCase()}` === styleId,
-    );
-    if (colorMatch) return colorMatch.name;
-  }
-
-  // Case 2: Inline style color from toGeoJSON (converted to #RRGGBBAA format)
-  if (properties.stroke) {
-    const cssColor = properties.stroke.substring(0, 7).toLowerCase(); // Get #RRGGBB
-    const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === cssColor);
-    if (colorMatch) return colorMatch.name;
-  }
-  return "Red";
-}
-
-/**
- * Imports and processes a KML file.
- * @param {File} file - The KML file to process
- */
-function importKmlFile(file) {
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (readEvent) => {
-    try {
-      const dom = new DOMParser().parseFromString(readEvent.target.result, "text/xml");
-      const geojsonData = toGeoJSON.kml(dom);
-
-      // Extract stravaId from ExtendedData for all placemarks
-      const placemarks = dom.querySelectorAll("Placemark");
-      if (geojsonData?.features?.length > 0 && placemarks.length === geojsonData.features.length) {
-        geojsonData.features.forEach((feature, index) => {
-          const placemark = placemarks[index];
-          const stravaIdData = placemark.querySelector('Data[name="stravaId"] value');
-          if (stravaIdData) {
-            feature.properties = feature.properties || {};
-            feature.properties.stravaId = stravaIdData.textContent.trim();
-          }
-        });
-      }
-
-      const newLayer = importGeoJsonToMap(geojsonData, "kml");
-      if (newLayer && newLayer.getBounds().isValid()) {
-        map.fitBounds(newLayer.getBounds());
-      }
-    } catch (error) {
-      console.error("Error parsing KML file:", error);
-      Swal.fire({
-        title: "KML Parse Error",
-        text: `Could not parse the file: ${error.message}`,
-      });
-    }
-  };
-  reader.readAsText(file);
-}
-
-/**
- * Imports and processes a KMZ file.
- * @param {File} file - The KMZ file to process
- */
-async function importKmzFile(file) {
-  if (!file) return;
-
-  const zip = new JSZip();
-  const justImportedLayers = L.featureGroup();
-
-  try {
-    const loadedZip = await zip.loadAsync(file);
-    const kmlFiles = loadedZip.filter(
-      (relativePath, file) => !file.dir && relativePath.toLowerCase().endsWith(".kml"),
-    );
-
-    if (kmlFiles.length === 0) {
-      return Swal.fire({
-        title: "No KML Data",
-        text: "No KML files could be found within the KMZ archive.",
-      });
-    }
-
-    // Process all KML files concurrently
-    await Promise.all(
-      kmlFiles.map(async (kmlFile) => {
-        const content = await kmlFile.async("text");
-        const kmlDom = new DOMParser().parseFromString(content, "text/xml");
-        const geojsonData = toGeoJSON.kml(kmlDom, { styles: true });
-
-        // Extract stravaId from ExtendedData for all placemarks
-        const placemarks = kmlDom.querySelectorAll("Placemark");
-        if (
-          geojsonData?.features?.length > 0 &&
-          placemarks.length === geojsonData.features.length
-        ) {
-          geojsonData.features.forEach((feature, index) => {
-            const placemark = placemarks[index];
-            const stravaIdData = placemark.querySelector('Data[name="stravaId"] value');
-            if (stravaIdData) {
-              feature.properties = feature.properties || {};
-              feature.properties.stravaId = stravaIdData.textContent.trim();
-            }
-          });
-        }
-
-        // Preserve ALL KML files except doc.kml (which is the index file)
-        if (kmlFile.name.toLowerCase() !== "doc.kml") {
-          preservedKmzFiles.push({ path: kmlFile.name, content: content });
-        }
-
-        // Import features if present
-        if (geojsonData?.features?.length > 0) {
-          const newLayer = importGeoJsonToMap(geojsonData, "kmz", kmlFile.name);
-          if (newLayer) {
-            justImportedLayers.addLayer(newLayer);
-          }
-        }
-      }),
-    );
-
-    if (justImportedLayers.getLayers().length > 0) {
-      const bounds = justImportedLayers.getBounds();
-      if (bounds.isValid()) {
-        map.fitBounds(bounds);
-      }
-    } else if (preservedKmzFiles.length > 0) {
-      Swal.fire({
-        title: "KMZ Structure Loaded",
-        text: "Empty KML files were found and will be preserved on export.",
-        timer: 2500,
-        showConfirmButton: false,
-      });
-    } else {
-      Swal.fire({
-        title: "KMZ Loaded (No Features)",
-        text: "No geographical features or preservable KML files found.",
-      });
-    }
-  } catch (error) {
-    console.error("Error loading or processing KMZ file:", error);
-    Swal.fire({
-      title: "KMZ Read Error",
-      text: `Could not read the file: ${error.message}`,
-    });
-  }
-}
-
-/**
- * Imports and processes a GPX file.
- * @param {File} file - The GPX file to process
- */
-function importGpxFile(file) {
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (readEvent) => {
-    try {
-      const dom = new DOMParser().parseFromString(readEvent.target.result, "text/xml");
-      const geojsonData = toGeoJSON.gpx(dom);
-
-      const tracksInDom = dom.querySelectorAll("trk");
-      const waypointsInDom = dom.querySelectorAll("wpt");
-      const pathFeatures = geojsonData.features.filter(
-        (f) => f.geometry.type === "LineString" || f.geometry.type === "MultiLineString",
-      );
-      const pointFeatures = geojsonData.features.filter((f) => f.geometry.type === "Point");
-
-      // Extract color and stravaId from tracks
-      if (pathFeatures.length === tracksInDom.length) {
-        pathFeatures.forEach((feature, index) => {
-          const trackNode = tracksInDom[index];
-          // Query for gpx_style:color, allowing for namespace variations
-          const colorNode = trackNode.querySelector("gpx_style\\:color, color");
-          if (colorNode) {
-            // Normalize to a CSS hex string
-            const hexColor = `#${colorNode.textContent.trim().toLowerCase()}`;
-            const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hexColor);
-            if (colorMatch) {
-              feature.properties = feature.properties || {};
-              feature.properties.colorName = colorMatch.name;
-            }
-          }
-          // Extract stravaId from extensions
-          const stravaIdNode = trackNode.querySelector("stravaId");
-          if (stravaIdNode) {
-            feature.properties = feature.properties || {};
-            feature.properties.stravaId = stravaIdNode.textContent.trim();
-          }
-        });
-      }
-
-      // Extract stravaId from waypoints
-      if (pointFeatures.length === waypointsInDom.length) {
-        pointFeatures.forEach((feature, index) => {
-          const waypointNode = waypointsInDom[index];
-          const stravaIdNode = waypointNode.querySelector("stravaId");
-          if (stravaIdNode) {
-            feature.properties = feature.properties || {};
-            feature.properties.stravaId = stravaIdNode.textContent.trim();
-          }
-        });
-      }
-
-      const newLayer = importGeoJsonToMap(geojsonData, "gpx");
-      if (newLayer && newLayer.getBounds().isValid()) {
-        map.fitBounds(newLayer.getBounds());
-      }
-    } catch (error) {
-      console.error("Error parsing GPX file:", error);
-      Swal.fire({
-        title: "GPX Parse Error",
-        text: `Could not parse the file: ${error.message}`,
-      });
-    }
-  };
-  reader.readAsText(file);
 }
 
 // 4. SHARING (URL-BASED)
