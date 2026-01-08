@@ -107,6 +107,8 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
   return layerGroup;
 }
 
+// GeoJSON
+
 /**
  * Imports and processes a GeoJSON file.
  * @param {File} file - The GeoJSON file to process
@@ -188,6 +190,8 @@ function importGeoJsonFile(file) {
   };
   reader.readAsText(file);
 }
+
+// KML / KMZ
 
 /**
  * Parses a color name from a KML style property.
@@ -341,6 +345,8 @@ async function importKmzFile(file) {
     });
   }
 }
+
+// GPX
 
 /**
  * Imports and processes a GPX file.
