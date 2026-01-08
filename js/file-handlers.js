@@ -32,6 +32,29 @@ const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
   "totalDistance", // Internal calculated distance - not needed in export
 ];
 
+/**
+ * Escapes special characters for use in XML/KML/GPX documents.
+ * @param {string} unsafe - The string to escape
+ * @returns {string} The escaped string
+ */
+function escapeXml(unsafe) {
+  if (!unsafe) return "";
+  return unsafe.toString().replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case "&":
+        return "&amp;";
+      case "'":
+        return "&apos;";
+      case '"':
+        return "&quot;";
+    }
+  });
+}
+
 // 2. IMPORT (FILE-BASED)
 // --------------------------------------------------------------------
 
@@ -228,7 +251,7 @@ function importKmlFile(file) {
   reader.onload = (readEvent) => {
     try {
       const dom = new DOMParser().parseFromString(readEvent.target.result, "text/xml");
-      const geojsonData = toGeoJSON.kml(dom);
+      const geojsonData = toGeoJSON.kml(dom, { styles: true });
 
       // Extract stravaId from ExtendedData for all placemarks
       const placemarks = dom.querySelectorAll("Placemark");
@@ -615,23 +638,6 @@ function convertLayerToKmlPlacemark(layer, defaultName, defaultDescription = "")
   const colorName = layer.feature?.properties?.colorName || "Red";
   const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName) || ORGANIC_MAPS_COLORS[0];
 
-  const escapeXml = (unsafe) => {
-    return unsafe.replace(/[<>&'"]/g, (c) => {
-      switch (c) {
-        case "<":
-          return "&lt;";
-        case ">":
-          return "&gt;";
-        case "&":
-          return "&amp;";
-        case "'":
-          return "&apos;";
-        case '"':
-          return "&quot;";
-      }
-    });
-  };
-
   const safeName = escapeXml(name);
   const safeDescription = description ? escapeXml(description) : "";
   const stravaId = layer.feature?.properties?.stravaId;
@@ -713,11 +719,13 @@ function buildKmlDocument(name, placemarks) {
       `  </Style>`,
   ).join("\n");
 
+  const safeName = escapeXml(name);
+
   return (
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<kml xmlns="http://www.opengis.net/kml/2.2">\n` +
     `<Document>\n` +
-    `  <name>${name}</name>\n` +
+    `  <name>${safeName}</name>\n` +
     `${kmlMarkerStyles}\n` +
     `${placemarks.join("\n")}\n` +
     `</Document>\n` +
@@ -833,12 +841,13 @@ function buildKmzArchive(docName) {
 
   if (networkLinks.length > 0) {
     networkLinks.sort((a, b) => a.name.localeCompare(b.name));
+    const safeDocName = escapeXml(docName);
     zip.file(
       "doc.kml",
-      `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n  <name>${docName}</name>\n${networkLinks
+      `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n  <name>${safeDocName}</name>\n${networkLinks
         .map(
           (link) =>
-            `  <NetworkLink>\n    <name>${link.name}</name>\n    <Link>\n      <href>${link.href}</href>\n    </Link>\n  </NetworkLink>`,
+            `  <NetworkLink>\n    <name>${escapeXml(link.name)}</name>\n    <Link>\n      <href>${link.href}</href>\n    </Link>\n  </NetworkLink>`,
         )
         .join("\n")}\n</Document>\n</kml>`,
     );
@@ -904,6 +913,9 @@ function convertLayerToGpx(layer) {
   const gpxColorHex = colorData ? colorData.css.substring(1).toUpperCase() : "E51B23";
   const stravaId = layer.feature?.properties?.stravaId;
 
+  const safeName = escapeXml(name);
+  const safeDescription = escapeXml(description);
+
   const header = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1"
     xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3"
@@ -932,7 +944,7 @@ function convertLayerToGpx(layer) {
 
     content = `
   <trk>
-    <name>${name}</name>
+    <name>${safeName}</name>
     <extensions>
       <gpx_style:line>
         <gpx_style:color>${gpxColorHex}</gpx_style:color>
@@ -961,7 +973,7 @@ function convertLayerToGpx(layer) {
 
     content = `
   <trk>
-    <name>${name}</name>
+    <name>${safeName}</name>
     <extensions>
       <gpx_style:line>
         <gpx_style:color>${gpxColorHex}</gpx_style:color>
@@ -975,7 +987,7 @@ function convertLayerToGpx(layer) {
     const latlng = layer.getLatLng();
     content = `
   <wpt lat="${latlng.lat}" lon="${latlng.lng}">
-    <name>${name}</name>${description ? `\n    <desc>${description}</desc>` : ""}${stravaId ? `\n    <extensions>\n      <stravaId>${stravaId}</stravaId>\n    </extensions>` : ""}
+    <name>${safeName}</name>${safeDescription ? `\n    <desc>${safeDescription}</desc>` : ""}${stravaId ? `\n    <extensions>\n      <stravaId>${stravaId}</stravaId>\n    </extensions>` : ""}
   </wpt>`;
   }
 
