@@ -6,7 +6,7 @@ const APP_TITLE = "OpenMapEditor: GPS, GPX, KML, GeoJSON & Strava Editor"; // Us
 // prettier-ignore
 const APP_DESCRIPTION = "Free online GPX, KML, KMZ & GeoJSON editor for hiking & biking. Draw, view & edit GPS tracks with routing, elevation profiles & Strava integration."; // Used in <meta name="description">
 // prettier-ignore
-const APP_CREDITS_DESCRIPTION = "OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths, areas, and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GPX, KML, KMZ, GeoJSON), routing, elevation profiles, custom styling, and Strava activity integration."; // Used in credits modal
+const APP_CREDITS_DESCRIPTION = "OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths, areas, and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GeoJSON, GPX, KML, KMZ), routing, elevation profiles, custom styling, and Strava activity integration."; // Used in credits modal
 const APP_DOMAIN = "www.openmapeditor.com"; // Used for Strava setup instructions
 
 /**
