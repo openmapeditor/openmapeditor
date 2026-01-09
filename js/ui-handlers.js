@@ -814,7 +814,7 @@ function updateColorPickerSelection(colorName) {
  * Replaces default Leaflet icons with Material Symbols.
  */
 function replaceDefaultIconsWithMaterialSymbols() {
-  const layersButton = document.querySelector('.leaflet-control-custom[title="Layers"]');
+  const layersButton = document.getElementById("layers-button");
   if (layersButton) {
     layersButton.querySelector("a").innerHTML = '<span class="material-symbols">layers</span>';
   }
@@ -859,21 +859,17 @@ function replaceDefaultIconsWithMaterialSymbols() {
     deleteButton.innerHTML = '<span class="material-symbols">delete</span>';
   }
 
-  const importButton = document.querySelector(
-    '.leaflet-control-custom[title="Import GPX/KML/KMZ/GeoJSON file"]',
-  );
+  const importButton = document.getElementById("import-button");
   if (importButton) {
     importButton.querySelector("a").innerHTML = '<span class="material-symbols">folder_open</span>';
   }
 
-  const downloadButton = document.getElementById("main-download-button");
+  const downloadButton = document.getElementById("download-button");
   if (downloadButton) {
     downloadButton.querySelector("a").innerHTML = '<span class="material-symbols">download</span>';
   }
 
-  const elevationButton = document.querySelector(
-    '.leaflet-control-custom[title="No path selected"]',
-  );
+  const elevationButton = document.getElementById("elevation-button");
   if (elevationButton) {
     elevationButton.querySelector("a").innerHTML =
       '<span class="material-symbols">elevation</span>';

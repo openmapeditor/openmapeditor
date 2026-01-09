@@ -496,6 +496,7 @@ function initializeMap() {
         "div",
         "leaflet-bar leaflet-control leaflet-control-custom",
       );
+      container.id = "layers-button";
       container.title = "Layers";
       const link = L.DomUtil.create("a", "", container);
       link.href = "#";
@@ -831,9 +832,9 @@ function initializeMap() {
     "click",
     function (event) {
       const layersPanel = document.getElementById("custom-layers-panel");
-      const layersButton = document.querySelector('.leaflet-control-custom[title="Layers"]');
+      const layersButton = document.getElementById("layers-button");
       const downloadMenu = document.querySelector(".download-submenu");
-      const downloadButton = document.getElementById("main-download-button");
+      const downloadButton = document.getElementById("download-button");
 
       if (
         layersPanel &&
@@ -865,6 +866,7 @@ function initializeMap() {
         "div",
         "leaflet-bar leaflet-control leaflet-control-custom",
       );
+      container.id = "elevation-button";
       container.title = "No path selected";
       container.innerHTML = '<a href="#" role="button"></a>';
       L.DomEvent.on(container, "click", (ev) => {
@@ -896,7 +898,7 @@ function initializeMap() {
         "leaflet-bar leaflet-control leaflet-control-custom",
       );
       container.title = "Download or share";
-      container.id = "main-download-button";
+      container.id = "download-button";
       container.style.position = "relative";
       container.innerHTML =
         '<a href="#" role="button"></a>' +
@@ -1267,6 +1269,7 @@ function initializeMap() {
         "div",
         "leaflet-bar leaflet-control leaflet-control-custom",
       );
+      container.id = "import-button";
       container.title = "Import GeoJSON/GPX/KML/KMZ file";
       const link = L.DomUtil.create("a", "", container);
       link.href = "#";

@@ -304,7 +304,7 @@ function updateDrawControlStates() {
     importedItems.getLayers().length > 0 ||
     currentRoutePath !== null;
 
-  const downloadButtonContainer = document.getElementById("main-download-button");
+  const downloadButtonContainer = document.getElementById("download-button");
   if (downloadButtonContainer) {
     if (hasLayers) {
       L.DomUtil.removeClass(downloadButtonContainer, "disabled");
