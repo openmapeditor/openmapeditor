@@ -238,6 +238,79 @@ function importGeoJsonFile(file) {
   reader.readAsText(file);
 }
 
+// GPX
+
+/**
+ * Imports and processes a GPX file.
+ * @param {File} file - The GPX file to process
+ */
+function importGpxFile(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (readEvent) => {
+    try {
+      const dom = new DOMParser().parseFromString(readEvent.target.result, "text/xml");
+      const geojsonData = toGeoJSON.gpx(dom);
+
+      const tracksInDom = dom.querySelectorAll("trk");
+      const waypointsInDom = dom.querySelectorAll("wpt");
+      const pathFeatures = geojsonData.features.filter(
+        (f) => f.geometry.type === "LineString" || f.geometry.type === "MultiLineString",
+      );
+      const pointFeatures = geojsonData.features.filter((f) => f.geometry.type === "Point");
+
+      // Extract color and stravaId from tracks
+      if (pathFeatures.length === tracksInDom.length) {
+        pathFeatures.forEach((feature, index) => {
+          const trackNode = tracksInDom[index];
+          // Query for gpx_style:color, allowing for namespace variations
+          const colorNode = trackNode.querySelector("gpx_style\\:color, color");
+          if (colorNode) {
+            // Normalize to a CSS hex string
+            const hexColor = `#${colorNode.textContent.trim().toLowerCase()}`;
+            const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hexColor);
+            if (colorMatch) {
+              feature.properties = feature.properties || {};
+              feature.properties.colorName = colorMatch.name;
+            }
+          }
+          // Extract stravaId from extensions
+          const stravaIdNode = trackNode.querySelector("stravaId");
+          if (stravaIdNode) {
+            feature.properties = feature.properties || {};
+            feature.properties.stravaId = stravaIdNode.textContent.trim();
+          }
+        });
+      }
+
+      // Extract stravaId from waypoints
+      if (pointFeatures.length === waypointsInDom.length) {
+        pointFeatures.forEach((feature, index) => {
+          const waypointNode = waypointsInDom[index];
+          const stravaIdNode = waypointNode.querySelector("stravaId");
+          if (stravaIdNode) {
+            feature.properties = feature.properties || {};
+            feature.properties.stravaId = stravaIdNode.textContent.trim();
+          }
+        });
+      }
+
+      const newLayer = importGeoJsonToMap(geojsonData, "gpx");
+      if (newLayer && newLayer.getBounds().isValid()) {
+        map.fitBounds(newLayer.getBounds());
+      }
+    } catch (error) {
+      console.error("Error parsing GPX file:", error);
+      Swal.fire({
+        title: "GPX Parse Error",
+        text: `Could not parse the file: ${error.message}`,
+      });
+    }
+  };
+  reader.readAsText(file);
+}
+
 // KML / KMZ
 
 /**
@@ -349,79 +422,6 @@ async function importKmzFile(file) {
       text: `Could not read the file: ${error.message}`,
     });
   }
-}
-
-// GPX
-
-/**
- * Imports and processes a GPX file.
- * @param {File} file - The GPX file to process
- */
-function importGpxFile(file) {
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (readEvent) => {
-    try {
-      const dom = new DOMParser().parseFromString(readEvent.target.result, "text/xml");
-      const geojsonData = toGeoJSON.gpx(dom);
-
-      const tracksInDom = dom.querySelectorAll("trk");
-      const waypointsInDom = dom.querySelectorAll("wpt");
-      const pathFeatures = geojsonData.features.filter(
-        (f) => f.geometry.type === "LineString" || f.geometry.type === "MultiLineString",
-      );
-      const pointFeatures = geojsonData.features.filter((f) => f.geometry.type === "Point");
-
-      // Extract color and stravaId from tracks
-      if (pathFeatures.length === tracksInDom.length) {
-        pathFeatures.forEach((feature, index) => {
-          const trackNode = tracksInDom[index];
-          // Query for gpx_style:color, allowing for namespace variations
-          const colorNode = trackNode.querySelector("gpx_style\\:color, color");
-          if (colorNode) {
-            // Normalize to a CSS hex string
-            const hexColor = `#${colorNode.textContent.trim().toLowerCase()}`;
-            const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hexColor);
-            if (colorMatch) {
-              feature.properties = feature.properties || {};
-              feature.properties.colorName = colorMatch.name;
-            }
-          }
-          // Extract stravaId from extensions
-          const stravaIdNode = trackNode.querySelector("stravaId");
-          if (stravaIdNode) {
-            feature.properties = feature.properties || {};
-            feature.properties.stravaId = stravaIdNode.textContent.trim();
-          }
-        });
-      }
-
-      // Extract stravaId from waypoints
-      if (pointFeatures.length === waypointsInDom.length) {
-        pointFeatures.forEach((feature, index) => {
-          const waypointNode = waypointsInDom[index];
-          const stravaIdNode = waypointNode.querySelector("stravaId");
-          if (stravaIdNode) {
-            feature.properties = feature.properties || {};
-            feature.properties.stravaId = stravaIdNode.textContent.trim();
-          }
-        });
-      }
-
-      const newLayer = importGeoJsonToMap(geojsonData, "gpx");
-      if (newLayer && newLayer.getBounds().isValid()) {
-        map.fitBounds(newLayer.getBounds());
-      }
-    } catch (error) {
-      console.error("Error parsing GPX file:", error);
-      Swal.fire({
-        title: "GPX Parse Error",
-        text: `Could not parse the file: ${error.message}`,
-      });
-    }
-  };
-  reader.readAsText(file);
 }
 
 // 3. EXPORT (FILE-BASED)
@@ -610,6 +610,103 @@ function exportGeoJson(options = {}) {
     // Strava mode was silent in the original, so we keep it silent
   }
   // Single mode is silent (follows GPX pattern)
+}
+
+// GPX
+
+/**
+ * Converts a Leaflet layer to a GPX string, supporting markers and paths with Organic Maps colors.
+ * @param {L.Layer} layer - The layer to convert
+ * @returns {string} The GPX file content as a string
+ */
+function convertLayerToGpx(layer) {
+  const name = layer.feature?.properties?.name || "Exported Feature";
+  const description = layer.feature?.properties?.description || "";
+  const colorName = layer.feature?.properties?.colorName || "Red";
+  const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
+  const gpxColorHex = colorData ? colorData.css.substring(1).toUpperCase() : "E51B23";
+  const stravaId = layer.feature?.properties?.stravaId;
+
+  const safeName = escapeXml(name);
+  const safeDescription = escapeXml(description);
+
+  const header = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1"
+    xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3"
+    xmlns:gpx_style="http://www.topografix.com/GPX/gpx_style/0/2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.topografix.com/GPX/1/1 https://www.topografix.com/GPX/1/1/gpx.xsd http://www.topografix.com/GPX/gpx_style/0/2 https://www.topografix.com/GPX/gpx_style/0/2/gpx_style.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 https://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd">`;
+
+  let content = "";
+
+  if (layer instanceof L.Polygon) {
+    let latlngs = layer.getLatLngs()[0];
+
+    // Close the polygon by adding the first point at the end
+    const closedLatLngs = [...latlngs, latlngs[0]];
+
+    const pathPoints = closedLatLngs
+      .map((p) => {
+        let pt = `<trkpt lat="${p.lat}" lon="${p.lng}">`;
+        if (typeof p.alt !== "undefined" && p.alt !== null) {
+          pt += `<ele>${p.alt}</ele>`;
+        }
+        pt += `</trkpt>`;
+        return pt;
+      })
+      .join("\n      ");
+
+    content = `
+  <trk>
+    <name>${safeName}</name>
+    <extensions>
+      <gpx_style:line>
+        <gpx_style:color>${gpxColorHex}</gpx_style:color>
+      </gpx_style:line>${stravaId ? `\n      <stravaId>${stravaId}</stravaId>` : ""}
+    </extensions>
+    <trkseg>
+      ${pathPoints}
+    </trkseg>
+  </trk>`;
+  } else if (layer instanceof L.Polyline) {
+    let latlngs = layer.getLatLngs();
+    while (latlngs.length > 0 && Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
+      latlngs = latlngs[0];
+    }
+
+    const pathPoints = latlngs
+      .map((p) => {
+        let pt = `<trkpt lat="${p.lat}" lon="${p.lng}">`;
+        if (typeof p.alt !== "undefined" && p.alt !== null) {
+          pt += `<ele>${p.alt}</ele>`;
+        }
+        pt += `</trkpt>`;
+        return pt;
+      })
+      .join("\n      ");
+
+    content = `
+  <trk>
+    <name>${safeName}</name>
+    <extensions>
+      <gpx_style:line>
+        <gpx_style:color>${gpxColorHex}</gpx_style:color>
+      </gpx_style:line>${stravaId ? `\n      <stravaId>${stravaId}</stravaId>` : ""}
+    </extensions>
+    <trkseg>
+      ${pathPoints}
+    </trkseg>
+  </trk>`;
+  } else if (layer instanceof L.Marker) {
+    const latlng = layer.getLatLng();
+    content = `
+  <wpt lat="${latlng.lat}" lon="${latlng.lng}">
+    <name>${safeName}</name>${safeDescription ? `\n    <desc>${safeDescription}</desc>` : ""}${stravaId ? `\n    <extensions>\n      <stravaId>${stravaId}</stravaId>\n    </extensions>` : ""}
+  </wpt>`;
+  }
+
+  const footer = "\n</gpx>";
+  return header + content + footer;
 }
 
 // KML / KMZ
@@ -890,103 +987,6 @@ function exportKmz() {
         text: `Failed to generate KMZ file: ${error.message}`,
       });
     });
-}
-
-// GPX
-
-/**
- * Converts a Leaflet layer to a GPX string, supporting markers and paths with Organic Maps colors.
- * @param {L.Layer} layer - The layer to convert
- * @returns {string} The GPX file content as a string
- */
-function convertLayerToGpx(layer) {
-  const name = layer.feature?.properties?.name || "Exported Feature";
-  const description = layer.feature?.properties?.description || "";
-  const colorName = layer.feature?.properties?.colorName || "Red";
-  const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-  const gpxColorHex = colorData ? colorData.css.substring(1).toUpperCase() : "E51B23";
-  const stravaId = layer.feature?.properties?.stravaId;
-
-  const safeName = escapeXml(name);
-  const safeDescription = escapeXml(description);
-
-  const header = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1"
-    xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3"
-    xmlns:gpx_style="http://www.topografix.com/GPX/gpx_style/0/2"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.topografix.com/GPX/1/1 https://www.topografix.com/GPX/1/1/gpx.xsd http://www.topografix.com/GPX/gpx_style/0/2 https://www.topografix.com/GPX/gpx_style/0/2/gpx_style.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 https://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd">`;
-
-  let content = "";
-
-  if (layer instanceof L.Polygon) {
-    let latlngs = layer.getLatLngs()[0];
-
-    // Close the polygon by adding the first point at the end
-    const closedLatLngs = [...latlngs, latlngs[0]];
-
-    const pathPoints = closedLatLngs
-      .map((p) => {
-        let pt = `<trkpt lat="${p.lat}" lon="${p.lng}">`;
-        if (typeof p.alt !== "undefined" && p.alt !== null) {
-          pt += `<ele>${p.alt}</ele>`;
-        }
-        pt += `</trkpt>`;
-        return pt;
-      })
-      .join("\n      ");
-
-    content = `
-  <trk>
-    <name>${safeName}</name>
-    <extensions>
-      <gpx_style:line>
-        <gpx_style:color>${gpxColorHex}</gpx_style:color>
-      </gpx_style:line>${stravaId ? `\n      <stravaId>${stravaId}</stravaId>` : ""}
-    </extensions>
-    <trkseg>
-      ${pathPoints}
-    </trkseg>
-  </trk>`;
-  } else if (layer instanceof L.Polyline) {
-    let latlngs = layer.getLatLngs();
-    while (latlngs.length > 0 && Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
-      latlngs = latlngs[0];
-    }
-
-    const pathPoints = latlngs
-      .map((p) => {
-        let pt = `<trkpt lat="${p.lat}" lon="${p.lng}">`;
-        if (typeof p.alt !== "undefined" && p.alt !== null) {
-          pt += `<ele>${p.alt}</ele>`;
-        }
-        pt += `</trkpt>`;
-        return pt;
-      })
-      .join("\n      ");
-
-    content = `
-  <trk>
-    <name>${safeName}</name>
-    <extensions>
-      <gpx_style:line>
-        <gpx_style:color>${gpxColorHex}</gpx_style:color>
-      </gpx_style:line>${stravaId ? `\n      <stravaId>${stravaId}</stravaId>` : ""}
-    </extensions>
-    <trkseg>
-      ${pathPoints}
-    </trkseg>
-  </trk>`;
-  } else if (layer instanceof L.Marker) {
-    const latlng = layer.getLatLng();
-    content = `
-  <wpt lat="${latlng.lat}" lon="${latlng.lng}">
-    <name>${safeName}</name>${safeDescription ? `\n    <desc>${safeDescription}</desc>` : ""}${stravaId ? `\n    <extensions>\n      <stravaId>${stravaId}</stravaId>\n    </extensions>` : ""}
-  </wpt>`;
-  }
-
-  const footer = "\n</gpx>";
-  return header + content + footer;
 }
 
 // 4. SHARING (URL-BASED)

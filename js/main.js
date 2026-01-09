@@ -1267,14 +1267,14 @@ function initializeMap() {
         "div",
         "leaflet-bar leaflet-control leaflet-control-custom",
       );
-      container.title = "Import GPX/KML/KMZ/GeoJSON file";
+      container.title = "Import GeoJSON/GPX/KML/KMZ file";
       const link = L.DomUtil.create("a", "", container);
       link.href = "#";
       link.role = "button";
       link.innerHTML = "";
       const input = L.DomUtil.create("input", "hidden", container);
       input.type = "file";
-      input.accept = ".gpx,.kml,.kmz,.geojson,.json";
+      input.accept = ".geojson,.json,.gpx,.kml,.kmz";
       input.style.display = "none";
 
       L.DomEvent.on(link, "click", (e) => {
@@ -1289,12 +1289,12 @@ function initializeMap() {
 
         if (fileNameLower.endsWith(".geojson") || fileNameLower.endsWith(".json")) {
           importGeoJsonFile(file);
+        } else if (fileNameLower.endsWith(".gpx")) {
+          importGpxFile(file);
         } else if (fileNameLower.endsWith(".kml")) {
           importKmlFile(file);
         } else if (fileNameLower.endsWith(".kmz")) {
           importKmzFile(file);
-        } else if (fileNameLower.endsWith(".gpx")) {
-          importGpxFile(file);
         }
         e.target.value = "";
       });
