@@ -217,6 +217,31 @@ function importGeoJsonFile(file) {
 // KML / KMZ
 
 /**
+ * Parses KML text content to GeoJSON with stravaId extraction.
+ * @param {string} kmlText - The KML file content as text
+ * @returns {object} GeoJSON data with extracted stravaId properties
+ */
+function parseKmlContent(kmlText) {
+  const dom = new DOMParser().parseFromString(kmlText, "text/xml");
+  const geojsonData = toGeoJSON.kml(dom, { styles: true });
+
+  // Extract stravaId from ExtendedData for all placemarks
+  const placemarks = dom.querySelectorAll("Placemark");
+  if (geojsonData?.features?.length > 0 && placemarks.length === geojsonData.features.length) {
+    geojsonData.features.forEach((feature, index) => {
+      const placemark = placemarks[index];
+      const stravaIdData = placemark.querySelector('Data[name="stravaId"] value');
+      if (stravaIdData) {
+        feature.properties = feature.properties || {};
+        feature.properties.stravaId = stravaIdData.textContent.trim();
+      }
+    });
+  }
+
+  return geojsonData;
+}
+
+/**
  * Parses a color name from a KML style property.
  * @param {object} properties - The feature properties
  * @returns {string} The color name or "Red" as default
@@ -250,21 +275,7 @@ function importKmlFile(file) {
   const reader = new FileReader();
   reader.onload = (readEvent) => {
     try {
-      const dom = new DOMParser().parseFromString(readEvent.target.result, "text/xml");
-      const geojsonData = toGeoJSON.kml(dom, { styles: true });
-
-      // Extract stravaId from ExtendedData for all placemarks
-      const placemarks = dom.querySelectorAll("Placemark");
-      if (geojsonData?.features?.length > 0 && placemarks.length === geojsonData.features.length) {
-        geojsonData.features.forEach((feature, index) => {
-          const placemark = placemarks[index];
-          const stravaIdData = placemark.querySelector('Data[name="stravaId"] value');
-          if (stravaIdData) {
-            feature.properties = feature.properties || {};
-            feature.properties.stravaId = stravaIdData.textContent.trim();
-          }
-        });
-      }
+      const geojsonData = parseKmlContent(readEvent.target.result);
 
       const newLayer = importGeoJsonToMap(geojsonData, "kml");
       if (newLayer && newLayer.getBounds().isValid()) {
@@ -308,24 +319,7 @@ async function importKmzFile(file) {
     await Promise.all(
       kmlFiles.map(async (kmlFile) => {
         const content = await kmlFile.async("text");
-        const kmlDom = new DOMParser().parseFromString(content, "text/xml");
-        const geojsonData = toGeoJSON.kml(kmlDom, { styles: true });
-
-        // Extract stravaId from ExtendedData for all placemarks
-        const placemarks = kmlDom.querySelectorAll("Placemark");
-        if (
-          geojsonData?.features?.length > 0 &&
-          placemarks.length === geojsonData.features.length
-        ) {
-          geojsonData.features.forEach((feature, index) => {
-            const placemark = placemarks[index];
-            const stravaIdData = placemark.querySelector('Data[name="stravaId"] value');
-            if (stravaIdData) {
-              feature.properties = feature.properties || {};
-              feature.properties.stravaId = stravaIdData.textContent.trim();
-            }
-          });
-        }
+        const geojsonData = parseKmlContent(content);
 
         // Import features if present
         if (geojsonData?.features?.length > 0) {
