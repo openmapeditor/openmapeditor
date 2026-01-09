@@ -1,5 +1,17 @@
 // Copyright (C) 2025 Aron Sommer. See LICENSE file for full license details.
 
+/**
+ * FILE HANDLING
+ *
+ * Handles import/export for GeoJSON, GPX, KML, KMZ formats.
+ * All formats preserve full precision coordinates, name, description, color, stravaId.
+ *
+ * Color handling:
+ * - GPX: colors extracted from DOM before importGeoJsonToMap()
+ * - GeoJSON/KML/KMZ: colors parsed inside importGeoJsonToMap() via helper functions
+ * - All formats default to "Red" if color not in palette
+ */
+
 // 1. GENERAL UTILITIES
 // --------------------------------------------------------------------
 
@@ -56,6 +68,20 @@ function escapeXml(unsafe) {
 }
 
 /**
+ * Parses color from standard GeoJSON stroke/marker-color properties.
+ * @param {object} properties - The GeoJSON feature properties
+ * @returns {string|null} The matched color name or null
+ */
+function parseColorFromGeoJsonStyle(properties) {
+  if (properties?.stroke || properties?.["marker-color"]) {
+    const hexColor = (properties.stroke || properties["marker-color"]).toLowerCase();
+    const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hexColor);
+    if (colorMatch) return colorMatch.name;
+  }
+  return null;
+}
+
+/**
  * Parses a color name from a KML style property.
  * @param {object} properties - The feature properties
  * @returns {string} The color name or "Red" as default
@@ -91,24 +117,32 @@ function parseColorFromKmlStyle(properties) {
  */
 function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
   const targetGroup = importedItems; // All imported files go to the same group
+  const isKmlBased = fileType === "kml" || fileType === "kmz";
+
+  /**
+   * Internal helper to resolve the color name for a feature.
+   * Color resolution: try colorName, then format-specific parsing, then default to Red.
+   */
+  const resolveColorName = (properties) => {
+    if (!properties) return "Red"; // Guard against missing properties object
+    return (
+      properties.colorName || // Use colorName if present
+      (isKmlBased
+        ? parseColorFromKmlStyle(properties) // KML/KMZ parsing
+        : parseColorFromGeoJsonStyle(properties)) || // GeoJSON stroke/marker-color
+      "Red" // Default
+    );
+  };
 
   const layerGroup = L.geoJSON(geoJsonData, {
     style: (feature) => {
-      const isKmlBased = fileType === "kml" || fileType === "kmz";
-      // For GPX, color is pre-enriched. For KML/KMZ, it's parsed here.
-      const colorName =
-        feature.properties.colorName ||
-        (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
-
+      const colorName = resolveColorName(feature.properties);
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
       const color = colorData ? colorData.css : ORGANIC_MAPS_COLORS[0].css; // Fallback to Red
       return { ...STYLE_CONFIG.path.default, color: color };
     },
     onEachFeature: (feature, layer) => {
-      const isKmlBased = fileType === "kml" || fileType === "kmz";
-      const colorName =
-        feature.properties.colorName ||
-        (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
+      const colorName = resolveColorName(feature.properties);
 
       // Validate colorName - if not in palette, use Red
       const isValidColor = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
@@ -126,10 +160,7 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
       });
     },
     pointToLayer: (feature, latlng) => {
-      const isKmlBased = fileType === "kml" || fileType === "kmz";
-      const colorName =
-        feature.properties.colorName ||
-        (isKmlBased ? parseColorFromKmlStyle(feature.properties) : "Red");
+      const colorName = resolveColorName(feature.properties);
 
       const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
       const color = colorData ? colorData.css : ORGANIC_MAPS_COLORS[0].css; // Fallback to Red
@@ -183,31 +214,11 @@ function importGeoJsonFile(file) {
         throw new Error("GeoJSON must be a FeatureCollection or Feature");
       }
 
-      // Filter for supported geometry types and preserve color information
+      // Filter for supported geometry types
+      // Color parsing is handled centrally in importGeoJsonToMap()
       const supportedTypes = ["Point", "LineString", "Polygon"];
       const filteredFeatures = features.filter((feature) => {
-        if (!feature.geometry || !supportedTypes.includes(feature.geometry.type)) {
-          return false;
-        }
-
-        // Preserve colorName if present (for round-trip)
-        if (feature.properties?.colorName) {
-          // Already has our color format - keep it
-          return true;
-        }
-
-        // Try to parse standard GeoJSON colors for compatibility
-        if (feature.properties?.stroke || feature.properties?.["marker-color"]) {
-          const colorHex = (
-            feature.properties.stroke || feature.properties["marker-color"]
-          ).toLowerCase();
-          const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === colorHex);
-          if (colorMatch) {
-            feature.properties.colorName = colorMatch.name;
-          }
-        }
-
-        return true;
+        return feature.geometry && supportedTypes.includes(feature.geometry.type);
       });
 
       if (filteredFeatures.length === 0) {
