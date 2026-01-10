@@ -114,7 +114,7 @@ layer.isDeletedFromToolbar = true; // Flag for toolbar synchronization
 
 ### Palette
 
-The app uses **16 Organic Maps Colors** defined in `js/config.js` (e.g., Red, Pink, Purple, Blue, etc.).
+The app uses **16 Organic Maps Colors** defined in `ORGANIC_MAPS_COLORS` in [js/config.js](https://github.com/openmapeditor/openmapeditor/blob/main/js/config.js) (e.g., Red, Pink, Purple, Blue, etc.).
 
 Each color has three representations:
 
@@ -132,18 +132,18 @@ Each color has three representations:
 
 ## Import System
 
-**File:** `js/file-handlers.js`
+**File:** [js/file-handlers.js](https://github.com/openmapeditor/openmapeditor/blob/main/js/file-handlers.js)
 
 ### Supported Formats & Entry Points
 
-- **GeoJSON** (`.geojson`, `.json`): `importGeoJsonFile(file)`
-- **GPX** (`.gpx`): `importGpxFile(file)`
-- **KML** (`.kml`): `importKmlFile(file)`
-- **KMZ** (`.kmz`): `importKmzFile(file)` (asynchronous)
+- **GeoJSON** (`.geojson`, `.json`): [`importGeoJsonFile(file)`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:importGeoJsonFile+path:js/file-handlers.js)
+- **GPX** (`.gpx`): [`importGpxFile(file)`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:importGpxFile+path:js/file-handlers.js)
+- **KML** (`.kml`): [`importKmlFile(file)`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:importKmlFile+path:js/file-handlers.js)
+- **KMZ** (`.kmz`): [`importKmzFile(file)`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:importKmzFile+path:js/file-handlers.js)
 
 ### Import Strategy
 
-1.  **toGeoJSON**: GPX and KML are converted to GeoJSON using the `toGeoJSON` library.
+1.  **toGeoJSON**: GPX and KML are converted to GeoJSON using the [`toGeoJSON`](https://github.com/mapbox/togeojson) library.
 2.  **Validation**: Filters for supported geometry types (Point, LineString, Polygon).
 3.  **Enrichment**: Extracts `stravaId` and `colorName` from format-specific extensions.
 4.  **Integration**: Features are added to the `importedItems` group and the global contents list.
@@ -152,22 +152,22 @@ Each color has three representations:
 
 ## Export System
 
-**File:** `js/file-handlers.js`
+**File:** [js/file-handlers.js](https://github.com/openmapeditor/openmapeditor/blob/main/js/file-handlers.js)
 
-### GeoJSON Export (`exportGeoJson`)
+### GeoJSON Export ([`exportGeoJson`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:exportGeoJson+path:js/file-handlers.js))
 
 - Exports all or selected items.
 - Injects standard GeoJSON styling properties (`stroke`, `fill`, `marker-color`) for compatibility with external tools (like geojson.io).
 - Excludes calculated metadata like `totalDistance`.
 
-### GPX Export (`convertLayerToGpx`)
+### GPX Export ([`convertLayerToGpx`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:convertLayerToGpx+path:js/file-handlers.js))
 
 - Markers become `<wpt>` (waypoints).
 - Paths and Areas become `<trk>` (tracks).
 - Colors are stored in the `<gpx_style:color>` extension.
 - `stravaId` is stored in the `<extensions>` block.
 
-### KMZ Export (`exportKmz`)
+### KMZ Export ([`exportKmz`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:exportKmz+path:js/file-handlers.js))
 
 - **Structure Preservation**: If features were imported from a KMZ, the app preserves the original file structure (grouped by `originalKmzPath`).
 - **File Organization**:
@@ -184,7 +184,7 @@ The "Share Map" feature encodes the entire map state into an LZ-String compresse
 
 **Encoding Pipeline:**
 
-1.  **Coordinate Compression**: Coordinates are encoded using the **Google Polyline Algorithm** (Precision 5).
+1.  **Coordinate Compression**: Coordinates are encoded using the **Google Polyline Algorithm** (Precision 5) via [Leaflet.encoded](https://github.com/jieter/Leaflet.encoded/blob/0.0.9/Polyline.encoded.js).
 2.  **Property Minification**: Property names are shortened (`n` for name, `s` for style, `t` for type).
 3.  **Omission**: Defaults (like color "Red") and empty fields are omitted.
 4.  **LZ-String**: The resulting JSON is compressed into a URI-safe string.
@@ -195,7 +195,7 @@ This allows sharing complex maps with multiple paths and markers while staying w
 
 ## WMS Layers System
 
-**File:** `js/wms-import.js`
+**File:** [js/wms-import.js](https://github.com/openmapeditor/openmapeditor/blob/main/js/wms-import.js)
 
 Users can import custom WMS (Web Map Service) layers.
 
@@ -229,7 +229,7 @@ To edit the geometry of an imported item:
 
 - **Status**: Valid.
 - **Symptom**: Descriptions are imported and exported correctly but cannot be edited in the UI.
-- **Planned Fix**: Add a text area for descriptions in the Info Panel (`js/ui-handlers.js`).
+- **Planned Fix**: Add a text area for descriptions in the Info Panel ([js/ui-handlers.js](https://github.com/openmapeditor/openmapeditor/blob/main/js/ui-handlers.js)).
 
 ### 2. Multi-Geometry Filtering
 
