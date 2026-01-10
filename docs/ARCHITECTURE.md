@@ -34,7 +34,7 @@ All formats (GeoJSON, GPX, KML, KMZ) are fully compatible - data imported in one
 
 ### Layer Groups (Leaflet FeatureGroups)
 
-All map features are managed in specific Leaflet FeatureGroups to maintain clear separation:
+All map features are managed in specific [Leaflet FeatureGroups](https://github.com/openmapeditor/openmapeditor/search?q=L.featureGroup+path:js/main.js) to maintain clear separation:
 
 | Layer Group             | Purpose                                                  | Can Edit Geometry?   |
 | ----------------------- | -------------------------------------------------------- | -------------------- |
@@ -46,7 +46,7 @@ All map features are managed in specific Leaflet FeatureGroups to maintain clear
 
 ### Feature Structure
 
-Every layer (Path, Area, or Marker) has a `.feature` object following the GeoJSON structure:
+Every layer (Path, Area, or Marker) has a [`.feature` object](https://github.com/openmapeditor/openmapeditor/search?q=layer.feature+path:js/) following the GeoJSON structure:
 
 ```javascript
 layer.feature = {
