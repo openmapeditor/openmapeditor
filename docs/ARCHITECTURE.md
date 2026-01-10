@@ -16,7 +16,7 @@
 8. [URL Sharing System](#url-sharing-system)
 9. [WMS Layers System](#wms-layers-system)
 10. [Editing Behavior](#editing-behavior)
-11. [Known Issues](#known-issues)
+11. [Known Limitations](#known-limitations)
 
 ---
 
@@ -66,7 +66,7 @@ layer.feature = {
 
 ### Layer Metadata
 
-Beyond the GeoJSON object, layers store additional runtime metadata:
+Beyond the GeoJSON object, [layers store additional metadata](https://github.com/openmapeditor/openmapeditor/search?q=layer.pathType+path:js/) at runtime:
 
 ```javascript
 layer.pathType = "drawn" | "gpx" | "kml" | "kmz" | "geojson" | "route" | "strava";
@@ -223,19 +223,15 @@ To edit the geometry of an imported item:
 
 ---
 
-## Known Issues
+## Known Limitations
 
-### 1. Description Editing UI Missing
+### Multi-Geometry Types Not Supported
 
-- **Status**: Valid.
-- **Symptom**: Descriptions are imported and exported correctly but cannot be edited in the UI.
-- **Planned Fix**: Add a text area for descriptions in the Info Panel ([js/ui-handlers.js](https://github.com/openmapeditor/openmapeditor/blob/main/js/ui-handlers.js)).
+The app only supports simple geometry types: `Point`, `LineString`, and `Polygon`. Features with `MultiPoint`, `MultiLineString`, `MultiPolygon`, or `GeometryCollection` geometries are filtered out during import.
 
-### 2. Multi-Geometry Filtering
+**Code Reference:** [`supportedTypes` filter in importGeoJsonFile](https://github.com/openmapeditor/openmapeditor/search?q=supportedTypes+path:js/file-handlers.js)
 
-- **Status**: Valid.
-- **Symptom**: `MultiLineString` and `MultiPolygon` geometries are often simplified to single instances on import or filtered out.
-- **Recommendation**: Map sources should use simple FeatureCollections for best results.
+**Recommendation:** Use simple FeatureCollections where each feature contains a single geometry.
 
 ---
 
