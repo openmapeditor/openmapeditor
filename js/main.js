@@ -996,6 +996,7 @@ function initializeMap() {
 
   const CUSTOM_LOCATE_ICON_SIZE = 50;
 
+  // Static location arrow icon (used for testing alignment without rotation)
   const locationArrowIcon = L.divIcon({
     html: `<img src="/img/location-arrow.svg" style="width: ${CUSTOM_LOCATE_ICON_SIZE}px; height: ${CUSTOM_LOCATE_ICON_SIZE}px;">`,
     className: "custom-locate-icon",
@@ -1003,6 +1004,9 @@ function initializeMap() {
     iconAnchor: [(100 / 230) * CUSTOM_LOCATE_ICON_SIZE, (150 / 245) * CUSTOM_LOCATE_ICON_SIZE],
   });
 
+  // Custom compass marker that extends L.Control.Locate.LocationMarker (normally a circle)
+  // Adds compass heading support and uses a custom arrow image (location-arrow.svg)
+  // that rotates based on device heading
   const locationCompassArrowIcon = L.Control.Locate.LocationMarker.extend({
     initialize(latlng, heading, options) {
       leaflet.setOptions(this, options);
@@ -1067,6 +1071,15 @@ function initializeMap() {
       showPopup: false,
       showCompass: true,
       compassClass: locationCompassArrowIcon,
+      // To test the static arrow without rotation, uncomment the markerClass below
+      // and comment out the compassClass line above. This is useful for testing
+      // icon alignment and appearance without compass heading.
+      //
+      // markerClass: L.Marker.extend({
+      //   options: {
+      //     icon: locationArrowIcon,
+      //   },
+      // }),
       markerStyle: {
         color: "white",
         fillColor: locateCircleColor,
