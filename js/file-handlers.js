@@ -68,6 +68,13 @@ function escapeXml(unsafe) {
 }
 
 /**
+ * Supported geometry types for import.
+ * Multi-geometry types (MultiLineString, MultiPolygon, etc.) and GeometryCollections
+ * are filtered out to ensure compatibility with editing and calculation tools.
+ */
+const SUPPORTED_IMPORT_GEOM_TYPES = ["Point", "LineString", "Polygon"];
+
+/**
  * Parses color from standard GeoJSON stroke/marker-color properties.
  * @param {object} properties - The GeoJSON feature properties
  * @returns {string|null} The matched color name or null
@@ -216,9 +223,8 @@ function importGeoJsonFile(file) {
 
       // Filter for supported geometry types
       // Color parsing is handled centrally in importGeoJsonToMap()
-      const supportedTypes = ["Point", "LineString", "Polygon"];
       const filteredFeatures = features.filter((feature) => {
-        return feature.geometry && supportedTypes.includes(feature.geometry.type);
+        return feature.geometry && SUPPORTED_IMPORT_GEOM_TYPES.includes(feature.geometry.type);
       });
 
       if (filteredFeatures.length === 0) {
@@ -266,10 +272,8 @@ function importGpxFile(file) {
 
       const tracksInDom = dom.querySelectorAll("trk");
       const waypointsInDom = dom.querySelectorAll("wpt");
-      const pathFeatures = geojsonData.features.filter(
-        (f) => f.geometry.type === "LineString" || f.geometry.type === "MultiLineString",
-      );
-      const pointFeatures = geojsonData.features.filter((f) => f.geometry.type === "Point");
+      const pathFeatures = geojsonData.features.filter((f) => f.geometry?.type === "LineString");
+      const pointFeatures = geojsonData.features.filter((f) => f.geometry?.type === "Point");
 
       // Extract color and stravaId from tracks
       if (pathFeatures.length === tracksInDom.length) {
@@ -306,6 +310,11 @@ function importGpxFile(file) {
           }
         });
       }
+
+      // Filter for supported geometry types only
+      geojsonData.features = geojsonData.features.filter(
+        (f) => f.geometry && SUPPORTED_IMPORT_GEOM_TYPES.includes(f.geometry.type),
+      );
 
       const newLayer = importGeoJsonToMap(geojsonData, "gpx");
       if (newLayer && newLayer.getBounds().isValid()) {
@@ -344,6 +353,13 @@ function parseKmlContent(kmlText) {
         feature.properties.stravaId = stravaIdData.textContent.trim();
       }
     });
+  }
+
+  // Filter for supported geometry types only
+  if (geojsonData?.features) {
+    geojsonData.features = geojsonData.features.filter(
+      (f) => f.geometry && SUPPORTED_IMPORT_GEOM_TYPES.includes(f.geometry.type),
+    );
   }
 
   return geojsonData;
