@@ -54,6 +54,12 @@ This project is self-contained and does not require a package manager (`npm`).
 3.  **Run the Application**
     Local development requires running the project from a local web server. Opening `index.html` directly from your filesystem will not work correctly.
 
+4.  **Code Formatting**
+    The project uses the Prettier CLI (rather than the VS Code extension) to ensure consistent formatting across all environments. It is configured with a 100-character line width in [.prettierrc](.prettierrc).
+    - **Via CLI**: Format a specific file with `npx prettier --write "path/to/file"`.
+    - **Via VS Code**: Run the "Format with Prettier CLI" task (Terminal > Run Task...).
+    - **Pro Tip**: Check the comments in [.vscode/tasks.json](.vscode/tasks.json) for instructions on how to bind this task to the standard Shift+Alt+F shortcut.
+
 ---
 
 ## Production Deployment
