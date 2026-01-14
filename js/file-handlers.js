@@ -70,7 +70,7 @@ function escapeXml(unsafe) {
 /**
  * Supported geometry types for import.
  * Multi-geometry types (MultiLineString, MultiPolygon, etc.) and GeometryCollections
- * are filtered out to ensure compatibility with editing and calculation tools.
+ * are automatically exploded into separate simple features for editing compatibility.
  */
 const SUPPORTED_IMPORT_GEOM_TYPES = ["Point", "LineString", "Polygon"];
 
@@ -110,6 +110,112 @@ function parseColorFromKmlStyle(properties) {
     if (colorMatch) return colorMatch.name;
   }
   return "Red";
+}
+
+/**
+ * Parses colors from GPX DOM and attaches them to GeoJSON features.
+ * Must be called BEFORE explosion to ensure all segments inherit the color.
+ * @param {Document} dom - The parsed GPX XML document
+ * @param {object} geojsonData - The GeoJSON data from toGeoJSON.gpx()
+ */
+function parseColorFromGpxDom(dom, geojsonData) {
+  const tracksInDom = dom.querySelectorAll("trk");
+
+  // Extract colors from each track in the DOM
+  const trackColors = [];
+  tracksInDom.forEach((trackNode) => {
+    const colorNode = trackNode.querySelector("gpx_style\\:color, color");
+    if (colorNode) {
+      const hexColor = `#${colorNode.textContent.trim().toLowerCase()}`;
+      const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hexColor);
+      trackColors.push(colorMatch ? colorMatch.name : null);
+    } else {
+      trackColors.push(null);
+    }
+  });
+
+  // Apply colors to track features (both LineString and MultiLineString)
+  let trackIndex = 0;
+  geojsonData.features.forEach((feature) => {
+    if (feature.geometry?.type === "LineString" || feature.geometry?.type === "MultiLineString") {
+      if (trackIndex < trackColors.length && trackColors[trackIndex]) {
+        feature.properties = feature.properties || {};
+        feature.properties.colorName = trackColors[trackIndex];
+      }
+      trackIndex++;
+    }
+  });
+}
+
+/**
+ * Explodes multi-geometries and GeometryCollections into separate features.
+ * Converts MultiLineString, MultiPolygon, MultiPoint, and GeometryCollection
+ * into arrays of simple features that can be edited individually.
+ * @param {object} feature - GeoJSON feature that may contain multi-geometry
+ * @returns {Array} Array of features with simple geometries only
+ */
+function explodeMultiGeometries(feature) {
+  if (!feature.geometry) return [];
+
+  const geomType = feature.geometry.type;
+
+  // Map geometry types to user-friendly names for labels
+  const labelMap = {
+    LineString: "Path",
+    Polygon: "Area",
+    Point: "Marker",
+  };
+
+  // Handle GeometryCollection (from KML MultiGeometry)
+  if (geomType === "GeometryCollection") {
+    // Count occurrences of each geometry type to handle duplicates
+    const typeCounts = {};
+    return feature.geometry.geometries.map((geom) => {
+      const type = geom.type;
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+      const suffix = typeCounts[type] > 1 ? ` ${typeCounts[type]}` : "";
+      const typeLabel = labelMap[type] || type;
+
+      return {
+        type: "Feature",
+        geometry: geom,
+        properties: {
+          ...feature.properties,
+          name: feature.properties?.name
+            ? `${feature.properties.name} (${typeLabel}${suffix})`
+            : undefined,
+        },
+      };
+    });
+  }
+
+  // Handle Multi-geometries (MultiLineString, MultiPolygon, MultiPoint)
+  if (geomType.startsWith("Multi")) {
+    const singleType = geomType.replace("Multi", ""); // MultiLineString -> LineString
+    return feature.geometry.coordinates.map((coords, index) => {
+      const count = feature.geometry.coordinates.length;
+      const suffix = count > 1 && index > 0 ? ` ${index + 1}` : "";
+      const typeLabel = labelMap[singleType] || singleType;
+
+      return {
+        type: "Feature",
+        geometry: { type: singleType, coordinates: coords },
+        properties: {
+          ...feature.properties,
+          name: feature.properties?.name
+            ? `${feature.properties.name} (${typeLabel}${suffix})`
+            : undefined,
+        },
+      };
+    });
+  }
+
+  // Simple geometry - return as-is if supported
+  if (SUPPORTED_IMPORT_GEOM_TYPES.includes(geomType)) {
+    return [feature];
+  }
+
+  return []; // Unsupported type
 }
 
 // 2. IMPORT (FILE-BASED)
@@ -221,23 +327,21 @@ function importGeoJsonFile(file) {
         throw new Error("GeoJSON must be a FeatureCollection or Feature");
       }
 
-      // Filter for supported geometry types
+      // Explode multi-geometries and filter for supported types
       // Color parsing is handled centrally in importGeoJsonToMap()
-      const filteredFeatures = features.filter((feature) => {
-        return feature.geometry && SUPPORTED_IMPORT_GEOM_TYPES.includes(feature.geometry.type);
-      });
+      const explodedFeatures = features.flatMap((feature) => explodeMultiGeometries(feature));
 
-      if (filteredFeatures.length === 0) {
+      if (explodedFeatures.length === 0) {
         return Swal.fire({
           title: "No Supported Geometries",
           text: "The GeoJSON file contains no Point, LineString, or Polygon features.",
         });
       }
 
-      // Create a valid FeatureCollection with filtered features
+      // Create a valid FeatureCollection with exploded features
       const filteredGeoJson = {
         type: "FeatureCollection",
-        features: filteredFeatures,
+        features: explodedFeatures,
       };
 
       const newLayer = importGeoJsonToMap(filteredGeoJson, "geojson");
@@ -270,40 +374,34 @@ function importGpxFile(file) {
       const dom = new DOMParser().parseFromString(readEvent.target.result, "text/xml");
       const geojsonData = toGeoJSON.gpx(dom);
 
-      const tracksInDom = dom.querySelectorAll("trk");
-      const waypointsInDom = dom.querySelectorAll("wpt");
-      const pathFeatures = geojsonData.features.filter((f) => f.geometry?.type === "LineString");
-      const pointFeatures = geojsonData.features.filter((f) => f.geometry?.type === "Point");
+      // Extract colors from GPX DOM and attach to features BEFORE explosion
+      parseColorFromGpxDom(dom, geojsonData);
 
-      // Extract color and stravaId from tracks
-      if (pathFeatures.length === tracksInDom.length) {
-        pathFeatures.forEach((feature, index) => {
-          const trackNode = tracksInDom[index];
-          // Query for gpx_style:color, allowing for namespace variations
-          const colorNode = trackNode.querySelector("gpx_style\\:color, color");
-          if (colorNode) {
-            // Normalize to a CSS hex string
-            const hexColor = `#${colorNode.textContent.trim().toLowerCase()}`;
-            const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hexColor);
-            if (colorMatch) {
+      // Extract stravaId from tracks
+      const tracksInDom = dom.querySelectorAll("trk");
+      let trackIndex = 0;
+      geojsonData.features.forEach((feature) => {
+        if (
+          feature.geometry?.type === "LineString" ||
+          feature.geometry?.type === "MultiLineString"
+        ) {
+          if (trackIndex < tracksInDom.length) {
+            const stravaIdNode = tracksInDom[trackIndex].querySelector("stravaId");
+            if (stravaIdNode) {
               feature.properties = feature.properties || {};
-              feature.properties.colorName = colorMatch.name;
+              feature.properties.stravaId = stravaIdNode.textContent.trim();
             }
           }
-          // Extract stravaId from extensions
-          const stravaIdNode = trackNode.querySelector("stravaId");
-          if (stravaIdNode) {
-            feature.properties = feature.properties || {};
-            feature.properties.stravaId = stravaIdNode.textContent.trim();
-          }
-        });
-      }
+          trackIndex++;
+        }
+      });
 
       // Extract stravaId from waypoints
+      const waypointsInDom = dom.querySelectorAll("wpt");
+      const pointFeatures = geojsonData.features.filter((f) => f.geometry?.type === "Point");
       if (pointFeatures.length === waypointsInDom.length) {
         pointFeatures.forEach((feature, index) => {
-          const waypointNode = waypointsInDom[index];
-          const stravaIdNode = waypointNode.querySelector("stravaId");
+          const stravaIdNode = waypointsInDom[index].querySelector("stravaId");
           if (stravaIdNode) {
             feature.properties = feature.properties || {};
             feature.properties.stravaId = stravaIdNode.textContent.trim();
@@ -311,10 +409,8 @@ function importGpxFile(file) {
         });
       }
 
-      // Filter for supported geometry types only
-      geojsonData.features = geojsonData.features.filter(
-        (f) => f.geometry && SUPPORTED_IMPORT_GEOM_TYPES.includes(f.geometry.type),
-      );
+      // Explode multi-geometries and filter for supported geometry types
+      geojsonData.features = geojsonData.features.flatMap((f) => explodeMultiGeometries(f));
 
       const newLayer = importGeoJsonToMap(geojsonData, "gpx");
       if (newLayer && newLayer.getBounds().isValid()) {
@@ -355,11 +451,9 @@ function parseKmlContent(kmlText) {
     });
   }
 
-  // Filter for supported geometry types only
+  // Explode multi-geometries and filter for supported geometry types
   if (geojsonData?.features) {
-    geojsonData.features = geojsonData.features.filter(
-      (f) => f.geometry && SUPPORTED_IMPORT_GEOM_TYPES.includes(f.geometry.type),
-    );
+    geojsonData.features = geojsonData.features.flatMap((f) => explodeMultiGeometries(f));
   }
 
   return geojsonData;
