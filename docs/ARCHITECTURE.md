@@ -210,7 +210,7 @@ Strava activities are decoded from the API's `summary_polyline` field using the 
 
 - Markers become `<wpt>` (waypoints)
 - Paths and Areas become `<trk>` (tracks)
-- Colors stored in `<gpx_style:color>` extension (6-digit hex)
+- Colors stored in `<gpx_style:color>` extension (6-character hex without # prefix)
 - `stravaId` stored in `<extensions>` block
 
 ### KMZ Export
