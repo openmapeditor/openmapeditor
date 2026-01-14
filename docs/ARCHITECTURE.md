@@ -308,7 +308,7 @@ To edit the geometry of an imported item:
 
 ## Known Limitations
 
-- **Multi-Geometries**: Not supported to ensure editing tool stability. Simplified LineStrings and Polygons are required. See [`SUPPORTED_IMPORT_GEOM_TYPES` constant](https://github.com/openmapeditor/openmapeditor/search?q=SUPPORTED_IMPORT_GEOM_TYPES+path:js/file-handlers.js).
+- **Multi-Geometries**: Native editing is not supported (automatically exploded into individual Points, LineStrings, and Polygons on import). See [`SUPPORTED_IMPORT_GEOM_TYPES` constant](https://github.com/openmapeditor/openmapeditor/search?q=SUPPORTED_IMPORT_GEOM_TYPES+path:js/file-handlers.js).
 - **Off-grid Elevation**: The GeoAdmin service is restricted to the Swiss border.
 
 ---
