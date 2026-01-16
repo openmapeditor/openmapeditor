@@ -207,17 +207,33 @@ function copyToClipboard(text) {
 
 /**
  * Triggers a browser download for a text-based file.
+ * Uses Blob with proper MIME types to ensure correct file extensions on all platforms.
  * @param {string} filename - Desired name of the file
  * @param {string} text - Content of the file
  */
 function downloadFile(filename, text) {
+  // Determine MIME type based on file extension
+  const extension = filename.split(".").pop().toLowerCase();
+  const mimeTypes = {
+    geojson: "application/geo+json",
+    gpx: "application/gpx+xml",
+    json: "application/json",
+    kml: "application/vnd.google-earth.kml+xml",
+    kmz: "application/vnd.google-earth.kmz",
+  };
+  const mimeType = mimeTypes[extension] || "text/plain";
+
+  const blob = new Blob([text], { type: `${mimeType};charset=utf-8` });
+  const url = URL.createObjectURL(blob);
+
   const element = document.createElement("a");
-  element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
-  element.setAttribute("download", filename);
+  element.href = url;
+  element.download = filename;
   element.style.display = "none";
   document.body.appendChild(element);
   element.click();
   document.body.removeChild(element);
+  URL.revokeObjectURL(url);
 }
 
 /**
