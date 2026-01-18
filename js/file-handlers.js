@@ -81,7 +81,7 @@ const SUPPORTED_IMPORT_GEOM_TYPES = ["Point", "LineString", "Polygon"];
  */
 function parseColorFromGeoJsonStyle(properties) {
   if (properties?.stroke || properties?.["marker-color"]) {
-    const hexColor = (properties.stroke || properties["marker-color"]).toLowerCase();
+    const hexColor = normalizeHexColor(properties.stroke || properties["marker-color"]);
     const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hexColor);
     if (colorMatch) return colorMatch.name;
   }
@@ -103,9 +103,9 @@ function parseColorFromKmlStyle(properties) {
     if (colorMatch) return colorMatch.name;
   }
 
-  // Case 2: Inline style color from toGeoJSON (converted to #RRGGBBAA format)
+  // Case 2: Inline style color from toGeoJSON (outputs #RRGGBB format)
   if (properties.stroke) {
-    const cssColor = properties.stroke.substring(0, 7).toLowerCase(); // Get #RRGGBB
+    const cssColor = normalizeHexColor(properties.stroke);
     const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === cssColor);
     if (colorMatch) return colorMatch.name;
   }
