@@ -855,9 +855,13 @@ function convertLayerToGpx(layer) {
   </trk>`;
   } else if (layer instanceof L.Marker) {
     const latlng = layer.getLatLng();
+    const wptExtensions =
+      `\n    <extensions>\n      <color>#FF${gpxColorHex}</color>` +
+      (stravaId ? `\n      <stravaId>${stravaId}</stravaId>` : "") +
+      `\n    </extensions>`;
     content = `
   <wpt lat="${latlng.lat}" lon="${latlng.lng}">
-    <name>${safeName}</name>${safeDescription ? `\n    <desc>${safeDescription}</desc>` : ""}${stravaId ? `\n    <extensions>\n      <stravaId>${stravaId}</stravaId>\n    </extensions>` : ""}
+    <name>${safeName}</name>${safeDescription ? `\n    <desc>${safeDescription}</desc>` : ""}${wptExtensions}
   </wpt>`;
   }
 
