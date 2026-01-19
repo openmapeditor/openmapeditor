@@ -81,7 +81,7 @@ const SUPPORTED_IMPORT_GEOM_TYPES = ["Point", "LineString", "Polygon"];
  */
 function parseColorFromGeoJsonStyle(properties) {
   if (properties?.stroke || properties?.["marker-color"]) {
-    const hexColor = (properties.stroke || properties["marker-color"]).toLowerCase();
+    const hexColor = normalizeHexColor(properties.stroke || properties["marker-color"]);
     const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hexColor);
     if (colorMatch) return colorMatch.name;
   }
@@ -103,13 +103,27 @@ function parseColorFromKmlStyle(properties) {
     if (colorMatch) return colorMatch.name;
   }
 
-  // Case 2: Inline style color from toGeoJSON (converted to #RRGGBBAA format)
+  // Case 2: Inline style color from toGeoJSON (outputs #RRGGBB format)
   if (properties.stroke) {
-    const cssColor = properties.stroke.substring(0, 7).toLowerCase(); // Get #RRGGBB
+    const cssColor = normalizeHexColor(properties.stroke);
     const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === cssColor);
     if (colorMatch) return colorMatch.name;
   }
   return "Red";
+}
+
+/**
+ * Normalizes various hex color formats to standard #RRGGBB.
+ * Handles: #AARRGGBB, AARRGGBB, #RRGGBB, RRGGBB
+ * @param {string} raw - The raw color string
+ * @returns {string|null} Normalized #RRGGBB color or null
+ */
+function normalizeHexColor(raw) {
+  if (!raw) return null;
+  let color = raw.trim().toLowerCase();
+  if (color.startsWith("#")) color = color.substring(1);
+  if (color.length === 8) color = color.substring(2); // Strip AA from AARRGGBB
+  return color.length === 6 ? "#" + color : null;
 }
 
 /**
@@ -119,30 +133,51 @@ function parseColorFromKmlStyle(properties) {
  * @param {object} geojsonData - The GeoJSON data from toGeoJSON.gpx()
  */
 function parseColorFromGpxDom(dom, geojsonData) {
+  const routesInDom = dom.querySelectorAll("rte");
   const tracksInDom = dom.querySelectorAll("trk");
+  const waypointsInDom = dom.querySelectorAll("wpt");
 
-  // Extract colors from each track in the DOM
-  const trackColors = [];
-  tracksInDom.forEach((trackNode) => {
-    const colorNode = trackNode.querySelector("gpx_style\\:color, color");
-    if (colorNode) {
-      const hexColor = `#${colorNode.textContent.trim().toLowerCase()}`;
-      const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hexColor);
-      trackColors.push(colorMatch ? colorMatch.name : null);
-    } else {
-      trackColors.push(null);
-    }
+  // Extract colors from tracks
+  const trackColors = Array.from(tracksInDom).map((node) => {
+    const colorNode = node.querySelector("gpx_style\\:color, color");
+    const hex = colorNode ? normalizeHexColor(colorNode.textContent) : null;
+    const match = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hex);
+    return match ? match.name : null;
   });
 
-  // Apply colors to track features (both LineString and MultiLineString)
+  // Extract colors from waypoints
+  const waypointColors = Array.from(waypointsInDom).map((node) => {
+    const colorNode = node.querySelector("color");
+    const hex = colorNode ? normalizeHexColor(colorNode.textContent) : null;
+    const match = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hex);
+    return match ? match.name : null;
+  });
+
+  // Apply colors to features (toGeoJSON outputs: wpt, then rte, then trk)
+  const routeCount = routesInDom.length;
+  let lineIndex = 0;
   let trackIndex = 0;
+  let waypointIndex = 0;
+
   geojsonData.features.forEach((feature) => {
-    if (feature.geometry?.type === "LineString" || feature.geometry?.type === "MultiLineString") {
-      if (trackIndex < trackColors.length && trackColors[trackIndex]) {
-        feature.properties = feature.properties || {};
-        feature.properties.colorName = trackColors[trackIndex];
+    const type = feature.geometry?.type;
+
+    if (type === "LineString" || type === "MultiLineString") {
+      // Skip routes (which come before tracks in toGeoJSON output)
+      if (lineIndex >= routeCount) {
+        if (trackIndex < trackColors.length && trackColors[trackIndex]) {
+          feature.properties = feature.properties || {};
+          feature.properties.colorName = trackColors[trackIndex];
+        }
+        trackIndex++;
       }
-      trackIndex++;
+      lineIndex++;
+    } else if (type === "Point") {
+      if (waypointIndex < waypointColors.length && waypointColors[waypointIndex]) {
+        feature.properties = feature.properties || {};
+        feature.properties.colorName = waypointColors[waypointIndex];
+      }
+      waypointIndex++;
     }
   });
 }
@@ -820,9 +855,13 @@ function convertLayerToGpx(layer) {
   </trk>`;
   } else if (layer instanceof L.Marker) {
     const latlng = layer.getLatLng();
+    const wptExtensions =
+      `\n    <extensions>\n      <color>#FF${gpxColorHex}</color>` +
+      (stravaId ? `\n      <stravaId>${stravaId}</stravaId>` : "") +
+      `\n    </extensions>`;
     content = `
   <wpt lat="${latlng.lat}" lon="${latlng.lng}">
-    <name>${safeName}</name>${safeDescription ? `\n    <desc>${safeDescription}</desc>` : ""}${stravaId ? `\n    <extensions>\n      <stravaId>${stravaId}</stravaId>\n    </extensions>` : ""}
+    <name>${safeName}</name>${safeDescription ? `\n    <desc>${safeDescription}</desc>` : ""}${wptExtensions}
   </wpt>`;
   }
 
