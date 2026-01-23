@@ -818,7 +818,8 @@ function convertLayerToGpx(layer) {
     <extensions>
       <gpx_style:line>
         <gpx_style:color>${gpxColorHex}</gpx_style:color>
-      </gpx_style:line>${stravaId ? `\n      <stravaId>${stravaId}</stravaId>` : ""}
+      </gpx_style:line>
+      <color>#FF${gpxColorHex}</color>${stravaId ? `\n      <stravaId>${stravaId}</stravaId>` : ""}
     </extensions>
     <trkseg>
       ${pathPoints}
@@ -847,7 +848,8 @@ function convertLayerToGpx(layer) {
     <extensions>
       <gpx_style:line>
         <gpx_style:color>${gpxColorHex}</gpx_style:color>
-      </gpx_style:line>${stravaId ? `\n      <stravaId>${stravaId}</stravaId>` : ""}
+      </gpx_style:line>
+      <color>#FF${gpxColorHex}</color>${stravaId ? `\n      <stravaId>${stravaId}</stravaId>` : ""}
     </extensions>
     <trkseg>
       ${pathPoints}
