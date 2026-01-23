@@ -98,7 +98,7 @@ layer.feature = {
   properties: {
     name: "string",           // User-editable, defaults to "Marker"/"Path"/"Area"
     description: "string",    // Optional, preserved in all exports
-    colorName: "Red",         // One of 16 ORGANIC_MAPS_COLORS
+    colorName: "Red",         // Internal only - one of 16 ORGANIC_MAPS_COLORS
     stravaId: "123456789",    // Optional, preserved from Strava/import
     totalDistance: 1234.56    // Calculated internally, excluded from standard exports
   },
@@ -131,7 +131,7 @@ layer.isDeletedFromToolbar = true; // Flag for toolbar synchronization
 | **Coordinates**       | ✅ Full precision            | ✅ Full precision      | ✅ Full precision           |
 | **Name**              | ✅ `properties.name`         | ✅ `<name>`            | ✅ `<name>`                 |
 | **Description**       | ✅ `properties.description`  | ✅ `<desc>`            | ✅ `<description>`          |
-| **Color**             | ✅ `colorName` + Style props | ✅ `<gpx_style:color>` | ✅ `<color>` / `<styleUrl>` |
+| **Color**             | ✅ `stroke` / `marker-color` | ✅ `<gpx_style:color>` | ✅ `<color>` / `<styleUrl>` |
 | **StravaId**          | ✅ `properties.stravaId`     | ✅ `<extensions>`      | ✅ `<ExtendedData>`         |
 | **Elevation**         | ✅ Coordinates[2]            | ✅ `<ele>`             | ✅ Coordinates (3rd value)  |
 | **Custom Properties** | ✅ All preserved             | ❌ Not supported       | ⚠️ Via ExtendedData         |
@@ -168,9 +168,10 @@ The app uses **16 Organic Maps Colors** defined in `ORGANIC_MAPS_COLORS` in [js/
 
 ### Color Matching Logic
 
-1. **Direct Match**: Checks for `colorName` property (optimal for round-trips)
-2. **Hex Match**: Scans incoming style hex codes against the CSS palette
-3. **Defaulting**: If no match is found, defaults to **Red**
+1. **Internal Storage**: Colors stored as names (e.g., "Red", "DeepPurple") for maintainability
+2. **Import**: Parses format-specific color properties (see Matrix above) and matches hex to palette
+3. **Export**: Outputs format-native color properties
+4. **Defaulting**: Unmatched colors default to **Red**
 
 ---
 
@@ -202,7 +203,7 @@ Strava activities are decoded from the API's `summary_polyline` field using the 
 [`exportGeoJson`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:exportGeoJson+path:js/file-handlers.js) exports all or selected items:
 
 - Injects standard GeoJSON styling properties (`stroke`, `fill`, `marker-color`) for compatibility with external tools (e.g., geojson.io)
-- Excludes calculated metadata like `totalDistance`
+- Excludes internal properties like `colorName` and `totalDistance`
 
 ### GPX Export
 
