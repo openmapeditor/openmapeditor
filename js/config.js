@@ -71,6 +71,7 @@ const STYLE_CONFIG = {
         enabled: true,
         color: "black",
         weightOffset: 4,
+        fillOpacity: 0.15,
       },
     },
   },
