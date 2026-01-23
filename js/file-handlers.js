@@ -42,6 +42,7 @@ function getAllExportableLayers() {
  */
 const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
   "totalDistance", // Internal calculated distance - not needed in export
+  "colorName", // Internal color identifier - hex values (stroke/marker-color) are sufficient
 ];
 
 /**
@@ -688,10 +689,9 @@ function exportGeoJson(options = {}) {
         return acc;
       }, {});
 
-      // Enhance properties with color data
+      // Set filtered properties
       geojson.properties = {
         ...filteredProperties,
-        colorName: colorName, // For round-trip with our app
       };
 
       // Add standard GeoJSON styling for other tools
