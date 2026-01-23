@@ -776,6 +776,10 @@ function populateColorPicker() {
             ...STYLE_CONFIG.path.highlight,
             color: newColorData.css,
           });
+          // Update the selection outline's fill color for polygons
+          if (selectedPathOutline && globallySelectedItem instanceof L.Polygon) {
+            selectedPathOutline.setStyle({ fillColor: newColorData.css });
+          }
         } else if (globallySelectedItem instanceof L.Marker) {
           globallySelectedItem.setIcon(
             createMarkerIcon(newColorData.css, STYLE_CONFIG.marker.highlight.opacity),
