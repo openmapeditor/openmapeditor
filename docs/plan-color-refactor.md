@@ -316,6 +316,8 @@ Option C: **Data URI** (no external dependency, but verbose)
 6. **file-handlers.js** - Update exports (GeoJSON, KML, GPX)
 7. **index.html** - Add script tag for css-colors.js
 8. **Test** - Import/export round-trips
+9. **README.md** - Update any color/Organic Maps references
+10. **Cleanup** - Remove this plan file, delete docs/reference/organicmaps if no longer needed
 
 ---
 
@@ -334,12 +336,15 @@ Option C: **Data URI** (no external dependency, but verbose)
 
 ## Files Summary
 
-| File                | Changes                                      |
-| ------------------- | -------------------------------------------- |
-| css-colors.js       | NEW - 140 color names + parseColor utilities |
-| config.js           | Replace color definitions with CSS standard  |
-| file-handlers.js    | Update import/export, remove OM references   |
-| map-interactions.js | Use `color` property instead of `colorName`  |
-| ui-handlers.js      | Update picker with custom swatch support     |
-| index.html          | Add script tag for css-colors.js             |
-| style.css           | Maybe add custom swatch styling              |
+| File                        | Changes                                      |
+| --------------------------- | -------------------------------------------- |
+| js/css-colors.js            | NEW - 140 color names + parseColor utilities |
+| js/config.js                | Replace color definitions with CSS standard  |
+| js/file-handlers.js         | Update import/export, remove OM references   |
+| js/map-interactions.js      | Use `color` property instead of `colorName`  |
+| js/ui-handlers.js           | Update picker with custom swatch support     |
+| index.html                  | Add script tag for css-colors.js             |
+| README.md                   | Update color/OM references                   |
+| docs/reference/organicmaps  | DELETE - no longer needed                    |
+| docs/plan-color-refactor.md | DELETE - after merge                         |
+| style.css                   | Maybe add custom swatch styling              |
