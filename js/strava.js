@@ -384,8 +384,8 @@ async function handleStravaAuthReturnForUserKeys(event) {
 function displayActivitiesOnMap(activities) {
   if (!stravaActivitiesLayer) return;
   stravaActivitiesLayer.clearLayers();
-  const stravaColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === "DeepOrange");
-  const stravaColor = stravaColorData ? stravaColorData.css : "#f06432";
+  // Use orangered for Strava activities (CSS standard color)
+  const stravaColor = "#FF4500";
   let processedCount = 0;
 
   activities.forEach((activity) => {
@@ -397,7 +397,7 @@ function displayActivitiesOnMap(activities) {
           properties: {
             ...activity,
             totalDistance: activity.distance,
-            colorName: "DeepOrange",
+            color: stravaColor,
             pathType: "strava",
             stravaId: activity.id,
           },

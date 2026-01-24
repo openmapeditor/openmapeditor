@@ -283,8 +283,8 @@ function initializeRouting() {
             currentRoutePath.feature.properties.name = newRouteName;
             currentRoutePath.feature.properties.totalDistance = route.summary.totalDistance;
           } else {
-            const routeColorName = "Yellow";
-            const routeColor = ORGANIC_MAPS_COLORS.find((c) => c.name === routeColorName).css;
+            // Use CSS standard yellow for routes
+            const routeColor = "#FFFF00";
             const newRoutePath = L.polyline(processedCoordinates, {
               ...STYLE_CONFIG.path.default,
               color: routeColor,
@@ -293,7 +293,7 @@ function initializeRouting() {
             newRoutePath.feature = {
               properties: {
                 name: newRouteName,
-                colorName: routeColorName,
+                color: routeColor,
                 totalDistance: route.summary.totalDistance,
               },
             };

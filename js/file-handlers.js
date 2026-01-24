@@ -41,8 +41,8 @@ function getAllExportableLayers() {
  * Add any property names here that you don't want included in exported files.
  */
 const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
+  "color", // Internal color storage - exported as stroke/marker-color
   "totalDistance", // Internal calculated distance - not needed in export
-  "colorName", // Internal color identifier - hex values (stroke/marker-color) are sufficient
 ];
 
 /**
@@ -77,54 +77,38 @@ const SUPPORTED_IMPORT_GEOM_TYPES = ["Point", "LineString", "Polygon"];
 
 /**
  * Parses color from standard GeoJSON stroke/marker-color properties.
+ * Supports hex values and CSS color names.
  * @param {object} properties - The GeoJSON feature properties
- * @returns {string|null} The matched color name or null
+ * @returns {string|null} Normalized hex color or null
  */
 function parseColorFromGeoJsonStyle(properties) {
-  if (properties?.stroke || properties?.["marker-color"]) {
-    const hexColor = normalizeHexColor(properties.stroke || properties["marker-color"]);
-    const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hexColor);
-    if (colorMatch) return colorMatch.name;
-  }
-  return null;
+  const raw = properties?.stroke || properties?.["marker-color"];
+  return parseColor(raw);
 }
 
 /**
- * Parses a color name from a KML style property.
+ * Parses a color from KML style properties.
+ * Handles styleUrl (e.g., #placemark-red) and inline stroke colors.
  * @param {object} properties - The feature properties
- * @returns {string} The color name or "Red" as default
+ * @returns {string} Hex color or DEFAULT_COLOR
  */
 function parseColorFromKmlStyle(properties) {
   // Case 1: styleUrl (e.g., #placemark-red) for markers
   if (properties.styleUrl) {
-    const styleId = properties.styleUrl.substring(1).toLowerCase(); // -> "placemark-red"
-    const colorMatch = ORGANIC_MAPS_COLORS.find(
-      (c) => `placemark-${c.name.toLowerCase()}` === styleId,
-    );
-    if (colorMatch) return colorMatch.name;
+    const match = properties.styleUrl.match(/#placemark-(\w+)/i);
+    if (match) {
+      const parsed = parseColor(match[1]);
+      if (parsed) return parsed;
+    }
   }
 
   // Case 2: Inline style color from toGeoJSON (outputs #RRGGBB format)
   if (properties.stroke) {
-    const cssColor = normalizeHexColor(properties.stroke);
-    const colorMatch = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === cssColor);
-    if (colorMatch) return colorMatch.name;
+    const parsed = parseColor(properties.stroke);
+    if (parsed) return parsed;
   }
-  return "Red";
-}
 
-/**
- * Normalizes various hex color formats to standard #RRGGBB.
- * Handles: #AARRGGBB, AARRGGBB, #RRGGBB, RRGGBB
- * @param {string} raw - The raw color string
- * @returns {string|null} Normalized #RRGGBB color or null
- */
-function normalizeHexColor(raw) {
-  if (!raw) return null;
-  let color = raw.trim().toLowerCase();
-  if (color.startsWith("#")) color = color.substring(1);
-  if (color.length === 8) color = color.substring(2); // Strip AA from AARRGGBB
-  return color.length === 6 ? "#" + color : null;
+  return DEFAULT_COLOR;
 }
 
 /**
@@ -138,20 +122,16 @@ function parseColorFromGpxDom(dom, geojsonData) {
   const tracksInDom = dom.querySelectorAll("trk");
   const waypointsInDom = dom.querySelectorAll("wpt");
 
-  // Extract colors from tracks
+  // Extract colors from tracks (returns hex or null)
   const trackColors = Array.from(tracksInDom).map((node) => {
     const colorNode = node.querySelector("gpx_style\\:color, color");
-    const hex = colorNode ? normalizeHexColor(colorNode.textContent) : null;
-    const match = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hex);
-    return match ? match.name : null;
+    return colorNode ? parseColor(colorNode.textContent) : null;
   });
 
-  // Extract colors from waypoints
+  // Extract colors from waypoints (returns hex or null)
   const waypointColors = Array.from(waypointsInDom).map((node) => {
     const colorNode = node.querySelector("color");
-    const hex = colorNode ? normalizeHexColor(colorNode.textContent) : null;
-    const match = ORGANIC_MAPS_COLORS.find((c) => c.css.toLowerCase() === hex);
-    return match ? match.name : null;
+    return colorNode ? parseColor(colorNode.textContent) : null;
   });
 
   // Apply colors to features (toGeoJSON outputs: wpt, then rte, then trk)
@@ -168,7 +148,7 @@ function parseColorFromGpxDom(dom, geojsonData) {
       if (lineIndex >= routeCount) {
         if (trackIndex < trackColors.length && trackColors[trackIndex]) {
           feature.properties = feature.properties || {};
-          feature.properties.colorName = trackColors[trackIndex];
+          feature.properties.color = trackColors[trackIndex];
         }
         trackIndex++;
       }
@@ -176,7 +156,7 @@ function parseColorFromGpxDom(dom, geojsonData) {
     } else if (type === "Point") {
       if (waypointIndex < waypointColors.length && waypointColors[waypointIndex]) {
         feature.properties = feature.properties || {};
-        feature.properties.colorName = waypointColors[waypointIndex];
+        feature.properties.color = waypointColors[waypointIndex];
       }
       waypointIndex++;
     }
@@ -269,33 +249,30 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
   const isKmlBased = fileType === "kml" || fileType === "kmz";
 
   /**
-   * Internal helper to resolve the color name for a feature.
-   * Color resolution: try colorName, then format-specific parsing, then default to Red.
+   * Internal helper to resolve the color for a feature.
+   * Color resolution: try color property, then format-specific parsing, then default.
    */
-  const resolveColorName = (properties) => {
-    if (!properties) return "Red"; // Guard against missing properties object
+  const resolveColor = (properties) => {
+    if (!properties) return DEFAULT_COLOR;
     return (
-      properties.colorName || // Use colorName if present
+      properties.color || // Use color if present
       (isKmlBased
         ? parseColorFromKmlStyle(properties) // KML/KMZ parsing
         : parseColorFromGeoJsonStyle(properties)) || // GeoJSON stroke/marker-color
-      "Red" // Default
+      DEFAULT_COLOR
     );
   };
 
   const layerGroup = L.geoJSON(geoJsonData, {
     style: (feature) => {
-      const colorName = resolveColorName(feature.properties);
-      const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-      const color = colorData ? colorData.css : ORGANIC_MAPS_COLORS[0].css; // Fallback to Red
+      const color = resolveColor(feature.properties);
       return { ...STYLE_CONFIG.path.default, color: color };
     },
     onEachFeature: (feature, layer) => {
-      const colorName = resolveColorName(feature.properties);
+      const color = resolveColor(feature.properties);
 
-      // Validate colorName - if not in palette, use Red
-      const isValidColor = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-      layer.feature.properties.colorName = isValidColor ? colorName : "Red";
+      // Store the resolved color
+      layer.feature.properties.color = color;
 
       // All imported items use fileType as pathType
       layer.pathType = fileType;
@@ -309,10 +286,8 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
       });
     },
     pointToLayer: (feature, latlng) => {
-      const colorName = resolveColorName(feature.properties);
+      const color = resolveColor(feature.properties);
 
-      const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-      const color = colorData ? colorData.css : ORGANIC_MAPS_COLORS[0].css; // Fallback to Red
       const marker = L.marker(latlng, {
         icon: createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity),
       });
@@ -676,10 +651,8 @@ function exportGeoJson(options = {}) {
         });
       }
 
-      // Get color information
-      const colorName = layer.feature?.properties?.colorName || "Red";
-      const colorData =
-        ORGANIC_MAPS_COLORS.find((c) => c.name === colorName) || ORGANIC_MAPS_COLORS[0];
+      // Get color (stored hex or default)
+      const color = layer.feature?.properties?.color || DEFAULT_COLOR;
 
       // Filter out excluded properties
       const filteredProperties = Object.keys(geojson.properties || {}).reduce((acc, key) => {
@@ -696,17 +669,11 @@ function exportGeoJson(options = {}) {
 
       // Add standard GeoJSON styling for other tools
       if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
-        geojson.properties.stroke = colorData.css;
-        geojson.properties["stroke-width"] = 3;
-        geojson.properties["stroke-opacity"] = 1;
-      }
-      if (layer instanceof L.Polygon) {
-        geojson.properties.fill = colorData.css;
-        geojson.properties["fill-opacity"] = 0.2;
+        geojson.properties.stroke = color;
       }
 
       if (layer instanceof L.Marker) {
-        geojson.properties["marker-color"] = colorData.css;
+        geojson.properties["marker-color"] = color;
       }
 
       // Ensure type: "Feature" is present
@@ -771,16 +738,16 @@ function exportGeoJson(options = {}) {
 // GPX
 
 /**
- * Converts a Leaflet layer to a GPX string, supporting markers and paths with Organic Maps colors.
+ * Converts a Leaflet layer to a GPX string, supporting markers and paths with colors.
  * @param {L.Layer} layer - The layer to convert
  * @returns {string} The GPX file content as a string
  */
 function convertLayerToGpx(layer) {
   const name = layer.feature?.properties?.name || "Exported Feature";
   const description = layer.feature?.properties?.description || "";
-  const colorName = layer.feature?.properties?.colorName || "Red";
-  const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-  const gpxColorHex = colorData ? colorData.css.substring(1).toUpperCase() : "E51B23";
+  const color = layer.feature?.properties?.color || DEFAULT_COLOR;
+  // Remove # prefix for GPX format
+  const gpxColorHex = color.substring(1).toUpperCase();
   const stravaId = layer.feature?.properties?.stravaId;
 
   const safeName = escapeXml(name);
@@ -888,8 +855,8 @@ function convertLayerToKmlPlacemark(layer, defaultName, defaultDescription = "")
     description = layer.feature.properties.description || description;
   }
 
-  const colorName = layer.feature?.properties?.colorName || "Red";
-  const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName) || ORGANIC_MAPS_COLORS[0];
+  const color = layer.feature?.properties?.color || DEFAULT_COLOR;
+  const kmlColor = cssToKmlColor(color);
 
   const safeName = escapeXml(name);
   const safeDescription = description ? escapeXml(description) : "";
@@ -934,7 +901,7 @@ function convertLayerToKmlPlacemark(layer, defaultName, defaultDescription = "")
     const styleTag =
       `    <Style>\n` +
       `      <LineStyle>\n` +
-      `        <color>${colorData.kml.toUpperCase()}</color>\n` +
+      `        <color>${kmlColor}</color>\n` +
       `        <width>5</width>\n` +
       `      </LineStyle>\n` +
       `    </Style>\n`;
@@ -947,8 +914,8 @@ function convertLayerToKmlPlacemark(layer, defaultName, defaultDescription = "")
     const alt = typeof latlng.alt === "number" ? latlng.alt : 0;
     const pointTag = `    <Point><coordinates>${latlng.lng},${latlng.lat},${alt}</coordinates></Point>\n`;
 
-    const styleTag = `    <styleUrl>#placemark-${colorData.name.toLowerCase()}</styleUrl>\n`;
-    return placemarkStart + styleTag + pointTag + placemarkEnd;
+    // Plain marker - let viewer use its default icon
+    return placemarkStart + pointTag + placemarkEnd;
   }
 
   return null;
@@ -961,17 +928,6 @@ function convertLayerToKmlPlacemark(layer, defaultName, defaultDescription = "")
  * @returns {string} The full KML document as a string
  */
 function buildKmlDocument(name, placemarks) {
-  const kmlMarkerStyles = ORGANIC_MAPS_COLORS.map(
-    (color) =>
-      `  <Style id="placemark-${color.name.toLowerCase()}">\n` +
-      `    <IconStyle>\n` +
-      `      <Icon>\n` +
-      `        <href>https://omaps.app/placemarks/placemark-${color.name.toLowerCase()}.png</href>\n` +
-      `      </Icon>\n` +
-      `    </IconStyle>\n` +
-      `  </Style>`,
-  ).join("\n");
-
   const safeName = escapeXml(name);
 
   return (
@@ -979,7 +935,6 @@ function buildKmlDocument(name, placemarks) {
     `<kml xmlns="http://www.opengis.net/kml/2.2">\n` +
     `<Document>\n` +
     `  <name>${safeName}</name>\n` +
-    `${kmlMarkerStyles}\n` +
     `${placemarks.join("\n")}\n` +
     `</Document>\n` +
     `</kml>`
@@ -1202,10 +1157,10 @@ function encodeMapStateToUrl() {
 
       // Add name, color, and stravaId only if present
       const name = layer.feature?.properties?.name;
-      const color = layer.feature?.properties?.colorName;
+      const color = layer.feature?.properties?.color;
       const stravaId = layer.feature?.properties?.stravaId;
       if (name) feature.n = name;
-      if (color && color !== "Red") feature.s = color;
+      if (color && color !== DEFAULT_COLOR) feature.s = color;
       if (stravaId) feature.sid = stravaId;
 
       if (layer instanceof L.Marker) {
@@ -1327,7 +1282,7 @@ function importMapStateFromUrl(compressed) {
           type: "Feature",
           properties: {
             name: item.n || "",
-            colorName: item.s || "Red",
+            color: item.s || DEFAULT_COLOR,
           },
           geometry: null,
         };

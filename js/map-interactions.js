@@ -112,17 +112,12 @@ function deselectCurrentItem() {
   }
 
   const item = globallySelectedItem;
-  if (item.feature?.properties?.colorName) {
-    const colorName = item.feature.properties.colorName;
-    const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-    if (colorData) {
-      if (item instanceof L.Polyline || item instanceof L.Polygon) {
-        item.setStyle({ ...STYLE_CONFIG.path.default, color: colorData.css });
-      } else if (item instanceof L.Marker) {
-        item.setIcon(createMarkerIcon(colorData.css, STYLE_CONFIG.marker.default.opacity));
-        item.setZIndexOffset(0);
-      }
-    }
+  const color = item.feature?.properties?.color || DEFAULT_COLOR;
+  if (item instanceof L.Polyline || item instanceof L.Polygon) {
+    item.setStyle({ ...STYLE_CONFIG.path.default, color: color });
+  } else if (item instanceof L.Marker) {
+    item.setIcon(createMarkerIcon(color, STYLE_CONFIG.marker.default.opacity));
+    item.setZIndexOffset(0);
   }
 
   globallySelectedItem = null;
@@ -176,9 +171,7 @@ function selectItem(layer) {
     }
   }
 
-  const colorName = layer.feature?.properties?.colorName || "Red";
-  const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-  const highlightColor = colorData ? colorData.css : ORGANIC_MAPS_COLORS[0].css; // Fallback to Red
+  const highlightColor = layer.feature?.properties?.color || DEFAULT_COLOR;
 
   showInfoPanel(layer);
 

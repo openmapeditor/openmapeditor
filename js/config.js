@@ -10,46 +10,44 @@ const APP_CREDITS_DESCRIPTION = "OpenMapEditor is a simple, powerful web-based e
 const APP_DOMAIN = "www.openmapeditor.com"; // Used for Strava setup instructions
 
 /**
- * Converts a CSS hex color to KML AABBGGRR format for Organic Maps compatibility.
- * @see https://github.com/organicmaps/organicmaps/blob/master/libs/kml/serdes.cpp
- * @param {string} cssColor - CSS color string (e.g., "#E51B23")
- * @returns {string} KML color string (e.g., "FF231BE5")
+ * Default color for new features (CSS standard red).
  */
-function cssToKmlColor(cssColor) {
-  const rr = cssColor.substring(1, 3);
-  const gg = cssColor.substring(3, 5);
-  const bb = cssColor.substring(5, 7);
-  return `FF${bb}${gg}${rr}`.toUpperCase();
-}
+const DEFAULT_COLOR = "#DC143C"; // Crimson - closest CSS color to original red
 
 /**
- * The 16 official Organic Maps colors with their CSS hex values.
- * @see https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/dark/style.mapcss
- * @see https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/light/style.mapcss
+ * 16 standard CSS colors for the picker palette.
+ * Uses official CSS color names with their correct hex values.
+ * @see https://www.w3schools.com/tags/ref_colornames.asp
  */
-const ORGANIC_MAPS_COLORS_DATA = [
-  { name: "Red", css: "#E51B23" },
-  { name: "Pink", css: "#FF4182" },
-  { name: "Purple", css: "#9B24B2" },
-  { name: "DeepPurple", css: "#6639BF" },
-  { name: "Blue", css: "#0066CC" },
-  { name: "LightBlue", css: "#249CF2" },
-  { name: "Cyan", css: "#14BECD" },
-  { name: "Teal", css: "#00A58C" },
-  { name: "Green", css: "#3C8C3C" },
-  { name: "Lime", css: "#93BF39" },
-  { name: "Yellow", css: "#FFC800" },
-  { name: "Orange", css: "#FF9600" },
-  { name: "DeepOrange", css: "#F06432" },
-  { name: "Brown", css: "#804633" },
-  { name: "Gray", css: "#737373" },
-  { name: "BlueGray", css: "#597380" },
+const COLOR_PALETTE = [
+  { name: "Crimson", hex: "#DC143C" },
+  { name: "Deep Pink", hex: "#FF1493" },
+  { name: "Dark Orchid", hex: "#9932CC" },
+  { name: "Slate Blue", hex: "#6A5ACD" },
+  { name: "Royal Blue", hex: "#4169E1" },
+  { name: "Dodger Blue", hex: "#1E90FF" },
+  { name: "Dark Turquoise", hex: "#00CED1" },
+  { name: "Light Sea Green", hex: "#20B2AA" },
+  { name: "Forest Green", hex: "#228B22" },
+  { name: "Yellow Green", hex: "#9ACD32" },
+  { name: "Gold", hex: "#FFD700" },
+  { name: "Dark Orange", hex: "#FF8C00" },
+  { name: "Tomato", hex: "#FF6347" },
+  { name: "Sienna", hex: "#A0522D" },
+  { name: "Dim Gray", hex: "#696969" },
+  { name: "Slate Gray", hex: "#708090" },
 ];
 
-const ORGANIC_MAPS_COLORS = ORGANIC_MAPS_COLORS_DATA.map((color) => ({
-  ...color,
-  kml: cssToKmlColor(color.css),
-}));
+/**
+ * Checks if a hex color is in the 16-color palette.
+ * @param {string} hex - Hex color to check
+ * @returns {boolean} True if color is in palette
+ */
+function isInPalette(hex) {
+  if (!hex) return false;
+  const normalized = hex.toUpperCase();
+  return COLOR_PALETTE.some((c) => c.hex.toUpperCase() === normalized);
+}
 
 let enablePathSimplification = localStorage.getItem("enablePathSimplification") !== "false";
 

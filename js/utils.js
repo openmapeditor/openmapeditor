@@ -593,17 +593,14 @@ function createAndSaveMarker(lat, lon, name) {
     markerName = name;
   }
 
-  const defaultDrawColorName = "Red";
-  const defaultDrawColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === defaultDrawColorName);
-
   const newMarker = L.marker(latLng, {
-    icon: createMarkerIcon(defaultDrawColorData.css, STYLE_CONFIG.marker.default.opacity),
+    icon: createMarkerIcon(DEFAULT_COLOR, STYLE_CONFIG.marker.default.opacity),
   });
 
   newMarker.pathType = "drawn";
   newMarker.feature = {
     properties: {
-      colorName: defaultDrawColorName,
+      color: DEFAULT_COLOR,
     },
   };
 
