@@ -17,6 +17,7 @@ const DEFAULT_COLOR = "#DC143C"; // Crimson - closest CSS color to original red
 /**
  * 16 standard CSS colors for the picker palette.
  * Uses official CSS color names with their correct hex values.
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/named-color
  * @see https://www.w3schools.com/tags/ref_colornames.asp
  */
 const COLOR_PALETTE = [

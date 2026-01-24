@@ -5,6 +5,7 @@
  *
  * Provides color parsing and normalization for import/export.
  * Supports all 140 standard CSS color names and hex values.
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/named-color
  * @see https://www.w3schools.com/tags/ref_colornames.asp
  */
 
