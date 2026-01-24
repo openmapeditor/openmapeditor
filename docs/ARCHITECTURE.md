@@ -31,7 +31,7 @@ All imported and drawn items store **full-precision coordinates**, **name**, **d
 
 All formats (GeoJSON, GPX, KML, KMZ) are fully compatible - data imported in one format can be exported to any other format without data loss.
 
-**Property edits** (name, color) work on all items without duplication. **Geometry edits** require duplication to the drawing layer (via the "Duplicate" button). **Non-palette colors** default to Red for maximum compatibility.
+**Property edits** (name, color) work on all items without duplication. **Geometry edits** require duplication to the drawing layer (via the "Duplicate" button). **Custom colors** are preserved as hex values for maximum compatibility.
 
 ---
 
@@ -45,6 +45,7 @@ OpenMapEditor is a **Vanilla JavaScript** application with modular organization.
 | :--------------------- | :---------------------------------------------------------------------------------------------- |
 | `main.js`              | **Entry Point**. Orchestrates map initialization, global event listeners, and layer management. |
 | `config.js`            | App-wide constants, styling defaults, and color palette definitions.                            |
+| `color-utils.js`       | Color parsing and conversion utilities (140 CSS color names, hex normalization, KML format).    |
 | `file-handlers.js`     | Complex I/O logic for GeoJSON, GPX, KML, and KMZ.                                               |
 | `ui-handlers.js`       | Manages the Sidebar, Contents tab, and interactive UI elements.                                 |
 | `elevation.js`         | Data fetching logic for Google and GeoAdmin (Swiss) elevation APIs.                             |
@@ -98,7 +99,7 @@ layer.feature = {
   properties: {
     name: "string",           // User-editable, defaults to "Marker"/"Path"/"Area"
     description: "string",    // Optional, preserved in all exports
-    colorName: "Red",         // Internal only - one of 16 ORGANIC_MAPS_COLORS
+    color: "#DC143C",         // Hex color value (CSS standard colors or custom)
     stravaId: "123456789",    // Optional, preserved from Strava/import
     totalDistance: 1234.56    // Calculated internally, excluded from standard exports
   },
@@ -159,19 +160,34 @@ layer.isDeletedFromToolbar = true; // Flag for toolbar synchronization
 
 ## Color System
 
-### Palette
+### Architecture
 
-The app uses **16 Organic Maps Colors** defined in `ORGANIC_MAPS_COLORS` in [js/config.js](https://github.com/openmapeditor/openmapeditor/blob/main/js/config.js) (e.g., Red, Pink, Blue).
+The app uses a **hex-based color system** for maximum flexibility and compatibility:
 
-- **`css`**: Hex format for web/GeoJSON (e.g., `"#E51B23"`).
-- **`kml`**: `AABBGGRR` hex format for KML compatibility (e.g., `"FF231BE5"`).
+- **Internal Storage**: Colors stored as hex values (e.g., `"#DC143C"`) in `feature.properties.color`
+- **Import Support**: Accepts all 140 CSS color names (e.g., "rebeccapurple", "crimson") plus any custom hex value
+- **Export**: Outputs hex values in format-native properties (e.g., `stroke`, `marker-color`, `<color>`)
+- **Default Color**: `#DC143C` (Crimson) when color cannot be parsed
 
-### Color Matching Logic
+### Color Picker Palette
 
-1. **Internal Storage**: Colors stored as names (e.g., "Red", "DeepPurple") for maintainability
-2. **Import**: Parses format-specific color properties (see Matrix above) and matches hex to palette
-3. **Export**: Outputs format-native color properties
-4. **Defaulting**: Unmatched colors default to **Red**
+The UI color picker displays **16 CSS standard colors** defined in `COLOR_PALETTE` in [js/config.js](https://github.com/openmapeditor/openmapeditor/blob/main/js/config.js).
+
+### Custom Color Support
+
+Colors outside the 16-color palette are fully supported:
+
+1. **Import**: Any CSS color name or hex value is accepted and preserved exactly
+2. **Display**: Custom colors show in a special "custom color swatch" in the picker
+3. **Export**: Exact hex values are preserved in all export formats
+
+### Color Utilities
+
+Color parsing and conversion handled by [js/color-utils.js](https://github.com/openmapeditor/openmapeditor/blob/main/js/color-utils.js):
+
+- `parseColor()`: Converts CSS color names or hex values to normalized `#RRGGBB` format
+- `normalizeHexColor()`: Handles #RGB, #RRGGBB, #AARRGGBB formats
+- `cssToKmlColor()`: Converts CSS hex to KML `AABBGGRR` format
 
 ---
 
@@ -187,7 +203,7 @@ GPX and KML are converted to GeoJSON using the [`toGeoJSON`](https://github.com/
 - **KMZ**: [`importKmzFile(file)`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:importKmzFile+path:js/file-handlers.js)
 
 1. **Validation**: Filters for supported geometry types (Point, LineString, Polygon).
-2. **Enrichment**: Extracts `stravaId` and `colorName` from format-specific extensions.
+2. **Enrichment**: Extracts `stravaId` and `color` from format-specific extensions.
 3. **Integration**: Features added to `importedItems`.
 
 ### Strava Import
@@ -203,7 +219,7 @@ Strava activities are decoded from the API's `summary_polyline` field using the 
 [`exportGeoJson`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:exportGeoJson+path:js/file-handlers.js) exports all or selected items:
 
 - Injects standard GeoJSON styling properties (`stroke`, `fill`, `marker-color`) for compatibility with external tools (e.g., geojson.io)
-- Excludes internal properties like `colorName` and `totalDistance`
+- Excludes internal properties like `totalDistance`
 
 ### GPX Export
 
@@ -233,7 +249,7 @@ Encodes map state into a compressed string parameter (`&data=`).
 
 1. **Polyline Encoding**: Coordinates compressed (Precision 5) via [Leaflet.encoded](https://github.com/jieter/Leaflet.encoded).
 2. **Minification**: Property names shortened (`n` for name, `s` for style, `t` for type, `sid` for stravaId).
-3. **Omission**: Default values (e.g., "Red" color) and empty fields are excluded.
+3. **Omission**: Default values (e.g., Crimson color) and empty fields are excluded.
 4. **LZ-String**: JSON payload is compressed for URI safety.
 
 **Size Limits**: The app warns at 2,000 characters; Chrome supports URLs up to 2MB.
