@@ -169,7 +169,7 @@ const CSS_COLOR_NAMES = {
  * Handles various input formats:
  * - #RGB -> #RRGGBB
  * - #RRGGBB -> #RRGGBB
- * - #RRGGBBAA -> #RRGGBB (strips alpha suffix, CSS standard)
+ * - #AARRGGBB -> #RRGGBB (strips alpha prefix, KML/Android style)
  * - RRGGBB -> #RRGGBB
  *
  * @param {string} raw - Raw color string
@@ -201,9 +201,9 @@ function normalizeHexColor(raw) {
     color = color.substring(0, 6);
   }
 
-  // Handle #RRGGBBAA format (CSS style) -> strip alpha suffix
+  // Handle #AARRGGBB format (KML/Android style) -> strip alpha prefix
   if (color.length === 8) {
-    color = color.substring(0, 6);
+    color = color.substring(2);
   }
 
   // Validate final format
