@@ -237,13 +237,13 @@ function parseColor(input) {
 /**
  * Converts a CSS hex color (#RRGGBB) to KML AABBGGRR format.
  * KML uses reverse byte order with alpha prefix.
+ * Falls back to DEFAULT_COLOR if input is invalid.
  *
  * @param {string} cssColor - CSS color string (e.g., "#FF0000")
  * @returns {string} KML color string (e.g., "FF0000FF")
  */
 function cssToKmlColor(cssColor) {
-  const normalized = normalizeHexColor(cssColor);
-  if (!normalized) return "FF0000FF"; // Default to red
+  const normalized = normalizeHexColor(cssColor) || normalizeHexColor(DEFAULT_COLOR);
   const rr = normalized.substring(1, 3);
   const gg = normalized.substring(3, 5);
   const bb = normalized.substring(5, 7);
