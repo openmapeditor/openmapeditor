@@ -9,7 +9,8 @@
  * Color handling:
  * - GPX: colors extracted from DOM before importGeoJsonToMap()
  * - GeoJSON/KML/KMZ: colors parsed inside importGeoJsonToMap() via helper functions
- * - All formats default to "Red" if color not in palette
+ * - All formats default to DEFAULT_COLOR if color is missing or invalid
+ * - Custom colors (not in palette) are preserved
  */
 
 // 1. GENERAL UTILITIES
@@ -1117,14 +1118,14 @@ function exportKmz() {
  * t: "m"=marker, "p"=polyline, "a"=polygon (area)
  * c: [lng,lat] for markers (5 decimals), polyline-encoded string for paths (precision 5)
  * n: name (omitted if empty)
- * s: style/color name (omitted if "Red")
+ * s: style/color hex (omitted if DEFAULT_COLOR)
  * e: elevation - integer for markers, array for paths (omitted if absent or all zeros)
  * sid: Strava activity ID (omitted if not a Strava import)
  *
  * Compression strategy:
  * 1. Polyline encoding for coordinate sequences (precision 5 = ~1.1m accuracy, sufficient for GPS tracks)
  * 2. Short property names (t, c, n, s, e, sid)
- * 3. Omit default values (color if "Red", name if empty, elevation if not present)
+ * 3. Omit default values (color if DEFAULT_COLOR, name if empty, elevation if not present)
  * 4. Elevation stored as rounded integers only when all points have elevation data
  * 5. Skip elevation if all values are 0 (placeholder data with no variation)
  * 6. LZ-String compression with URI encoding (compresses the JSON structure)

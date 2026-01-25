@@ -10,9 +10,19 @@ const APP_CREDITS_DESCRIPTION = "OpenMapEditor is a simple, powerful web-based e
 const APP_DOMAIN = "www.openmapeditor.com"; // Used for Strava setup instructions
 
 /**
- * Default color for new features (CSS standard red).
+ * Default color for new features.
  */
-const DEFAULT_COLOR = "#DC143C"; // Crimson - closest CSS color to original red
+const DEFAULT_COLOR = "#DC143C"; // Crimson
+
+/**
+ * Route path color.
+ */
+const ROUTE_COLOR = "#FFD700"; // Gold
+
+/**
+ * Strava activity color.
+ */
+const STRAVA_COLOR = "#FC5200"; // Official Strava orange
 
 /**
  * 16 standard CSS colors for the picker palette.

@@ -283,17 +283,15 @@ function initializeRouting() {
             currentRoutePath.feature.properties.name = newRouteName;
             currentRoutePath.feature.properties.totalDistance = route.summary.totalDistance;
           } else {
-            // Use CSS standard yellow for routes
-            const routeColor = "#FFFF00";
             const newRoutePath = L.polyline(processedCoordinates, {
               ...STYLE_CONFIG.path.default,
-              color: routeColor,
+              color: ROUTE_COLOR,
             });
 
             newRoutePath.feature = {
               properties: {
                 name: newRouteName,
-                color: routeColor,
+                color: ROUTE_COLOR,
                 totalDistance: route.summary.totalDistance,
               },
             };
