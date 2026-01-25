@@ -1060,7 +1060,7 @@ function initializeMap() {
     },
   });
 
-  const locateCircleColor = rootStyles.getPropertyValue("--locate-color").trim();
+  const locateCircleColor = LOCATE_COLOR;
 
   locateControl = L.control
     .locate({
@@ -1185,7 +1185,7 @@ function initializeMap() {
     }
 
     temporarySearchMarker = L.marker(locationLatLng, {
-      icon: createMarkerIcon(rootStyles.getPropertyValue("--color-black").trim(), 1),
+      icon: createMarkerIcon(COLOR_BLACK, 1),
       interactive: true,
     }).addTo(map);
 

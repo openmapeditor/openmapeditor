@@ -9,20 +9,19 @@ const APP_DESCRIPTION = "Free online GPX, KML, KMZ & GeoJSON viewer & editor. Dr
 const APP_CREDITS_DESCRIPTION = "OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths, areas, and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GeoJSON, GPX, KML, KMZ), routing, elevation profiles, custom styling, and Strava activity integration."; // Used in credits modal
 const APP_DOMAIN = "www.openmapeditor.com"; // Used for Strava setup instructions
 
-/**
- * Default color for new features.
- */
+// Core Application Colors
 const DEFAULT_COLOR = "#DC143C"; // Crimson
-
-/**
- * Route path color.
- */
 const ROUTE_COLOR = "#FFD700"; // Gold
-
-/**
- * Strava activity color.
- */
 const STRAVA_COLOR = "#FC5200"; // Official Strava orange
+
+// UI & Routing Colors (Dynamically fetched from CSS variables in style.css)
+const rootStyles = getComputedStyle(document.documentElement);
+const ROUTING_COLOR_START = rootStyles.getPropertyValue("--routing-color-start").trim();
+const ROUTING_COLOR_END = rootStyles.getPropertyValue("--routing-color-end").trim();
+const ROUTING_COLOR_VIA = rootStyles.getPropertyValue("--routing-color-via").trim();
+const COLOR_BLACK = rootStyles.getPropertyValue("--color-black").trim();
+const COLOR_WHITE = rootStyles.getPropertyValue("--color-white").trim();
+const LOCATE_COLOR = rootStyles.getPropertyValue("--locate-color").trim();
 
 /**
  * 16 standard CSS colors for the picker palette.
@@ -100,12 +99,6 @@ const STYLE_CONFIG = {
     },
   },
 };
-
-const rootStyles = getComputedStyle(document.documentElement);
-
-const routingColorStart = rootStyles.getPropertyValue("--routing-color-start").trim();
-const routingColorEnd = rootStyles.getPropertyValue("--routing-color-end").trim();
-const routingColorVia = rootStyles.getPropertyValue("--routing-color-via").trim();
 
 /**
  * Simplification settings for imported paths (GPX, KML, KMZ).
