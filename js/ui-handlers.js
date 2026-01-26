@@ -782,11 +782,11 @@ function populateColorPicker() {
   colorInput.style.padding = "0";
   colorInput.value = DEFAULT_COLOR;
 
-  // When native picker color changes, apply it
+  // When native picker color changes, apply it (don't hide picker while user is selecting)
   colorInput.addEventListener("input", (e) => {
     if (!globallySelectedItem) return;
     const selectedColor = e.target.value.toUpperCase();
-    applyColorToSelectedItem(selectedColor);
+    applyColorToSelectedItem(selectedColor, false);
     customSwatch.dataset.hex = selectedColor;
   });
 
@@ -803,8 +803,9 @@ function populateColorPicker() {
 /**
  * Applies a color to the currently selected item.
  * @param {string} hex - The hex color to apply
+ * @param {boolean} hidePicker - Whether to hide the color picker after (default true)
  */
-function applyColorToSelectedItem(hex) {
+function applyColorToSelectedItem(hex, hidePicker = true) {
   if (!globallySelectedItem) return;
 
   // Store the color on the feature
@@ -827,9 +828,11 @@ function applyColorToSelectedItem(hex) {
   // Update the selected state in the color picker
   updateColorPickerSelection(hex);
 
-  // Update the mini swatch in the info panel and hide the picker
+  // Update the mini swatch in the info panel
   infoPanelColorSwatch.style.backgroundColor = hex;
-  colorPicker.style.display = "none";
+  if (hidePicker) {
+    colorPicker.style.display = "none";
+  }
 }
 
 /**
