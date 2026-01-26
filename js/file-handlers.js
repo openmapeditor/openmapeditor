@@ -39,11 +39,16 @@ function getAllExportableLayers() {
 
 /**
  * Properties to exclude from GeoJSON export.
- * Add any property names here that you don't want included in exported files.
+ * These are internal/style properties that shouldn't be included in exported files.
  */
 const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
-  "color", // Internal color storage - exported as stroke/marker-color
-  "totalDistance", // Internal calculated distance - not needed in export
+  "color",
+  "totalDistance",
+  "stroke-width",
+  "stroke-opacity",
+  "fill",
+  "fill-color",
+  "fill-opacity",
 ];
 
 /**
