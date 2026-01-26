@@ -1203,7 +1203,7 @@ function exportKmz() {
  * t: "m"=marker, "p"=polyline, "a"=polygon (area)
  * c: [lng,lat] for markers (5 decimals), polyline-encoded string for paths (precision 5)
  * n: name (omitted if empty)
- * s: style/color hex (omitted if DEFAULT_COLOR)
+ * s: style/color hex without # (omitted if DEFAULT_COLOR)
  * e: elevation - integer for markers, array for paths (omitted if absent or all zeros)
  * sid: Strava activity ID (omitted if not a Strava import)
  *
@@ -1246,7 +1246,10 @@ function encodeMapStateToUrl() {
       const color = layer.feature?.properties?.color;
       const stravaId = layer.feature?.properties?.stravaId;
       if (name) feature.n = name;
-      if (color && color !== DEFAULT_COLOR) feature.s = color;
+      // Strip # prefix from hex color for URL efficiency (auto-restored by normalizeHexColor on import)
+      if (color && color !== DEFAULT_COLOR) {
+        feature.s = color.startsWith("#") ? color.slice(1) : color;
+      }
       if (stravaId) feature.sid = stravaId;
 
       if (layer instanceof L.Marker) {
