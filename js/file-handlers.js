@@ -930,8 +930,17 @@ function convertLayerToKmlPlacemark(layer, defaultName, defaultDescription = "")
     const alt = typeof latlng.alt === "number" ? latlng.alt : 0;
     const pointTag = `    <Point><coordinates>${latlng.lng},${latlng.lat},${alt}</coordinates></Point>\n`;
 
-    // Plain marker - let viewer use its default icon
-    return placemarkStart + pointTag + placemarkEnd;
+    const styleTag =
+      `    <Style>\n` +
+      `      <IconStyle>\n` +
+      `        <color>${kmlColor}</color>\n` +
+      `        <Icon>\n` +
+      `          <href>https://maps.google.com/mapfiles/kml/pushpin/wht-pushpin.png</href>\n` +
+      `        </Icon>\n` +
+      `      </IconStyle>\n` +
+      `    </Style>\n`;
+
+    return placemarkStart + styleTag + pointTag + placemarkEnd;
   }
 
   return null;
