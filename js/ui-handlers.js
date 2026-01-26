@@ -854,6 +854,13 @@ function updateColorPickerSelection(hex) {
   const colorInput = document.getElementById("native-color-input");
   const normalizedHex = hex?.toUpperCase();
 
+  // Always sync the hidden native picker with the current color.
+  // This ensures the custom picker starts at the active color.
+  if (colorInput && hex) {
+    const validHex = parseColor(hex); // HTML color inputs require strict #RRGGBB format
+    if (validHex) colorInput.value = validHex;
+  }
+
   let matchedPalette = false;
 
   swatches.forEach((swatch) => {
@@ -874,15 +881,11 @@ function updateColorPickerSelection(hex) {
       customSwatch.dataset.hex = hex;
       customSwatch.title = `Custom: ${hex}`;
       customSwatch.classList.add("selected");
-      // Update native input so it opens with this color
-      if (colorInput) colorInput.value = hex;
     } else {
       // Color is in palette - deselect custom swatch
       customSwatch.dataset.hex = "";
       customSwatch.title = "Custom color";
       customSwatch.classList.remove("selected");
-      // Reset native input to default
-      if (colorInput) colorInput.value = DEFAULT_COLOR;
     }
   }
 }
