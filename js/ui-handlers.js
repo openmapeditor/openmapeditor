@@ -769,18 +769,32 @@ function populateColorPicker() {
   customSwatch.title = "Custom color";
   // Rainbow gradient to indicate custom color picker
   customSwatch.style.background = "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)";
+  customSwatch.style.position = "relative";
+  customSwatch.style.overflow = "hidden";
 
-  // Hidden native color input
+  // Native color input - covers entire swatch for iOS Safari compatibility
+  // iOS Safari blocks programmatic .click() on hidden/zero-size inputs,
+  // so we make the input cover the swatch area but remain visually transparent
   const colorInput = document.createElement("input");
   colorInput.type = "color";
   colorInput.id = "native-color-input";
   colorInput.style.position = "absolute";
+  colorInput.style.top = "0";
+  colorInput.style.left = "0";
+  colorInput.style.width = "100%";
+  colorInput.style.height = "100%";
   colorInput.style.opacity = "0";
-  colorInput.style.width = "0";
-  colorInput.style.height = "0";
   colorInput.style.border = "none";
   colorInput.style.padding = "0";
+  colorInput.style.cursor = "pointer";
   colorInput.value = DEFAULT_COLOR;
+
+  // Prevent color picker from opening if nothing is selected
+  colorInput.addEventListener("click", (e) => {
+    if (!globallySelectedItem) {
+      e.preventDefault();
+    }
+  });
 
   // When native picker color changes, apply it (don't hide picker while user is selecting)
   colorInput.addEventListener("input", (e) => {
@@ -788,12 +802,6 @@ function populateColorPicker() {
     const selectedColor = e.target.value.toUpperCase();
     applyColorToSelectedItem(selectedColor, false);
     customSwatch.dataset.hex = selectedColor;
-  });
-
-  // Clicking the swatch opens the native color picker
-  customSwatch.addEventListener("click", () => {
-    if (!globallySelectedItem) return;
-    colorInput.click();
   });
 
   customSwatch.appendChild(colorInput);
