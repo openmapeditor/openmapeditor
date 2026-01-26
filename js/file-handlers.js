@@ -77,6 +77,46 @@ function escapeXml(unsafe) {
 const SUPPORTED_IMPORT_GEOM_TYPES = ["Point", "LineString", "Polygon"];
 
 /**
+ * Extracts inline IconStyle colors from KML DOM and attaches them to GeoJSON features.
+ *
+ * Why this is needed:
+ * - toGeoJSON parses LineStyle/PolyStyle colors but ignores IconStyle colors
+ * - This handles KML files with inline <Style><IconStyle><color> elements
+ * - Primary use case: Re-importing our own KML/KMZ exports which use inline styles
+ *
+ * Must be called AFTER toGeoJSON conversion but BEFORE explosion.
+ *
+ * @param {Document} dom - The parsed KML XML document
+ * @param {object} geojsonData - The GeoJSON data from toGeoJSON.kml()
+ */
+function applyKmlIconColors(dom, geojsonData) {
+  const placemarks = dom.querySelectorAll("Placemark");
+
+  // Require 1:1 mapping between DOM placemarks and GeoJSON features
+  if (!geojsonData?.features || placemarks.length !== geojsonData.features.length) {
+    return;
+  }
+
+  geojsonData.features.forEach((feature, index) => {
+    if (feature.geometry?.type !== "Point") {
+      return;
+    }
+
+    const placemark = placemarks[index];
+    const iconStyleColor = placemark.querySelector("Style IconStyle color");
+
+    if (iconStyleColor) {
+      const kmlColor = iconStyleColor.textContent.trim();
+      const cssColor = kmlToCssColor(kmlColor);
+      if (cssColor) {
+        feature.properties = feature.properties || {};
+        feature.properties.color = cssColor;
+      }
+    }
+  });
+}
+
+/**
  * Parses color from standard GeoJSON stroke/marker-color properties.
  * Supports hex values and CSS color names.
  * @param {object} properties - The GeoJSON feature properties
@@ -88,13 +128,23 @@ function parseColorFromGeoJsonStyle(properties) {
 }
 
 /**
- * Parses a color from KML style properties.
- * Handles styleUrl (e.g., #placemark-red) and inline stroke colors.
- * @param {object} properties - The feature properties
+ * Parses a color from KML style properties (after toGeoJSON conversion).
+ *
+ * Standard KML: LineStyle colors are parsed by toGeoJSON into properties.stroke
+ * Our exports: Inline IconStyle colors are handled separately by applyKmlIconColors()
+ *
+ * @param {object} properties - The feature properties from toGeoJSON
  * @returns {string} Hex color or DEFAULT_COLOR
  */
 function parseColorFromKmlStyle(properties) {
-  // Case 1: styleUrl (e.g., #placemark-red) for markers
+  // Standard KML: LineStyle colors parsed by toGeoJSON
+  if (properties.stroke) {
+    const parsed = parseColor(properties.stroke);
+    if (parsed) return parsed;
+  }
+
+  // --- Organic Maps specific ---
+  // Organic Maps uses styleUrl like #placemark-red or icon URLs like placemark-red.png
   if (properties.styleUrl) {
     const match = properties.styleUrl.match(/#placemark-(\w+)/i);
     if (match) {
@@ -102,12 +152,14 @@ function parseColorFromKmlStyle(properties) {
       if (parsed) return parsed;
     }
   }
-
-  // Case 2: Inline style color from toGeoJSON (outputs #RRGGBB format)
-  if (properties.stroke) {
-    const parsed = parseColor(properties.stroke);
-    if (parsed) return parsed;
+  if (properties.icon) {
+    const match = properties.icon.match(/placemark-(\w+)\.png/i);
+    if (match) {
+      const parsed = parseColor(match[1]);
+      if (parsed) return parsed;
+    }
   }
+  // --- End Organic Maps specific ---
 
   return DEFAULT_COLOR;
 }
@@ -477,6 +529,10 @@ function parseKmlContent(kmlText) {
       }
     });
   }
+
+  // Extract inline IconStyle colors (for re-importing our own KML/KMZ exports)
+  // Must be called BEFORE explosion so colors propagate to all exploded features
+  applyKmlIconColors(dom, geojsonData);
 
   // Explode multi-geometries and filter for supported geometry types
   if (geojsonData?.features) {
