@@ -384,20 +384,18 @@ async function handleStravaAuthReturnForUserKeys(event) {
 function displayActivitiesOnMap(activities) {
   if (!stravaActivitiesLayer) return;
   stravaActivitiesLayer.clearLayers();
-  const stravaColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === "DeepOrange");
-  const stravaColor = stravaColorData ? stravaColorData.css : "#f06432";
   let processedCount = 0;
 
   activities.forEach((activity) => {
     if (activity.map && activity.map.summary_polyline) {
       try {
         const latlngs = L.Polyline.fromEncoded(activity.map.summary_polyline).getLatLngs();
-        const polyline = L.polyline(latlngs, { ...STYLE_CONFIG.path.default, color: stravaColor });
+        const polyline = L.polyline(latlngs, { ...STYLE_CONFIG.path.default, color: STRAVA_COLOR });
         polyline.feature = {
           properties: {
             ...activity,
             totalDistance: activity.distance,
-            colorName: "DeepOrange",
+            color: STRAVA_COLOR,
             pathType: "strava",
             stravaId: activity.id,
           },

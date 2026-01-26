@@ -3,10 +3,10 @@
 :root {
   --color-black: #000000;
   --color-white: #ffffff;
-  --color-red: #ea4335;
-  --color-blue: #4285f4;
-  --color-yellow: #fbbc04;
-  --color-green: #25d366;
+  --color-red: #dc143c;
+  --color-blue: #1e90ff;
+  --color-yellow: #ffd700;
+  --color-green: #228b22;
   --color-neutral-grey: #f5f5f5;
 
   --routing-color-start: var(--color-green);

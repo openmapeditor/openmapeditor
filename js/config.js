@@ -9,47 +9,44 @@ const APP_DESCRIPTION = "Free online GPX, KML, KMZ & GeoJSON viewer & editor. Dr
 const APP_CREDITS_DESCRIPTION = "OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and managing geographic data like paths, areas, and markers. Built with Leaflet.js, it supports interactive drawing, file import/export (GeoJSON, GPX, KML, KMZ), routing, elevation profiles, custom styling, and Strava activity integration."; // Used in credits modal
 const APP_DOMAIN = "www.openmapeditor.com"; // Used for Strava setup instructions
 
-/**
- * Converts a CSS hex color to KML AABBGGRR format for Organic Maps compatibility.
- * @see https://github.com/organicmaps/organicmaps/blob/master/libs/kml/serdes.cpp
- * @param {string} cssColor - CSS color string (e.g., "#E51B23")
- * @returns {string} KML color string (e.g., "FF231BE5")
- */
-function cssToKmlColor(cssColor) {
-  const rr = cssColor.substring(1, 3);
-  const gg = cssColor.substring(3, 5);
-  const bb = cssColor.substring(5, 7);
-  return `FF${bb}${gg}${rr}`.toUpperCase();
-}
+// Core Application Colors
+const DEFAULT_COLOR = "#DC143C"; // Crimson
+const ROUTE_COLOR = "#FFD700"; // Gold
+const STRAVA_COLOR = "#FC5200"; // Official Strava orange
+
+// UI & Routing Colors (Dynamically fetched from CSS variables in style.css)
+const rootStyles = getComputedStyle(document.documentElement);
+const ROUTING_COLOR_START = rootStyles.getPropertyValue("--routing-color-start").trim();
+const ROUTING_COLOR_END = rootStyles.getPropertyValue("--routing-color-end").trim();
+const ROUTING_COLOR_VIA = rootStyles.getPropertyValue("--routing-color-via").trim();
+const COLOR_BLACK = rootStyles.getPropertyValue("--color-black").trim();
+const COLOR_WHITE = rootStyles.getPropertyValue("--color-white").trim();
+const LOCATE_COLOR = rootStyles.getPropertyValue("--locate-color").trim();
 
 /**
- * The 16 official Organic Maps colors with their CSS hex values.
- * @see https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/dark/style.mapcss
- * @see https://github.com/organicmaps/organicmaps/blob/master/data/styles/default/light/style.mapcss
+ * 16 standard CSS colors for the picker palette.
+ * Uses official CSS color names with their correct hex values.
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/named-color
+ * @see https://www.w3schools.com/tags/ref_colornames.asp
  */
-const ORGANIC_MAPS_COLORS_DATA = [
-  { name: "Red", css: "#E51B23" },
-  { name: "Pink", css: "#FF4182" },
-  { name: "Purple", css: "#9B24B2" },
-  { name: "DeepPurple", css: "#6639BF" },
-  { name: "Blue", css: "#0066CC" },
-  { name: "LightBlue", css: "#249CF2" },
-  { name: "Cyan", css: "#14BECD" },
-  { name: "Teal", css: "#00A58C" },
-  { name: "Green", css: "#3C8C3C" },
-  { name: "Lime", css: "#93BF39" },
-  { name: "Yellow", css: "#FFC800" },
-  { name: "Orange", css: "#FF9600" },
-  { name: "DeepOrange", css: "#F06432" },
-  { name: "Brown", css: "#804633" },
-  { name: "Gray", css: "#737373" },
-  { name: "BlueGray", css: "#597380" },
+const COLOR_PALETTE = [
+  { name: "Crimson", hex: "#DC143C" },
+  { name: "Deep Pink", hex: "#FF1493" },
+  { name: "Dark Orchid", hex: "#9932CC" },
+  { name: "Slate Blue", hex: "#6A5ACD" },
+  { name: "Royal Blue", hex: "#4169E1" },
+  { name: "Dodger Blue", hex: "#1E90FF" },
+  { name: "Dark Turquoise", hex: "#00CED1" },
+  { name: "Light Sea Green", hex: "#20B2AA" },
+  { name: "Forest Green", hex: "#228B22" },
+  { name: "Yellow Green", hex: "#9ACD32" },
+  { name: "Gold", hex: "#FFD700" },
+  { name: "Dark Orange", hex: "#FF8C00" },
+  { name: "Tomato", hex: "#FF6347" },
+  { name: "Sienna", hex: "#A0522D" },
+  { name: "Dim Gray", hex: "#696969" },
+  { name: "Slate Gray", hex: "#708090" },
 ];
-
-const ORGANIC_MAPS_COLORS = ORGANIC_MAPS_COLORS_DATA.map((color) => ({
-  ...color,
-  kml: cssToKmlColor(color.css),
-}));
 
 let enablePathSimplification = localStorage.getItem("enablePathSimplification") !== "false";
 
@@ -69,7 +66,7 @@ const STYLE_CONFIG = {
       fill: false,
       outline: {
         enabled: true,
-        color: "black",
+        color: COLOR_BLACK,
         weightOffset: 4,
         fillOpacity: 0.15,
       },
@@ -84,19 +81,13 @@ const STYLE_CONFIG = {
       opacity: 1,
       outline: {
         enabled: true,
-        color: "black",
+        color: COLOR_BLACK,
         sizeOffset: 4,
         anchorOffsetY: -4,
       },
     },
   },
 };
-
-const rootStyles = getComputedStyle(document.documentElement);
-
-const routingColorStart = rootStyles.getPropertyValue("--routing-color-start").trim();
-const routingColorEnd = rootStyles.getPropertyValue("--routing-color-end").trim();
-const routingColorVia = rootStyles.getPropertyValue("--routing-color-via").trim();
 
 /**
  * Simplification settings for imported paths (GPX, KML, KMZ).
