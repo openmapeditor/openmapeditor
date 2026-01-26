@@ -48,17 +48,6 @@ const COLOR_PALETTE = [
   { name: "Slate Gray", hex: "#708090" },
 ];
 
-/**
- * Checks if a hex color is in the 16-color palette.
- * @param {string} hex - Hex color to check
- * @returns {boolean} True if color is in palette
- */
-function isInPalette(hex) {
-  if (!hex) return false;
-  const normalized = hex.toUpperCase();
-  return COLOR_PALETTE.some((c) => c.hex.toUpperCase() === normalized);
-}
-
 let enablePathSimplification = localStorage.getItem("enablePathSimplification") !== "false";
 
 /**

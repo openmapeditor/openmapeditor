@@ -192,13 +192,13 @@ function normalizeHexColor(raw) {
       .join("");
   }
 
-  // Handle #RGBA format -> expand to RRGGBBAA, then strip alpha
+  // Handle #RGBA format -> take RGB portion, expand to RRGGBB (discard alpha)
   if (color.length === 4) {
     color = color
+      .substring(0, 3)
       .split("")
       .map((c) => c + c)
       .join("");
-    color = color.substring(0, 6);
   }
 
   // Handle #AARRGGBB format (KML/Android style) -> strip alpha prefix

@@ -743,7 +743,7 @@ function updateLayerName() {
 
 /**
  * Populates the color picker with swatches from the palette.
- * Also creates a hidden custom swatch for non-palette colors.
+ * Adds a 17th swatch that opens the native color picker for custom colors.
  */
 function populateColorPicker() {
   // Add palette colors
@@ -762,12 +762,41 @@ function populateColorPicker() {
     colorPicker.appendChild(swatch);
   });
 
-  // Add custom color swatch (hidden by default, shown when color not in palette)
+  // Add custom color picker swatch (17th swatch with native color input)
   const customSwatch = document.createElement("div");
   customSwatch.id = "custom-color-swatch";
-  customSwatch.className = "color-swatch";
-  customSwatch.style.display = "none";
+  customSwatch.className = "color-swatch custom-color-swatch";
   customSwatch.title = "Custom color";
+  // Rainbow gradient to indicate custom color picker
+  customSwatch.style.background = "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)";
+
+  // Hidden native color input
+  const colorInput = document.createElement("input");
+  colorInput.type = "color";
+  colorInput.id = "native-color-input";
+  colorInput.style.position = "absolute";
+  colorInput.style.opacity = "0";
+  colorInput.style.width = "0";
+  colorInput.style.height = "0";
+  colorInput.style.border = "none";
+  colorInput.style.padding = "0";
+  colorInput.value = DEFAULT_COLOR;
+
+  // When native picker color changes, apply it
+  colorInput.addEventListener("input", (e) => {
+    if (!globallySelectedItem) return;
+    const selectedColor = e.target.value.toUpperCase();
+    applyColorToSelectedItem(selectedColor);
+    customSwatch.dataset.hex = selectedColor;
+  });
+
+  // Clicking the swatch opens the native color picker
+  customSwatch.addEventListener("click", () => {
+    if (!globallySelectedItem) return;
+    colorInput.click();
+  });
+
+  customSwatch.appendChild(colorInput);
   colorPicker.appendChild(customSwatch);
 }
 
@@ -805,12 +834,13 @@ function applyColorToSelectedItem(hex) {
 
 /**
  * Updates which swatch in the picker has the 'selected' class.
- * Shows the custom swatch if the color is not in the palette.
+ * If color is not in palette, selects the custom swatch.
  * @param {string} hex - The hex color to select
  */
 function updateColorPickerSelection(hex) {
   const swatches = colorPicker.querySelectorAll(".color-swatch");
   const customSwatch = document.getElementById("custom-color-swatch");
+  const colorInput = document.getElementById("native-color-input");
   const normalizedHex = hex?.toUpperCase();
 
   let matchedPalette = false;
@@ -826,16 +856,23 @@ function updateColorPickerSelection(hex) {
     }
   });
 
-  // Show custom swatch if color not in palette
-  if (!matchedPalette && hex && customSwatch) {
-    customSwatch.style.display = "block";
-    customSwatch.style.backgroundColor = hex;
-    customSwatch.dataset.hex = hex;
-    customSwatch.title = hex; // Show hex value as tooltip
-    customSwatch.classList.add("selected");
-  } else if (customSwatch) {
-    customSwatch.style.display = "none";
-    customSwatch.classList.remove("selected");
+  // Handle custom swatch selection
+  if (customSwatch) {
+    if (!matchedPalette && hex) {
+      // Color not in palette - select custom swatch
+      customSwatch.dataset.hex = hex;
+      customSwatch.title = `Custom: ${hex}`;
+      customSwatch.classList.add("selected");
+      // Update native input so it opens with this color
+      if (colorInput) colorInput.value = hex;
+    } else {
+      // Color is in palette - deselect custom swatch
+      customSwatch.dataset.hex = "";
+      customSwatch.title = "Custom color";
+      customSwatch.classList.remove("selected");
+      // Reset native input to default
+      if (colorInput) colorInput.value = DEFAULT_COLOR;
+    }
   }
 }
 
