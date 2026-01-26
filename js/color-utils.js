@@ -201,7 +201,9 @@ function normalizeHexColor(raw) {
       .join("");
   }
 
-  // Handle #AARRGGBB format (KML/Android style) -> strip alpha prefix
+  // Handle #AARRGGBB format (GPX/Android style) -> strip alpha prefix
+  // Note: 8-digit hex is assumed to be #AARRGGBB (alpha first), not CSS #RRGGBBAA.
+  // This matches KML/GPX ecosystem conventions which predate the CSS standard.
   if (color.length === 8) {
     color = color.substring(2);
   }
