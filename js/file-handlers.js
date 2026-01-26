@@ -137,7 +137,7 @@ function applyGpxColors(dom, geojsonData) {
 
   // Extract colors from waypoints (returns hex or null)
   const waypointColors = Array.from(waypointsInDom).map((node) => {
-    const colorNode = node.querySelector("color");
+    const colorNode = node.querySelector("gpx_style\\:color, color");
     return colorNode ? parseColor(colorNode.textContent) : null;
   });
 
