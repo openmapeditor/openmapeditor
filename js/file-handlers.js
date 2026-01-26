@@ -323,7 +323,7 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
   const resolveColor = (properties) => {
     if (!properties) return DEFAULT_COLOR;
     return (
-      properties.color || // Use color if present
+      parseColor(properties.color) || // Normalize color if present
       (isKmlBased
         ? parseColorFromKmlStyle(properties) // KML/KMZ parsing
         : parseColorFromGeoJsonStyle(properties)) || // GeoJSON stroke/marker-color
