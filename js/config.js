@@ -66,7 +66,7 @@ const STYLE_CONFIG = {
       fill: false,
       outline: {
         enabled: true,
-        color: "black",
+        color: COLOR_BLACK,
         weightOffset: 4,
         fillOpacity: 0.15,
       },
@@ -81,7 +81,7 @@ const STYLE_CONFIG = {
       opacity: 1,
       outline: {
         enabled: true,
-        color: "black",
+        color: COLOR_BLACK,
         sizeOffset: 4,
         anchorOffsetY: -4,
       },

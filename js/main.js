@@ -1081,7 +1081,7 @@ function initializeMap() {
       //   },
       // }),
       markerStyle: {
-        color: "white",
+        color: COLOR_WHITE,
         fillColor: locateCircleColor,
         fillOpacity: 1,
         weight: 2,
