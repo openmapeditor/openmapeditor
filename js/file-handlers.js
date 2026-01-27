@@ -314,10 +314,9 @@ function explodeMultiGeometries(feature) {
  * Imports GeoJSON data to the map, applying appropriate styles.
  * @param {object} geoJsonData - The GeoJSON data to add
  * @param {string} fileType - The file type ('gpx', 'kml', 'kmz', 'geojson')
- * @param {string|null} originalPath - The original path for KMZ files
  * @returns {L.GeoJSON} The created layer group
  */
-function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
+function importGeoJsonToMap(geoJsonData, fileType) {
   const targetGroup = importedItems; // All imported files go to the same group
   const isKmlBased = fileType === "kml" || fileType === "kmz";
 
@@ -349,9 +348,6 @@ function importGeoJsonToMap(geoJsonData, fileType, originalPath = null) {
 
       // All imported items use fileType as pathType
       layer.pathType = fileType;
-      if (fileType === "kmz" && originalPath) {
-        layer.originalKmzPath = originalPath; // Store the source file path
-      }
 
       layer.on("click", (e) => {
         L.DomEvent.stopPropagation(e);
@@ -605,7 +601,7 @@ async function importKmzFile(file) {
 
         // Import features if present
         if (geojsonData?.features?.length > 0) {
-          const newLayer = importGeoJsonToMap(geojsonData, "kmz", kmlFile.name);
+          const newLayer = importGeoJsonToMap(geojsonData, "kmz");
           if (newLayer) {
             justImportedLayers.addLayer(newLayer);
           }
@@ -1028,42 +1024,35 @@ function buildKmlDocument(name, placemarks) {
 }
 
 /**
- * Finds a unique filename by appending a number if the filename already exists.
- * @param {string} baseFileName - The desired filename (e.g., "Drawn_Features.kml")
- * @param {JSZip} filesFolder - The JSZip folder to check for existing files
- * @returns {string} A unique filename (e.g., "Drawn_Features.kml" or "Drawn_Features1.kml")
+ * Builds a KML Folder element containing placemarks.
+ * @param {string} name - The name for the folder
+ * @param {Array<string>} placemarks - An array of pre-formatted KML <Placemark> strings
+ * @returns {string} The KML Folder element as a string
  */
-function getUniqueFileName(baseFileName, filesFolder) {
-  const match = baseFileName.match(/^(.+?)(\.[^.]+)$/);
-  const baseName = match ? match[1] : baseFileName;
-  const extension = match ? match[2] : "";
-
-  let fileName = baseFileName;
-  let counter = 1;
-
-  while (filesFolder.file(fileName)) {
-    fileName = `${baseName}${counter}${extension}`;
-    counter++;
-  }
-
-  return fileName;
+function buildKmlFolder(name, placemarks) {
+  const safeName = escapeXml(name);
+  return (
+    `  <Folder>\n` +
+    `    <name>${safeName}</name>\n` +
+    placemarks.map((p) => p.replace(/^/gm, "  ")).join("\n") +
+    `\n  </Folder>`
+  );
 }
 
 /**
- * Builds a JSZip archive containing all map data for a KMZ export.
- * @param {string} docName - The name for the main KML document
- * @returns {JSZip} The zip object ready for generation
+ * Builds a KML string containing all map data for export.
+ * Uses Folder elements for maximum compatibility with Google Earth Web,
+ * Google MyMaps, map.geo.admin.ch, and other KML viewers.
+ * @param {string} docName - The name for the KML document
+ * @returns {string|null} The KML content as a string, or null if no data
  */
-function buildKmzArchive(docName) {
-  const zip = new JSZip();
-  const filesFolder = zip.folder("files");
-  const networkLinks = [];
+function buildKmlContent(docName) {
+  const folders = [];
   let featureCounter = 0;
 
   const drawnFeatures = [];
   const importedFeatures = [];
   const stravaActivities = [];
-  const kmzGroups = {}; // Group KMZ features by their original file path
 
   const allLayers = getAllExportableLayers();
 
@@ -1081,20 +1070,8 @@ function buildKmzArchive(docName) {
       case "gpx":
       case "kml":
       case "geojson":
-        importedFeatures.push(kmlSnippet);
-        break;
       case "kmz":
-        // Group KMZ features by their original file path to preserve structure
-        const originalPath = layer.originalKmzPath;
-        if (originalPath && originalPath.toLowerCase() !== "doc.kml") {
-          if (!kmzGroups[originalPath]) {
-            kmzGroups[originalPath] = [];
-          }
-          kmzGroups[originalPath].push(kmlSnippet);
-        } else {
-          // If no originalKmzPath or it's doc.kml, treat as imported feature
-          importedFeatures.push(kmlSnippet);
-        }
+        importedFeatures.push(kmlSnippet);
         break;
       case "strava":
         stravaActivities.push(kmlSnippet);
@@ -1102,94 +1079,66 @@ function buildKmzArchive(docName) {
     }
   });
 
-  // Rebuild KML files for KMZ groups (respects edits, deletions)
-  Object.keys(kmzGroups).forEach((path) => {
-    if (kmzGroups[path].length > 0) {
-      const fileName = path.substring(path.lastIndexOf("/") + 1);
-      const docName = fileName.replace(/\.kml$/i, "");
-      filesFolder.file(fileName, buildKmlDocument(docName, kmzGroups[path]));
-      networkLinks.push({ name: docName, href: `files/${fileName}` });
-    }
-  });
-
   if (drawnFeatures.length > 0) {
-    const fileName = getUniqueFileName("Drawn_Features.kml", filesFolder);
-    const docName = fileName.replace(/\.kml$/i, "");
-    filesFolder.file(fileName, buildKmlDocument("Drawn Features", drawnFeatures));
-    networkLinks.push({ name: docName, href: `files/${fileName}` });
+    folders.push(buildKmlFolder("Drawn Features", drawnFeatures));
   }
 
   if (importedFeatures.length > 0) {
-    const fileName = getUniqueFileName("Imported_Features.kml", filesFolder);
-    const docName = fileName.replace(/\.kml$/i, "");
-    filesFolder.file(fileName, buildKmlDocument("Imported Features", importedFeatures));
-    networkLinks.push({ name: docName, href: `files/${fileName}` });
+    folders.push(buildKmlFolder("Imported Features", importedFeatures));
   }
 
   if (stravaActivities.length > 0) {
-    const fileName = getUniqueFileName("Strava_Activities.kml", filesFolder);
-    const docName = fileName.replace(/\.kml$/i, "");
-    filesFolder.file(fileName, buildKmlDocument("Strava Activities", stravaActivities));
-    networkLinks.push({ name: docName, href: `files/${fileName}` });
+    folders.push(buildKmlFolder("Strava Activities", stravaActivities));
   }
 
-  if (networkLinks.length > 0) {
-    networkLinks.sort((a, b) => a.name.localeCompare(b.name));
-    const safeDocName = escapeXml(docName);
-    zip.file(
-      "doc.kml",
-      `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n  <name>${safeDocName}</name>\n${networkLinks
-        .map(
-          (link) =>
-            `  <NetworkLink>\n    <name>${escapeXml(link.name)}</name>\n    <Link>\n      <href>${escapeXml(link.href)}</href>\n    </Link>\n  </NetworkLink>`,
-        )
-        .join("\n")}\n</Document>\n</kml>`,
-    );
+  if (folders.length === 0) {
+    return null;
   }
-  return zip;
+
+  const safeDocName = escapeXml(docName);
+  return (
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<kml xmlns="http://www.opengis.net/kml/2.2">\n` +
+    `<Document>\n` +
+    `  <name>${safeDocName}</name>\n` +
+    `${folders.join("\n")}\n` +
+    `</Document>\n` +
+    `</kml>`
+  );
 }
 
 /**
- * Handles the final export and download of the KMZ file.
+ * Handles the export and download of the KML file.
  */
-function exportKmz() {
+function exportKml() {
   const timestamp = generateTimestamp();
-  const fileName = `Map_Export_${timestamp}.kmz`;
+  const fileName = `Map_Export_${timestamp}.kml`;
   const docName = `Map Export ${timestamp}`;
 
-  const zip = buildKmzArchive(docName);
+  const kmlContent = buildKmlContent(docName);
 
-  if (!zip.files["doc.kml"]) {
+  if (!kmlContent) {
     return Swal.fire({
       title: "No Data to Export",
       text: "There are no items on the map to export.",
     });
   }
 
-  zip
-    .generateAsync({ type: "blob", mimeType: "application/vnd.google-earth.kmz" })
-    .then(function (content) {
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(content);
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-      Swal.fire({
-        title: "Export Successful!",
-        text: "All items have been exported to KMZ.",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    })
-    .catch(function (error) {
-      console.error("Error generating KMZ:", error);
-      Swal.fire({
-        title: "Export Error",
-        text: `Failed to generate KMZ file: ${error.message}`,
-      });
-    });
+  const blob = new Blob([kmlContent], { type: "application/vnd.google-earth.kml+xml" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+
+  Swal.fire({
+    title: "Export Successful!",
+    text: "All items have been exported to KML.",
+    timer: 2000,
+    showConfirmButton: false,
+  });
 }
 
 // 4. SHARING (URL-BASED)

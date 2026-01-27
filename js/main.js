@@ -906,7 +906,7 @@ function initializeMap() {
         '<button id="download-gpx-single" disabled title="Download selected item as GPX">GPX (Selected Item)</button>' +
         '<button id="download-geojson-single" disabled title="Download selected item as GeoJSON">GeoJSON (Selected Item)</button>' +
         '<button id="download-geojson" title="Download everything as GeoJSON">GeoJSON (Everything)</button>' +
-        '<button id="download-kmz" title="Download everything as KMZ">KMZ (Everything)</button>' +
+        '<button id="download-kml" title="Download everything as KML">KML (Everything)</button>' +
         '<button id="share-link" title="Copy share link for everything">Copy Share Link (Everything)</button>' +
         "</div>";
       const subMenu = container.querySelector(".download-submenu");
@@ -944,9 +944,9 @@ function initializeMap() {
         exportGeoJson({ mode: "single", layer: globallySelectedItem });
         subMenu.style.display = "none";
       });
-      L.DomEvent.on(container.querySelector("#download-kmz"), "click", (e) => {
+      L.DomEvent.on(container.querySelector("#download-kml"), "click", (e) => {
         L.DomEvent.stop(e);
-        exportKmz();
+        exportKml();
         subMenu.style.display = "none";
       });
       L.DomEvent.on(container.querySelector("#download-geojson"), "click", (e) => {
