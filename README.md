@@ -29,15 +29,16 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 
 ## Privacy
 
-OpenMapEditor is designed with privacy as a priority. All processing of your imported geographic data files (GPX, KML, KMZ) happens **entirely in your web browser**. Your files are never uploaded to or stored on any server.
+OpenMapEditor is designed with privacy as a priority. All processing of your imported geographic data files (GeoJSON, GPX, KML, KMZ) happens **entirely in your web browser**. Your files are never uploaded to or stored on any server.
 
 The application only sends data to external services for specific, optional features that require an API. This communication is limited to the minimum data necessary for the feature to function:
 
+- **Initial Map Centering:** Your approximate location is determined using the Google Geolocation API to center the map on your region on first load.
 - **Routing:** When you request a route, the coordinates of your start, end, and via points are sent to the selected routing provider.
 - **Elevation Profiles:** When elevation data is already present in your file, it is used directly. Otherwise, path coordinates are sent to your chosen elevation provider (Google Maps Elevation API or GeoAdmin API for paths in Switzerland).
 - **Search:** Text queries are sent to OpenStreetMap's Nominatim geocoding service to find and display locations on the map.
-- **Strava Integration:** If you choose to connect your Strava account, the application communicates directly with the Strava API to fetch your activities after you grant authorization.
 - **POI Finder:** Search queries and map bounds are sent to OpenStreetMap's Overpass API to find points of interest in the current map view.
+- **Strava Integration:** Communicates directly with the Strava API after user authorization.
 
 ---
 

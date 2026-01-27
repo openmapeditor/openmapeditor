@@ -71,7 +71,7 @@
 
     <div class="container">
       <h1>Privacy Policy for OpenMapEditor</h1>
-      <p><strong>Effective Date:</strong> September 13, 2025</p>
+      <p><strong>Effective Date:</strong> January 27, 2026</p>
 
       <h2>1. Introduction</h2>
       <p>
@@ -80,8 +80,8 @@
       </p>
       <p>
         <strong>Core Privacy Principle:</strong> OpenMapEditor operates entirely within your web
-        browser (client-side). Your geographic data files (GPX, KML, etc.) are processed on your
-        local machine and are never uploaded to, or stored on, our servers.
+        browser (client-side). Your geographic data files (GeoJSON, GPX, KML, KMZ) are processed on
+        your local machine and are never uploaded to, or stored on, our servers.
       </p>
 
       <h2>2. Automatic Location Detection</h2>
@@ -94,15 +94,11 @@
 
       <h2>3. Third-Party Services for Optional Features</h2>
       <p>
-        To provide optional features like search, routing, elevation profiles, and POI finder, we
-        send the minimum necessary data to specialized third-party services. Your personal files and
-        full Strava history are never sent.
+        To provide optional features like routing, elevation profiles, search, and POI finder, we
+        send the minimum necessary data to specialized third-party services. Your personal files are
+        never sent.
       </p>
       <ul>
-        <li>
-          <strong>Search:</strong> When you use the search bar, your text query is sent to
-          OpenStreetMap to find locations.
-        </li>
         <li>
           <strong>Routing:</strong> When you calculate a route, the coordinates of your start, end,
           and via points are sent to your chosen provider (Mapbox or OSRM).
@@ -113,9 +109,8 @@
           provider (Google Maps Elevation API or GeoAdmin API for paths in Switzerland).
         </li>
         <li>
-          <strong>Strava Integration:</strong> When you connect your account, we communicate
-          directly with the Strava API to request your activity data, which is then processed only
-          in your browser.
+          <strong>Search:</strong> When you use the search bar, your text query is sent to
+          OpenStreetMap to find locations.
         </li>
         <li>
           <strong>POI Finder:</strong> Search queries and map bounds are sent to OpenStreetMap's
@@ -127,32 +122,18 @@
         information on how they handle data.
       </p>
 
-      <h2>4. Strava Connection Methods</h2>
+      <h2>4. Strava Integration</h2>
       <p>
-        The Strava integration can operate in one of two ways, depending on how the application is
-        configured by its administrator:
+        To use the Strava integration, you provide your own personal Strava API credentials (Client
+        ID and Client Secret) from an API application you create in your own Strava account. These
+        keys are kept in memory only and are never saved or transmitted to our servers.
       </p>
-      <ol>
-        <li>
-          <strong>Standard Connection:</strong> You may be asked to authorize a pre-configured
-          "OpenMapEditor" application.
-        </li>
-        <li>
-          <strong>Personal API Key Connection:</strong> You may be asked to provide your own
-          personal Client ID and Secret from an API application you create in your own Strava
-          account. These keys are kept in memory for your session only and are never transmitted to
-          us.
-        </li>
-      </ol>
-      <p>
-        In <strong>both</strong> scenarios, the core privacy principles remain the same: your
-        activity data is processed only in your browser and is never stored on our servers.
-      </p>
+      <p>Your activity data is processed only in your browser and is never stored on any server.</p>
 
-      <h2>5. Information We Collect via the Strava API</h2>
+      <h2>5. Information Accessed via the Strava API</h2>
       <p>
-        When you grant the application access to your Strava account, we may collect the following
-        types of "Personal Data" via the Strava API:
+        When you authorize access to your Strava account, the application running in your browser
+        may fetch the following types of data directly from the Strava API:
       </p>
       <ul>
         <li>
@@ -165,44 +146,45 @@
         </li>
       </ul>
       <p>
-        This data is processed only in your browser. We also receive an authentication token from
-        Strava, which is stored temporarily in your browser's <code>sessionStorage</code> and is
-        deleted when you close the browser tab.
+        This data is fetched directly from Strava to your browser and processed entirely
+        client-side. OpenMapEditor's servers never receive or have access to this data. An
+        authentication token is stored temporarily in your browser's <code>sessionStorage</code>
+        and is deleted when you close the browser tab.
       </p>
 
-      <h2>6. How We Use Your Information</h2>
+      <h2>6. How Your Information Is Used</h2>
       <p>
-        We use the data collected from third-party services and the Strava API for the sole purpose
-        of providing the application's functionality.
+        All data fetched from third-party services (including Strava) is used solely to provide the
+        application's functionality and is processed entirely in your browser.
       </p>
       <p>
-        <strong>We will never:</strong>
+        <strong>Important:</strong> Because OpenMapEditor operates client-side, we never receive,
+        store, or have access to your Strava data. Your activity information stays entirely within
+        your browser session.
       </p>
-      <ul>
-        <li>Share your Strava data with other users or any third parties.</li>
-        <li>Sell, license, or lease your Strava data.</li>
-        <li>Use your Strava data for advertising purposes.</li>
-      </ul>
 
-      <h2>7. Strava API Usage Disclosure</h2>
+      <h2>7. Strava API Terms</h2>
       <p>
-        <strong>Important:</strong> As required by the Strava API Agreement, you must be aware that
-        Strava may monitor and collect usage data related to your use of the Strava API through this
-        application. This data is collected by Strava for their business purposes, which may include
-        enhancing their platform and ensuring compliance.
+        When you create your own Strava API application and use it with OpenMapEditor, you are
+        subject to Strava's API Agreement and their privacy policy. Strava may monitor and collect
+        usage data related to API calls made through your application. Please review Strava's terms
+        for more information.
       </p>
 
       <h2>8. Your Rights and Data Control</h2>
       <p>You have full control over your data.</p>
       <ul>
         <li>
-          <strong>Withdrawing Consent:</strong> You can revoke the application's access to your
-          Strava data at any time by visiting your Strava account settings under "My Apps".
+          <strong>Session Data:</strong> All Strava data is automatically cleared from the
+          application when you close your browser tab.
         </li>
         <li>
-          <strong>Data Deletion:</strong> Because we do not store your data on our servers, revoking
-          access in your Strava settings is sufficient to disconnect the application. All data is
-          automatically deleted from the application when you close your browser tab.
+          <strong>API Credentials:</strong> Your API keys are kept only in memory and are never
+          saved. Simply closing the browser tab or refreshing the page clears them.
+        </li>
+        <li>
+          <strong>Your Strava App:</strong> You can delete or modify your personal Strava API
+          application at any time in your Strava account settings.
         </li>
       </ul>
 
