@@ -15,7 +15,7 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 - **Draw & Edit:** Easily draw new paths, areas, and markers directly on the map, or edit existing items.
 - **File Support:** Import GeoJSON, GPX, KML, and KMZ files. Export to GeoJSON, GPX, and KML formats.
 - **Full Color Support:** Supports all 140 CSS color names and custom hex values. Colors are preserved across imports and exports.
-- **Organic Maps Compatible:** Import Organic Maps bookmarks exported as GeoJSON.
+- **Organic Maps Compatible:** Import GeoJSON exports from Organic Maps.
 - **Google Earth & My Maps Compatible:** KML exports work seamlessly with Google Earth Web, Google Earth Desktop, and Google My Maps.
 - **Shareable Links:** Generate shareable URLs containing your map view and all features, making it easy to share your maps with others.
 - **Routing:** Generate routes for driving, biking, or walking. You can then save the generated route as an editable path.
