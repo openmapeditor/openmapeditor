@@ -110,9 +110,7 @@ function createOverviewListItem(layer) {
       newFeature.properties.name =
         (newFeature.properties.name || (layerToDuplicate instanceof L.Marker ? "Marker" : "Path")) +
         " (Copy)";
-      const colorName = newFeature.properties.colorName || "Red";
-      const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-      const color = colorData ? colorData.css : "#e51b23";
+      const color = newFeature.properties.color || DEFAULT_COLOR;
 
       // Create the appropriate layer type (marker, polygon, or polyline)
       if (layerToDuplicate instanceof L.Marker) {
@@ -215,7 +213,7 @@ function createOverviewListItem(layer) {
         // This removes stravaId, imported file metadata, etc., making duplicates independent drawn paths
         const cleanProperties = {
           name: newFeature.properties.name,
-          colorName: newFeature.properties.colorName,
+          color: newFeature.properties.color || DEFAULT_COLOR,
         };
         newLayer.feature = { properties: cleanProperties };
         newLayer.pathType = "drawn";
@@ -686,12 +684,9 @@ function showInfoPanel(layer) {
   }
 
   // Set the color swatch and update picker state
-  const colorName = layer.feature?.properties?.colorName || "Red";
-  const colorData = ORGANIC_MAPS_COLORS.find((c) => c.name === colorName);
-  if (colorData) {
-    infoPanelColorSwatch.style.backgroundColor = colorData.css;
-  }
-  updateColorPickerSelection(colorName);
+  const color = layer.feature?.properties?.color || DEFAULT_COLOR;
+  infoPanelColorSwatch.style.backgroundColor = color;
+  updateColorPickerSelection(color);
 
   // Hide the main color picker initially
   colorPicker.style.display = "none";
@@ -747,71 +742,152 @@ function updateLayerName() {
 }
 
 /**
- * Populates the color picker with swatches.
+ * Populates the color picker with swatches from the palette.
+ * Adds a 17th swatch that opens the native color picker for custom colors.
  */
 function populateColorPicker() {
-  ORGANIC_MAPS_COLORS.forEach((color) => {
+  // Add palette colors
+  COLOR_PALETTE.forEach((color) => {
     const swatch = document.createElement("div");
     swatch.className = "color-swatch";
-    swatch.style.backgroundColor = color.css;
-    swatch.dataset.colorName = color.name;
+    swatch.style.backgroundColor = color.hex;
+    swatch.dataset.hex = color.hex;
     swatch.title = color.name;
 
     swatch.addEventListener("click", () => {
       if (!globallySelectedItem) return;
-
-      const newColorName = swatch.dataset.colorName;
-      const newColorData = ORGANIC_MAPS_COLORS.find((c) => c.name === newColorName);
-
-      if (newColorData) {
-        // Store the color name on the feature
-        globallySelectedItem.feature.properties.colorName = newColorName;
-
-        // Update the layer's visual style immediately
-        if (
-          globallySelectedItem instanceof L.Polyline ||
-          globallySelectedItem instanceof L.Polygon
-        ) {
-          globallySelectedItem.setStyle({
-            ...STYLE_CONFIG.path.highlight,
-            color: newColorData.css,
-          });
-          // Update the selection outline's fill color for polygons
-          if (selectedPathOutline && globallySelectedItem instanceof L.Polygon) {
-            selectedPathOutline.setStyle({ fillColor: newColorData.css });
-          }
-        } else if (globallySelectedItem instanceof L.Marker) {
-          globallySelectedItem.setIcon(
-            createMarkerIcon(newColorData.css, STYLE_CONFIG.marker.highlight.opacity),
-          );
-        }
-
-        // Update the selected state in the color picker
-        updateColorPickerSelection(newColorName);
-
-        // Update the mini swatch in the info panel and hide the picker
-        infoPanelColorSwatch.style.backgroundColor = newColorData.css;
-        colorPicker.style.display = "none";
-      }
+      applyColorToSelectedItem(color.hex);
     });
 
     colorPicker.appendChild(swatch);
   });
+
+  // Add custom color picker swatch (17th swatch with native color input)
+  const customSwatch = document.createElement("div");
+  customSwatch.id = "custom-color-swatch";
+  customSwatch.className = "color-swatch custom-color-swatch";
+  customSwatch.title = "Custom color";
+  // Rainbow gradient to indicate custom color picker
+  customSwatch.style.background = "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)";
+  customSwatch.style.position = "relative";
+  customSwatch.style.overflow = "hidden";
+
+  // Native color input - covers entire swatch for iOS Safari compatibility
+  // iOS Safari blocks programmatic .click() on hidden/zero-size inputs,
+  // so we make the input cover the swatch area but remain visually transparent
+  const colorInput = document.createElement("input");
+  colorInput.type = "color";
+  colorInput.id = "native-color-input";
+  colorInput.style.position = "absolute";
+  colorInput.style.top = "0";
+  colorInput.style.left = "0";
+  colorInput.style.width = "100%";
+  colorInput.style.height = "100%";
+  colorInput.style.opacity = "0";
+  colorInput.style.border = "none";
+  colorInput.style.padding = "0";
+  colorInput.style.cursor = "pointer";
+  colorInput.value = DEFAULT_COLOR;
+
+  // Prevent color picker from opening if nothing is selected
+  colorInput.addEventListener("click", (e) => {
+    if (!globallySelectedItem) {
+      e.preventDefault();
+    }
+  });
+
+  // When native picker color changes, apply it (don't hide picker while user is selecting)
+  colorInput.addEventListener("input", (e) => {
+    if (!globallySelectedItem) return;
+    const selectedColor = e.target.value.toUpperCase();
+    applyColorToSelectedItem(selectedColor, false);
+    customSwatch.dataset.hex = selectedColor;
+  });
+
+  customSwatch.appendChild(colorInput);
+  colorPicker.appendChild(customSwatch);
+}
+
+/**
+ * Applies a color to the currently selected item.
+ * @param {string} hex - The hex color to apply
+ * @param {boolean} hidePicker - Whether to hide the color picker after (default true)
+ */
+function applyColorToSelectedItem(hex, hidePicker = true) {
+  if (!globallySelectedItem) return;
+
+  // Store the color on the feature
+  globallySelectedItem.feature.properties.color = hex;
+
+  // Update the layer's visual style immediately
+  if (globallySelectedItem instanceof L.Polyline || globallySelectedItem instanceof L.Polygon) {
+    globallySelectedItem.setStyle({
+      ...STYLE_CONFIG.path.highlight,
+      color: hex,
+    });
+    // Update the selection outline's fill color for polygons
+    if (selectedPathOutline && globallySelectedItem instanceof L.Polygon) {
+      selectedPathOutline.setStyle({ fillColor: hex });
+    }
+  } else if (globallySelectedItem instanceof L.Marker) {
+    globallySelectedItem.setIcon(createMarkerIcon(hex, STYLE_CONFIG.marker.highlight.opacity));
+  }
+
+  // Update the selected state in the color picker
+  updateColorPickerSelection(hex);
+
+  // Update the mini swatch in the info panel
+  infoPanelColorSwatch.style.backgroundColor = hex;
+  if (hidePicker) {
+    colorPicker.style.display = "none";
+  }
 }
 
 /**
  * Updates which swatch in the picker has the 'selected' class.
- * @param {string} colorName - The name of the color to select
+ * If color is not in palette, selects the custom swatch.
+ * @param {string} hex - The hex color to select
  */
-function updateColorPickerSelection(colorName) {
+function updateColorPickerSelection(hex) {
   const swatches = colorPicker.querySelectorAll(".color-swatch");
+  const customSwatch = document.getElementById("custom-color-swatch");
+  const colorInput = document.getElementById("native-color-input");
+  const normalizedHex = hex?.toUpperCase();
+
+  // Always sync the hidden native picker with the current color.
+  // This ensures the custom picker starts at the active color.
+  if (colorInput && hex) {
+    const validHex = parseColor(hex); // HTML color inputs require strict #RRGGBB format
+    if (validHex) colorInput.value = validHex;
+  }
+
+  let matchedPalette = false;
+
   swatches.forEach((swatch) => {
-    if (swatch.dataset.colorName === colorName) {
+    if (swatch.id === "custom-color-swatch") return;
+
+    if (swatch.dataset.hex?.toUpperCase() === normalizedHex) {
       swatch.classList.add("selected");
+      matchedPalette = true;
     } else {
       swatch.classList.remove("selected");
     }
   });
+
+  // Handle custom swatch selection
+  if (customSwatch) {
+    if (!matchedPalette && hex) {
+      // Color not in palette - select custom swatch
+      customSwatch.dataset.hex = hex;
+      customSwatch.title = `Custom: ${hex}`;
+      customSwatch.classList.add("selected");
+    } else {
+      // Color is in palette - deselect custom swatch
+      customSwatch.dataset.hex = "";
+      customSwatch.title = "Custom color";
+      customSwatch.classList.remove("selected");
+    }
+  }
 }
 
 /**

@@ -12,16 +12,18 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 ## Features
 
 - **Privacy First:** Your files are processed entirely on your local machine and are never uploaded to a server. Optional features like routing and elevation profiles send only the necessary coordinates to external APIs to function.
-- **Organic Maps Compatibility:** Smoothly import and export KMZ backups while preserving all 16 of the Organic Maps colors for your paths and markers.
 - **Draw & Edit:** Easily draw new paths, areas, and markers directly on the map, or edit existing items.
-- **File Support:** Full support for importing and exporting GPX, KML, KMZ, and GeoJSON files.
+- **File Support:** Import GeoJSON, GPX, KML, and KMZ files. Export to GeoJSON, GPX, and KML formats.
+- **Full Color Support:** Supports all 140 CSS color names and custom hex values. Colors are preserved across imports and exports.
+- **Organic Maps Compatible:** Import Organic Maps bookmarks exported as GeoJSON.
+- **Google Earth & My Maps Compatible:** KML exports work seamlessly with Google Earth Web, Google Earth Desktop, and Google My Maps.
 - **Shareable Links:** Generate shareable URLs containing your map view and all features, making it easy to share your maps with others.
-- **Performance Optimized:** Optional path and area simplification (on by default) for smoother performance. When enabled, simplified copies are made when duplicating tracks/activities/areas (originals preserved), and generated routes are simplified when saved. Configurable in settings.
 - **Routing:** Generate routes for driving, biking, or walking. You can then save the generated route as an editable path.
 - **Elevation Profiles:** Instantly visualize the elevation profile for any path.
-- **Custom WMS Layers:** Import map layers from any WMS-compatible service. Browse available layers, add them to your map as overlays, and reorder them with drag-and-drop. Your WMS layers are saved locally and persist between sessions.
 - **Strava Integration:** Connect your Strava account to view your activities on the map, download their original high-resolution GPX tracks, or duplicate them for editing.
+- **Custom WMS Layers:** Import map layers from any WMS-compatible service. Browse available layers, add them to your map as overlays, and reorder them with drag-and-drop. Your WMS layers are saved locally and persist between sessions.
 - **POI Finder:** Search for points of interest (parks, restaurants, viewpoints, etc.) in the current map view using OpenStreetMap data, and save them directly to your map.
+- **Performance Optimized:** Optional path and area simplification (on by default) for smoother performance. When enabled, simplified copies are made when duplicating tracks/activities/areas (originals preserved), and generated routes are simplified when saved. Configurable in settings.
 
 ---
 

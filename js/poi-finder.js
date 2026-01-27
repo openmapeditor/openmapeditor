@@ -9,8 +9,8 @@
 
 // POI Marker Styling - centralized configuration
 const POI_STYLE = {
-  color: "#ea4335", // Red color from CSS variables (--color-red)
-  outlineColor: "#FFFFFF", // White outline for contrast
+  color: DEFAULT_COLOR,
+  outlineColor: COLOR_WHITE,
   outlineWeight: 3,
   markerRadius: 8,
   clusterMinSize: 30,

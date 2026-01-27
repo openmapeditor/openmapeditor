@@ -315,7 +315,7 @@ function initializeMap() {
       { maxZoom: 19 },
     ),
     TopPlusOpen: L.tileLayer(
-      "http://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web/default/WEBMERCATOR/{z}/{y}/{x}.png",
+      "https://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web/default/WEBMERCATOR/{z}/{y}/{x}.png",
       { maxZoom: 18 },
     ),
     Swisstopo: L.tileLayer.wms("https://wms.geo.admin.ch/", {
@@ -906,7 +906,7 @@ function initializeMap() {
         '<button id="download-gpx-single" disabled title="Download selected item as GPX">GPX (Selected Item)</button>' +
         '<button id="download-geojson-single" disabled title="Download selected item as GeoJSON">GeoJSON (Selected Item)</button>' +
         '<button id="download-geojson" title="Download everything as GeoJSON">GeoJSON (Everything)</button>' +
-        '<button id="download-kmz" title="Download everything as KMZ">KMZ (Everything)</button>' +
+        '<button id="download-kml" title="Download everything as KML">KML (Everything)</button>' +
         '<button id="share-link" title="Copy share link for everything">Copy Share Link (Everything)</button>' +
         "</div>";
       const subMenu = container.querySelector(".download-submenu");
@@ -944,9 +944,9 @@ function initializeMap() {
         exportGeoJson({ mode: "single", layer: globallySelectedItem });
         subMenu.style.display = "none";
       });
-      L.DomEvent.on(container.querySelector("#download-kmz"), "click", (e) => {
+      L.DomEvent.on(container.querySelector("#download-kml"), "click", (e) => {
         L.DomEvent.stop(e);
-        exportKmz();
+        exportKml();
         subMenu.style.display = "none";
       });
       L.DomEvent.on(container.querySelector("#download-geojson"), "click", (e) => {
@@ -1060,7 +1060,7 @@ function initializeMap() {
     },
   });
 
-  const locateCircleColor = rootStyles.getPropertyValue("--locate-color").trim();
+  const locateCircleColor = LOCATE_COLOR;
 
   locateControl = L.control
     .locate({
@@ -1081,7 +1081,7 @@ function initializeMap() {
       //   },
       // }),
       markerStyle: {
-        color: "white",
+        color: COLOR_WHITE,
         fillColor: locateCircleColor,
         fillOpacity: 1,
         weight: 2,
@@ -1185,7 +1185,7 @@ function initializeMap() {
     }
 
     temporarySearchMarker = L.marker(locationLatLng, {
-      icon: createMarkerIcon(rootStyles.getPropertyValue("--color-black").trim(), 1),
+      icon: createMarkerIcon(COLOR_BLACK, 1),
       interactive: true,
     }).addTo(map);
 
@@ -1231,8 +1231,6 @@ function initializeMap() {
 
   // Hide elevation panel on load to prevent blocking map interactions on mobile
   document.getElementById("elevation-div").style.visibility = "hidden";
-  const defaultDrawColorName = "Red";
-  const defaultDrawColor = ORGANIC_MAPS_COLORS.find((c) => c.name === defaultDrawColorName).css;
 
   // Fix Leaflet.draw toolbar on iPad with mouse by forcing click events instead of touchstart
   if (L.Toolbar) {
@@ -1255,20 +1253,20 @@ function initializeMap() {
     edit: { featureGroup: editableLayers },
     draw: {
       polyline: {
-        shapeOptions: { ...STYLE_CONFIG.path.default, color: defaultDrawColor },
+        shapeOptions: { ...STYLE_CONFIG.path.default, color: DEFAULT_COLOR },
         metric: true,
         feet: false,
         showLength: false,
       },
       polygon: {
-        shapeOptions: { ...STYLE_CONFIG.path.default, color: defaultDrawColor },
+        shapeOptions: { ...STYLE_CONFIG.path.default, color: DEFAULT_COLOR },
         showArea: true,
         metric: true,
       },
       rectangle: false,
       circle: false,
       marker: {
-        icon: createMarkerIcon(defaultDrawColor, STYLE_CONFIG.marker.default.opacity),
+        icon: createMarkerIcon(DEFAULT_COLOR, STYLE_CONFIG.marker.default.opacity),
       },
       circlemarker: false,
     },
@@ -1329,7 +1327,7 @@ function initializeMap() {
     const layer = e.layer;
     layer.pathType = "drawn";
     layer.feature = layer.feature || { properties: {} };
-    layer.feature.properties.colorName = defaultDrawColorName;
+    layer.feature.properties.color = DEFAULT_COLOR;
     drawnItems.addLayer(layer);
     editableLayers.addLayer(layer);
     layer.on("click", (ev) => {
