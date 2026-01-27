@@ -29,7 +29,7 @@
 
 All imported and drawn items store **full-precision coordinates**, **name**, **description**, **color**, and **stravaId** (if available).
 
-All formats (GeoJSON, GPX, KML, KMZ) are fully compatible - data imported in one format can be exported to any other format without data loss.
+All formats are interoperable - data imported from GeoJSON, GPX, KML, or KMZ can be exported to GeoJSON, GPX, or KML without data loss.
 
 **Property edits** (name, color) work on all items without duplication. **Geometry edits** require duplication to the drawing layer (via the "Duplicate" button). **Custom colors** are preserved as hex values for maximum compatibility.
 
@@ -41,18 +41,27 @@ OpenMapEditor is a **Vanilla JavaScript** application with modular organization.
 
 ### Core Modules
 
-| Script                 | Responsibility                                                                                  |
-| :--------------------- | :---------------------------------------------------------------------------------------------- |
-| `main.js`              | **Entry Point**. Orchestrates map initialization, global event listeners, and layer management. |
-| `config.js`            | App-wide constants, styling defaults, and color palette definitions.                            |
-| `color-utils.js`       | Color parsing and conversion utilities (140 CSS color names, hex normalization, KML format).    |
-| `file-handlers.js`     | Complex I/O logic for GeoJSON, GPX, KML, and KMZ.                                               |
-| `ui-handlers.js`       | Manages the Sidebar, Contents tab, and interactive UI elements.                                 |
-| `elevation.js`         | Data fetching logic for Google and GeoAdmin (Swiss) elevation APIs.                             |
-| `elevation-profile.js` | UI rendering of the D3-powered elevation chart.                                                 |
-| `routing.js`           | Integration with routing engines and waypoint management.                                       |
-| `strava.js`            | Oauth flow and activity fetching from Strava API.                                               |
-| `utils.js`             | Geometry calculations (distance, area) and common helpers.                                      |
+| Script                  | Responsibility                                                                                  |
+| :---------------------- | :---------------------------------------------------------------------------------------------- |
+| `main.js`               | **Entry Point**. Orchestrates map initialization, global event listeners, and layer management. |
+| `config.js`             | App-wide constants, styling defaults, and color palette definitions.                            |
+| `secrets.js`            | API keys for external services (not committed to git, created from template).                   |
+| `utils.js`              | Geometry calculations (distance, area), coordinate parsing, and common helpers.                 |
+| `color-utils.js`        | Color parsing and conversion utilities (140 CSS color names, hex normalization, KML format).    |
+| `file-handlers.js`      | Complex I/O logic for GeoJSON, GPX, KML, and KMZ import/export.                                 |
+| `ui-handlers.js`        | Manages the Sidebar, Contents tab, color picker, and interactive UI elements.                   |
+| `map-interactions.js`   | Marker dragging, path selection, elevation marker sync, and map interaction handlers.           |
+| `elevation.js`          | Data fetching logic for Google and GeoAdmin (Swiss) elevation APIs with caching.                |
+| `elevation-profile.js`  | UI rendering of the D3-powered elevation chart with hover synchronization.                      |
+| `routing.js`            | Integration with Mapbox/OSRM routing engines and waypoint management.                           |
+| `strava.js`             | OAuth flow, activity fetching, and GPX stream retrieval from Strava API.                        |
+| `search.js`             | Search modal with geocoding via OSM Nominatim and coordinate parsing.                           |
+| `poi-finder.js`         | Points of Interest discovery via Overpass API with category filtering.                          |
+| `wms-import.js`         | Web Map Service layer management with GetCapabilities parsing.                                  |
+| `contextmenu.js`        | Right-click context menu for coordinate display and routing point assignment.                   |
+| `leaflet-wms-gutter.js` | WMS tile gutter extension to prevent icon clipping at tile boundaries.                          |
+| `sweetalert2-config.js` | Global SweetAlert2 modal configuration and theming.                                             |
+| `dev-panel.js`          | Hidden developer debugging panel for inspecting global state.                                   |
 
 ---
 
@@ -116,9 +125,8 @@ Beyond the GeoJSON object, [layers store additional metadata](https://github.com
 
 ```javascript
 layer.pathType = "drawn" | "gpx" | "kml" | "kmz" | "geojson" | "route" | "strava";
-layer.originalKmzPath = "files/routes.kml"; // For KMZ structure preservation
-layer.isManuallyHidden = false; // Visibility override (Eye icon)
-layer.isDeletedFromToolbar = true; // Flag for toolbar synchronization
+layer.isManuallyHidden = false; // Visibility override (Eye icon in Contents tab)
+layer.isDeletedFromToolbar = true; // Flag for toolbar synchronization on delete
 ```
 
 **Note:** `editableLayers` contains only layers from `drawnItems` that are actively linked to Leaflet.Draw for geometry editing. All visual rendering comes from `drawnItems`.
@@ -127,7 +135,9 @@ layer.isDeletedFromToolbar = true; // Flag for toolbar synchronization
 
 ## Format Compatibility Matrix
 
-| Property              | GeoJSON                      | GPX                    | KML/KMZ                     |
+**Import:** GeoJSON, GPX, KML, KMZ • **Export:** GeoJSON, GPX, KML
+
+| Property              | GeoJSON                      | GPX                    | KML                         |
 | :-------------------- | :--------------------------- | :--------------------- | :-------------------------- |
 | **Coordinates**       | ✅ Full precision            | ✅ Full precision      | ✅ Full precision           |
 | **Name**              | ✅ `properties.name`         | ✅ `<name>`            | ✅ `<name>`                 |
@@ -230,16 +240,14 @@ Strava activities are decoded from the API's `summary_polyline` field using the 
 - Colors stored in `<gpx_style:color>` extension (6-character hex without # prefix)
 - `stravaId` stored in `<extensions>` block
 
-### KMZ Export
+### KML Export
 
-[`exportKmz`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:exportKmz+path:js/file-handlers.js) creates structured KMZ archives:
+[`exportKml`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:exportKml+path:js/file-handlers.js) exports all or selected items to KML format:
 
-- **Structure Preservation**: If features were imported from KMZ, the original file structure is preserved (grouped by `originalKmzPath`)
-- **File Organization**:
-  - `doc.kml` (root file with NetworkLink references)
-  - `files/Drawn_Features.kml`
-  - `files/Imported_Features.kml`
-  - `files/Strava_Activities.kml`
+- **Single KML File**: All features are exported to a single `.kml` file for maximum compatibility
+- **Google Earth Compatible**: Works seamlessly with Google Earth Web, Google Earth Desktop, and Google My Maps
+- **Color Preservation**: Inline `<Style>` elements with proper KML color format (`AABBGGRR`)
+- **Metadata**: Names, descriptions, and stravaId (via `<ExtendedData>`) are preserved
 
 ---
 
@@ -247,7 +255,7 @@ Strava activities are decoded from the API's `summary_polyline` field using the 
 
 Encodes map state into a compressed string parameter (`&data=`).
 
-1. **Polyline Encoding**: Coordinates compressed (Precision 5) via [Leaflet.encoded](https://github.com/jieter/Leaflet.encoded).
+1. **Polyline Encoding**: Coordinates compressed (Precision 5) via [polyline-encoded](https://www.npmjs.com/package/polyline-encoded) (`L.PolylineUtil`).
 2. **Minification**: Property names shortened (`n` for name, `s` for style, `t` for type, `sid` for stravaId).
 3. **Omission**: Default values (e.g., Crimson color) and empty fields are excluded.
 4. **LZ-String**: JSON payload is compressed for URI safety.
