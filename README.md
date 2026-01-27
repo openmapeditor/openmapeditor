@@ -37,6 +37,7 @@ The application only sends data to external services for specific, optional feat
 - **Elevation Profiles:** When elevation data is already present in your file, it is used directly. Otherwise, path coordinates are sent to your chosen elevation provider (Google Maps Elevation API or GeoAdmin API for paths in Switzerland).
 - **Search:** Text queries are sent to OpenStreetMap's Nominatim geocoding service to find and display locations on the map.
 - **Strava Integration:** If you choose to connect your Strava account, the application communicates directly with the Strava API to fetch your activities after you grant authorization.
+- **POI Finder:** Search queries and map bounds are sent to OpenStreetMap's Overpass API to find points of interest in the current map view.
 
 ---
 
