@@ -379,6 +379,7 @@ function importGeoJsonToMap(geoJsonData, fileType) {
 }
 
 // GeoJSON
+// Specification: https://tools.ietf.org/html/rfc7946
 
 /**
  * Imports and processes a GeoJSON file.
@@ -440,6 +441,7 @@ function importGeoJsonFile(file) {
 }
 
 // GPX
+// Specification: https://www.topografix.com/gpx/1/1/
 
 /**
  * Imports and processes a GPX file.
@@ -508,6 +510,7 @@ function importGpxFile(file) {
 }
 
 // KML / KMZ
+// Specification: https://developers.google.com/kml/documentation/kmlreference
 
 /**
  * Parses KML text content to GeoJSON with stravaId extraction.
@@ -633,6 +636,7 @@ async function importKmzFile(file) {
 // --------------------------------------------------------------------
 
 // GeoJSON
+// Specification: https://tools.ietf.org/html/rfc7946
 
 /**
  * Exports map items to a GeoJSON file with color preservation.
@@ -809,6 +813,7 @@ function exportGeoJson(options = {}) {
 }
 
 // GPX
+// Specification: https://www.topografix.com/gpx/1/1/
 
 /**
  * Converts a Leaflet layer to a GPX string, supporting markers and paths with colors.
@@ -912,6 +917,7 @@ function convertLayerToGpx(layer) {
 }
 
 // KML / KMZ
+// Specification: https://developers.google.com/kml/documentation/kmlreference
 
 /**
  * Converts a Leaflet layer to a KML placemark string.
