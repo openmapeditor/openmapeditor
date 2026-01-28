@@ -80,7 +80,10 @@ OpenMapEditor is a **Vanilla JavaScript** application with modular organization.
 The application uses **Global Variables** in `main.js` as the single source of truth for the map state:
 
 - `map`: The Leaflet map instance.
-- `drawnItems` / `importedItems`: Primary feature storage.
+- `drawnItems` / `importedItems`: Primary feature storage (FeatureGroups).
+- `stravaActivitiesLayer`: Live Strava activity data (FeatureGroup).
+- `editableLayers`: Layers linked to Leaflet.Draw for geometry editing.
+- `currentRoutePath`: Active routing result (Polyline, not in a FeatureGroup).
 - `globallySelectedItem`: Currently active layer for editing/info display.
 
 ---
@@ -95,7 +98,7 @@ All map features are managed in specific [Leaflet FeatureGroups](https://github.
 | :---------------------- | :------------------------------------------------------- | :------------------- |
 | `drawnItems`            | User-drawn features (markers, paths, areas)              | ✅ Yes               |
 | `importedItems`         | All imported files (GeoJSON, GPX, KML, KMZ)              | ❌ No (Read-only)    |
-| `editableLayers`        | Subset of `drawnItems` - only these link to Leaflet.Draw | ✅ Yes               |
+| `editableLayers`        | Mirrors `drawnItems` - these layers link to Leaflet.Draw | ✅ Yes               |
 | `stravaActivitiesLayer` | Live Strava activity data                                | ❌ No                |
 | `currentRoutePath`      | Active routing result (Polyline)                         | ⚠️ Via routing panel |
 
@@ -129,7 +132,7 @@ layer.isManuallyHidden = false; // Visibility override (Eye icon in Contents tab
 layer.isDeletedFromToolbar = true; // Flag for toolbar synchronization on delete
 ```
 
-**Note:** `editableLayers` contains only layers from `drawnItems` that are actively linked to Leaflet.Draw for geometry editing. All visual rendering comes from `drawnItems`.
+**Note:** `editableLayers` is a separate FeatureGroup that contains the same layers as `drawnItems`. When a layer is drawn, it's added to both groups. This design allows Leaflet.Draw to manage editing while `drawnItems` handles visual rendering and layer control visibility.
 
 ---
 
@@ -197,7 +200,8 @@ Color parsing and conversion handled by [js/color-utils.js](https://github.com/o
 
 - `parseColor()`: Converts CSS color names or hex values to normalized `#RRGGBB` format
 - `normalizeHexColor()`: Handles #RGB, #RRGGBB, #AARRGGBB formats
-- `cssToKmlColor()`: Converts CSS hex to KML `AABBGGRR` format
+- `cssToKmlColor()`: Converts CSS hex to KML `AABBGGRR` format (for export)
+- `kmlToCssColor()`: Converts KML `AABBGGRR` to CSS `#RRGGBB` format (for import)
 
 ---
 
@@ -236,7 +240,8 @@ Strava activities are decoded from the API's `summary_polyline` field using the 
 [`convertLayerToGpx`](https://github.com/openmapeditor/openmapeditor/search?q=symbol:convertLayerToGpx+path:js/file-handlers.js) converts layers to GPX format:
 
 - Markers become `<wpt>` (waypoints)
-- Paths and Areas become `<trk>` (tracks)
+- Paths become `<trk>` (tracks)
+- Areas (Polygons) become closed `<trk>` tracks (GPX has no native polygon support)
 - Colors stored in `<gpx_style:color>` extension (6-character hex without # prefix)
 - `stravaId` stored in `<extensions>` block
 
@@ -256,7 +261,7 @@ Strava activities are decoded from the API's `summary_polyline` field using the 
 Encodes map state into a compressed string parameter (`&data=`).
 
 1. **Polyline Encoding**: Coordinates compressed (Precision 5) via [polyline-encoded](https://www.npmjs.com/package/polyline-encoded) (`L.PolylineUtil`).
-2. **Minification**: Property names shortened (`n` for name, `s` for style, `t` for type, `sid` for stravaId).
+2. **Minification**: Property names shortened (`t` for type, `c` for coordinates, `n` for name, `s` for style/color, `e` for elevation, `sid` for stravaId).
 3. **Omission**: Default values (e.g., Crimson color) and empty fields are excluded.
 4. **LZ-String**: JSON payload is compressed for URI safety.
 
@@ -334,6 +339,7 @@ To edit the geometry of an imported item:
 ## Known Limitations
 
 - **Multi-Geometries**: Native editing is not supported (automatically exploded into individual Points, LineStrings, and Polygons on import). See [`SUPPORTED_IMPORT_GEOM_TYPES` constant](https://github.com/openmapeditor/openmapeditor/search?q=SUPPORTED_IMPORT_GEOM_TYPES+path:js/file-handlers.js).
+- **GPX Polygon Export**: GPX format has no native polygon support. Areas are exported as closed tracks and will import as LineStrings in other applications.
 - **Off-grid Elevation**: The GeoAdmin service is restricted to the Swiss border.
 
 ---
