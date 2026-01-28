@@ -65,7 +65,7 @@ async function getAccessToken(code, clientId, clientSecret) {
     console.error("Error getting Strava access token:", error);
     Swal.fire({
       title: "Authentication Failed",
-      text: `Please check your API keys and try again. Error: ${error.message}`,
+      html: `Please check your API keys and try again.<br>Error: ${error.message}`,
     });
     return false;
   }
@@ -151,7 +151,7 @@ function showConnectUI() {
   if (!stravaPanelContent) return;
   stravaPanelContent.innerHTML = `
     <div style="display: flex; flex-direction: column; align-items: center;">
-      <p>Connect with Strava to see your activities on the map.</p>
+      <p>To see your activities on the map:</p>
       <button id="strava-connect-btn" class="strava-button-link" style="border: none; background: transparent; padding: 0; cursor: pointer;">
         <img src="/img/btn_strava_connect_with_orange.svg" alt="Connect with Strava" />
       </button>
@@ -381,15 +381,13 @@ async function handleStravaAuthReturn(event) {
     if (success) {
       showFetchUI();
     } else {
-      setTimeout(showConnectUI, 5000);
+      showConnectUI();
     }
   } else if (event.key === "stravaAuthError") {
     console.error("Strava authentication error:", event.newValue);
     localStorage.removeItem("stravaAuthError");
     window.removeEventListener("storage", handleStravaAuthReturn);
-    stravaPanelContent.innerHTML =
-      '<p style="color: red;">Authentication was cancelled or failed.</p>';
-    setTimeout(showConnectUI, 3000);
+    showConnectUI();
   }
 }
 
