@@ -172,37 +172,142 @@ function showConnectUI() {
 
 /**
  * Renders the Strava panel for user-provided keys.
+ * Shows either a single CTA button (not authenticated) or fetch controls (authenticated).
  */
 function renderUserKeysPanel() {
   if (!stravaPanelContent) return;
   const accessToken = sessionStorage.getItem("strava_access_token");
 
-  const apiKeysHtml = `
-    <div style="padding: 0; text-align: center;">
-      <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 5px; font-size: var(--font-size-14);">
-      <span>Provide Strava API Keys to see your activities on the map.</span>
-      <span id="strava-info-icon" class="material-symbols" title="Why is this needed?" style="font-size: var(--icon-size-16); line-height: 1;">info</span>
-      </div>
-      <div class="panel-input-group">
-        <input type="password" id="user-strava-client-id" placeholder="Your Strava Client ID" autocomplete="off" value="${tempUserClientId}" />
-      </div>
-      <div class="panel-input-group">
-        <input type="password" id="user-strava-client-secret" placeholder="Your Strava Client Secret" autocomplete="off" value="${tempUserClientSecret}" />
-      </div>
-      <button id="strava-connect-btn-user" class="strava-button-primary" style="width: 100%; margin-top: 10px; margin-bottom: 0;">Connect with Strava</button>
-    </div>
-  `;
-
-  let actionHtml = accessToken
-    ? _getFetchControlsHTML(stravaActivitiesLayer.getLayers().length)
-    : "";
-
-  stravaPanelContent.innerHTML = apiKeysHtml + actionHtml;
-  addEventListenersForUserKeysPanel();
-
   if (accessToken) {
+    // User is authenticated - show fetch controls
+    stravaPanelContent.innerHTML = _getFetchControlsHTML(stravaActivitiesLayer.getLayers().length);
     _addFetchControlsListeners(fetchAllActivities, stravaActivitiesLayer.getLayers().length);
+  } else {
+    // No authentication - show single CTA button
+    stravaPanelContent.innerHTML = `
+      <div style="padding: 0; text-align: center;">
+        <p style="margin-bottom: 10px;">To see your activities on the map:</p>
+        <button id="strava-provide-keys-btn" class="strava-button-primary" style="width: 100%;">
+          Provide your Strava API Keys
+        </button>
+      </div>
+    `;
+    document.getElementById("strava-provide-keys-btn").addEventListener("click", () => {
+      tempUserClientId = "";
+      tempUserClientSecret = "";
+      showApiKeysModal();
+    });
   }
+}
+
+/**
+ * Shows a SweetAlert modal for entering Strava API keys.
+ * Follows the WMS import dialog pattern.
+ */
+function showApiKeysModal() {
+  function buildModalOptions() {
+    return {
+      title: "Provide your Strava API Keys",
+      html: `
+        <div style="text-align: left;">
+          <p style="margin-bottom: 15px;">This application uses your personal Strava API credentials for performance and data control.</p>
+          <p><strong>How to get your keys:</strong></p>
+          <ol style="padding-left: 20px; margin-bottom: 15px;">
+            <li>Go to your <a href="https://www.strava.com/settings/api" target="_blank" style="color: var(--highlight-color);">Strava API Settings</a>.</li>
+            <li>Create a new app. For "Authorization Callback Domain", enter <strong id="strava-domain-copy" style="cursor: pointer; text-decoration: underline;" title="Click to copy">${APP_DOMAIN}&nbsp;<span class="copy-icon material-symbols">content_copy</span></strong>.</li>
+            <li>Copy your <strong>Client ID</strong> and <strong>Client Secret</strong> and paste them below.</li>
+          </ol>
+          <p style="font-size: var(--font-size-12); color: var(--text-color); margin-bottom: 15px;"><strong>Security:</strong> Your keys are kept in memory for this session only and are not saved in your browser.</p>
+          <input
+            type="password"
+            id="swal-strava-client-id"
+            class="swal2-input swal-input-field"
+            placeholder="Strava Client ID"
+            autocomplete="off"
+            value="${tempUserClientId}"
+            style="margin-bottom: 10px;"
+          />
+          <input
+            type="password"
+            id="swal-strava-client-secret"
+            class="swal2-input swal-input-field"
+            placeholder="Strava Client Secret"
+            autocomplete="off"
+            value="${tempUserClientSecret}"
+          />
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: "Connect",
+      cancelButtonText: "Cancel",
+      customClass: {
+        confirmButton: "swal-confirm-button",
+      },
+      didOpen: () => {
+        const confirmButton = Swal.getConfirmButton();
+        const clientIdInput = document.getElementById("swal-strava-client-id");
+        const clientSecretInput = document.getElementById("swal-strava-client-secret");
+
+        // Update button state based on both inputs
+        const updateButtonState = () => {
+          const hasClientId = clientIdInput.value.trim().length > 0;
+          const hasClientSecret = clientSecretInput.value.trim().length > 0;
+          confirmButton.disabled = !(hasClientId && hasClientSecret);
+        };
+
+        // Disable button initially if inputs are empty
+        updateButtonState();
+
+        // Add input listeners
+        clientIdInput.addEventListener("input", updateButtonState);
+        clientSecretInput.addEventListener("input", updateButtonState);
+
+        // Select all on focus
+        clientIdInput.addEventListener("focus", () => clientIdInput.select());
+        clientSecretInput.addEventListener("focus", () => clientSecretInput.select());
+
+        // Copy-to-clipboard for domain (save inputs, toast, then re-open modal)
+        document.getElementById("strava-domain-copy")?.addEventListener("click", (e) => {
+          e.stopPropagation();
+          // Preserve current input values before the modal is destroyed by the toast
+          tempUserClientId = clientIdInput.value.trim();
+          tempUserClientSecret = clientSecretInput.value.trim();
+          copyToClipboard(APP_DOMAIN).then(() => {
+            Swal.fire({
+              toast: true,
+              icon: "success",
+              title: "Domain Copied!",
+              showConfirmButton: false,
+              timer: 1500,
+            }).then(() => {
+              Swal.fire(buildModalOptions());
+            });
+          });
+        });
+      },
+      preConfirm: () => {
+        const clientId = document.getElementById("swal-strava-client-id").value.trim();
+        const clientSecret = document.getElementById("swal-strava-client-secret").value.trim();
+
+        // Store keys in memory for reconnection
+        tempUserClientId = clientId;
+        tempUserClientSecret = clientSecret;
+        sessionStorage.removeItem("strava_access_token");
+
+        // Open Strava OAuth in new tab
+        const userAuthUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectURI}&response_type=code&scope=${scope}`;
+        window.open(userAuthUrl, "_blank");
+
+        // Listen for auth callback
+        window.addEventListener("storage", handleStravaAuthReturnForUserKeys);
+
+        // Return false to keep modal open
+        return false;
+      },
+    };
+  }
+
+  Swal.fire(buildModalOptions());
 }
 
 /**
@@ -259,70 +364,6 @@ function showFetchUI(activityCount = 0) {
   _addFetchControlsListeners(fetchAllActivities, activityCount);
 }
 
-/**
- * Adds event listeners for the user-provided keys panel.
- */
-function addEventListenersForUserKeysPanel() {
-  const clientIdInput = document.getElementById("user-strava-client-id");
-  const clientSecretInput = document.getElementById("user-strava-client-secret");
-
-  clientIdInput.addEventListener("focus", () => clientIdInput.select());
-  clientSecretInput.addEventListener("focus", () => clientSecretInput.select());
-
-  document.getElementById("strava-info-icon").addEventListener("click", () => {
-    const mainAlertOptions = {
-      title: "Using Your Own Strava API Keys",
-      html: `
-        <p style="text-align: left;">This application uses your personal Strava API credentials for performance and data control.</p>
-        <p style="text-align: left; margin-top: 15px;"><strong>How to get your keys:</strong></p>
-        <ol style="text-align: left; padding-left: 20px;">
-          <li>Go to your <a href="https://www.strava.com/settings/api" target="_blank" id="strava-api-link" style="color: var(--highlight-color);">Strava API Settings</a>.</li>
-          <li>Create a new app. For "Authorization Callback Domain", enter <strong id="auth-callback-domain-wrapper" style="cursor:pointer; text-decoration: underline;" title="Click to copy">${APP_DOMAIN}<span id="auth-callback-domain-copy-icon" class="copy-icon material-symbols">content_copy</span></strong>.</li>
-          <li>Copy your <strong>Client ID</strong> and <strong>Client Secret</strong> and paste them here.</li>
-        </ol>
-        <p style="text-align: left; margin-top: 15px;"><strong>Security:</strong> Your keys are kept in memory for this session only and are not saved in your browser.</p>`,
-      confirmButtonText: "Got it!",
-      didOpen: () => {
-        document.getElementById("auth-callback-domain-wrapper")?.addEventListener("click", () => {
-          copyToClipboard(`${APP_DOMAIN}`).then(() => {
-            Swal.fire({
-              toast: true,
-              icon: "success",
-              title: "Domain Copied!",
-              showConfirmButton: false,
-              timer: 1500,
-            }).then(() => {
-              Swal.fire(mainAlertOptions);
-            });
-          });
-        });
-      },
-    };
-    Swal.fire(mainAlertOptions);
-  });
-
-  document.getElementById("strava-connect-btn-user").addEventListener("click", () => {
-    sessionStorage.removeItem("strava_access_token");
-    const clientId = clientIdInput.value.trim();
-    const clientSecret = clientSecretInput.value.trim();
-    if (!clientId || !clientSecret) {
-      return Swal.fire({
-        title: "Missing Keys",
-        text: "Please enter both a Client ID and a Client Secret.",
-      });
-    }
-    // Store keys in memory for authentication (kept for reconnection)
-    tempUserClientId = clientId;
-    tempUserClientSecret = clientSecret;
-
-    renderUserKeysPanel();
-    stravaPanelContent.lastChild.innerHTML = `<div style="padding:15px; text-align:center;"><p>Waiting for Strava authentication...</p></div>`;
-    const userAuthUrl = `https://www.strava.com/oauth/authorize?client_id=${tempUserClientId}&redirect_uri=${redirectURI}&response_type=code&scope=${scope}`;
-    window.open(userAuthUrl, "_blank");
-    window.addEventListener("storage", handleStravaAuthReturnForUserKeys);
-  });
-}
-
 // Authentication Callback Handlers
 
 /**
@@ -361,17 +402,14 @@ async function handleStravaAuthReturnForUserKeys(event) {
     const authCode = event.newValue;
     localStorage.removeItem("stravaAuthCode");
     window.removeEventListener("storage", handleStravaAuthReturnForUserKeys);
-    stravaPanelContent.lastChild.innerHTML = `<div style="padding:15px; text-align:center;"><p>Authenticating...</p></div>`;
+    Swal.close();
 
     await getAccessToken(authCode, tempUserClientId, tempUserClientSecret);
-
     renderUserKeysPanel();
   } else if (event.key === "stravaAuthError") {
     console.error("Strava authentication error:", event.newValue);
     localStorage.removeItem("stravaAuthError");
     window.removeEventListener("storage", handleStravaAuthReturnForUserKeys);
-
-    renderUserKeysPanel();
   }
 }
 
