@@ -11,7 +11,7 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 
 ## Features
 
-- **Privacy First:** Your files are processed entirely on your local machine and are never uploaded to a server. Optional features like routing and elevation profiles send only the necessary coordinates to external APIs to function.
+- **Local-First:** Your files are processed entirely on your local machine and are never uploaded to a server. Optional features like routing and elevation profiles send only the necessary coordinates to external APIs to function.
 - **Draw & Edit:** Easily draw paths, areas, and markers directly on top of a map, and edit them.
 - **File Support:** Import GeoJSON, GPX, KML, and KMZ files. Export to GeoJSON, GPX, and KML formats.
 - **Full Color Support:** Supports all 140 CSS color names and custom hex values. Colors are preserved across imports and exports.
@@ -29,7 +29,7 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 
 ## Privacy
 
-OpenMapEditor is designed with privacy as a priority. All processing of your imported geographic data files (GeoJSON, GPX, KML, KMZ) happens **entirely in your web browser**. Your files are never uploaded to or stored on any server.
+OpenMapEditor is built as a local-first application. All processing of your imported geographic data files (GeoJSON, GPX, KML, KMZ) happens **entirely in your web browser**. Your files are never uploaded to or stored on any server.
 
 The application only sends data to external services for specific, optional features that require an API. This communication is limited to the minimum data necessary for the feature to function:
 
