@@ -38,20 +38,6 @@ function getAllExportableLayers() {
 }
 
 /**
- * Properties to exclude from GeoJSON export.
- * These are internal/style properties that shouldn't be included in exported files.
- */
-const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
-  "color",
-  "totalDistance",
-  "stroke-width",
-  "stroke-opacity",
-  "fill",
-  "fill-color",
-  "fill-opacity",
-];
-
-/**
  * Escapes special characters for use in XML/KML/GPX documents.
  * @param {string} unsafe - The string to escape
  * @returns {string} The escaped string
@@ -80,161 +66,6 @@ function escapeXml(unsafe) {
  * are automatically exploded into separate simple features for editing compatibility.
  */
 const SUPPORTED_IMPORT_GEOM_TYPES = ["Point", "LineString", "Polygon"];
-
-/**
- * Extracts inline IconStyle colors from KML DOM and attaches them to GeoJSON features.
- *
- * Why this is needed:
- * - toGeoJSON parses LineStyle/PolyStyle colors but ignores IconStyle colors
- * - This handles KML files with inline <Style><IconStyle><color> elements
- * - Primary use case: Re-importing our own KML/KMZ exports which use inline styles
- *
- * Must be called AFTER toGeoJSON conversion but BEFORE explosion.
- *
- * @param {Document} dom - The parsed KML XML document
- * @param {object} geojsonData - The GeoJSON data from toGeoJSON.kml()
- */
-function applyKmlIconColors(dom, geojsonData) {
-  const placemarks = dom.querySelectorAll("Placemark");
-
-  // Require 1:1 mapping between DOM placemarks and GeoJSON features
-  if (!geojsonData?.features || placemarks.length !== geojsonData.features.length) {
-    return;
-  }
-
-  geojsonData.features.forEach((feature, index) => {
-    if (feature.geometry?.type !== "Point") {
-      return;
-    }
-
-    const placemark = placemarks[index];
-    const iconStyleColor = placemark.querySelector("Style IconStyle color");
-
-    if (iconStyleColor) {
-      const kmlColor = iconStyleColor.textContent.trim();
-      const cssColor = kmlToCssColor(kmlColor);
-      if (cssColor) {
-        feature.properties = feature.properties || {};
-        feature.properties.color = cssColor;
-      }
-    }
-  });
-}
-
-/**
- * Parses color from standard GeoJSON stroke/marker-color properties.
- * Supports hex values and CSS color names.
- * @param {object} properties - The GeoJSON feature properties
- * @returns {string|null} Normalized hex color or null
- */
-function parseColorFromGeoJsonStyle(properties) {
-  const raw = properties?.stroke || properties?.["marker-color"];
-  return parseColor(raw);
-}
-
-/**
- * Parses a color from KML style properties (after toGeoJSON conversion).
- *
- * Standard KML: LineStyle colors are parsed by toGeoJSON into properties.stroke
- * Our exports: Inline IconStyle colors are handled separately by applyKmlIconColors()
- *
- * @param {object} properties - The feature properties from toGeoJSON
- * @returns {string} Hex color or DEFAULT_COLOR
- */
-function parseColorFromKmlStyle(properties) {
-  // Standard KML: LineStyle colors parsed by toGeoJSON
-  if (properties.stroke) {
-    const parsed = parseColor(properties.stroke);
-    if (parsed) return parsed;
-  }
-
-  // --- Organic Maps specific ---
-  // Organic Maps uses styleUrl like #placemark-red or icon URLs like placemark-red.png
-  if (properties.styleUrl) {
-    const match = properties.styleUrl.match(/#placemark-(\w+)/i);
-    if (match) {
-      const parsed = parseColor(match[1]);
-      if (parsed) return parsed;
-    }
-  }
-  if (properties.icon) {
-    const match = properties.icon.match(/placemark-(\w+)\.png/i);
-    if (match) {
-      const parsed = parseColor(match[1]);
-      if (parsed) return parsed;
-    }
-  }
-  // --- End Organic Maps specific ---
-
-  return DEFAULT_COLOR;
-}
-
-/**
- * Parses colors from GPX DOM and attaches them to GeoJSON features.
- * Must be called BEFORE explosion to ensure all segments inherit the color.
- * @param {Document} dom - The parsed GPX XML document
- * @param {object} geojsonData - The GeoJSON data from toGeoJSON.gpx()
- */
-function applyGpxColors(dom, geojsonData) {
-  const tracksInDom = dom.querySelectorAll("trk");
-  const routesInDom = dom.querySelectorAll("rte");
-  const waypointsInDom = dom.querySelectorAll("wpt");
-
-  // Extract colors from tracks (returns hex or null)
-  const trackColors = Array.from(tracksInDom).map((node) => {
-    const colorNode = node.querySelector("gpx_style\\:color, color");
-    return colorNode ? parseColor(colorNode.textContent) : null;
-  });
-
-  // Extract colors from routes (returns hex or null)
-  const routeColors = Array.from(routesInDom).map((node) => {
-    const colorNode = node.querySelector("gpx_style\\:color, color");
-    return colorNode ? parseColor(colorNode.textContent) : null;
-  });
-
-  // Extract colors from waypoints (returns hex or null)
-  const waypointColors = Array.from(waypointsInDom).map((node) => {
-    const colorNode = node.querySelector("gpx_style\\:color, color");
-    return colorNode ? parseColor(colorNode.textContent) : null;
-  });
-
-  // Apply colors to features (toGeoJSON outputs: trk, then rte, then wpt)
-  const trackCount = tracksInDom.length;
-  const routeCount = routesInDom.length;
-  let trackIndex = 0;
-  let routeIndex = 0;
-  let waypointIndex = 0;
-
-  geojsonData.features.forEach((feature) => {
-    const type = feature.geometry?.type;
-
-    if (type === "LineString" || type === "MultiLineString") {
-      // Tracks come first in toGeoJSON output
-      if (trackIndex < trackCount) {
-        if (trackColors[trackIndex]) {
-          feature.properties = feature.properties || {};
-          feature.properties.color = trackColors[trackIndex];
-        }
-        trackIndex++;
-      }
-      // Routes come after tracks
-      else if (routeIndex < routeCount) {
-        if (routeColors[routeIndex]) {
-          feature.properties = feature.properties || {};
-          feature.properties.color = routeColors[routeIndex];
-        }
-        routeIndex++;
-      }
-    } else if (type === "Point") {
-      // Waypoints come last
-      if (waypointIndex < waypointColors.length && waypointColors[waypointIndex]) {
-        feature.properties = feature.properties || {};
-        feature.properties.color = waypointColors[waypointIndex];
-      }
-      waypointIndex++;
-    }
-  });
-}
 
 /**
  * Explodes multi-geometries and GeometryCollections into separate features.
@@ -310,6 +141,56 @@ function explodeMultiGeometries(feature) {
 // 2. IMPORT (FILE-BASED)
 // --------------------------------------------------------------------
 
+// Color parsing helpers (used by importGeoJsonToMap)
+
+/**
+ * Parses color from standard GeoJSON stroke/marker-color properties.
+ * Supports hex values and CSS color names.
+ * @param {object} properties - The GeoJSON feature properties
+ * @returns {string|null} Normalized hex color or null
+ */
+function parseColorFromGeoJsonStyle(properties) {
+  const raw = properties?.stroke || properties?.["marker-color"];
+  return parseColor(raw);
+}
+
+/**
+ * Parses a color from KML style properties (after toGeoJSON conversion).
+ *
+ * Standard KML: LineStyle colors are parsed by toGeoJSON into properties.stroke
+ * Our exports: Inline IconStyle colors are handled separately by applyKmlIconColors()
+ *
+ * @param {object} properties - The feature properties from toGeoJSON
+ * @returns {string} Hex color or DEFAULT_COLOR
+ */
+function parseColorFromKmlStyle(properties) {
+  // Standard KML: LineStyle colors parsed by toGeoJSON
+  if (properties.stroke) {
+    const parsed = parseColor(properties.stroke);
+    if (parsed) return parsed;
+  }
+
+  // --- Organic Maps specific ---
+  // Organic Maps uses styleUrl like #placemark-red or icon URLs like placemark-red.png
+  if (properties.styleUrl) {
+    const match = properties.styleUrl.match(/#placemark-(\w+)/i);
+    if (match) {
+      const parsed = parseColor(match[1]);
+      if (parsed) return parsed;
+    }
+  }
+  if (properties.icon) {
+    const match = properties.icon.match(/placemark-(\w+)\.png/i);
+    if (match) {
+      const parsed = parseColor(match[1]);
+      if (parsed) return parsed;
+    }
+  }
+  // --- End Organic Maps specific ---
+
+  return DEFAULT_COLOR;
+}
+
 /**
  * Imports GeoJSON data to the map, applying appropriate styles.
  * @param {object} geoJsonData - The GeoJSON data to add
@@ -379,6 +260,7 @@ function importGeoJsonToMap(geoJsonData, fileType) {
 }
 
 // GeoJSON
+// Specification: https://tools.ietf.org/html/rfc7946
 
 /**
  * Imports and processes a GeoJSON file.
@@ -440,6 +322,74 @@ function importGeoJsonFile(file) {
 }
 
 // GPX
+// Specification: https://www.topografix.com/gpx/1/1/
+
+/**
+ * Parses colors from GPX DOM and attaches them to GeoJSON features.
+ * Must be called BEFORE explosion to ensure all segments inherit the color.
+ * @param {Document} dom - The parsed GPX XML document
+ * @param {object} geojsonData - The GeoJSON data from toGeoJSON.gpx()
+ */
+function applyGpxColors(dom, geojsonData) {
+  const tracksInDom = dom.querySelectorAll("trk");
+  const routesInDom = dom.querySelectorAll("rte");
+  const waypointsInDom = dom.querySelectorAll("wpt");
+
+  // Extract colors from tracks (returns hex or null)
+  const trackColors = Array.from(tracksInDom).map((node) => {
+    const colorNode = node.querySelector("gpx_style\\:color, color");
+    return colorNode ? parseColor(colorNode.textContent) : null;
+  });
+
+  // Extract colors from routes (returns hex or null)
+  const routeColors = Array.from(routesInDom).map((node) => {
+    const colorNode = node.querySelector("gpx_style\\:color, color");
+    return colorNode ? parseColor(colorNode.textContent) : null;
+  });
+
+  // Extract colors from waypoints (returns hex or null)
+  const waypointColors = Array.from(waypointsInDom).map((node) => {
+    const colorNode = node.querySelector("gpx_style\\:color, color");
+    return colorNode ? parseColor(colorNode.textContent) : null;
+  });
+
+  // Apply colors to features (toGeoJSON outputs: trk, then rte, then wpt)
+  const trackCount = tracksInDom.length;
+  const routeCount = routesInDom.length;
+  let trackIndex = 0;
+  let routeIndex = 0;
+  let waypointIndex = 0;
+
+  geojsonData.features.forEach((feature) => {
+    const type = feature.geometry?.type;
+
+    if (type === "LineString" || type === "MultiLineString") {
+      // Tracks come first in toGeoJSON output
+      if (trackIndex < trackCount) {
+        if (trackColors[trackIndex]) {
+          feature.properties = feature.properties || {};
+          feature.properties.color = trackColors[trackIndex];
+        }
+        trackIndex++;
+      }
+      // Routes come after tracks
+      else if (routeIndex < routeCount) {
+        if (routeColors[routeIndex]) {
+          feature.properties = feature.properties || {};
+          feature.properties.color = routeColors[routeIndex];
+        }
+        routeIndex++;
+      }
+    } else if (type === "Point") {
+      // Waypoints come last
+      if (waypointIndex < waypointColors.length && waypointColors[waypointIndex]) {
+        feature.properties = feature.properties || {};
+        feature.properties.color = waypointColors[waypointIndex];
+      }
+      waypointIndex++;
+    }
+  });
+}
 
 /**
  * Imports and processes a GPX file.
@@ -508,6 +458,47 @@ function importGpxFile(file) {
 }
 
 // KML / KMZ
+// Specification: https://developers.google.com/kml/documentation/kmlreference
+
+/**
+ * Extracts inline IconStyle colors from KML DOM and attaches them to GeoJSON features.
+ *
+ * Why this is needed:
+ * - toGeoJSON parses LineStyle/PolyStyle colors but ignores IconStyle colors
+ * - This handles KML files with inline <Style><IconStyle><color> elements
+ * - Primary use case: Re-importing our own KML/KMZ exports which use inline styles
+ *
+ * Must be called AFTER toGeoJSON conversion but BEFORE explosion.
+ *
+ * @param {Document} dom - The parsed KML XML document
+ * @param {object} geojsonData - The GeoJSON data from toGeoJSON.kml()
+ */
+function applyKmlIconColors(dom, geojsonData) {
+  const placemarks = dom.querySelectorAll("Placemark");
+
+  // Require 1:1 mapping between DOM placemarks and GeoJSON features
+  if (!geojsonData?.features || placemarks.length !== geojsonData.features.length) {
+    return;
+  }
+
+  geojsonData.features.forEach((feature, index) => {
+    if (feature.geometry?.type !== "Point") {
+      return;
+    }
+
+    const placemark = placemarks[index];
+    const iconStyleColor = placemark.querySelector("Style IconStyle color");
+
+    if (iconStyleColor) {
+      const kmlColor = iconStyleColor.textContent.trim();
+      const cssColor = kmlToCssColor(kmlColor);
+      if (cssColor) {
+        feature.properties = feature.properties || {};
+        feature.properties.color = cssColor;
+      }
+    }
+  });
+}
 
 /**
  * Parses KML text content to GeoJSON with stravaId extraction.
@@ -632,7 +623,22 @@ async function importKmzFile(file) {
 // 3. EXPORT (FILE-BASED)
 // --------------------------------------------------------------------
 
+/**
+ * Properties to exclude from GeoJSON export.
+ * These are internal/style properties that shouldn't be included in exported files.
+ */
+const GEOJSON_EXPORT_EXCLUDED_PROPERTIES = [
+  "color",
+  "totalDistance",
+  "stroke-width",
+  "stroke-opacity",
+  "fill",
+  "fill-color",
+  "fill-opacity",
+];
+
 // GeoJSON
+// Specification: https://tools.ietf.org/html/rfc7946
 
 /**
  * Exports map items to a GeoJSON file with color preservation.
@@ -809,9 +815,11 @@ function exportGeoJson(options = {}) {
 }
 
 // GPX
+// Specification: https://www.topografix.com/gpx/1/1/
 
 /**
  * Converts a Leaflet layer to a GPX string, supporting markers and paths with colors.
+ * Note: GPX has no polygon support; areas export as closed tracks and import as paths.
  * @param {L.Layer} layer - The layer to convert
  * @returns {string} The GPX file content as a string
  */
@@ -912,6 +920,7 @@ function convertLayerToGpx(layer) {
 }
 
 // KML / KMZ
+// Specification: https://developers.google.com/kml/documentation/kmlreference
 
 /**
  * Converts a Leaflet layer to a KML placemark string.

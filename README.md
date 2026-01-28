@@ -11,11 +11,11 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 
 ## Features
 
-- **Privacy First:** Your files are processed entirely on your local machine and are never uploaded to a server. Optional features like routing and elevation profiles send only the necessary coordinates to external APIs to function.
-- **Draw & Edit:** Easily draw new paths, areas, and markers directly on the map, or edit existing items.
+- **Local-First:** Your files are processed entirely on your local machine and are never uploaded to a server. Optional features like routing and elevation profiles send only the necessary coordinates to external APIs to function.
+- **Draw & Edit:** Easily draw paths, areas, and markers directly on top of a map, and edit them.
 - **File Support:** Import GeoJSON, GPX, KML, and KMZ files. Export to GeoJSON, GPX, and KML formats.
 - **Full Color Support:** Supports all 140 CSS color names and custom hex values. Colors are preserved across imports and exports.
-- **Organic Maps Compatible:** Import Organic Maps bookmarks exported as GeoJSON.
+- **Organic Maps Compatible:** Import GeoJSON and GPX exports from Organic Maps.
 - **Google Earth & My Maps Compatible:** KML exports work seamlessly with Google Earth Web, Google Earth Desktop, and Google My Maps.
 - **Shareable Links:** Generate shareable URLs containing your map view and all features, making it easy to share your maps with others.
 - **Routing:** Generate routes for driving, biking, or walking. You can then save the generated route as an editable path.
@@ -29,14 +29,16 @@ OpenMapEditor is a simple, powerful web-based editor for creating, viewing, and 
 
 ## Privacy
 
-OpenMapEditor is designed with privacy as a priority. All processing of your imported geographic data files (GPX, KML, KMZ) happens **entirely in your web browser**. Your files are never uploaded to or stored on any server.
+OpenMapEditor is built as a local-first application. All processing of your imported geographic data files (GeoJSON, GPX, KML, KMZ) happens **entirely in your web browser**. Your files are never uploaded to or stored on any server.
 
 The application only sends data to external services for specific, optional features that require an API. This communication is limited to the minimum data necessary for the feature to function:
 
+- **Initial Map Centering:** Your approximate location is determined using the Google Geolocation API to center the map on your region on first load.
 - **Routing:** When you request a route, the coordinates of your start, end, and via points are sent to the selected routing provider.
 - **Elevation Profiles:** When elevation data is already present in your file, it is used directly. Otherwise, path coordinates are sent to your chosen elevation provider (Google Maps Elevation API or GeoAdmin API for paths in Switzerland).
 - **Search:** Text queries are sent to OpenStreetMap's Nominatim geocoding service to find and display locations on the map.
-- **Strava Integration:** If you choose to connect your Strava account, the application communicates directly with the Strava API to fetch your activities after you grant authorization.
+- **POI Finder:** Search queries and map bounds are sent to OpenStreetMap's Overpass API to find points of interest in the current map view.
+- **Strava Integration:** Communicates directly with the Strava API after user authorization.
 
 ---
 
