@@ -819,6 +819,7 @@ function exportGeoJson(options = {}) {
 
 /**
  * Converts a Leaflet layer to a GPX string, supporting markers and paths with colors.
+ * Note: GPX has no polygon support; areas export as closed tracks and import as paths.
  * @param {L.Layer} layer - The layer to convert
  * @returns {string} The GPX file content as a string
  */
