@@ -405,9 +405,11 @@ function drawElevationProfile(pointsWithElev, realDistance, source) {
         `<span style="${itemStyle}">Highest point: ${elevationFormatter(maxElev)}</span>` +
         `<span style="${itemStyle}">Lowest point: ${elevationFormatter(minElev)}</span>` +
         `<span style="${itemStyle}">Hiking time: ${hikingTimeFormatted}</span>` +
-        // Show add/remove buttons only when "prefer file elevation" is enabled (default),
-        // to prevent accidentally overwriting existing file elevation data.
-        (source && localStorage.getItem("preferFileElevation") !== "false"
+        // Show add/remove buttons only when "prefer file elevation" is enabled (default)
+        // and the path is not an active route (unsaved routes may change anytime).
+        (source &&
+        localStorage.getItem("preferFileElevation") !== "false" &&
+        selectedElevationPath?.pathType !== "route"
           ? `<span style="${itemStyle}">Source: ${source}` +
             (source === "File"
               ? ` <span onclick="removeElevationFromPath()" title="Remove elevation data from path" class="material-symbols material-symbols-fill elevation-action-icon">cancel</span>`
