@@ -465,3 +465,86 @@ async function addElevationProfileForLayer(layer) {
     }
   }
 }
+
+/**
+ * Removes elevation data from the selected path and reloads the profile from API.
+ */
+async function removeElevationFromPath() {
+  if (!selectedElevationPath) return;
+
+  const latlngs = selectedElevationPath.getLatLngs();
+  if (!latlngs || latlngs.length === 0) return;
+
+  // Strip altitude from each point
+  for (let i = 0; i < latlngs.length; i++) {
+    latlngs[i].alt = undefined;
+  }
+
+  // Clear cache so the profile re-evaluates the source
+  const cacheKey = JSON.stringify(latlngs.map((p) => [p.lat.toFixed(5), p.lng.toFixed(5)]));
+  elevationCache.delete(cacheKey);
+
+  await addElevationProfileForLayer(selectedElevationPath);
+}
+
+/**
+ * Adds API elevation data to the selected path's coordinates.
+ * Uses distance-based interpolation to map API elevations to original path points.
+ */
+async function addElevationToPath() {
+  if (!selectedElevationPath) return;
+
+  const latlngs = selectedElevationPath.getLatLngs();
+  if (!latlngs || latlngs.length === 0) return;
+
+  // Get cached API data
+  const cacheKey = JSON.stringify(latlngs.map((p) => [p.lat.toFixed(5), p.lng.toFixed(5)]));
+  const apiData = elevationCache.get(cacheKey);
+  if (!apiData || apiData.length === 0) {
+    console.warn("No cached API elevation data to add.");
+    return;
+  }
+
+  // Build distance→elevation pairs from API data
+  const apiDistElev = [{ distance: 0, elevation: apiData[0].alt || 0 }];
+  let cumDist = 0;
+  for (let i = 1; i < apiData.length; i++) {
+    cumDist += apiData[i - 1].distanceTo(apiData[i]);
+    apiDistElev.push({ distance: cumDist, elevation: apiData[i].alt || 0 });
+  }
+  const apiTotal = apiDistElev[apiDistElev.length - 1].distance;
+
+  // Build cumulative distances for original path
+  const origDistances = [0];
+  for (let i = 1; i < latlngs.length; i++) {
+    origDistances.push(origDistances[i - 1] + latlngs[i - 1].distanceTo(latlngs[i]));
+  }
+  const origTotal = origDistances[origDistances.length - 1];
+
+  // Interpolate elevation for each original point
+  for (let i = 0; i < latlngs.length; i++) {
+    const targetDist =
+      apiTotal > 0 && origTotal > 0 ? (origDistances[i] / origTotal) * apiTotal : origDistances[i];
+
+    // Find surrounding API points for interpolation
+    let j = 0;
+    while (j < apiDistElev.length - 1 && apiDistElev[j + 1].distance < targetDist) {
+      j++;
+    }
+
+    if (j >= apiDistElev.length - 1) {
+      latlngs[i].alt = apiDistElev[apiDistElev.length - 1].elevation;
+    } else {
+      const d1 = apiDistElev[j].distance;
+      const d2 = apiDistElev[j + 1].distance;
+      const e1 = apiDistElev[j].elevation;
+      const e2 = apiDistElev[j + 1].elevation;
+      const t = d2 - d1 > 0 ? (targetDist - d1) / (d2 - d1) : 0;
+      latlngs[i].alt = e1 + t * (e2 - e1);
+    }
+  }
+
+  // Clear cache and re-trigger profile (will now see file data)
+  elevationCache.delete(cacheKey);
+  await addElevationProfileForLayer(selectedElevationPath);
+}

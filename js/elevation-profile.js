@@ -405,7 +405,17 @@ function drawElevationProfile(pointsWithElev, realDistance, source) {
         `<span style="${itemStyle}">Highest point: ${elevationFormatter(maxElev)}</span>` +
         `<span style="${itemStyle}">Lowest point: ${elevationFormatter(minElev)}</span>` +
         `<span style="${itemStyle}">Hiking time: ${hikingTimeFormatted}</span>` +
-        (source ? `<span style="${itemStyle}">Source: ${source}</span>` : ""),
+        (source === "File"
+          ? `<span style="${itemStyle}">Source: ${source}` +
+            ` <button onclick="removeElevationFromPath()" title="Remove elevation data from path"` +
+            ` style="border:1px solid currentColor;border-radius:50%;width:16px;height:16px;font-size:12px;line-height:14px;cursor:pointer;padding:0;margin-left:4px;background:none;color:inherit;vertical-align:text-top;position:relative;top:-1px;">−</button>` +
+            `</span>`
+          : source
+            ? `<span style="${itemStyle}">Source: ${source}` +
+              ` <button onclick="addElevationToPath()" title="Add elevation data to path"` +
+              ` style="border:1px solid currentColor;border-radius:50%;width:16px;height:16px;font-size:12px;line-height:14px;cursor:pointer;padding:0;margin-left:4px;background:none;color:inherit;vertical-align:text-top;position:relative;top:-1px;">+</button>` +
+              `</span>`
+            : ""),
     );
   }
 
