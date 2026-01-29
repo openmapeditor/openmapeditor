@@ -480,10 +480,10 @@ async function removeElevationFromPath() {
     latlngs[i].alt = undefined;
   }
 
-  // Clear cache so the profile re-evaluates the source
-  const cacheKey = JSON.stringify(latlngs.map((p) => [p.lat.toFixed(5), p.lng.toFixed(5)]));
-  elevationCache.delete(cacheKey);
-
+  // Keep the cache entry — the cache key is coordinate-based, so the
+  // cached API data is still valid for these same coordinates.  This
+  // avoids redundant API calls when the user repeatedly removes and
+  // re-adds elevation data without changing the path geometry.
   await addElevationProfileForLayer(selectedElevationPath);
 }
 
@@ -544,7 +544,7 @@ async function addElevationToPath() {
     }
   }
 
-  // Clear cache and re-trigger profile (will now see file data)
-  elevationCache.delete(cacheKey);
+  // Keep the cache entry so that removing and re-adding elevation
+  // does not trigger another API call for the same coordinates.
   await addElevationProfileForLayer(selectedElevationPath);
 }
