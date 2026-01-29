@@ -485,6 +485,13 @@ async function removeElevationFromPath() {
   // avoids redundant API calls when the user repeatedly removes and
   // re-adds elevation data without changing the path geometry.
   await addElevationProfileForLayer(selectedElevationPath);
+  Swal.fire({
+    toast: true,
+    icon: "success",
+    title: "Elevation data removed from path",
+    showConfirmButton: false,
+    timer: 1500,
+  });
 }
 
 /**
@@ -547,4 +554,11 @@ async function addElevationToPath() {
   // Keep the cache entry so that removing and re-adding elevation
   // does not trigger another API call for the same coordinates.
   await addElevationProfileForLayer(selectedElevationPath);
+  Swal.fire({
+    toast: true,
+    icon: "success",
+    title: "Elevation data added to path",
+    showConfirmButton: false,
+    timer: 1500,
+  });
 }
