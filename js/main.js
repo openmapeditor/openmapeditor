@@ -1139,9 +1139,14 @@ function initializeMap() {
   });
 
   document.addEventListener("keydown", (e) => {
-    if (e.key.toLowerCase() === "f" && !e.target.matches("input, textarea")) {
+    if (e.target.matches("input, textarea")) return;
+    if (e.key.toLowerCase() === "f") {
       e.preventDefault();
       toggleFullscreen();
+    }
+    if ((e.key === "Delete" || e.key === "Backspace") && globallySelectedItem) {
+      e.preventDefault();
+      deleteLayerImmediately(globallySelectedItem);
     }
   });
 
