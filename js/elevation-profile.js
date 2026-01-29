@@ -410,10 +410,8 @@ function drawElevationProfile(pointsWithElev, realDistance, source) {
         (source && localStorage.getItem("preferFileElevation") !== "false"
           ? `<span style="${itemStyle}">Source: ${source}` +
             (source === "File"
-              ? ` <button onclick="removeElevationFromPath()" title="Remove elevation data from path"` +
-                ` style="border:1px solid currentColor;border-radius:50%;width:16px;height:16px;font-size:12px;line-height:14px;cursor:pointer;padding:0;margin-left:4px;background:none;color:inherit;vertical-align:text-top;position:relative;top:-1px;">−</button>`
-              : ` <button onclick="addElevationToPath()" title="Add elevation data to path"` +
-                ` style="border:1px solid currentColor;border-radius:50%;width:16px;height:16px;font-size:12px;line-height:14px;cursor:pointer;padding:0;margin-left:4px;background:none;color:inherit;vertical-align:text-top;position:relative;top:-1px;">+</button>`) +
+              ? ` <span onclick="removeElevationFromPath()" title="Remove elevation data from path" class="material-symbols material-symbols-fill elevation-action-icon">cancel</span>`
+              : ` <span onclick="addElevationToPath()" title="Add elevation data to path" class="material-symbols material-symbols-fill elevation-action-icon">add_circle</span>`) +
             `</span>`
           : source
             ? `<span style="${itemStyle}">Source: ${source}</span>`
