@@ -21,6 +21,12 @@ let allFetchedActivities = [];
 let tempUserClientId = "";
 let tempUserClientSecret = "";
 
+// Remember the last selected fetch period
+let lastSelectedPeriod = "all";
+
+// Track whether a fetch has been performed this session
+let hasFetchedActivities = false;
+
 // Core Authentication and Data Fetching
 
 /**
@@ -72,7 +78,7 @@ async function getAccessToken(code, clientId, clientSecret) {
 }
 
 /**
- * Fetches activities from the Strava API, handling pagination and user limits.
+ * Fetches activities from the Strava API, handling pagination and time-based filtering.
  */
 async function fetchAllActivities() {
   const accessToken = sessionStorage.getItem("strava_access_token");
@@ -92,8 +98,29 @@ async function fetchAllActivities() {
   }
 
   const fetchCountSelect = document.getElementById("strava-fetch-count");
-  const limit = fetchCountSelect ? fetchCountSelect.value : "all";
-  const fetchLimit = limit === "all" ? Infinity : parseInt(limit, 10);
+  const period = fetchCountSelect ? fetchCountSelect.value : "all";
+  lastSelectedPeriod = period;
+
+  // Calculate the "after" timestamp based on the selected period
+  let afterTimestamp = null;
+  if (period !== "all") {
+    const now = new Date();
+    const dateOffsets = {
+      "30d": [0, 30],
+      "90d": [0, 90],
+      "6m": [6, 0],
+      "12m": [12, 0],
+      "24m": [24, 0],
+      "36m": [36, 0],
+    };
+    const offset = dateOffsets[period];
+    if (offset) {
+      const cutoff = new Date(now);
+      if (offset[0] > 0) cutoff.setMonth(cutoff.getMonth() - offset[0]);
+      if (offset[1] > 0) cutoff.setDate(cutoff.getDate() - offset[1]);
+      afterTimestamp = Math.floor(cutoff.getTime() / 1000);
+    }
+  }
 
   const controlsDiv = document.getElementById("strava-controls");
   if (controlsDiv) controlsDiv.style.display = "none";
@@ -109,9 +136,12 @@ async function fetchAllActivities() {
   const perPage = 100;
   let keepFetching = true;
 
-  while (keepFetching && activitiesBuffer.length < fetchLimit) {
+  while (keepFetching) {
     try {
-      const url = `${activitiesURL}?access_token=${accessToken}&per_page=${perPage}&page=${page}`;
+      let url = `${activitiesURL}?access_token=${accessToken}&per_page=${perPage}&page=${page}`;
+      if (afterTimestamp) {
+        url += `&after=${afterTimestamp}`;
+      }
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -131,11 +161,9 @@ async function fetchAllActivities() {
       keepFetching = false;
     }
   }
-  if (fetchLimit !== Infinity && activitiesBuffer.length > fetchLimit) {
-    activitiesBuffer = activitiesBuffer.slice(0, fetchLimit);
-  }
 
   allFetchedActivities = activitiesBuffer;
+  hasFetchedActivities = true;
 
   if (progressText)
     progressText.innerText = `Found ${activitiesBuffer.length} total activities. Processing...`;
@@ -316,18 +344,25 @@ function showApiKeysModal() {
  * @returns {string} The HTML string for the controls
  */
 function _getFetchControlsHTML(activityCount = 0) {
-  const message =
-    activityCount > 0
-      ? `${activityCount} activities loaded.`
-      : "Select how many activities to fetch.";
+  let message;
+  if (activityCount > 0) {
+    message = `${activityCount} activities loaded.`;
+  } else if (hasFetchedActivities) {
+    message = "No activities found for the selected period.";
+  } else {
+    message = "Select a time period and fetch your activities.";
+  }
   return `
       <p>Successfully connected to Strava.<br>${message}</p>
       <div id="strava-controls" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%;">
         <select id="strava-fetch-count" class="strava-button-secondary" style="flex: 2; min-width: 120px;">
-          <option value="25">Latest 25</option>
-          <option value="50">Latest 50</option>
-          <option value="100">Latest 100</option>
-          <option value="all" selected>All Activities</option>
+          <option value="30d"${lastSelectedPeriod === "30d" ? " selected" : ""}>Last 30 Days</option>
+          <option value="90d"${lastSelectedPeriod === "90d" ? " selected" : ""}>Last 90 Days</option>
+          <option value="6m"${lastSelectedPeriod === "6m" ? " selected" : ""}>Last 6 Months</option>
+          <option value="12m"${lastSelectedPeriod === "12m" ? " selected" : ""}>Last 12 Months</option>
+          <option value="24m"${lastSelectedPeriod === "24m" ? " selected" : ""}>Last 24 Months</option>
+          <option value="36m"${lastSelectedPeriod === "36m" ? " selected" : ""}>Last 36 Months</option>
+          <option value="all"${lastSelectedPeriod === "all" ? " selected" : ""}>All Time</option>
         </select>
         <button id="fetch-strava-btn" class="strava-button-primary" style="flex: 1; min-width: 80px;">Fetch</button>
         <div class="strava-export-buttons">
