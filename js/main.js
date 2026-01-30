@@ -465,7 +465,13 @@ function initializeMap() {
       });
     }
     delete window._pendingShareData;
+  } else {
+    // No share URL — restore previous session from localStorage
+    restoreAutosave();
   }
+
+  // Start periodic autosave (every 5s, writes only on change)
+  startAutosave();
 
   const allOverlayMaps = {
     ...staticOverlayMaps,

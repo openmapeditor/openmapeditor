@@ -17,6 +17,40 @@
 // --------------------------------------------------------------------
 
 /**
+ * Overwrites a GeoJSON geometry's coordinates with full precision values
+ * read directly from the Leaflet layer (avoids toGeoJSON precision loss).
+ * @param {L.Layer} layer - The Leaflet layer
+ * @param {object} geojson - The GeoJSON object whose geometry.coordinates will be updated
+ */
+function applyFullPrecisionCoordinates(layer, geojson) {
+  if (layer instanceof L.Marker) {
+    const ll = layer.getLatLng();
+    const coords = [ll.lng, ll.lat];
+    if (typeof ll.alt === "number") coords.push(ll.alt);
+    geojson.geometry.coordinates = coords;
+  } else if (layer instanceof L.Polygon) {
+    const latlngs = layer.getLatLngs()[0];
+    const coords = latlngs.map((ll) => {
+      const coord = [ll.lng, ll.lat];
+      if (typeof ll.alt === "number") coord.push(ll.alt);
+      return coord;
+    });
+    coords.push(coords[0]); // Close the polygon
+    geojson.geometry.coordinates = [coords];
+  } else if (layer instanceof L.Polyline) {
+    let latlngs = layer.getLatLngs();
+    while (Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
+      latlngs = latlngs[0];
+    }
+    geojson.geometry.coordinates = latlngs.map((ll) => {
+      const coord = [ll.lng, ll.lat];
+      if (typeof ll.alt === "number") coord.push(ll.alt);
+      return coord;
+    });
+  }
+}
+
+/**
  * Gets all layers that should be included in full exports (everything/all).
  * Includes drawn items, imported items, current route, and Strava activities.
  * @returns {Array} Array of all exportable layers
@@ -704,31 +738,7 @@ function exportGeoJson(options = {}) {
       }
 
       // Extract full precision coordinates directly from layer
-      if (layer instanceof L.Marker) {
-        const ll = layer.getLatLng();
-        const coords = [ll.lng, ll.lat];
-        if (typeof ll.alt === "number") coords.push(ll.alt);
-        geojson.geometry.coordinates = coords;
-      } else if (layer instanceof L.Polygon) {
-        const latlngs = layer.getLatLngs()[0];
-        const coords = latlngs.map((ll) => {
-          const coord = [ll.lng, ll.lat];
-          if (typeof ll.alt === "number") coord.push(ll.alt);
-          return coord;
-        });
-        coords.push(coords[0]); // Close the polygon
-        geojson.geometry.coordinates = [coords];
-      } else if (layer instanceof L.Polyline) {
-        let latlngs = layer.getLatLngs();
-        while (Array.isArray(latlngs[0]) && !(latlngs[0] instanceof L.LatLng)) {
-          latlngs = latlngs[0];
-        }
-        geojson.geometry.coordinates = latlngs.map((ll) => {
-          const coord = [ll.lng, ll.lat];
-          if (typeof ll.alt === "number") coord.push(ll.alt);
-          return coord;
-        });
-      }
+      applyFullPrecisionCoordinates(layer, geojson);
 
       // Get color (stored hex or default)
       const color = layer.feature?.properties?.color || DEFAULT_COLOR;
