@@ -145,6 +145,8 @@ This project utilizes several open-source libraries, which are included in the r
   - Download URL: <https://d3js.org/d3.v7.min.js>
 - **flag-icons-7.5.0**
   - Download URL: <https://github.com/lipis/flag-icons/archive/refs/tags/v7.5.0.zip>
+- **idb-keyval-6.2.2**
+  - Download URL: <https://registry.npmjs.org/idb-keyval/-/idb-keyval-6.2.2.tgz>
 - **jszip-3.10.1**
   - Download URL: <https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz>
 - **leaflet-1.9.4**

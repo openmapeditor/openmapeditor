@@ -154,7 +154,7 @@ function parseMapHash(hashString) {
 /**
  * Initializes the map and all its components (layers, controls, event handlers).
  */
-function initializeMap() {
+async function initializeMap() {
   // Verify that all required API keys from secrets.js are available
   if (
     typeof googleApiKey === "undefined" ||
@@ -466,8 +466,8 @@ function initializeMap() {
     }
     delete window._pendingShareData;
   } else {
-    // No share URL — restore previous session from localStorage
-    restoreAutosave();
+    // No share URL — restore previous session from IndexedDB
+    await restoreAutosave();
   }
 
   // Start periodic autosave (every 5s, writes only on change)

@@ -3,7 +3,7 @@
 /**
  * AUTOSAVE
  *
- * Periodically saves map layers to localStorage as GeoJSON.
+ * Periodically saves map layers to IndexedDB as GeoJSON.
  * On page load, restores saved data (unless a share URL is present).
  */
 
@@ -58,7 +58,7 @@ function _serializeLayersForAutosave() {
 }
 
 /**
- * Saves current map state to localStorage if it changed.
+ * Saves current map state to IndexedDB if it changed.
  */
 function _autosaveTick() {
   const json = _serializeLayersForAutosave();
@@ -66,36 +66,38 @@ function _autosaveTick() {
   _lastAutosaveJson = json;
 
   if (json === "") {
-    localStorage.removeItem(AUTOSAVE_KEY);
+    idbKeyval.del(AUTOSAVE_KEY).catch(() => {});
   } else {
-    try {
-      localStorage.setItem(AUTOSAVE_KEY, json);
-      _autosaveWriteFailed = false;
-    } catch (e) {
-      if (!_autosaveWriteFailed) {
-        _autosaveWriteFailed = true;
-        console.warn("Autosave: localStorage write failed", e);
-        Swal.fire({
-          toast: true,
-          icon: "warning",
-          title: "Autosave failed — storage is full. Please export your work.",
-          position: "top",
-          showConfirmButton: false,
-          timer: 5000,
-        });
-      }
-    }
+    idbKeyval
+      .set(AUTOSAVE_KEY, json)
+      .then(() => {
+        _autosaveWriteFailed = false;
+      })
+      .catch((e) => {
+        if (!_autosaveWriteFailed) {
+          _autosaveWriteFailed = true;
+          console.warn("Autosave: IndexedDB write failed", e);
+          Swal.fire({
+            toast: true,
+            icon: "warning",
+            title: "Autosave failed — could not write to storage. Please export your work.",
+            position: "top",
+            showConfirmButton: false,
+            timer: 5000,
+          });
+        }
+      });
   }
 }
 
 /**
- * Restores map state from localStorage.
+ * Restores map state from IndexedDB.
  * Routes each feature to the correct layer group based on its saved pathType.
  * Should be called after layer groups are initialized and only if no share URL data is present.
- * @returns {boolean} true if data was restored
+ * @returns {Promise<boolean>} true if data was restored
  */
-function restoreAutosave() {
-  const json = localStorage.getItem(AUTOSAVE_KEY);
+async function restoreAutosave() {
+  const json = await idbKeyval.get(AUTOSAVE_KEY);
   if (!json) return false;
 
   try {
