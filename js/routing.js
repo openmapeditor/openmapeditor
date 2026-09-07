@@ -12,7 +12,6 @@ function initRouting() {
     viaMarker,
     currentStartLatLng,
     currentEndLatLng,
-    currentViaLatLng,
     routePointSelectionMode = null,
     penModeActive = false,
     penModeClickCount = 0,
@@ -21,6 +20,8 @@ function initRouting() {
     customCursorVia;
 
   let intermediateViaMarkers = [];
+  // Vias in the order last sent to the router, for mapping the reply's waypointIndices back
+  let routedVias = [];
   let shouldFitBounds = true;
   // Last route name this module wrote; lets recalculation detect a user rename
   let lastGeneratedRouteName = null;
@@ -108,13 +109,7 @@ function initRouting() {
     const finalProfile = config.profileFormatter(apiProfile);
     routingControl.getRouter().options.profile = finalProfile;
 
-    const waypoints = [L.latLng(currentStartLatLng)];
-    if (currentViaLatLng) {
-      waypoints.push(L.latLng(currentViaLatLng));
-    }
-    waypoints.push(L.latLng(currentEndLatLng));
-
-    setWaypointsAndLog(waypoints);
+    sendRouteWaypoints();
   };
 
   /**
@@ -128,38 +123,65 @@ function initRouting() {
   };
 
   /**
-   * Recalculates the route including all intermediate via markers without changing map bounds.
+   * Sends [start, ...vias, end] to the router with the path and panel vias ordered by
+   * position along the route, and numbers their badges to match.
    */
-  const updateRouteWithIntermediateVias = () => {
-    if (!currentStartLatLng || !currentEndLatLng) return;
-    shouldFitBounds = false;
-    const waypoints = [L.latLng(currentStartLatLng)];
-    intermediateViaMarkers.forEach((marker) => {
-      waypoints.push(marker.getLatLng());
-    });
-    if (currentViaLatLng) {
-      waypoints.push(L.latLng(currentViaLatLng));
-    }
-    waypoints.push(L.latLng(currentEndLatLng));
-    setWaypointsAndLog(waypoints);
+  const sendRouteWaypoints = () => {
+    const vias = [...intermediateViaMarkers];
+    if (viaMarker) vias.push(viaMarker);
+    // Stable sort; Infinity - Infinity is NaN, which sort() treats as equal
+    vias.sort((a, b) => a.routePosition - b.routePosition);
+    vias.forEach((marker, i) => marker.setTooltipContent(String(i + 1)));
+    routedVias = vias;
+    setWaypointsAndLog([
+      L.latLng(currentStartLatLng),
+      ...vias.map((marker) => marker.getLatLng()),
+      L.latLng(currentEndLatLng),
+    ]);
   };
 
   /**
-   * Returns the index of the current route path vertex closest to latlng,
-   * or Infinity when there is no route path to measure against.
+   * Recalculates the route with all vias without changing map bounds.
    */
-  const nearestRouteCoordIndex = (latlng) => {
+  const recalculateRoute = () => {
+    if (!currentStartLatLng || !currentEndLatLng) return;
+    shouldFitBounds = false;
+    sendRouteWaypoints();
+  };
+
+  /**
+   * Returns latlng's position along the current route path as the index of the nearest
+   * segment plus the fraction along it, or Infinity when there is no route path.
+   */
+  const routePositionOf = (latlng) => {
     if (!currentRoutePath) return Infinity;
-    let nearestIndex = Infinity;
+    const p = map.latLngToLayerPoint(latlng);
+    const points = currentRoutePath.getLatLngs().map((ll) => map.latLngToLayerPoint(ll));
+    let nearestPos = Infinity;
     let nearestDist = Infinity;
-    currentRoutePath.getLatLngs().forEach((coord, i) => {
-      const dist = latlng.distanceTo(coord);
+    for (let i = 0; i < points.length - 1; i++) {
+      const closest = L.LineUtil.closestPointOnSegment(p, points[i], points[i + 1]);
+      const dist = p.distanceTo(closest);
       if (dist < nearestDist) {
         nearestDist = dist;
-        nearestIndex = i;
+        const segmentLength = points[i].distanceTo(points[i + 1]);
+        nearestPos = i + (segmentLength ? points[i].distanceTo(closest) / segmentLength : 0);
       }
+    }
+    return nearestPos;
+  };
+
+  /**
+   * Attaches the sequence-number badge above a via pin; sendRouteWaypoints() sets its content.
+   */
+  const addViaNumberBadge = (marker) => {
+    marker.bindTooltip("", {
+      permanent: true,
+      direction: "top",
+      offset: [0, -40], // px above the pin tip
+      opacity: 1,
+      className: "route-via-number",
     });
-    return nearestIndex;
   };
 
   /**
@@ -172,10 +194,12 @@ function initRouting() {
       title: ROUTING_MARKER_HINT,
     }).addTo(map);
 
+    addViaNumberBadge(newViaMarker);
+
     const deleteMarkerAction = () => {
       map.removeLayer(newViaMarker);
       intermediateViaMarkers = intermediateViaMarkers.filter((m) => m !== newViaMarker);
-      updateRouteWithIntermediateVias();
+      recalculateRoute();
     };
 
     let pressTimer = null;
@@ -199,17 +223,9 @@ function initRouting() {
       deleteMarkerAction();
     });
 
-    newViaMarker.on("dragend", updateRouteWithIntermediateVias);
-    // Insert by position along the route so via order matches geography, not click order
-    newViaMarker.routeCoordIndex = nearestRouteCoordIndex(latlng);
-    const insertAt = intermediateViaMarkers.findIndex(
-      (marker) => (marker.routeCoordIndex ?? Infinity) > newViaMarker.routeCoordIndex,
-    );
-    if (insertAt === -1) {
-      intermediateViaMarkers.push(newViaMarker);
-    } else {
-      intermediateViaMarkers.splice(insertAt, 0, newViaMarker);
-    }
+    newViaMarker.on("dragend", recalculateRoute);
+    newViaMarker.routePosition = routePositionOf(latlng);
+    intermediateViaMarkers.push(newViaMarker);
     return newViaMarker;
   };
 
@@ -218,7 +234,7 @@ function initRouting() {
    */
   const addIntermediateViaPoint = (latlng) => {
     createIntermediateViaMarker(latlng);
-    updateRouteWithIntermediateVias();
+    recalculateRoute();
   };
 
   /**
@@ -279,11 +295,11 @@ function initRouting() {
           const route = routes[0];
           let processedCoordinates = route.coordinates;
 
-          // Refresh each via marker's coordinate index on the new geometry; waypoints
-          // were [start, ...intermediateViaMarkers, via?, end], so markers map to 1..n.
+          // Refresh each via's position (its vertex index) on the new geometry; waypoints
+          // were [start, ...routedVias, end], so vias map to 1..n.
           if (route.waypointIndices && route.waypointIndices.length === this._waypoints.length) {
-            intermediateViaMarkers.forEach((marker, i) => {
-              marker.routeCoordIndex = route.waypointIndices[i + 1];
+            routedVias.forEach((marker, i) => {
+              marker.routePosition = route.waypointIndices[i + 1];
             });
           }
 
@@ -386,6 +402,8 @@ function initRouting() {
             });
 
             newRoutePath.on("click", (e) => {
+              // While placing route points, a plain click belongs to the map handler
+              if (!wasLongPress && (routePointSelectionMode || penModeActive)) return;
               L.DomEvent.stop(e);
               if (!wasLongPress) {
                 selectItem(newRoutePath);
@@ -490,7 +508,7 @@ function initRouting() {
       }
 
       if (startMarker && endMarker) {
-        updateRouteWithIntermediateVias();
+        recalculateRoute();
       }
     });
   });
@@ -567,12 +585,11 @@ function initRouting() {
     marker.on("dragend", () => {
       const newLatLng = marker.getLatLng();
       if (isStart) currentStartLatLng = newLatLng;
-      else if (isVia) currentViaLatLng = newLatLng;
-      else currentEndLatLng = newLatLng;
+      else if (type === "end") currentEndLatLng = newLatLng;
       input.value = `${newLatLng.lat.toFixed(6)}, ${newLatLng.lng.toFixed(6)}`;
       input.style.color = "var(--color-black)";
       if (startMarker && endMarker) {
-        updateRouteWithIntermediateVias();
+        recalculateRoute();
       }
     });
 
@@ -619,7 +636,6 @@ function initRouting() {
     viaInput.value = "";
     currentStartLatLng = null;
     currentEndLatLng = null;
-    currentViaLatLng = null;
 
     const summaryContainer = document.getElementById("routing-summary-container");
     if (summaryContainer) {
@@ -674,6 +690,7 @@ function initRouting() {
       draggable: true,
     }).addTo(map);
     addDragHandlersToRoutingMarker(marker, type);
+    if (isVia) addViaNumberBadge(marker);
     if (isStart) startMarker = marker;
     else if (isVia) viaMarker = marker;
     else endMarker = marker;
@@ -689,15 +706,16 @@ function initRouting() {
     const input = type === "start" ? startInput : isVia ? viaInput : endInput;
 
     if (type === "start") currentStartLatLng = latlng;
-    else if (isVia) currentViaLatLng = latlng;
-    else currentEndLatLng = latlng;
+    else if (type === "end") currentEndLatLng = latlng;
     input.value = label || `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`;
     input.style.color = "var(--color-black)";
     ensureRoutingMarker(type, latlng);
+    // Slot the panel via by where it sits along the current route
+    if (isVia) viaMarker.routePosition = routePositionOf(latlng);
     updateClearButtonState();
 
     if (isVia) {
-      updateRouteWithIntermediateVias();
+      recalculateRoute();
     } else {
       calculateNewRoute();
     }
@@ -776,10 +794,9 @@ function initRouting() {
       case "via":
         if (viaMarker) map.removeLayer(viaMarker);
         viaMarker = null;
-        currentViaLatLng = null;
         viaInput.value = "";
         if (startMarker && endMarker) {
-          updateRouteWithIntermediateVias();
+          recalculateRoute();
         }
         break;
     }
@@ -817,18 +834,6 @@ function initRouting() {
     exitRoutePointSelectionMode();
     if (!mode) return;
     deselectCurrentItem();
-    if (mode === "start" && startMarker) {
-      map.removeLayer(startMarker);
-      startMarker = null;
-    }
-    if (mode === "end" && endMarker) {
-      map.removeLayer(endMarker);
-      endMarker = null;
-    }
-    if (mode === "via" && viaMarker) {
-      map.removeLayer(viaMarker);
-      viaMarker = null;
-    }
     // Only guards against selecting some other, unrelated existing layer while
     // placing route points - it was never meant to stop the route from
     // selecting/highlighting itself, which is a normal and expected part of
@@ -941,7 +946,7 @@ function initRouting() {
           });
         }
         penModeClickCount = 2;
-        updateRouteWithIntermediateVias();
+        recalculateRoute();
         shouldFitBounds = false;
       } else {
         createIntermediateViaMarker(currentEndLatLng);
@@ -950,7 +955,7 @@ function initRouting() {
         endInput.style.color = "var(--color-black)";
         endMarker.setLatLng(latlng);
         penModeClickCount++;
-        updateRouteWithIntermediateVias();
+        recalculateRoute();
       }
 
       updateClearButtonState();

@@ -443,6 +443,22 @@ select:focus {
   border: none;
 }
 
+/* Sequence-number badge above each route via pin (js/routing.js) */
+.route-via-number {
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--color-white);
+  background-color: var(--routing-color-via);
+  border-radius: 9px;
+  box-shadow: 0 0 0 2px var(--color-white);
+  border: none;
+}
+.route-via-number::before {
+  display: none;
+}
+
 /* Existing path endpoint shown while drawing a new path (js/path-extend.js), before it's
    clicked to start extending from it. Same shape/size as .leaflet-editing-icon, always
    black so it reads as "not yet active". */
