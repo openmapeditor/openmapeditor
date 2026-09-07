@@ -221,7 +221,11 @@ function initRouting() {
       deleteMarkerAction();
     });
 
-    newViaMarker.on("dragend", recalculateRoute);
+    newViaMarker.on("dragend", () => {
+      // Re-slot by where the via now sits along the current route
+      newViaMarker.routePosition = routePositionOf(newViaMarker.getLatLng());
+      recalculateRoute();
+    });
     newViaMarker.routePosition = routePositionOf(latlng);
     intermediateViaMarkers.push(newViaMarker);
     return newViaMarker;
@@ -585,6 +589,8 @@ function initRouting() {
 
     marker.on("dragend", () => {
       const newLatLng = marker.getLatLng();
+      // Re-slot the panel via by where it now sits along the current route
+      if (isVia) marker.routePosition = routePositionOf(newLatLng);
       input.value = `${newLatLng.lat.toFixed(6)}, ${newLatLng.lng.toFixed(6)}`;
       input.style.color = "var(--color-black)";
       if (startMarker && endMarker) {
