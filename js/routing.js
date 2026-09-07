@@ -236,6 +236,58 @@ function initRouting() {
   };
 
   /**
+   * Fills the summary box (distance, time, source) and the turn-by-turn list for a route.
+   */
+  const renderRouteDetails = (route) => {
+    const summaryContainer = document.getElementById("routing-summary-container");
+    if (route.summary && summaryContainer) {
+      const distanceDisplay = formatDistance(route.summary.totalDistance);
+
+      function formatDuration(seconds) {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        let parts = [];
+        if (h > 0) parts.push(h + " h");
+        if (m > 0 || h === 0) parts.push(m + " min");
+        return parts.join(" ");
+      }
+      const formattedTime = formatDuration(route.summary.totalTime);
+
+      const currentProvider = getCurrentRoutingProvider();
+      const providerDisplayName = PROVIDER_CONFIG[currentProvider]?.displayName || currentProvider;
+
+      const itemStyle = "display: inline-block; white-space: nowrap; margin: 0 4px;";
+      summaryContainer.innerHTML =
+        `<span style="${itemStyle}">Distance: ${distanceDisplay}</span>` +
+        `<span style="${itemStyle}">Time: ${formattedTime}</span>` +
+        `<span style="${itemStyle}">Source: ${providerDisplayName}</span>`;
+      summaryContainer.style.display = "block";
+    }
+
+    const directionsPanel = document.getElementById("directions-panel");
+    const directionsList = document.getElementById("directions-list");
+    directionsList.innerHTML = "";
+    directionsPanel.style.display = "flex";
+
+    if (route.instructions && route.instructions.length > 0) {
+      route.instructions.forEach((instr) => {
+        const item = document.createElement("div");
+        item.className = "direction-item";
+        const distanceM = instr.distance;
+        let distanceStr = "";
+        if (distanceM > 0) {
+          distanceStr = `(${formatDistance(distanceM)})`;
+        }
+        item.textContent = `${instr.text} ${distanceStr}`;
+        directionsList.appendChild(item);
+      });
+    } else {
+      directionsList.innerHTML =
+        '<div class="direction-item">No turn-by-turn directions available.</div>';
+    }
+  };
+
+  /**
    * Sets up the routing engine with the specified provider without creating any UI controls.
    * Uses the router directly instead of L.Routing.control to avoid DOM element creation.
    */
@@ -307,53 +359,7 @@ function initRouting() {
           const endName = endInput.value.trim() || "End";
           const newRouteName = `Route: ${startName} to ${endName}`;
 
-          const summaryContainer = document.getElementById("routing-summary-container");
-          if (route.summary && summaryContainer) {
-            const distanceDisplay = formatDistance(route.summary.totalDistance);
-
-            function formatDuration(seconds) {
-              const h = Math.floor(seconds / 3600);
-              const m = Math.floor((seconds % 3600) / 60);
-              let parts = [];
-              if (h > 0) parts.push(h + " h");
-              if (m > 0 || h === 0) parts.push(m + " min");
-              return parts.join(" ");
-            }
-            const formattedTime = formatDuration(route.summary.totalTime);
-
-            const currentProvider = getCurrentRoutingProvider();
-            const providerDisplayName =
-              PROVIDER_CONFIG[currentProvider]?.displayName || currentProvider;
-
-            const itemStyle = "display: inline-block; white-space: nowrap; margin: 0 4px;";
-            summaryContainer.innerHTML =
-              `<span style="${itemStyle}">Distance: ${distanceDisplay}</span>` +
-              `<span style="${itemStyle}">Time: ${formattedTime}</span>` +
-              `<span style="${itemStyle}">Source: ${providerDisplayName}</span>`;
-            summaryContainer.style.display = "block";
-          }
-
-          const directionsPanel = document.getElementById("directions-panel");
-          const directionsList = document.getElementById("directions-list");
-          directionsList.innerHTML = "";
-          directionsPanel.style.display = "flex";
-
-          if (route.instructions && route.instructions.length > 0) {
-            route.instructions.forEach((instr) => {
-              const item = document.createElement("div");
-              item.className = "direction-item";
-              const distanceM = instr.distance;
-              let distanceStr = "";
-              if (distanceM > 0) {
-                distanceStr = `(${formatDistance(distanceM)})`;
-              }
-              item.textContent = `${instr.text} ${distanceStr}`;
-              directionsList.appendChild(item);
-            });
-          } else {
-            directionsList.innerHTML =
-              '<div class="direction-item">No turn-by-turn directions available.</div>';
-          }
+          renderRouteDetails(route);
 
           if (shouldFitBounds) {
             map.fitBounds(L.latLngBounds(processedCoordinates), { padding: [50, 50] });
