@@ -355,13 +355,21 @@ function initRouting() {
       _handleRoutesFound: function (routes) {
         if (routes.length > 0) {
           const route = routes[0];
-          let processedCoordinates = route.coordinates;
+          // OSRM/Mapbox repeat a coordinate at every step and leg boundary (end of one
+          // geometry, start of the next). Drop those exact duplicates so edit mode shows one
+          // vertex there, and map each raw index to its deduped one for the via positions.
+          const processedCoordinates = [];
+          const dedupedIndex = route.coordinates.map((coord, i) => {
+            const isDuplicate = i > 0 && coord.equals(route.coordinates[i - 1]);
+            if (!isDuplicate) processedCoordinates.push(coord);
+            return processedCoordinates.length - 1;
+          });
 
           // Refresh each via's position (its vertex index) on the new geometry; waypoints
           // were [start, ...routedVias, end], so vias map to 1..n.
           if (route.waypointIndices && route.waypointIndices.length === this._waypoints.length) {
             routedVias.forEach((marker, i) => {
-              marker.routePosition = route.waypointIndices[i + 1];
+              marker.routePosition = dedupedIndex[route.waypointIndices[i + 1]];
             });
           }
 
