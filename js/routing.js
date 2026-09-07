@@ -183,6 +183,14 @@ function initRouting() {
   };
 
   /**
+   * Call before deleting a marker from a touch long-press: its detached icon still receives
+   * the touchend, so cancelling it there stops the browser synthesizing a click on the map.
+   */
+  const suppressClickAfterTouchHold = (marker) => {
+    marker.getElement()?.addEventListener("touchend", (e) => e.preventDefault(), { once: true });
+  };
+
+  /**
    * Creates and registers an intermediate via marker without triggering route recalculation.
    */
   const createIntermediateViaMarker = (latlng) => {
@@ -218,6 +226,7 @@ function initRouting() {
 
     newViaMarker.on("contextmenu", (e) => {
       L.DomEvent.stop(e);
+      suppressClickAfterTouchHold(newViaMarker);
       deleteMarkerAction();
     });
 
@@ -614,6 +623,7 @@ function initRouting() {
 
     marker.on("contextmenu", (e) => {
       L.DomEvent.stop(e);
+      suppressClickAfterTouchHold(marker);
       deleteMarkerAction();
     });
   }
