@@ -449,9 +449,19 @@ async function osmShowNotePicker(latlng) {
   }
 }
 
+function osmEscapeXml(value) {
+  return String(value).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&apos;",
+  })[c]);
+}
+
 async function osmWithChangeset(comment, token, fn) {
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "text/xml" };
-  const xml = `<osm><changeset><tag k="created_by" v="${OSM_TEST_MODE ? OSM_CREATED_BY + "Test" : OSM_CREATED_BY}"/>${comment ? `<tag k="comment" v="${comment}"/>` : ""}</changeset></osm>`;
+  const xml = `<osm><changeset><tag k="created_by" v="${OSM_TEST_MODE ? OSM_CREATED_BY + "Test" : OSM_CREATED_BY}"/>${comment ? `<tag k="comment" v="${osmEscapeXml(comment)}"/>` : ""}</changeset></osm>`;
   const res = await fetch(`${OSM_API_URL}/changeset/create`, { method: "PUT", headers, body: xml });
   if (!res.ok) {
     if (res.status === 429) throw new Error("Rate limit reached. Please try again later.");
@@ -479,7 +489,7 @@ async function osmSubmitNode(latlng, tags) {
   try {
     return await osmWithChangeset(`Created ${tagComment}`, token, async (changesetId, headers) => {
       const tagsXml = Object.entries(tags)
-        .map(([k, v]) => `<tag k="${k}" v="${v}"/>`)
+        .map(([k, v]) => `<tag k="${osmEscapeXml(k)}" v="${osmEscapeXml(v)}"/>`)
         .join("");
       const nodeXml = `<osm><node lat="${latlng.lat}" lon="${latlng.lng}" changeset="${changesetId}">${tagsXml}</node></osm>`;
       const nodeRes = await fetch(`${OSM_API_URL}/nodes`, {
