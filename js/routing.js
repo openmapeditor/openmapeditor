@@ -89,8 +89,6 @@ function initRouting() {
     }
 
     shouldFitBounds = true;
-    intermediateViaMarkers.forEach((marker) => map.removeLayer(marker));
-    intermediateViaMarkers = [];
     saveRouteBtn.disabled = true;
 
     const selectedProfile = document.querySelector("#routing-profile-selector .profile-btn.active")
