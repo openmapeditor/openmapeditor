@@ -10,8 +10,6 @@ function initRouting() {
     startMarker,
     endMarker,
     viaMarker,
-    currentStartLatLng,
-    currentEndLatLng,
     routePointSelectionMode = null,
     penModeActive = false,
     penModeClickCount = 0,
@@ -86,7 +84,7 @@ function initRouting() {
   };
 
   const calculateNewRoute = () => {
-    if (!currentStartLatLng || !currentEndLatLng) {
+    if (!startMarker || !endMarker) {
       return;
     }
 
@@ -134,9 +132,9 @@ function initRouting() {
     vias.forEach((marker, i) => marker.setTooltipContent(String(i + 1)));
     routedVias = vias;
     setWaypointsAndLog([
-      L.latLng(currentStartLatLng),
+      startMarker.getLatLng(),
       ...vias.map((marker) => marker.getLatLng()),
-      L.latLng(currentEndLatLng),
+      endMarker.getLatLng(),
     ]);
   };
 
@@ -144,7 +142,7 @@ function initRouting() {
    * Recalculates the route with all vias without changing map bounds.
    */
   const recalculateRoute = () => {
-    if (!currentStartLatLng || !currentEndLatLng) return;
+    if (!startMarker || !endMarker) return;
     shouldFitBounds = false;
     sendRouteWaypoints();
   };
@@ -584,8 +582,6 @@ function initRouting() {
 
     marker.on("dragend", () => {
       const newLatLng = marker.getLatLng();
-      if (isStart) currentStartLatLng = newLatLng;
-      else if (type === "end") currentEndLatLng = newLatLng;
       input.value = `${newLatLng.lat.toFixed(6)}, ${newLatLng.lng.toFixed(6)}`;
       input.style.color = "var(--color-black)";
       if (startMarker && endMarker) {
@@ -634,8 +630,6 @@ function initRouting() {
     startInput.value = "";
     endInput.value = "";
     viaInput.value = "";
-    currentStartLatLng = null;
-    currentEndLatLng = null;
 
     const summaryContainer = document.getElementById("routing-summary-container");
     if (summaryContainer) {
@@ -705,8 +699,6 @@ function initRouting() {
     const isVia = type === "via";
     const input = type === "start" ? startInput : isVia ? viaInput : endInput;
 
-    if (type === "start") currentStartLatLng = latlng;
-    else if (type === "end") currentEndLatLng = latlng;
     input.value = label || `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`;
     input.style.color = "var(--color-black)";
     ensureRoutingMarker(type, latlng);
@@ -772,12 +764,10 @@ function initRouting() {
       case "start":
         if (startMarker) map.removeLayer(startMarker);
         startMarker = null;
-        currentStartLatLng = null;
         startInput.value = "";
         if (penModeActive) {
           if (endMarker) map.removeLayer(endMarker);
           endMarker = null;
-          currentEndLatLng = null;
           endInput.value = "";
           exitPenMode();
         }
@@ -786,7 +776,6 @@ function initRouting() {
       case "end":
         if (endMarker) map.removeLayer(endMarker);
         endMarker = null;
-        currentEndLatLng = null;
         endInput.value = "";
         clearRouteLine(penModeActive);
         if (penModeActive) penModeClickCount = 1;
@@ -928,13 +917,11 @@ function initRouting() {
       const locStr = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`;
 
       if (penModeClickCount === 0) {
-        currentStartLatLng = latlng;
         startInput.value = locStr;
         startInput.style.color = "var(--color-black)";
         ensureRoutingMarker("start", latlng);
         penModeClickCount = 1;
       } else if (penModeClickCount === 1) {
-        currentEndLatLng = latlng;
         endInput.value = locStr;
         endInput.style.color = "var(--color-black)";
         if (ensureRoutingMarker("end", latlng)) {
@@ -949,8 +936,7 @@ function initRouting() {
         recalculateRoute();
         shouldFitBounds = false;
       } else {
-        createIntermediateViaMarker(currentEndLatLng);
-        currentEndLatLng = latlng;
+        createIntermediateViaMarker(endMarker.getLatLng());
         endInput.value = locStr;
         endInput.style.color = "var(--color-black)";
         endMarker.setLatLng(latlng);
