@@ -168,15 +168,16 @@ function initRouting() {
   };
 
   /**
-   * Attaches the sequence-number badge above a via pin; sendRouteWaypoints() sets its content.
+   * Attaches a label badge above a routing pin. Start/end get their text here; a via's
+   * sequence number is set by sendRouteWaypoints().
    */
-  const addViaNumberBadge = (marker) => {
-    marker.bindTooltip("", {
+  const addPinBadge = (marker, type, text = "") => {
+    marker.bindTooltip(text, {
       permanent: true,
       direction: "top",
       offset: [0, -40], // px above the pin tip
       opacity: 1,
-      className: "route-via-number",
+      className: `route-pin-badge route-pin-badge-${type}`,
     });
   };
 
@@ -198,7 +199,7 @@ function initRouting() {
       title: ROUTING_MARKER_HINT,
     }).addTo(map);
 
-    addViaNumberBadge(newViaMarker);
+    addPinBadge(newViaMarker, "via");
 
     const deleteMarkerAction = () => {
       map.removeLayer(newViaMarker);
@@ -709,7 +710,7 @@ function initRouting() {
       draggable: true,
     }).addTo(map);
     addDragHandlersToRoutingMarker(marker, type);
-    if (isVia) addViaNumberBadge(marker);
+    addPinBadge(marker, type, isStart ? "Start" : isVia ? "" : "End");
     if (isStart) startMarker = marker;
     else if (isVia) viaMarker = marker;
     else endMarker = marker;

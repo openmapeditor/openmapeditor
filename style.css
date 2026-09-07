@@ -443,20 +443,28 @@ select:focus {
   border: none;
 }
 
-/* Sequence-number badge above each route via pin (js/routing.js) */
-.route-via-number {
+/* Label badge above each routing pin: "Start"/"End", or a via's sequence number (js/routing.js) */
+.route-pin-badge {
   padding: 0 6px;
   font-size: 12px;
   font-weight: 600;
   line-height: 18px;
   color: var(--color-white);
-  background-color: var(--routing-color-via);
   border-radius: 9px;
   box-shadow: 0 0 0 2px var(--color-white);
   border: none;
 }
-.route-via-number::before {
+.route-pin-badge::before {
   display: none;
+}
+.route-pin-badge-start {
+  background-color: var(--routing-color-start);
+}
+.route-pin-badge-via {
+  background-color: var(--routing-color-via);
+}
+.route-pin-badge-end {
+  background-color: var(--routing-color-end);
 }
 
 /* Existing path endpoint shown while drawing a new path (js/path-extend.js), before it's
