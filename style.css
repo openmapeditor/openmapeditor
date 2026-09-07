@@ -1309,6 +1309,13 @@ body.glass-mode .overview-category-pill.active {
   flex-shrink: 0;
 }
 
+/* Distance / time / source entries in the route summary (js/routing.js) */
+.routing-summary-item {
+  display: inline-block;
+  white-space: nowrap;
+  margin: 0 4px;
+}
+
 .panel-input-group {
   margin-bottom: 8px;
   display: flex;

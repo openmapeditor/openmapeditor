@@ -256,11 +256,10 @@ function initRouting() {
       const currentProvider = getCurrentRoutingProvider();
       const providerDisplayName = PROVIDER_CONFIG[currentProvider]?.displayName || currentProvider;
 
-      const itemStyle = "display: inline-block; white-space: nowrap; margin: 0 4px;";
       summaryContainer.innerHTML =
-        `<span style="${itemStyle}">Distance: ${distanceDisplay}</span>` +
-        `<span style="${itemStyle}">Time: ${formattedTime}</span>` +
-        `<span style="${itemStyle}">Source: ${providerDisplayName}</span>`;
+        `<span class="routing-summary-item">Distance: ${distanceDisplay}</span>` +
+        `<span class="routing-summary-item">Time: ${formattedTime}</span>` +
+        `<span class="routing-summary-item">Source: ${providerDisplayName}</span>`;
       summaryContainer.style.display = "block";
     }
 
@@ -353,8 +352,6 @@ function initRouting() {
             });
           }
 
-          const startInput = document.getElementById("route-start");
-          const endInput = document.getElementById("route-end");
           const startName = startInput.value.trim() || "Start";
           const endName = endInput.value.trim() || "End";
           const newRouteName = `Route: ${startName} to ${endName}`;
