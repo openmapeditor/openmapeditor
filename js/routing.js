@@ -119,8 +119,8 @@ function initRouting() {
   };
 
   /**
-   * Sends [start, ...vias, end] to the router with the path and panel vias ordered by
-   * position along the route, and numbers their badges to match.
+   * Numbers the path and panel vias by position along the route and, once start and end
+   * exist, sends [start, ...vias, end] to the router in that order.
    */
   const sendRouteWaypoints = () => {
     const vias = [...intermediateViaMarkers];
@@ -128,6 +128,7 @@ function initRouting() {
     // Stable sort; Infinity - Infinity is NaN, which sort() treats as equal
     vias.sort((a, b) => a.routePosition - b.routePosition);
     vias.forEach((marker, i) => marker.setTooltipContent(String(i + 1)));
+    if (!startMarker || !endMarker) return;
     routedVias = vias;
     setWaypointsAndLog([
       startMarker.getLatLng(),
@@ -137,10 +138,9 @@ function initRouting() {
   };
 
   /**
-   * Recalculates the route with all vias without changing map bounds.
+   * Renumbers the vias and recalculates the route, if possible, without changing map bounds.
    */
   const recalculateRoute = () => {
-    if (!startMarker || !endMarker) return;
     shouldFitBounds = false;
     sendRouteWaypoints();
   };
@@ -528,9 +528,7 @@ function initRouting() {
         routingControl.getRouter().options.profile = config.profileFormatter(apiProfile);
       }
 
-      if (startMarker && endMarker) {
-        recalculateRoute();
-      }
+      recalculateRoute();
     });
   });
 
@@ -609,9 +607,7 @@ function initRouting() {
       if (isVia) marker.routePosition = routePositionOf(newLatLng);
       input.value = `${newLatLng.lat.toFixed(6)}, ${newLatLng.lng.toFixed(6)}`;
       input.style.color = "var(--color-black)";
-      if (startMarker && endMarker) {
-        recalculateRoute();
-      }
+      recalculateRoute();
     });
 
     marker.on("mousedown", (e) => {
@@ -810,9 +806,7 @@ function initRouting() {
         if (viaMarker) map.removeLayer(viaMarker);
         viaMarker = null;
         viaInput.value = "";
-        if (startMarker && endMarker) {
-          recalculateRoute();
-        }
+        recalculateRoute();
         break;
     }
     updateClearButtonState();
