@@ -90,7 +90,9 @@ L.TileLayer.WMS.Gutter = L.TileLayer.WMS.extend({
 
     // Load the image (with gutter) and crop it to canvas
     var img = new Image();
-    img.crossOrigin = this.options.crossOrigin === true ? "" : this.options.crossOrigin;
+    if (this.options.crossOrigin || this.options.crossOrigin === "") {
+      img.crossOrigin = this.options.crossOrigin === true ? "" : this.options.crossOrigin;
+    }
 
     var self = this;
     img.onload = function () {
