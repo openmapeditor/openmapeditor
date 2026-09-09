@@ -21,11 +21,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Inject Google Analytics
+      - name: Configure Google Analytics
         env:
           GA_ID: ${{ secrets.GA_MEASUREMENT_ID }}
         run: |
-          [ -n "$GA_ID" ] && sed -i "s/GA_MEASUREMENT_ID/$GA_ID/g" index.html
+          if [ -n "$GA_ID" ]; then
+            sed -i "s/GA_MEASUREMENT_ID/$GA_ID/g" index.html
+          else
+            # No GA ID: remove the whole Google Analytics tag from the page
+            sed -i "/<!-- START-GA -->/,/<!-- END-GA -->/d" index.html
+          fi
 
       - name: Create secrets.js
         run: |
