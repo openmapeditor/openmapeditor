@@ -519,23 +519,37 @@ async function setupAutocomplete(inputEl, suggestionsEl, callback) {
     });
   }
 
-  inputEl.addEventListener("input", () => {
-    const query = inputEl.value.trim();
-
-    const latLng = parseCoordinateString(query);
-
-    if (latLng) {
-      clearTimeout(debounceTimeout);
+  function addSuggestion(label, latLng) {
+    const item = document.createElement("div");
+    item.className = "autocomplete-suggestion-item";
+    item.textContent = label;
+    item.addEventListener("click", (e) => {
+      L.DomEvent.stop(e);
+      inputEl.value = label;
+      callback(latLng, label);
       suggestionsEl.innerHTML = "";
       suggestionsEl.style.display = "none";
+    });
+    suggestionsEl.appendChild(item);
+  }
 
-      callback(latLng, `${latLng.lat.toFixed(6)}, ${latLng.lng.toFixed(6)}`);
+  inputEl.addEventListener("input", () => {
+    const query = inputEl.value.trim();
+    clearTimeout(debounceTimeout);
+    activeSuggestionIndex = -1;
 
+    // Offer a parsed coordinate as a preselected row instead of selecting it outright:
+    // "47.5, 7" already parses while the user is still typing "47.5, 7.58".
+    const latLng = parseCoordinateString(query);
+    if (latLng) {
+      suggestionsEl.innerHTML = "";
+      suggestionsEl.style.display = "block";
+      addSuggestion(`${latLng.lat.toFixed(6)}, ${latLng.lng.toFixed(6)}`, latLng);
+      activeSuggestionIndex = 0;
+      updateActiveSuggestion();
       return;
     }
 
-    clearTimeout(debounceTimeout);
-    activeSuggestionIndex = -1; // Reset on new input
     if (query.length < 3) {
       suggestionsEl.innerHTML = "";
       suggestionsEl.style.display = "none";
@@ -543,22 +557,12 @@ async function setupAutocomplete(inputEl, suggestionsEl, callback) {
     }
     debounceTimeout = setTimeout(async () => {
       const results = await geocoder.search({ query });
+      // Drop the response if the input no longer holds the query it was requested for
+      if (inputEl.value.trim() !== query) return;
       suggestionsEl.innerHTML = "";
       if (results && results.length > 0) {
         suggestionsEl.style.display = "block";
-        results.forEach((result) => {
-          const item = document.createElement("div");
-          item.className = "autocomplete-suggestion-item";
-          item.textContent = result.label;
-          item.addEventListener("click", (e) => {
-            L.DomEvent.stop(e);
-            inputEl.value = result.label;
-            callback(L.latLng(result.y, result.x), result.label); // Pass latlng and label
-            suggestionsEl.innerHTML = "";
-            suggestionsEl.style.display = "none";
-          });
-          suggestionsEl.appendChild(item);
-        });
+        results.forEach((result) => addSuggestion(result.label, L.latLng(result.y, result.x)));
       } else {
         suggestionsEl.style.display = "none";
       }
