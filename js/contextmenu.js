@@ -194,12 +194,14 @@ function initContextMenu(map) {
       onMove(move);
     };
 
-    // Whole-menu drag: 5px threshold distinguishes drag from click; on mouseup after a drag,
-    // a capture-phase click listener fires once to swallow the browser-generated click so
-    // buttons under the cursor don't trigger. touchstart is not stopped so taps still work —
-    // preventDefault is deferred to touchmove once dragging is confirmed.
+    // Whole-menu drag (primary button only): 5px threshold distinguishes drag from click. After a
+    // drag, a capture-phase click listener swallows the click the browser fires right after mouseup
+    // so buttons under the cursor don't trigger; a timeout drops it if no click came (e.g. release
+    // outside the viewport). touchstart is not stopped so taps still work — preventDefault is
+    // deferred to touchmove once dragging is confirmed.
     L.DomEvent.on(popupContent, "mousedown", (startE) => {
       L.DomEvent.stop(startE);
+      if (startE.button !== 0) return;
       startDrag(startE.clientX, startE.clientY, (move) => {
         let dragging = false;
         const onMove = (ev) => {
@@ -214,14 +216,9 @@ function initContextMenu(map) {
           document.removeEventListener("mousemove", onMove);
           document.removeEventListener("mouseup", onUp);
           if (dragging) {
-            document.addEventListener(
-              "click",
-              (ev) => {
-                ev.stopPropagation();
-                ev.preventDefault();
-              },
-              { capture: true, once: true },
-            );
+            const swallowClick = (ev) => L.DomEvent.stop(ev);
+            document.addEventListener("click", swallowClick, { capture: true, once: true });
+            setTimeout(() => document.removeEventListener("click", swallowClick, true), 0);
           }
         };
         document.addEventListener("mousemove", onMove);
