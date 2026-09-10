@@ -87,6 +87,8 @@ L.TileLayer.WMS.Gutter = L.TileLayer.WMS.extend({
     canvas.height = tileSize.y;
     canvas.onselectstart = L.Util.falseFn;
     canvas.onmousemove = L.Util.falseFn;
+    // Mirror HTMLImageElement.complete so Leaflet's _abortLoading only drops tiles still loading
+    canvas.complete = false;
 
     // Load the image (with gutter) and crop it to canvas
     var img = new Image();
@@ -112,6 +114,8 @@ L.TileLayer.WMS.Gutter = L.TileLayer.WMS.extend({
         tileSize.y, // dest height: fill canvas
       );
 
+      canvas.complete = true;
+
       // Call done callback
       L.Util.requestAnimFrame(function () {
         done(null, canvas);
@@ -119,6 +123,7 @@ L.TileLayer.WMS.Gutter = L.TileLayer.WMS.extend({
     };
 
     img.onerror = function () {
+      canvas.complete = true;
       done(new Error("Failed to load tile"), canvas);
     };
 
