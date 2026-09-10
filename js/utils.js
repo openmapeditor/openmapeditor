@@ -10,6 +10,16 @@ function escHtml(s) {
 }
 
 /**
+ * True when a keydown targets a form field or a contenteditable editor
+ * (CodeMirror uses one in mobile browsers instead of its hidden textarea).
+ * @param {KeyboardEvent} e
+ * @returns {boolean}
+ */
+function isTextEntryTarget(e) {
+  return e.target.isContentEditable || e.target.matches("input, textarea, select");
+}
+
+/**
  * The single source of truth for what an unnamed item is called, by geometry
  * type. Used everywhere a layer needs a name and has none yet.
  * @param {L.Layer} layer - The Leaflet layer (Marker, Polygon, or Polyline)
